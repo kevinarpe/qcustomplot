@@ -7,9 +7,8 @@ desktop.ini
 
 # Qt Related:
 
-Build/
-Release/
-Debug/
+build-release/
+build-debug/
 *.pro.user
 Makefile*
 moc_*.cpp
@@ -36,6 +35,7 @@ ui_*.h
 
 # Other:
 
+sketches.txt
 *.graphml
 doc/html/*
 doc/qthelp/*

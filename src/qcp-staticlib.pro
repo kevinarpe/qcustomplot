@@ -76,4 +76,5 @@ items/item-bracket.cpp
 
 OTHER_FILES += \
     ../changenotes.txt \
-    ../todo.txt
+    ../todo.txt \
+    ../sketches.txt

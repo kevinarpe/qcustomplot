@@ -2,7 +2,7 @@
 
   Added features:
     - QCustomPlot::pixmap renders the plot into a pixmap and returns it
-    - Axis tick labels are now pixmap-cached, thus increasing replot performance (by about 24% when labels rarely change).
+    - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).
       See plotting hint phCacheLabels which is set by default
     - When setting tick label rotation to +90 or -90 degrees on a vertical axis, the labels are now centered vertically on the tick height
       (This allows space saving vertical tick labels by having the text direction parallel to the axis)

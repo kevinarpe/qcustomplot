@@ -1665,7 +1665,7 @@ void QCPAxis::generateAutoTicks()
   Called by generateAutoTicks when \ref setAutoSubTicks is set to true. Depending on the \a
   tickStep between two major ticks on the axis, a different number of sub ticks is appropriate. For
   Example taking 4 sub ticks for a \a tickStep of 1 makes more sense than taking 5 sub ticks,
-  because this corresponds to a sub tick step of 0.2, instead of the less intuitive 0.16666. Note
+  because this corresponds to a sub tick step of 0.2, instead of the less intuitive 0.16667. Note
   that a subtick count of 4 means dividing the major tick step into 5 sections.
   
   This is implemented by a hand made lookup for integer tick steps as well as fractional tick steps
