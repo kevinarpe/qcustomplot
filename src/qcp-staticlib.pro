@@ -48,7 +48,8 @@ items/item-text.h \
 items/item-ellipse.h \
 items/item-pixmap.h \
 items/item-tracer.h \
-items/item-bracket.h
+items/item-bracket.h \
+    layout.h
 
 SOURCES += \
 painter.cpp \
@@ -72,7 +73,8 @@ items/item-text.cpp \
 items/item-ellipse.cpp \
 items/item-pixmap.cpp \
 items/item-tracer.cpp \
-items/item-bracket.cpp
+items/item-bracket.cpp \
+    layout.cpp
 
 OTHER_FILES += \
     ../changenotes.txt \
