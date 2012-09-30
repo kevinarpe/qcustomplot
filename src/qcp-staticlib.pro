@@ -18,11 +18,11 @@ VERSION = 0.9.0
 TARGET = qcustomplot
 CONFIG(debug, debug|release) {
   TARGET = $$join(TARGET,,,d) # if compiling in debug mode, append a "d" to the library name
-  MOC_DIR= build-debug
-  OBJECTS_DIR= build-debug
+  MOC_DIR = build-debug
+  OBJECTS_DIR = build-debug
 } else {
-  MOC_DIR= build-release
-  OBJECTS_DIR= build-release
+  MOC_DIR = build-release
+  OBJECTS_DIR = build-release
 }
 
 HEADERS += \
@@ -36,6 +36,7 @@ plottable.h \
 item.h \
 lineending.h \
 core.h \
+layout.h \
 plottables/plottable-graph.h \
 plottables/plottable-curve.h \
 plottables/plottable-bars.h \
@@ -48,8 +49,7 @@ items/item-text.h \
 items/item-ellipse.h \
 items/item-pixmap.h \
 items/item-tracer.h \
-items/item-bracket.h \
-    layout.h
+items/item-bracket.h
 
 SOURCES += \
 painter.cpp \
@@ -61,6 +61,7 @@ plottable.cpp \
 item.cpp \
 lineending.cpp \
 core.cpp \
+layout.cpp \
 plottables/plottable-graph.cpp \
 plottables/plottable-curve.cpp \
 plottables/plottable-bars.cpp \
@@ -73,8 +74,7 @@ items/item-text.cpp \
 items/item-ellipse.cpp \
 items/item-pixmap.cpp \
 items/item-tracer.cpp \
-items/item-bracket.cpp \
-    layout.cpp
+items/item-bracket.cpp
 
 OTHER_FILES += \
     ../changenotes.txt \

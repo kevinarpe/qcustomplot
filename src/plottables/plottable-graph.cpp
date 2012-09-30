@@ -1536,18 +1536,18 @@ QPointF QCPGraph::lowerFillBasePoint(double lowerKey) const
     {
       if ((mValueAxis->range().upper < 0 && !mValueAxis->rangeReversed()) ||
           (mValueAxis->range().upper > 0 && mValueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
-        point.setX(mKeyAxis->axisRect().right());
+        point.setX(mKeyAxis->axisRect()->right());
       else
-        point.setX(mKeyAxis->axisRect().left());
+        point.setX(mKeyAxis->axisRect()->left());
       point.setY(lowerKey);
     } else if (mKeyAxis->axisType() == QCPAxis::atTop || mKeyAxis->axisType() == QCPAxis::atBottom)
     {
       point.setX(lowerKey);
       if ((mValueAxis->range().upper < 0 && !mValueAxis->rangeReversed()) ||
           (mValueAxis->range().upper > 0 && mValueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
-        point.setY(mKeyAxis->axisRect().top());
+        point.setY(mKeyAxis->axisRect()->top());
       else
-        point.setY(mKeyAxis->axisRect().bottom());
+        point.setY(mKeyAxis->axisRect()->bottom());
     }
   }
   return point;
@@ -1596,18 +1596,18 @@ QPointF QCPGraph::upperFillBasePoint(double upperKey) const
     {
       if ((mValueAxis->range().upper < 0 && !mValueAxis->rangeReversed()) ||
           (mValueAxis->range().upper > 0 && mValueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
-        point.setX(mKeyAxis->axisRect().right());
+        point.setX(mKeyAxis->axisRect()->right());
       else
-        point.setX(mKeyAxis->axisRect().left());
+        point.setX(mKeyAxis->axisRect()->left());
       point.setY(upperKey);
     } else if (mKeyAxis->axisType() == QCPAxis::atTop || mKeyAxis->axisType() == QCPAxis::atBottom)
     {
       point.setX(upperKey);
       if ((mValueAxis->range().upper < 0 && !mValueAxis->rangeReversed()) ||
           (mValueAxis->range().upper > 0 && mValueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
-        point.setY(mKeyAxis->axisRect().top());
+        point.setY(mKeyAxis->axisRect()->top());
       else
-        point.setY(mKeyAxis->axisRect().bottom());
+        point.setY(mKeyAxis->axisRect()->bottom());
     }
   }
   return point;

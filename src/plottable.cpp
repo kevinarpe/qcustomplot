@@ -495,7 +495,7 @@ bool QCPAbstractPlottable::removeFromLegend() const
 /* inherits documentation from base class */
 QRect QCPAbstractPlottable::clipRect() const
 {
-  return mKeyAxis->axisRect() | mValueAxis->axisRect();
+  return mKeyAxis->axisRect()->rect() & mValueAxis->axisRect()->rect();
 }
 
 /*! \internal

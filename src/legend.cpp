@@ -1254,24 +1254,27 @@ void QCPLegend::calculateAutoSize()
 */
 void QCPLegend::calculateAutoPosition()
 {
+  // DBG
+  /*
   switch (mPositionStyle)
   {
     case psTopLeft:
-      mPosition = mParentPlot->mAxisRect.topLeft() + QPoint(mMarginLeft, mMarginTop); break;
+      mPosition = mParentPlot->mAxisRect->topLeft() + QPoint(mMarginLeft, mMarginTop); break;
     case psTop:
-      mPosition = mParentPlot->mAxisRect.topLeft() + QPoint(mParentPlot->mAxisRect.width()/2.0-mSize.width()/2.0, mMarginTop); break;
+      mPosition = mParentPlot->mAxisRect->topLeft() + QPoint(mParentPlot->mAxisRect->width()/2.0-mSize.width()/2.0, mMarginTop); break;
     case psTopRight:
-      mPosition = mParentPlot->mAxisRect.topRight() + QPoint(-mMarginRight-mSize.width(), mMarginTop); break;
+      mPosition = mParentPlot->mAxisRect->topRight() + QPoint(-mMarginRight-mSize.width(), mMarginTop); break;
     case psRight:
-      mPosition = mParentPlot->mAxisRect.topRight() + QPoint(-mMarginRight-mSize.width(), mParentPlot->mAxisRect.height()/2.0-mSize.height()/2.0); break;
+      mPosition = mParentPlot->mAxisRect->topRight() + QPoint(-mMarginRight-mSize.width(), mParentPlot->mAxisRect->height()/2.0-mSize.height()/2.0); break;
     case psBottomRight:
-      mPosition = mParentPlot->mAxisRect.bottomRight() + QPoint(-mMarginRight-mSize.width(), -mMarginBottom-mSize.height()); break;
+      mPosition = mParentPlot->mAxisRect->bottomRight() + QPoint(-mMarginRight-mSize.width(), -mMarginBottom-mSize.height()); break;
     case psBottom:
-      mPosition = mParentPlot->mAxisRect.bottomLeft() + QPoint(mParentPlot->mAxisRect.width()/2.0-mSize.width()/2.0, -mMarginBottom-mSize.height()); break;
+      mPosition = mParentPlot->mAxisRect->bottomLeft() + QPoint(mParentPlot->mAxisRect->width()/2.0-mSize.width()/2.0, -mMarginBottom-mSize.height()); break;
     case psBottomLeft:
-      mPosition = mParentPlot->mAxisRect.bottomLeft() + QPoint(mMarginLeft, -mMarginBottom-mSize.height()); break;
+      mPosition = mParentPlot->mAxisRect->bottomLeft() + QPoint(mMarginLeft, -mMarginBottom-mSize.height()); break;
     case psLeft:
-      mPosition = mParentPlot->mAxisRect.topLeft() + QPoint(mMarginLeft, mParentPlot->mAxisRect.height()/2.0-mSize.height()/2.0); break;
+      mPosition = mParentPlot->mAxisRect->topLeft() + QPoint(mMarginLeft, mParentPlot->mAxisRect->height()/2.0-mSize.height()/2.0); break;
     case psManual: break;
   }
+  */
 }

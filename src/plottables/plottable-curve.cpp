@@ -623,7 +623,7 @@ double QCPCurve::pointDistance(const QPointF &pixelPoint) const
 QPointF QCPCurve::outsideCoordsToPixels(double key, double value, int region) const
 {
   int margin = 10;
-  QRect axisRect = mKeyAxis->axisRect() | mValueAxis->axisRect();
+  QRect axisRect = mKeyAxis->axisRect()->rect() & mValueAxis->axisRect()->rect();
   QPointF result = coordsToPixels(key, value);
   switch (region)
   {

@@ -2,6 +2,7 @@ NEXT RELEASE:
 
 > alternating axis section backgrounds
 
+- fix Q_PROPERTY entries
 - Refactor scatter system. User should be able to fill all scatters with a color he likes. (Make example line plot with white-filled circles and a non-white background. Looks good) 
 - add QCP_CHECK_DATA_VALID define to allow checking for NaN/Inf in draw routine (probably not in setData/addData routines because there are too many)
   and find a good place to document that

@@ -204,14 +204,14 @@ void QCPGrid::drawSections(QCPPainter *painter) const
       if (i == lowTick) // draw first section extra
       {
         painter->setBrush((sectionId-1) % 2 == 0 ? mSectionBrushEven : mSectionBrushOdd);
-        painter->drawRect(QRectF(mParentAxis->mAxisRect.left(), mParentAxis->mAxisRect.top(), t1-mParentAxis->mAxisRect.left(), mParentAxis->mAxisRect.height()));
+        painter->drawRect(QRectF(mParentAxis->mAxisRect->left(), mParentAxis->mAxisRect->top(), t1-mParentAxis->mAxisRect->left(), mParentAxis->mAxisRect->height()));
       }
       painter->setBrush(sectionId % 2 == 0 ? mSectionBrushEven : mSectionBrushOdd);
-      painter->drawRect(QRectF(t1, mParentAxis->mAxisRect.top(), t2-t1, mParentAxis->mAxisRect.height()));
+      painter->drawRect(QRectF(t1, mParentAxis->mAxisRect->top(), t2-t1, mParentAxis->mAxisRect->height()));
       if (i == highTick-1) // draw last section extra
       {
         painter->setBrush((sectionId+1) % 2 == 0 ? mSectionBrushEven : mSectionBrushOdd);
-        painter->drawRect(QRectF(t2, mParentAxis->mAxisRect.top(), mParentAxis->mAxisRect.right()-t2+1, mParentAxis->mAxisRect.height()));
+        painter->drawRect(QRectF(t2, mParentAxis->mAxisRect->top(), mParentAxis->mAxisRect->right()-t2+1, mParentAxis->mAxisRect->height()));
       }
     }
   } else
@@ -246,7 +246,7 @@ void QCPGrid::drawGridLines(QCPPainter *painter) const
         {
           zeroLineIndex = i;
           t = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i)); // x
-          painter->drawLine(QLineF(t, mParentAxis->mAxisRect.bottom(), t, mParentAxis->mAxisRect.top()));
+          painter->drawLine(QLineF(t, mParentAxis->mAxisRect->bottom(), t, mParentAxis->mAxisRect->top()));
           break;
         }
       }
@@ -258,7 +258,7 @@ void QCPGrid::drawGridLines(QCPPainter *painter) const
     {
       if (i == zeroLineIndex) continue; // don't draw a gridline on top of the zeroline
       t = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i)); // x
-      painter->drawLine(QLineF(t, mParentAxis->mAxisRect.bottom(), t, mParentAxis->mAxisRect.top()));
+      painter->drawLine(QLineF(t, mParentAxis->mAxisRect->bottom(), t, mParentAxis->mAxisRect->top()));
     }
   } else
   {
@@ -275,7 +275,7 @@ void QCPGrid::drawGridLines(QCPPainter *painter) const
         {
           zeroLineIndex = i;
           t = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i)); // y
-          painter->drawLine(QLineF(mParentAxis->mAxisRect.left(), t, mParentAxis->mAxisRect.right(), t));
+          painter->drawLine(QLineF(mParentAxis->mAxisRect->left(), t, mParentAxis->mAxisRect->right(), t));
           break;
         }
       }
@@ -287,7 +287,7 @@ void QCPGrid::drawGridLines(QCPPainter *painter) const
     {
       if (i == zeroLineIndex) continue; // don't draw a gridline on top of the zeroline
       t = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i)); // y
-      painter->drawLine(QLineF(mParentAxis->mAxisRect.left(), t, mParentAxis->mAxisRect.right(), t));
+      painter->drawLine(QLineF(mParentAxis->mAxisRect->left(), t, mParentAxis->mAxisRect->right(), t));
     }
   }
 }
@@ -308,14 +308,14 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
     for (int i=0; i<mParentAxis->mSubTickVector.size(); ++i)
     {
       t = mParentAxis->coordToPixel(mParentAxis->mSubTickVector.at(i)); // x
-      painter->drawLine(QLineF(t, mParentAxis->mAxisRect.bottom(), t, mParentAxis->mAxisRect.top()));
+      painter->drawLine(QLineF(t, mParentAxis->mAxisRect->bottom(), t, mParentAxis->mAxisRect->top()));
     }
   } else
   {
     for (int i=0; i<mParentAxis->mSubTickVector.size(); ++i)
     {
       t = mParentAxis->coordToPixel(mParentAxis->mSubTickVector.at(i)); // y
-      painter->drawLine(QLineF(mParentAxis->mAxisRect.left(), t, mParentAxis->mAxisRect.right(), t));
+      painter->drawLine(QLineF(mParentAxis->mAxisRect->left(), t, mParentAxis->mAxisRect->right(), t));
     }
   }
 }
@@ -377,15 +377,15 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 /*!
   Constructs an Axis instance of Type \a type inside \a parentPlot.
 */
-QCPAxis::QCPAxis(QCustomPlot *parentPlot, AxisType type) :
-  QCPLayerable(parentPlot)
+QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
+  QCPLayerable(parent->parentPlot()),
+  mAxisRect(parent)
 {
+  setAxisType(type);
   mLabelCache.setMaxCost(16); // cache at most 16 (tick) labels
   mLowestVisibleTick = 0;
   mHighestVisibleTick = -1;
   mGrid = new QCPGrid(this);
-  setAxisType(type);
-  setAxisRect(parentPlot->axisRect()); 
   setScaleType(stLinear);
   setScaleLogBase(10);
   
@@ -399,7 +399,7 @@ QCPAxis::QCPAxis(QCustomPlot *parentPlot, AxisType type) :
   setAutoTicks(true);
   setAutoTickLabels(true);
   setAutoTickStep(true);
-  setTickLabelFont(parentPlot->font());
+  setTickLabelFont(parentPlot()->font());
   setTickLabelColor(Qt::black);
   setTickLength(5);
   setTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap));
@@ -410,7 +410,7 @@ QCPAxis::QCPAxis(QCustomPlot *parentPlot, AxisType type) :
   setNumberFormat("gbd");
   setNumberPrecision(6);
   setLabel("");
-  setLabelFont(parentPlot->font());
+  setLabelFont(parentPlot()->font());
   setLabelColor(Qt::black);
   
   setAutoSubTicks(true);
@@ -483,18 +483,6 @@ void QCPAxis::setAxisType(AxisType type)
 {
   mAxisType = type;
   mOrientation = (type == atBottom || type == atTop) ? Qt::Horizontal : Qt::Vertical;
-}
-
-/*! \internal
-  
-  Sets the axis rect. The axis uses this rect to position itself within the plot,
-  together with the information of its type (\ref setAxisType). Theoretically it's possible to give
-  a plot's axes different axis rects (e.g. for gaps between them), however, they are currently all
-  synchronized by the QCustomPlot::setAxisRect function.
-*/
-void QCPAxis::setAxisRect(const QRect &rect)
-{
-  mAxisRect = rect;
 }
 
 /*!
@@ -1368,14 +1356,14 @@ void QCPAxis::setScaleRatio(const QCPAxis *otherAxis, double ratio)
   int otherPixelSize, ownPixelSize;
   
   if (otherAxis->orientation() == Qt::Horizontal)
-    otherPixelSize = otherAxis->mAxisRect.width();
+    otherPixelSize = otherAxis->mAxisRect->width();
   else
-    otherPixelSize = otherAxis->mAxisRect.height();
+    otherPixelSize = otherAxis->mAxisRect->height();
   
   if (orientation() == Qt::Horizontal)
-    ownPixelSize = mAxisRect.width();
+    ownPixelSize = mAxisRect->width();
   else
-    ownPixelSize = mAxisRect.height();
+    ownPixelSize = mAxisRect->height();
   
   double newRangeSize = ratio*otherAxis->mRange.size()*ownPixelSize/(double)otherPixelSize;
   setRange(range().center(), newRangeSize, Qt::AlignCenter);
@@ -1391,30 +1379,30 @@ double QCPAxis::pixelToCoord(double value) const
     if (mScaleType == stLinear)
     {
       if (!mRangeReversed)
-        return (value-mAxisRect.left())/(double)mAxisRect.width()*mRange.size()+mRange.lower;
+        return (value-mAxisRect->left())/(double)mAxisRect->width()*mRange.size()+mRange.lower;
       else
-        return -(value-mAxisRect.left())/(double)mAxisRect.width()*mRange.size()+mRange.upper;
+        return -(value-mAxisRect->left())/(double)mAxisRect->width()*mRange.size()+mRange.upper;
     } else // mScaleType == stLogarithmic
     {
       if (!mRangeReversed)
-        return pow(mRange.upper/mRange.lower, (value-mAxisRect.left())/(double)mAxisRect.width())*mRange.lower;
+        return pow(mRange.upper/mRange.lower, (value-mAxisRect->left())/(double)mAxisRect->width())*mRange.lower;
       else
-        return pow(mRange.upper/mRange.lower, (mAxisRect.left()-value)/(double)mAxisRect.width())*mRange.upper;
+        return pow(mRange.upper/mRange.lower, (mAxisRect->left()-value)/(double)mAxisRect->width())*mRange.upper;
     }
   } else // orientation() == Qt::Vertical
   {
     if (mScaleType == stLinear)
     {
       if (!mRangeReversed)
-        return (mAxisRect.bottom()-value)/(double)mAxisRect.height()*mRange.size()+mRange.lower;
+        return (mAxisRect->bottom()-value)/(double)mAxisRect->height()*mRange.size()+mRange.lower;
       else
-        return -(mAxisRect.bottom()-value)/(double)mAxisRect.height()*mRange.size()+mRange.upper;
+        return -(mAxisRect->bottom()-value)/(double)mAxisRect->height()*mRange.size()+mRange.upper;
     } else // mScaleType == stLogarithmic
     {
       if (!mRangeReversed)
-        return pow(mRange.upper/mRange.lower, (mAxisRect.bottom()-value)/(double)mAxisRect.height())*mRange.lower;
+        return pow(mRange.upper/mRange.lower, (mAxisRect->bottom()-value)/(double)mAxisRect->height())*mRange.lower;
       else
-        return pow(mRange.upper/mRange.lower, (value-mAxisRect.bottom())/(double)mAxisRect.height())*mRange.upper;
+        return pow(mRange.upper/mRange.lower, (value-mAxisRect->bottom())/(double)mAxisRect->height())*mRange.upper;
     }
   }
 }
@@ -1429,21 +1417,21 @@ double QCPAxis::coordToPixel(double value) const
     if (mScaleType == stLinear)
     {
       if (!mRangeReversed)
-        return (value-mRange.lower)/mRange.size()*mAxisRect.width()+mAxisRect.left();
+        return (value-mRange.lower)/mRange.size()*mAxisRect->width()+mAxisRect->left();
       else
-        return (mRange.upper-value)/mRange.size()*mAxisRect.width()+mAxisRect.left();
+        return (mRange.upper-value)/mRange.size()*mAxisRect->width()+mAxisRect->left();
     } else // mScaleType == stLogarithmic
     {
       if (value >= 0 && mRange.upper < 0) // invalid value for logarithmic scale, just draw it outside visible range
-        return !mRangeReversed ? mAxisRect.right()+200 : mAxisRect.left()-200;
+        return !mRangeReversed ? mAxisRect->right()+200 : mAxisRect->left()-200;
       else if (value <= 0 && mRange.upper > 0) // invalid value for logarithmic scale, just draw it outside visible range
-        return !mRangeReversed ? mAxisRect.left()-200 : mAxisRect.right()+200;
+        return !mRangeReversed ? mAxisRect->left()-200 : mAxisRect->right()+200;
       else
       {
         if (!mRangeReversed)
-          return baseLog(value/mRange.lower)/baseLog(mRange.upper/mRange.lower)*mAxisRect.width()+mAxisRect.left();
+          return baseLog(value/mRange.lower)/baseLog(mRange.upper/mRange.lower)*mAxisRect->width()+mAxisRect->left();
         else
-          return baseLog(mRange.upper/value)/baseLog(mRange.upper/mRange.lower)*mAxisRect.width()+mAxisRect.left();
+          return baseLog(mRange.upper/value)/baseLog(mRange.upper/mRange.lower)*mAxisRect->width()+mAxisRect->left();
       }
     }
   } else // orientation() == Qt::Vertical
@@ -1451,21 +1439,21 @@ double QCPAxis::coordToPixel(double value) const
     if (mScaleType == stLinear)
     {
       if (!mRangeReversed)
-        return mAxisRect.bottom()-(value-mRange.lower)/mRange.size()*mAxisRect.height();
+        return mAxisRect->bottom()-(value-mRange.lower)/mRange.size()*mAxisRect->height();
       else
-        return mAxisRect.bottom()-(mRange.upper-value)/mRange.size()*mAxisRect.height();
+        return mAxisRect->bottom()-(mRange.upper-value)/mRange.size()*mAxisRect->height();
     } else // mScaleType == stLogarithmic
     {     
       if (value >= 0 && mRange.upper < 0) // invalid value for logarithmic scale, just draw it outside visible range
-        return !mRangeReversed ? mAxisRect.top()-200 : mAxisRect.bottom()+200;
+        return !mRangeReversed ? mAxisRect->top()-200 : mAxisRect->bottom()+200;
       else if (value <= 0 && mRange.upper > 0) // invalid value for logarithmic scale, just draw it outside visible range
-        return !mRangeReversed ? mAxisRect.bottom()+200 : mAxisRect.top()-200;
+        return !mRangeReversed ? mAxisRect->bottom()+200 : mAxisRect->top()-200;
       else
       {
         if (!mRangeReversed)
-          return mAxisRect.bottom()-baseLog(value/mRange.lower)/baseLog(mRange.upper/mRange.lower)*mAxisRect.height();
+          return mAxisRect->bottom()-baseLog(value/mRange.lower)/baseLog(mRange.upper/mRange.lower)*mAxisRect->height();
         else
-          return mAxisRect.bottom()-baseLog(mRange.upper/value)/baseLog(mRange.upper/mRange.lower)*mAxisRect.height();
+          return mAxisRect->bottom()-baseLog(mRange.upper/value)/baseLog(mRange.upper/mRange.lower)*mAxisRect->height();
       }
     }
   }
@@ -1741,13 +1729,13 @@ void QCPAxis::draw(QCPPainter *painter)
 {
   QPoint origin;
   if (mAxisType == atLeft)
-    origin = mAxisRect.bottomLeft();
+    origin = mAxisRect->bottomLeft();
   else if (mAxisType == atRight)
-    origin = mAxisRect.bottomRight();
+    origin = mAxisRect->bottomRight();
   else if (mAxisType == atTop)
-    origin = mAxisRect.topLeft();
+    origin = mAxisRect->topLeft();
   else if (mAxisType == atBottom)
-    origin = mAxisRect.bottomLeft();
+    origin = mAxisRect->bottomLeft();
   
   double xCor = 0, yCor = 0; // paint system correction, for pixel exact matches (affects baselines and ticks of top/right axes)
   switch (mAxisType)
@@ -1765,9 +1753,9 @@ void QCPAxis::draw(QCPPainter *painter)
   // draw baseline:
   painter->setPen(getBasePen());
   if (orientation() == Qt::Horizontal)
-    painter->drawLine(QLineF(origin+QPointF(xCor, yCor), origin+QPointF(mAxisRect.width()+xCor, yCor)));
+    painter->drawLine(QLineF(origin+QPointF(xCor, yCor), origin+QPointF(mAxisRect->width()+xCor, yCor)));
   else
-    painter->drawLine(QLineF(origin+QPointF(xCor, yCor), origin+QPointF(xCor, -mAxisRect.height()+yCor)));
+    painter->drawLine(QLineF(origin+QPointF(xCor, yCor), origin+QPointF(xCor, -mAxisRect->height()+yCor)));
   
   // draw ticks:
   if (mTicks)
@@ -1847,21 +1835,21 @@ void QCPAxis::draw(QCPPainter *painter)
       QTransform oldTransform = painter->transform();
       painter->translate((origin.x()-margin-labelBounds.height()), origin.y());
       painter->rotate(-90);
-      painter->drawText(0, 0, mAxisRect.height(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
+      painter->drawText(0, 0, mAxisRect->height(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
       painter->setTransform(oldTransform);
     }
     else if (mAxisType == atRight)
     {
       QTransform oldTransform = painter->transform();
-      painter->translate((origin.x()+margin+labelBounds.height()), origin.y()-mAxisRect.height());
+      painter->translate((origin.x()+margin+labelBounds.height()), origin.y()-mAxisRect->height());
       painter->rotate(90);
-      painter->drawText(0, 0, mAxisRect.height(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
+      painter->drawText(0, 0, mAxisRect->height(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
       painter->setTransform(oldTransform);
     }
     else if (mAxisType == atTop)
-      painter->drawText(origin.x(), origin.y()-margin-labelBounds.height(), mAxisRect.width(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
+      painter->drawText(origin.x(), origin.y()-margin-labelBounds.height(), mAxisRect->width(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
     else if (mAxisType == atBottom)
-      painter->drawText(origin.x(), origin.y()+margin, mAxisRect.width(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
+      painter->drawText(origin.x(), origin.y()+margin, mAxisRect->width(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
   }
   
   // set selection boxes:
@@ -1873,24 +1861,24 @@ void QCPAxis::draw(QCPPainter *painter)
   int selLabelOffset = selTickLabelOffset+selTickLabelSize+mLabelPadding;
   if (mAxisType == atLeft)
   {
-    mAxisSelectionBox.setCoords(mAxisRect.left()-selAxisOutSize, mAxisRect.top(), mAxisRect.left()+selAxisInSize, mAxisRect.bottom());
-    mTickLabelsSelectionBox.setCoords(mAxisRect.left()-selTickLabelOffset-selTickLabelSize, mAxisRect.top(), mAxisRect.left()-selTickLabelOffset, mAxisRect.bottom());
-    mLabelSelectionBox.setCoords(mAxisRect.left()-selLabelOffset-selLabelSize, mAxisRect.top(), mAxisRect.left()-selLabelOffset, mAxisRect.bottom());
+    mAxisSelectionBox.setCoords(mAxisRect->left()-selAxisOutSize, mAxisRect->top(), mAxisRect->left()+selAxisInSize, mAxisRect->bottom());
+    mTickLabelsSelectionBox.setCoords(mAxisRect->left()-selTickLabelOffset-selTickLabelSize, mAxisRect->top(), mAxisRect->left()-selTickLabelOffset, mAxisRect->bottom());
+    mLabelSelectionBox.setCoords(mAxisRect->left()-selLabelOffset-selLabelSize, mAxisRect->top(), mAxisRect->left()-selLabelOffset, mAxisRect->bottom());
   } else if (mAxisType == atRight)
   {
-    mAxisSelectionBox.setCoords(mAxisRect.right()-selAxisInSize, mAxisRect.top(), mAxisRect.right()+selAxisOutSize, mAxisRect.bottom());
-    mTickLabelsSelectionBox.setCoords(mAxisRect.right()+selTickLabelOffset+selTickLabelSize, mAxisRect.top(), mAxisRect.right()+selTickLabelOffset, mAxisRect.bottom());
-    mLabelSelectionBox.setCoords(mAxisRect.right()+selLabelOffset+selLabelSize, mAxisRect.top(), mAxisRect.right()+selLabelOffset, mAxisRect.bottom());
+    mAxisSelectionBox.setCoords(mAxisRect->right()-selAxisInSize, mAxisRect->top(), mAxisRect->right()+selAxisOutSize, mAxisRect->bottom());
+    mTickLabelsSelectionBox.setCoords(mAxisRect->right()+selTickLabelOffset+selTickLabelSize, mAxisRect->top(), mAxisRect->right()+selTickLabelOffset, mAxisRect->bottom());
+    mLabelSelectionBox.setCoords(mAxisRect->right()+selLabelOffset+selLabelSize, mAxisRect->top(), mAxisRect->right()+selLabelOffset, mAxisRect->bottom());
   } else if (mAxisType == atTop)
   {
-    mAxisSelectionBox.setCoords(mAxisRect.left(), mAxisRect.top()-selAxisOutSize, mAxisRect.right(), mAxisRect.top()+selAxisInSize);
-    mTickLabelsSelectionBox.setCoords(mAxisRect.left(), mAxisRect.top()-selTickLabelOffset-selTickLabelSize, mAxisRect.right(), mAxisRect.top()-selTickLabelOffset);
-    mLabelSelectionBox.setCoords(mAxisRect.left(), mAxisRect.top()-selLabelOffset-selLabelSize, mAxisRect.right(), mAxisRect.top()-selLabelOffset);
+    mAxisSelectionBox.setCoords(mAxisRect->left(), mAxisRect->top()-selAxisOutSize, mAxisRect->right(), mAxisRect->top()+selAxisInSize);
+    mTickLabelsSelectionBox.setCoords(mAxisRect->left(), mAxisRect->top()-selTickLabelOffset-selTickLabelSize, mAxisRect->right(), mAxisRect->top()-selTickLabelOffset);
+    mLabelSelectionBox.setCoords(mAxisRect->left(), mAxisRect->top()-selLabelOffset-selLabelSize, mAxisRect->right(), mAxisRect->top()-selLabelOffset);
   } else if (mAxisType == atBottom)
   {
-    mAxisSelectionBox.setCoords(mAxisRect.left(), mAxisRect.bottom()-selAxisInSize, mAxisRect.right(), mAxisRect.bottom()+selAxisOutSize);
-    mTickLabelsSelectionBox.setCoords(mAxisRect.left(), mAxisRect.bottom()+selTickLabelOffset+selTickLabelSize, mAxisRect.right(), mAxisRect.bottom()+selTickLabelOffset);
-    mLabelSelectionBox.setCoords(mAxisRect.left(), mAxisRect.bottom()+selLabelOffset+selLabelSize, mAxisRect.right(), mAxisRect.bottom()+selLabelOffset);
+    mAxisSelectionBox.setCoords(mAxisRect->left(), mAxisRect->bottom()-selAxisInSize, mAxisRect->right(), mAxisRect->bottom()+selAxisOutSize);
+    mTickLabelsSelectionBox.setCoords(mAxisRect->left(), mAxisRect->bottom()+selTickLabelOffset+selTickLabelSize, mAxisRect->right(), mAxisRect->bottom()+selTickLabelOffset);
+    mLabelSelectionBox.setCoords(mAxisRect->left(), mAxisRect->bottom()+selLabelOffset+selLabelSize, mAxisRect->right(), mAxisRect->bottom()+selLabelOffset);
   }
   // draw hitboxes for debug purposes:
   //painter->drawRects(QVector<QRect>() << mAxisSelectionBox << mTickLabelsSelectionBox << mLabelSelectionBox);
@@ -1920,10 +1908,10 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
   QPointF labelAnchor;
   switch (mAxisType)
   {
-    case atLeft:   labelAnchor = QPointF(mAxisRect.left()-distanceToAxis, position); break;
-    case atRight:  labelAnchor = QPointF(mAxisRect.right()+distanceToAxis, position); break;
-    case atTop:    labelAnchor = QPointF(position, mAxisRect.top()-distanceToAxis); break;
-    case atBottom: labelAnchor = QPointF(position, mAxisRect.bottom()+distanceToAxis); break;
+    case atLeft:   labelAnchor = QPointF(mAxisRect->left()-distanceToAxis, position); break;
+    case atRight:  labelAnchor = QPointF(mAxisRect->right()+distanceToAxis, position); break;
+    case atTop:    labelAnchor = QPointF(position, mAxisRect->top()-distanceToAxis); break;
+    case atBottom: labelAnchor = QPointF(position, mAxisRect->bottom()+distanceToAxis); break;
   }
   if (parentPlot()->plottingHints().testFlag(QCP::phCacheLabels)) // label caching enabled
   {
@@ -1945,13 +1933,13 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
     // if label would be partly clipped by widget border on sides, don't draw it:
     if (orientation() == Qt::Horizontal)
     {
-      if (labelAnchor.x()+cachedLabel->offset.x()+cachedLabel->pixmap.width() > mParentPlot->mViewport.right() ||
-          labelAnchor.x()+cachedLabel->offset.x() < mParentPlot->mViewport.left())
+      if (labelAnchor.x()+cachedLabel->offset.x()+cachedLabel->pixmap.width() > mParentPlot->viewport().right() ||
+          labelAnchor.x()+cachedLabel->offset.x() < mParentPlot->viewport().left())
         return;
     } else
     {
-      if (labelAnchor.y()+cachedLabel->offset.y()+cachedLabel->pixmap.height() > mParentPlot->mViewport.bottom() ||
-          labelAnchor.y()+cachedLabel->offset.y() < mParentPlot->mViewport.top())
+      if (labelAnchor.y()+cachedLabel->offset.y()+cachedLabel->pixmap.height() > mParentPlot->viewport().bottom() ||
+          labelAnchor.y()+cachedLabel->offset.y() < mParentPlot->viewport().top())
         return;
     }
     painter->drawPixmap(labelAnchor+cachedLabel->offset, cachedLabel->pixmap);
@@ -1963,13 +1951,13 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
     // if label would be partly clipped by widget border on sides, don't draw it:
     if (orientation() == Qt::Horizontal)
     {
-      if (finalPosition.x()+(labelData.rotatedTotalBounds.width()+labelData.rotatedTotalBounds.left()) > mParentPlot->mViewport.right() ||
-          finalPosition.x()+labelData.rotatedTotalBounds.left() < mParentPlot->mViewport.left())
+      if (finalPosition.x()+(labelData.rotatedTotalBounds.width()+labelData.rotatedTotalBounds.left()) > mParentPlot->viewport().right() ||
+          finalPosition.x()+labelData.rotatedTotalBounds.left() < mParentPlot->viewport().left())
         return;
     } else
     {
-      if (finalPosition.y()+(labelData.rotatedTotalBounds.height()+labelData.rotatedTotalBounds.top()) > mParentPlot->mViewport.bottom() ||
-          finalPosition.y()+labelData.rotatedTotalBounds.top() < mParentPlot->mViewport.top())
+      if (finalPosition.y()+(labelData.rotatedTotalBounds.height()+labelData.rotatedTotalBounds.top()) > mParentPlot->viewport().bottom() ||
+          finalPosition.y()+labelData.rotatedTotalBounds.top() < mParentPlot->viewport().top())
         return;
     }
     drawTickLabel(painter, finalPosition.x(), finalPosition.y(), labelData);
@@ -2469,3 +2457,211 @@ int QCPAxis::calculateMargin() const
     margin = 15;
   return margin;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////// QCPAxisRect
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot) :
+  QCPLayoutElement(0),
+  mParentPlot(parentPlot)
+{
+  mAxes.insert(QCPAxis::atLeft, QList<QCPAxis*>());
+  mAxes.insert(QCPAxis::atRight, QList<QCPAxis*>());
+  mAxes.insert(QCPAxis::atTop, QList<QCPAxis*>());
+  mAxes.insert(QCPAxis::atBottom, QList<QCPAxis*>());
+}
+
+QCPAxisRect::~QCPAxisRect()
+{
+  QHashIterator<QCPAxis::AxisType, QList<QCPAxis*> > it(mAxes);
+  while (it.hasNext())
+  {
+    it.next();
+    QList<QCPAxis*> ax(it.value());
+    for (int i=0; i<ax.size(); ++i)
+      removeAxis(ax.at(i));
+  }
+}
+
+QCPAxis *QCPAxisRect::axis(QCPAxis::AxisType type, int index) const
+{
+  QList<QCPAxis*> ax(mAxes.value(type));
+  if (index >= 0 && index < ax.size())
+  {
+    return ax.at(index);
+  } else
+  {
+    qDebug() << Q_FUNC_INFO << "Axis index out of bounds:" << index;
+    return 0;
+  }
+}
+
+QList<QCPAxis *> QCPAxisRect::axes(QCPAxis::AxisType type) const
+{
+  return mAxes.value(type);
+}
+
+QList<QCPAxis *> QCPAxisRect::axes() const
+{
+  QList<QCPAxis*> result;
+  QHashIterator<QCPAxis::AxisType, QList<QCPAxis*> > it(mAxes);
+  while (it.hasNext())
+  {
+    it.next();
+    result << it.value();
+  }
+  return result;
+}
+
+QCPAxis *QCPAxisRect::addAxis(QCPAxis::AxisType type)
+{
+  QCPAxis *newAxis = new QCPAxis(this, type);
+  mAxes[type].append(newAxis);
+  return newAxis;
+}
+
+void QCPAxisRect::moveAxis(QCPAxis::AxisType type, int fromIndex, int toIndex)
+{
+}
+
+bool QCPAxisRect::removeAxis(QCPAxis *axis)
+{
+}
+
+/*!
+  Sets \a pm as the axis background pixmap. The axis background pixmap will be drawn inside the
+  axis rect, before anything else (e.g. the axes themselves, grids, graphs, etc.) is drawn. If the
+  provided pixmap doesn't have the same size as the axis rect, scaling can be enabled with \ref
+  setBackgroundScaled and the scaling mode (i.e. whether and how the aspect ratio is preserved) can
+  be set with \ref setBackgroundScaledMode. To set all these options in one call, consider using
+  the overloaded version of this function.
+
+  \see setBackgroundScaled, setBackgroundScaledMode
+*/
+void QCPAxisRect::setBackground(const QPixmap &pm)
+{
+  mBackground = pm;
+  mScaledBackground = QPixmap();
+}
+
+/*! \overload
+  
+  Allows setting the background pixmap of the axis rect, whether it shall be scaled and how it
+  shall be scaled in one call.
+
+  \see setBackground(const QPixmap &pm), setBackgroundScaled, setBackgroundScaledMode
+*/
+void QCPAxisRect::setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode)
+{
+  mBackground = pm;
+  mScaledBackground = QPixmap();
+  mBackgroundScaled = scaled;
+  mBackgroundScaledMode = mode;
+}
+
+/*!
+  Sets whether the axis background pixmap shall be scaled to fit the axis rect or not. If \a scaled
+  is set to true, you may control whether and how the aspect ratio of the original pixmap is
+  preserved with \ref setBackgroundScaledMode.
+  
+  Note that the scaled version of the original pixmap is buffered, so there is no performance
+  penalty on replots. (Except when the axis rect is changed continuously.)
+  
+  \see setBackground, setBackgroundScaledMode
+*/
+void QCPAxisRect::setBackgroundScaled(bool scaled)
+{
+  mBackgroundScaled = scaled;
+}
+
+/*!
+  If scaling of the axis background pixmap is enabled (\ref setBackgroundScaled), use this function to
+  define whether and how the aspect ratio of the original pixmap passed to \ref setBackground is preserved.
+  \see setBackground, setBackgroundScaled
+*/
+void QCPAxisRect::setBackgroundScaledMode(Qt::AspectRatioMode mode)
+{
+  mBackgroundScaledMode = mode;
+}
+
+/*! \internal
+
+  If an axis background is provided via \ref setBackground, this function first buffers the scaled
+  version depending on \ref setBackgroundScaled and \ref setBackgroundScaledMode and then draws it
+  inside the current axisRect with the provided \a painter. The scaled version is buffered in
+  mScaledBackground to prevent the need for rescaling at every redraw. It is only updated, when the
+  axis rect has changed in a way that requires a rescale of the background pixmap (this is
+  dependant on the \ref setBackgroundScaledMode), or when a differend axis backgroud was set.
+  
+  \see drawBackground, setBackground, setBackgroundScaled, setBackgroundScaledMode
+*/
+void QCPAxisRect::drawBackground(QCPPainter *painter)
+{
+  if (!mBackground.isNull())
+  {
+    if (mBackgroundScaled)
+    {
+      // check whether mScaledBackground needs to be updated:
+      QSize scaledSize(mBackground.size());
+      scaledSize.scale(mRect.size(), mBackgroundScaledMode);
+      if (mScaledBackground.size() != scaledSize)
+        mScaledBackground = mBackground.scaled(mRect.size(), mBackgroundScaledMode, Qt::SmoothTransformation);
+      painter->drawPixmap(mRect.topLeft(), mScaledBackground, QRect(0, 0, mRect.width(), mRect.height()) & mScaledBackground.rect());
+    } else
+    {
+      painter->drawPixmap(mRect.topLeft(), mBackground, QRect(0, 0, mRect.width(), mRect.height()));
+    }
+  }
+}
+
+QMargins QCPAxisRect::calculateAutoMargins() const
+{
+  int leftMargin = 0;
+  int rightMargin = 0;
+  int topMargin = 0;
+  int bottomMargin = 0;
+  QList<QCPAxis*> axesList;
+  
+  // left margin:
+  axesList = mAxes.value(QCPAxis::atLeft);
+  for (int i=0; i<axesList.size(); ++i)
+    leftMargin += axesList.at(i)->calculateMargin();
+  // right margin:
+  axesList = mAxes.value(QCPAxis::atRight);
+  for (int i=0; i<axesList.size(); ++i)
+    rightMargin += axesList.at(i)->calculateMargin();
+  // top margin:
+  axesList = mAxes.value(QCPAxis::atTop);
+  for (int i=0; i<axesList.size(); ++i)
+    topMargin += axesList.at(i)->calculateMargin();
+  // bottom margin:
+  axesList = mAxes.value(QCPAxis::atBottom);
+  for (int i=0; i<axesList.size(); ++i)
+    bottomMargin += axesList.at(i)->calculateMargin();
+  
+  return QMargins(leftMargin, topMargin, rightMargin, bottomMargin);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

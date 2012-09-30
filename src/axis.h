@@ -28,10 +28,12 @@
 #include "global.h"
 #include "range.h"
 #include "layer.h"
+#include "layout.h"
 
 class QCPPainter;
 class QCustomPlot;
 class QCPAxis;
+class QCPAxisRect;
 
 class QCP_LIB_DECL QCPGrid : public QCPLayerable
 {
@@ -84,7 +86,6 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(AxisType axisType READ axisType WRITE setAxisType)
   Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType)
   Q_PROPERTY(double scaleLogBase READ scaleLogBase WRITE setScaleLogBase)
-  Q_PROPERTY(QRect axisRect READ axisRect WRITE setAxisRect)
   Q_PROPERTY(QCPRange range READ range WRITE setRange)
   Q_PROPERTY(bool grid READ grid WRITE setGrid)
   Q_PROPERTY(bool subGrid READ subGrid WRITE setSubGrid)
@@ -156,12 +157,12 @@ public:
   Q_ENUMS(SelectablePart)
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)
   
-  explicit QCPAxis(QCustomPlot *parentPlot, AxisType type);
+  explicit QCPAxis(QCPAxisRect *parent, AxisType type);
   virtual ~QCPAxis();
       
   // getters:
   AxisType axisType() const { return mAxisType; }
-  QRect axisRect() const { return mAxisRect; }
+  QCPAxisRect *axisRect() const { return mAxisRect; }
   ScaleType scaleType() const { return mScaleType; }
   double scaleLogBase() const { return mScaleLogBase; }
   const QCPRange range() const { return mRange; }
@@ -307,7 +308,6 @@ protected:
   QCPRange mRange;
   QString mDateTimeFormat;
   QString mLabel;
-  QRect mAxisRect;
   QPen mBasePen, mTickPen, mSubTickPen;
   QFont mTickLabelFont, mLabelFont;
   QColor mTickLabelColor, mLabelColor;
@@ -329,6 +329,7 @@ protected:
   QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
   
   // internal or not explicitly exposed properties:
+  QCPAxisRect *mAxisRect;
   QCPGrid *mGrid;
   QVector<double> mSubTickVector;
   QChar mExponentialChar, mPositiveSignChar;
@@ -341,7 +342,6 @@ protected:
   
   // internal setters:
   void setAxisType(AxisType type);
-  void setAxisRect(const QRect &rect);
   
   // introduced methods:
   virtual void setupTickVectors();
@@ -380,7 +380,65 @@ private:
   
   friend class QCustomPlot;
   friend class QCPGrid;
+  friend class QCPAxisRect;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::SelectableParts)
+
+
+
+class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement
+{
+public:
+  explicit QCPAxisRect(QCustomPlot *parent);
+  ~QCPAxisRect();
+  QCustomPlot *parentPlot() const { return mParentPlot; }
+  QPixmap background() const { return mBackground; }
+  bool backgroundScaled() const { return mBackgroundScaled; }
+  Qt::AspectRatioMode backgroundScaledMode() const { return mBackgroundScaledMode; }
+
+  void setBackground(const QPixmap &pm);
+  void setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode=Qt::KeepAspectRatioByExpanding);
+  void setBackgroundScaled(bool scaled);
+  void setBackgroundScaledMode(Qt::AspectRatioMode mode);
+  
+  QCPAxis *axis(QCPAxis::AxisType type, int index) const;
+  QList<QCPAxis*> axes(QCPAxis::AxisType type) const;
+  QList<QCPAxis*> axes() const;
+  QCPAxis *addAxis(QCPAxis::AxisType type);
+  void moveAxis(QCPAxis::AxisType type, int fromIndex, int toIndex);
+  bool removeAxis(QCPAxis *axis);
+  
+  // read-only interface imitating a QRect:
+  int left() const { return mRect.left(); }
+  int right() const { return mRect.right(); }
+  int top() const { return mRect.top(); }
+  int bottom() const { return mRect.bottom(); }
+  int width() const { return mRect.width(); }
+  int height() const { return mRect.height(); }
+  QSize size() const { return mRect.size(); }
+  QPoint topLeft() const { return mRect.topLeft(); }
+  QPoint topRight() const { return mRect.topRight(); }
+  QPoint bottomLeft() const { return mRect.bottomLeft(); }
+  QPoint bottomRight() const { return mRect.bottomRight(); }
+  
+protected:
+  QCustomPlot *mParentPlot;
+  QHash<QCPAxis::AxisType, QList<QCPAxis*> > mAxes;
+  QPixmap mBackground;
+  QPixmap mScaledBackground;
+  bool mBackgroundScaled;
+  Qt::AspectRatioMode mBackgroundScaledMode;
+  
+  void drawBackground(QCPPainter *painter);
+  virtual QMargins calculateAutoMargins() const;
+  
+  friend class QCustomPlot;
+};
+
+
+
+
+
+
 
 #endif // QCP_AXIS_H

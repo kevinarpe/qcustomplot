@@ -1,17 +1,28 @@
 #### Version 1.0.0 released on  ####
 
+  Changes that break backward compatibility:
+    - QCustomPlot::axisRect() removed due to the extensive changes to how axes and axis rects are handled
+    - QCPAxis constructor changed to now take QCPAxisRect* as parent
+    - setMarginLeft/Right/Top/Bottom removed due to the axis rect changes
+    - setAxisRect removed due to the axis rect changes
+    - setAxisBackground(-Scaled/-ScaledMode) now moved to QCPAxisRect as setBackground(-Scaled/ScaledMode) (access via QCustomPlot::axisRects())
+
   Added features:
+    - classes QCPAxisRect, QCPLayout, QCPLayoutGrid, QCPLayoutElement
+    - QCustomPlot::axisRects() returns all the axis rects in the QCustomPlot.
+    - QCustomPlot::plotLayout() returns the top level layout (initially a QCPGridLayout with one QCPAxisRect inside)
     - QCustomPlot::pixmap renders the plot into a pixmap and returns it
     - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).
       See plotting hint phCacheLabels which is set by default
     - When setting tick label rotation to +90 or -90 degrees on a vertical axis, the labels are now centered vertically on the tick height
       (This allows space saving vertical tick labels by having the text direction parallel to the axis)
-    
+    - Added QCustomPlot::hasItem method for consistency with plottable interface, hasPlottable
+
   Bugfixes:
     - Fixed compile error on ARM
     - Wrong legend icons were displayed if using pixmaps for scatters that are smaller than the legend icon rect
-    - Fixed small clipping inaccuracy for rotated tick labels (were hidden a few pixels too early before hitting the viewport border)
-    
+    - Fixed small clipping inaccuracy for rotated tick labels (were hidden a few pixels too early before hitting the viewport border)    
+
   Other:
     - Improved documentation
 

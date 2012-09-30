@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
   mCustomPlot->xAxis->setTickVector(ticks);
   */
   
-  //presetInteractive(mCustomPlot);
+  presetInteractive(mCustomPlot);
   //setupItemAnchorTest(mCustomPlot);
   //setupItemTracerTest(mCustomPlot);
   //setupGraphTest(mCustomPlot);
@@ -25,10 +25,11 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupLogErrorsTest(mCustomPlot);
   //setupSelectTest(mCustomPlot);
   //setupDateTest(mCustomPlot);
-  //setupTestbed(mCustomPlot);
   //setupIntegerTickStepCase(mCustomPlot);
   //setupTickLabelTest(mCustomPlot);
-  setupDaqPerformance(mCustomPlot);
+  //setupDaqPerformance(mCustomPlot);
+  
+  setupTestbed(mCustomPlot);
 }
 
 MainWindow::~MainWindow()
@@ -432,10 +433,10 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
 
 void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
 {
-  QImage colorMap(customPlot->axisRect().size(), QImage::Format_RGB32);
+  QImage colorMap(customPlot->axisRects().first()->size(), QImage::Format_RGB32);
   colorMap.fill(Qt::blue);
-  int offsetx = customPlot->axisRect().x();
-  int offsety = customPlot->axisRect().y();
+  int offsetx = customPlot->axisRects().first()->left();
+  int offsety = customPlot->axisRects().first()->top();
   // for items:
   for (int i=0; i<customPlot->itemCount(); ++i)
   {
@@ -485,11 +486,44 @@ void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
     }
   }
   // set as plot background:
-  customPlot->setAxisBackground(QPixmap::fromImage(colorMap), false);
+  customPlot->axisRects().first()->setBackground(QPixmap::fromImage(colorMap), false);
 }
 
 void MainWindow::setupTestbed(QCustomPlot *customPlot)
 {
+  customPlot->addGraph();
+  customPlot->graph(0)->addData(1, 1);
+  customPlot->graph(0)->addData(2, 2);
+  customPlot->graph(0)->addData(3, 1.5);
+  customPlot->rescaleAxes();
+  QCPLayoutGrid *topLayout = dynamic_cast<QCPLayoutGrid*>(customPlot->plotLayout());
+  
+  QCPLayoutGrid *subLayout = new QCPLayoutGrid();
+  topLayout->addElement(subLayout, 1, 0);
+  
+  QCPAxisRect *newRect;
+  newRect = new QCPAxisRect(customPlot);
+  subLayout->addElement(newRect, 0, 0);
+  newRect->addAxis(QCPAxis::atLeft);
+  newRect->addAxis(QCPAxis::atRight);
+  newRect->addAxis(QCPAxis::atBottom);
+  newRect->addAxis(QCPAxis::atTop);
+  
+  newRect = new QCPAxisRect(customPlot);
+  subLayout->addElement(newRect, 0, 1);
+  newRect->addAxis(QCPAxis::atLeft);
+  newRect->addAxis(QCPAxis::atRight);
+  newRect->addAxis(QCPAxis::atBottom);
+  newRect->addAxis(QCPAxis::atTop);
+  
+  subLayout->setColumnStretchFactor(0, 1);
+  subLayout->setColumnStretchFactor(1, 2);
+  newRect->setMinimumSize(QSize(100, 100));
+  
+  //newRect->setAutoMargins(false);
+  //newRect->setMargins(QMargins(60, 60, 60, 60));
+  
+  customPlot->setRangeDragAxes(newRect->axis(QCPAxis::atBottom, 0), newRect->axis(QCPAxis::atLeft, 0));
 }
 
 void MainWindow::setupIntegerTickStepCase(QCustomPlot *customPlot)

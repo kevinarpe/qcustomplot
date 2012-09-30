@@ -43,11 +43,13 @@
 #include <QCache>
 #include <qmath.h>
 #include <limits>
+#include "layout.h"
 
 class QCPPainter;
 class QCustomPlot;
 class QCPLayerable;
 class QCPAxis;
+class QCPAxisRect;
 class QCPAbstractPlottable;
 class QCPLegend;
 class QCPItemPosition;
@@ -143,6 +145,17 @@ Q_DECLARE_FLAGS(PlottingHints, PlottingHint)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::AntialiasedElements)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::PlottingHints)
 
+
+/*
+class QCP_LIB_DECL QCPScatter
+{
+public:
+  QCPScatter(QCP::ScatterStyle style)
+  ~QCPScatter();
+  
+  void scatter
+};
+*/
 
 class QCP_LIB_DECL QCPPainter : public QPainter
 {
@@ -286,6 +299,8 @@ public:
   QPen pen() const { return mPen; }
   QPen subGridPen() const { return mSubGridPen; }
   QPen zeroLinePen() const { return mZeroLinePen; }
+  QBrush sectionBrushEven() const { return mSectionBrushEven; }
+  QBrush sectionBrushOdd() const { return mSectionBrushOdd; }
   
   // setters:
   void setSubGridVisible(bool visible);
@@ -294,16 +309,19 @@ public:
   void setPen(const QPen &pen);
   void setSubGridPen(const QPen &pen);
   void setZeroLinePen(const QPen &pen);
+  void setSectionBrushes(const QBrush &brushEven, const QBrush &brushOdd);
   
 protected:
   QCPAxis *mParentAxis;
   bool mSubGridVisible;
   bool mAntialiasedSubGrid, mAntialiasedZeroLine;
   QPen mPen, mSubGridPen, mZeroLinePen;
+  QBrush mSectionBrushEven, mSectionBrushOdd;
   
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
   // drawing helpers:
+  void drawSections(QCPPainter *painter) const;
   void drawGridLines(QCPPainter *painter) const;
   void drawSubGridLines(QCPPainter *painter) const;
   
@@ -318,7 +336,6 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(AxisType axisType READ axisType WRITE setAxisType)
   Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType)
   Q_PROPERTY(double scaleLogBase READ scaleLogBase WRITE setScaleLogBase)
-  Q_PROPERTY(QRect axisRect READ axisRect WRITE setAxisRect)
   Q_PROPERTY(QCPRange range READ range WRITE setRange)
   Q_PROPERTY(bool grid READ grid WRITE setGrid)
   Q_PROPERTY(bool subGrid READ subGrid WRITE setSubGrid)
@@ -390,12 +407,12 @@ public:
   Q_ENUMS(SelectablePart)
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)
   
-  explicit QCPAxis(QCustomPlot *parentPlot, AxisType type);
+  explicit QCPAxis(QCPAxisRect *parent, AxisType type);
   virtual ~QCPAxis();
       
   // getters:
   AxisType axisType() const { return mAxisType; }
-  QRect axisRect() const { return mAxisRect; }
+  QCPAxisRect *axisRect() const { return mAxisRect; }
   ScaleType scaleType() const { return mScaleType; }
   double scaleLogBase() const { return mScaleLogBase; }
   const QCPRange range() const { return mRange; }
@@ -541,7 +558,6 @@ protected:
   QCPRange mRange;
   QString mDateTimeFormat;
   QString mLabel;
-  QRect mAxisRect;
   QPen mBasePen, mTickPen, mSubTickPen;
   QFont mTickLabelFont, mLabelFont;
   QColor mTickLabelColor, mLabelColor;
@@ -563,6 +579,7 @@ protected:
   QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
   
   // internal or not explicitly exposed properties:
+  QCPAxisRect *mAxisRect;
   QCPGrid *mGrid;
   QVector<double> mSubTickVector;
   QChar mExponentialChar, mPositiveSignChar;
@@ -575,7 +592,6 @@ protected:
   
   // internal setters:
   void setAxisType(AxisType type);
-  void setAxisRect(const QRect &rect);
   
   // introduced methods:
   virtual void setupTickVectors();
@@ -614,8 +630,60 @@ private:
   
   friend class QCustomPlot;
   friend class QCPGrid;
+  friend class QCPAxisRect;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::SelectableParts)
+
+
+
+class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement
+{
+public:
+  explicit QCPAxisRect(QCustomPlot *parent);
+  ~QCPAxisRect();
+  QCustomPlot *parentPlot() const { return mParentPlot; }
+  QPixmap background() const { return mBackground; }
+  bool backgroundScaled() const { return mBackgroundScaled; }
+  Qt::AspectRatioMode backgroundScaledMode() const { return mBackgroundScaledMode; }
+
+  void setBackground(const QPixmap &pm);
+  void setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode=Qt::KeepAspectRatioByExpanding);
+  void setBackgroundScaled(bool scaled);
+  void setBackgroundScaledMode(Qt::AspectRatioMode mode);
+  
+  QCPAxis *axis(QCPAxis::AxisType type, int index) const;
+  QList<QCPAxis*> axes(QCPAxis::AxisType type) const;
+  QList<QCPAxis*> axes() const;
+  QCPAxis *addAxis(QCPAxis::AxisType type);
+  void moveAxis(QCPAxis::AxisType type, int fromIndex, int toIndex);
+  bool removeAxis(QCPAxis *axis);
+  
+  // read-only interface imitating a QRect:
+  int left() const { return mRect.left(); }
+  int right() const { return mRect.right(); }
+  int top() const { return mRect.top(); }
+  int bottom() const { return mRect.bottom(); }
+  int width() const { return mRect.width(); }
+  int height() const { return mRect.height(); }
+  QSize size() const { return mRect.size(); }
+  QPoint topLeft() const { return mRect.topLeft(); }
+  QPoint topRight() const { return mRect.topRight(); }
+  QPoint bottomLeft() const { return mRect.bottomLeft(); }
+  QPoint bottomRight() const { return mRect.bottomRight(); }
+  
+protected:
+  QCustomPlot *mParentPlot;
+  QHash<QCPAxis::AxisType, QList<QCPAxis*> > mAxes;
+  QPixmap mBackground;
+  QPixmap mScaledBackground;
+  bool mBackgroundScaled;
+  Qt::AspectRatioMode mBackgroundScaledMode;
+  
+  void drawBackground(QCPPainter *painter);
+  virtual QMargins calculateAutoMargins() const;
+  
+  friend class QCustomPlot;
+};
 
 
 class QCP_LIB_DECL QCPAbstractLegendItem : public QObject
@@ -998,6 +1066,7 @@ public:
   QPointF coords() const { return QPointF(mKey, mValue); }
   QCPAxis *keyAxis() const { return mKeyAxis; }
   QCPAxis *valueAxis() const { return mValueAxis; }
+  QCPAxisRect *axisRect() const { return mAxisRect; }
   virtual QPointF pixelPoint() const;
   
   // setters:
@@ -1006,11 +1075,13 @@ public:
   void setCoords(double key, double value);
   void setCoords(const QPointF &coords);
   void setAxes(QCPAxis* keyAxis, QCPAxis* valueAxis);
+  void setAxisRect(QCPAxisRect *axisRect);
   void setPixelPoint(const QPointF &pixelPoint);
   
 protected:
   PositionType mPositionType;
   QCPAxis *mKeyAxis, *mValueAxis;
+  QCPAxisRect *mAxisRect;
   double mKey, mValue;
   QCPItemAnchor *mParentAnchor;
   
@@ -1029,16 +1100,13 @@ public:
   
   // getters:
   bool clipToAxisRect() const { return mClipToAxisRect; }
-  QCPAxis *clipKeyAxis() const { return mClipKeyAxis; }
-  QCPAxis *clipValueAxis() const { return mClipValueAxis; }
+  QCPAxisRect *clipAxisRect() const { return mClipAxisRect; }
   bool selectable() const { return mSelectable; }
   bool selected() const { return mSelected; }
   
   // setters:
   void setClipToAxisRect(bool clip);
-  void setClipAxes(QCPAxis *keyAxis, QCPAxis *valueAxis);
-  void setClipKeyAxis(QCPAxis *axis);
-  void setClipValueAxis(QCPAxis *axis);
+  void setClipAxisRect(QCPAxisRect *rect);
   void setSelectable(bool selectable);
   void setSelected(bool selected);
   
@@ -1052,7 +1120,7 @@ public:
   
 protected:
   bool mClipToAxisRect;
-  QCPAxis *mClipKeyAxis, *mClipValueAxis;
+  QCPAxisRect *mClipAxisRect;
   bool mSelectable, mSelected;
   QList<QCPItemPosition*> mPositions;
   QList<QCPItemAnchor*> mAnchors;
@@ -1138,11 +1206,6 @@ class QCP_LIB_DECL QCustomPlot : public QWidget
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
   Q_PROPERTY(QString title READ title WRITE setTitle)
-  Q_PROPERTY(QRect axisRect READ axisRect WRITE setAxisRect)
-  Q_PROPERTY(int marginLeft READ marginLeft WRITE setMarginLeft)
-  Q_PROPERTY(int marginRight READ marginRight WRITE setMarginRight)
-  Q_PROPERTY(int marginTop READ marginTop WRITE setMarginTop)
-  Q_PROPERTY(int marginBottom READ marginBottom WRITE setMarginBottom)
   Q_PROPERTY(int autoMargin READ autoMargin WRITE setAutoMargin)
   Q_PROPERTY(QColor color READ color WRITE setColor)
   Q_PROPERTY(Qt::Orientations rangeDrag READ rangeDrag WRITE setRangeDrag)
@@ -1183,12 +1246,8 @@ public:
   QString title() const { return mTitle; }
   QFont titleFont() const { return mTitleFont; }
   QColor titleColor() const { return mTitleColor; }
-  QRect axisRect() const { return mAxisRect; }
   QRect viewport() const { return mViewport; }
-  int marginLeft() const { return mMarginLeft; }
-  int marginRight() const { return mMarginRight; }
-  int marginTop() const { return mMarginTop; }
-  int marginBottom() const { return mMarginBottom; }
+  QCPLayout *plotLayout() const { return mPlotLayout; }
   bool autoMargin() const { return mAutoMargin; }
   QColor color() const { return mColor; }
   Qt::Orientations rangeDrag() const { return mRangeDrag; }
@@ -1199,9 +1258,6 @@ public:
   QCP::AntialiasedElements antialiasedElements() const { return mAntialiasedElements; }
   QCP::AntialiasedElements notAntialiasedElements() const { return mNotAntialiasedElements; }
   bool autoAddPlottableToLegend() const { return mAutoAddPlottableToLegend; }
-  QPixmap axisBackground() const { return mAxisBackground; }
-  bool axisBackgroundScaled() const { return mAxisBackgroundScaled; }
-  Qt::AspectRatioMode axisBackgroundScaledMode() const { return mAxisBackgroundScaledMode; }
   const Interactions interactions() const { return mInteractions; }
   int selectionTolerance() const { return mSelectionTolerance; }
   QFont selectedTitleFont() const { return mSelectedTitleFont; }
@@ -1215,12 +1271,7 @@ public:
   void setTitle(const QString &title);
   void setTitleFont(const QFont &font);
   void setTitleColor(const QColor &color);
-  void setAxisRect(const QRect &arect);
-  void setMarginLeft(int margin);
-  void setMarginRight(int margin);
-  void setMarginTop(int margin);
-  void setMarginBottom(int margin);
-  void setMargin(int left, int right, int top, int bottom);
+  void setViewport(const QRect &rect);
   void setAutoMargin(bool enabled);
   void setColor(const QColor &color);
   void setRangeDrag(Qt::Orientations orientations);
@@ -1234,10 +1285,6 @@ public:
   void setNotAntialiasedElements(const QCP::AntialiasedElements &notAntialiasedElements);
   void setNotAntialiasedElement(QCP::AntialiasedElement notAntialiasedElement, bool enabled=true);
   void setAutoAddPlottableToLegend(bool on);
-  void setAxisBackground(const QPixmap &pm);
-  void setAxisBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode=Qt::KeepAspectRatioByExpanding);
-  void setAxisBackgroundScaled(bool scaled);
-  void setAxisBackgroundScaledMode(Qt::AspectRatioMode mode);
   void setInteractions(const Interactions &interactions);
   void setInteraction(const Interaction &interaction, bool enabled=true);
   void setSelectionTolerance(int pixels);
@@ -1282,6 +1329,7 @@ public:
   int itemCount() const;
   QList<QCPAbstractItem*> selectedItems() const;
   QCPAbstractItem *itemAt(const QPointF &pos, bool onlySelectable=false) const;
+  bool hasItem(QCPAbstractItem *item) const;
   
   // layer interface:
   QCPLayer *layer(const QString &name) const;
@@ -1293,6 +1341,9 @@ public:
   bool addLayer(const QString &name, QCPLayer *otherLayer=0, LayerInsertMode insertMode=limAbove);
   bool removeLayer(QCPLayer *layer);
   bool moveLayer(QCPLayer *layer, QCPLayer *otherLayer, LayerInsertMode insertMode=limAbove);
+  
+  // axis rect interface:
+  QList<QCPAxisRect*> axisRects() const;
   
   QList<QCPAxis*> selectedAxes() const;
   QList<QCPLegend*> selectedLegends() const;
@@ -1339,10 +1390,10 @@ protected:
   QFont mTitleFont, mSelectedTitleFont;
   QColor mTitleColor, mSelectedTitleColor;
   QRect mViewport;
-  QRect mAxisRect;
   int mMarginLeft, mMarginRight, mMarginTop, mMarginBottom;
   bool mAutoMargin, mAutoAddPlottableToLegend;
   QColor mColor;
+  QCPLayout *mPlotLayout;
   QList<QCPAbstractPlottable*> mPlottables;
   QList<QCPGraph*> mGraphs; // extra list of items also in mPlottables that are of type QCPGraph
   QList<QCPAbstractItem*> mItems;
@@ -1352,9 +1403,6 @@ protected:
   double mRangeZoomFactorHorz, mRangeZoomFactorVert;
   bool mDragging;
   QCP::AntialiasedElements mAntialiasedElements, mNotAntialiasedElements;
-  QPixmap mAxisBackground;
-  bool mAxisBackgroundScaled;
-  Qt::AspectRatioMode mAxisBackgroundScaledMode;
   Interactions mInteractions;
   int mSelectionTolerance;
   bool mTitleSelected;
@@ -1364,7 +1412,7 @@ protected:
   QPixmap mPaintBuffer;
   QPoint mDragStart;
   QCPRange mDragStartHorzRange, mDragStartVertRange;
-  QPixmap mScaledAxisBackground;
+  
   bool mReplotting;
   QCP::AntialiasedElements mAADragBackup, mNotAADragBackup;
   QCPLayer *mCurrentLayer;
@@ -1388,14 +1436,13 @@ protected:
   
   // introduced methods:
   virtual void draw(QCPPainter *painter);
-  virtual void drawAxisBackground(QCPPainter *painter);
   
   // helpers:
-  void updateAxisRect();
   bool selectTestTitle(const QPointF &pos) const;
   friend class QCPLegend;
   friend class QCPAxis;
   friend class QCPLayer;
+  friend class QCPAxisRect;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCustomPlot::Interactions)
 

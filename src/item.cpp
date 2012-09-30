@@ -166,6 +166,7 @@ QCPItemPosition::QCPItemPosition(QCustomPlot *parentPlot, QCPAbstractItem *paren
   mPositionType(ptAbsolute),
   mKeyAxis(0),
   mValueAxis(0),
+  mAxisRect(0),
   mKey(0),
   mValue(0),
   mParentAnchor(0)
@@ -198,9 +199,10 @@ QCPItemPosition::~QCPItemPosition()
   By default, the QCustomPlot's x- and yAxis are used.
   
   \li The position is fixed on the QCustomPlot surface, i.e. independent of axis ranges. This
-  corresponds to all other types, i.e. \ref ptAbsolute, \ref ptViewportRatio and \ref ptAxisRectRatio. They
-  differ only in the way the absolute position is described, see the documentation of PositionType
-  for details.
+  corresponds to all other types, i.e. \ref ptAbsolute, \ref ptViewportRatio and \ref
+  ptAxisRectRatio. They differ only in the way the absolute position is described, see the
+  documentation of PositionType for details. For \ref ptAxisRectRatio, note that you can specify
+  the axis rect with \ref setAxisRect. By default this is set to the main axis rect.
   
   \note If the type is changed, the apparent pixel position on the plot is preserved. This means
   the coordinates as retrieved with coords() and set with \ref setCoords may change in the process.
@@ -347,14 +349,21 @@ QPointF QCPItemPosition::pixelPoint() const
       
     case ptAxisRectRatio:
     {
-      if (mParentAnchor)
+      if (mAxisRect)
       {
-        return QPointF(mKey*mParentPlot->axisRect().width(),
-                       mValue*mParentPlot->axisRect().height()) + mParentAnchor->pixelPoint();
+        if (mParentAnchor)
+        {
+          return QPointF(mKey*mAxisRect->width(),
+                         mValue*mAxisRect->height()) + mParentAnchor->pixelPoint();
+        } else
+        {
+          return QPointF(mKey*mAxisRect->width(),
+                       mValue*mAxisRect->height()) + mAxisRect->topLeft();
+        }
       } else
       {
-        return QPointF(mKey*mParentPlot->axisRect().width(),
-                       mValue*mParentPlot->axisRect().height()) + mParentPlot->axisRect().topLeft();
+        qDebug() << Q_FUNC_INFO << "No axis rect defined";
+        return QPointF(mKey, mValue);
       }
     }
     
@@ -399,7 +408,8 @@ QPointF QCPItemPosition::pixelPoint() const
         }
       } else
       {
-        // no axis given, basically the same as if mAnchorType were atNone
+        // no axis given, basically the same as if mPositionType were ptAbsolute
+        qDebug() << Q_FUNC_INFO << "No axes defined";
         x = mKey;
         y = mValue;
       }
@@ -410,13 +420,24 @@ QPointF QCPItemPosition::pixelPoint() const
 }
 
 /*!
-  When \ref setType is ptPlotCoords, this function may be used to specify the axes the coordinates set
-  with \ref setCoords relate to.
+  When \ref setType is ptPlotCoords, this function may be used to specify the axes the coordinates
+  set with \ref setCoords relate to. By default they are set to the initial x- and y- axes of the
+  QCustomPlot.
 */
 void QCPItemPosition::setAxes(QCPAxis *keyAxis, QCPAxis *valueAxis)
 {
   mKeyAxis = keyAxis;
   mValueAxis = valueAxis;
+}
+
+/*!
+  When \ref setType is ptAxisRectRatio, this function may be used to specify the axis rect the
+  coordinates set with \ref setCoords relate to. By default this is the main axis rect of the
+  QCustomPlot.
+*/
+void QCPItemPosition::setAxisRect(QCPAxisRect *axisRect)
+{
+  mAxisRect = axisRect;
 }
 
 /*!
@@ -462,18 +483,25 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
       
     case ptAxisRectRatio:
     {
-      if (mParentAnchor)
+      if (mAxisRect)
       {
-        QPointF p(pixelPoint-mParentAnchor->pixelPoint());
-        p.rx() /= (double)mParentPlot->axisRect().width();
-        p.ry() /= (double)mParentPlot->axisRect().height();
-        setCoords(p);
+        if (mParentAnchor)
+        {
+          QPointF p(pixelPoint-mParentAnchor->pixelPoint());
+          p.rx() /= (double)mAxisRect->width();
+          p.ry() /= (double)mAxisRect->height();
+          setCoords(p);
+        } else
+        {
+          QPointF p(pixelPoint-mAxisRect->topLeft());
+          p.rx() /= (double)mAxisRect->width();
+          p.ry() /= (double)mAxisRect->height();
+          setCoords(p);
+        }
       } else
       {
-        QPointF p(pixelPoint-mParentPlot->axisRect().topLeft());
-        p.rx() /= (double)mParentPlot->axisRect().width();
-        p.ry() /= (double)mParentPlot->axisRect().height();
-        setCoords(p);
+        qDebug() << Q_FUNC_INFO << "No axis rect defined";
+        setCoords(pixelPoint);
       }
       break;
     }
@@ -519,7 +547,8 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
         }
       } else
       {
-        // no axis given, basically the same as if mAnchorType were atNone
+        // no axis given, basically the same as if mPositionType were ptAbsolute
+        qDebug() << Q_FUNC_INFO << "No axes defined";
         newKey = pixelPoint.x();
         newValue = pixelPoint.y();
       }
@@ -705,7 +734,7 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
   
   The cliprect of the provided painter is set to the rect returned by \ref clipRect before this
   function is called. For items this depends on the clipping settings defined by \ref
-  setClipToAxisRect, \ref setClipKeyAxis and \ref setClipValueAxis.
+  setClipToAxisRect and \ref setClipAxisRect.
 */
 
 /* end documentation of pure virtual functions */
@@ -723,12 +752,17 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
 */
 QCPAbstractItem::QCPAbstractItem(QCustomPlot *parentPlot) :
   QCPLayerable(parentPlot),
-  mClipToAxisRect(true),
-  mClipKeyAxis(parentPlot->xAxis),
-  mClipValueAxis(parentPlot->yAxis),
+  mClipToAxisRect(false),
+  mClipAxisRect(0),
   mSelectable(true),
   mSelected(false)
 {
+  QList<QCPAxisRect*> rects = parentPlot->axisRects();
+  if (rects.size() > 0)
+  {
+    setClipToAxisRect(true);
+    setClipAxisRect(rects.first());
+  }
 }
 
 QCPAbstractItem::~QCPAbstractItem()
@@ -748,37 +782,15 @@ void QCPAbstractItem::setClipToAxisRect(bool clip)
 }
 
 /*!
-  Sets both clip axes. Together they define the axis rect that will be used to clip the item
-  when \ref setClipToAxisRect is set to true.
+  Sets the clip axis rect. It defines the rect that will be used to clip the item when \ref
+  setClipToAxisRect is set to true.
   
-  \see setClipToAxisRect, setClipKeyAxis, setClipValueAxis
+  \see setClipToAxisRect
 */
-void QCPAbstractItem::setClipAxes(QCPAxis *keyAxis, QCPAxis *valueAxis)
-{
-  mClipKeyAxis = keyAxis;
-  mClipValueAxis = valueAxis;
-}
 
-/*!
-  Sets the clip key axis. Together with the clip value axis it defines the axis rect that will be
-  used to clip the item when \ref setClipToAxisRect is set to true.
-  
-  \see setClipToAxisRect, setClipAxes, setClipValueAxis
-*/
-void QCPAbstractItem::setClipKeyAxis(QCPAxis *axis)
+void QCPAbstractItem::setClipAxisRect(QCPAxisRect *rect)
 {
-  mClipKeyAxis = axis;
-}
-
-/*!
-  Sets the clip value axis. Together with the clip key axis it defines the axis rect that will be
-  used to clip the item when \ref setClipToAxisRect is set to true.
-  
-  \see setClipToAxisRect, setClipAxes, setClipKeyAxis
-*/
-void QCPAbstractItem::setClipValueAxis(QCPAxis *axis)
-{
-  mClipValueAxis = axis;
+  mClipToAxisRect = rect;
 }
 
 /*!
@@ -881,7 +893,7 @@ bool QCPAbstractItem::hasAnchor(const QString &name) const
 /*! \internal
   
   Returns the rect the visual representation of this item is clipped to. This depends on the
-  current setting of \ref setClipToAxisRect aswell as the clip axes set with \ref setClipAxes.
+  current setting of \ref setClipToAxisRect aswell as the axis rect set with \ref setClipAxisRect.
   
   If the item is not clipped to an axis rect, the \ref QCustomPlot::viewport rect is returned.
   
@@ -889,17 +901,10 @@ bool QCPAbstractItem::hasAnchor(const QString &name) const
 */
 QRect QCPAbstractItem::clipRect() const
 {
-  if (mClipToAxisRect)
-  {
-    if (mClipKeyAxis && mClipValueAxis)
-      return mClipKeyAxis->axisRect() | mClipValueAxis->axisRect();
-    else if (mClipKeyAxis)
-      return mClipKeyAxis->axisRect();
-    else if (mClipValueAxis)
-      return mClipValueAxis->axisRect();
-  }
-  
-  return mParentPlot->viewport();
+  if (mClipToAxisRect && mClipAxisRect)
+    return mClipAxisRect->rect();
+  else
+    return mParentPlot->viewport();
 }
 
 /*! \internal
@@ -1034,6 +1039,9 @@ QCPItemPosition *QCPAbstractItem::createPosition(const QString &name)
   mAnchors.append(newPosition); // every position is also an anchor
   newPosition->setType(QCPItemPosition::ptPlotCoords);
   newPosition->setAxes(mParentPlot->xAxis, mParentPlot->yAxis);
+  QList<QCPAxisRect*> rects = mParentPlot->axisRects();
+  if (rects.size() > 0)
+    newPosition->setAxisRect(rects.first());
   newPosition->setCoords(0, 0);
   return newPosition;
 }
