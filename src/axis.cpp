@@ -1048,6 +1048,8 @@ void QCPAxis::setTickStep(double step)
   disabled.
   
   \a vec is a vector containing the positions of the ticks.
+  
+  \warning \a vec must be sorted in ascending order.
 
   \see setTickVectorLabels
 */
@@ -1062,7 +1064,9 @@ void QCPAxis::setTickVector(const QVector<double> &vec)
   \ref setTickVector. These two vectors should have the same size. (Note that you need to disable
   \ref setAutoTicks and \ref setAutoTickLabels first.)
   
-  \a vec is a vector containing the labels of the ticks.
+  \a vec is a vector containing the labels of the ticks. The entries correspond to the respective
+  indices in the tick vector, passed via \ref setTickVector. So the label in vec[i] will appear at
+  the coordinate given by the tick vector index i.
   
   \see setTickVector
 */
@@ -1531,7 +1535,9 @@ void QCPAxis::setupTickVectors()
     double subTickPosition = 0;
     int subTickIndex = 0;
     bool done = false;
-    for (int i=1; i<mTickVector.size(); ++i)
+    int lowTick = mLowestVisibleTick > 0 ? mLowestVisibleTick-1 : mLowestVisibleTick;
+    int highTick = mHighestVisibleTick < mTickVector.size()-1 ? mHighestVisibleTick+1 : mHighestVisibleTick;
+    for (int i=lowTick+1; i<=highTick; ++i)
     {
       subTickStep = (mTickVector.at(i)-mTickVector.at(i-1))/(double)(mSubTickCount+1);
       for (int k=1; k<=mSubTickCount; ++k)
@@ -1561,11 +1567,11 @@ void QCPAxis::setupTickVectors()
     mTickVectorLabels.resize(vecsize);
     if (mTickLabelType == ltNumber)
     {
-      for (int i=0; i<vecsize; ++i)
+      for (int i=mLowestVisibleTick; i<=mHighestVisibleTick; ++i)
         mTickVectorLabels[i] = mParentPlot->locale().toString(mTickVector.at(i), mNumberFormatChar, mNumberPrecision);
     } else if (mTickLabelType == ltDateTime)
     {
-      for (int i=0; i<vecsize; ++i)
+      for (int i=mLowestVisibleTick; i<=mHighestVisibleTick; ++i)
       {
 #if QT_VERSION < QT_VERSION_CHECK(4, 7, 0) // use fromMSecsSinceEpoch function if available, to gain sub-second accuracy on tick labels (e.g. for format "hh:mm:ss:zzz")
         mTickVectorLabels[i] = mParentPlot->locale().toString(QDateTime::fromTime_t(mTickVector.at(i)), mDateTimeFormat);
@@ -1612,7 +1618,7 @@ void QCPAxis::generateAutoTicks()
       } else
       {
         // round to first digit in multiples of 2
-        mTickStep = (int)((tickStepMantissa/10.0)*5)/5.0*10*magnitudeFactor;
+        mTickStep = (int)(tickStepMantissa/2.0)*2.0*magnitudeFactor;
       }
     }
     if (mAutoSubTicks)
@@ -2302,22 +2308,44 @@ void QCPAxis::applyDefaultAntialiasingHint(QCPPainter *painter) const
   The actual use of this function is when we have an externally provided tick vector, which might
   exceed far beyond the currently displayed range, and would cause unnecessary calculations e.g. of
   subticks.
+  
+  If all ticks are outside the axis range, an inverted range is returned, i.e. highIndex will be
+  smaller than lowIndex. There is one case, where this function returns indices that are not really
+  visible in the current axis range: When the tick spacing is larger than the axis range size and
+  one tick is below the axis range and the next tick is already above the axis range. Because in
+  such cases we still want to know that tick pair whose span we are looking at to draw proper
+  subticks.
 */
 void QCPAxis::visibleTickBounds(int &lowIndex, int &highIndex) const
 {
+  bool lowFound = false;
+  bool highFound = false;
   lowIndex = 0;
   highIndex = -1;
-  // make sure only ticks that are in visible range are returned
+  
   for (int i=0; i < mTickVector.size(); ++i)
   {
-    lowIndex = i;
-    if (mTickVector.at(i) >= mRange.lower) break;
+    if (mTickVector.at(i) >= mRange.lower)
+    {
+      lowFound = true;
+      lowIndex = i;
+      break;
+    }
   }
   for (int i=mTickVector.size()-1; i >= 0; --i)
   {
-    highIndex = i;
-    if (mTickVector.at(i) <= mRange.upper) break;
+    if (mTickVector.at(i) <= mRange.upper)
+    {
+      highFound = true;
+      highIndex = i;
+      break;
+    }
   }
+  
+  if (!lowFound && highFound)
+    lowIndex = highIndex+1;
+  else if (lowFound && !highFound)
+    highIndex = lowIndex-1;
 }
 
 /*! \internal

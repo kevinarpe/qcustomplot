@@ -6,11 +6,13 @@
       See plotting hint phCacheLabels which is set by default
     - When setting tick label rotation to +90 or -90 degrees on a vertical axis, the labels are now centered vertically on the tick height
       (This allows space saving vertical tick labels by having the text direction parallel to the axis)
+    - Substantially increased replot performance when using very large manual tick vectors (> 10000 ticks) via QCPAxis::setTickVector
     
   Bugfixes:
     - Fixed compile error on ARM
     - Wrong legend icons were displayed if using pixmaps for scatters that are smaller than the legend icon rect
     - Fixed small clipping inaccuracy for rotated tick labels (were hidden a few pixels too early before hitting the viewport border)
+    - Fixed bug that caused wrong clipping of axis ticks and subticks when the ticks were given manually by QCPAxis::setTickVector
     
   Other:
     - Improved documentation
