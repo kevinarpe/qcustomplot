@@ -42,3 +42,8 @@ doc/html/*
 doc/qthelp/*
 doc/images/*
 
+# Amalgamated sources:
+
+/qcustomplot.h
+/qcustomplot.cpp
+
