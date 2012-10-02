@@ -14,13 +14,13 @@ public:
   QRect rect() const { return mRect; }
   QRect outerRect() const { return mOuterRect; }
   QMargins margins() const { return mMargins; }
-  bool autoMargins() const { return mAutoMargins; }
+  QCP::MarginSides autoMargins() const { return mAutoMargins; }
   QSize minimumSize() const { return mMinimumSize; }
   QSize maximumSize() const { return mMaximumSize; }
   
   void setOuterRect(const QRect &rect);
   void setMargins(const QMargins &margins);
-  void setAutoMargins(bool enabled);
+  void setAutoMargins(QCP::MarginSides sides);
   void setMinimumSize(const QSize &size);
   void setMaximumSize(const QSize &size);
   
@@ -32,7 +32,7 @@ protected:
   QSize mMinimumSize, mMaximumSize;
   QRect mRect, mOuterRect;
   QMargins mMargins;
-  bool mAutoMargins;
+  QCP::MarginSides mAutoMargins;
   
   virtual void rectChangedEvent(const QRect &newRect);
   virtual QMargins calculateAutoMargins() const;
@@ -46,9 +46,7 @@ class QCP_LIB_DECL QCPLayout : public QCPLayoutElement
 public:
   QCPLayout(QCPLayout *parentLayout=0);
   
-  virtual void update();
-  void invalidate();
-  bool isInvalidated() const { return mInvalidated; }
+  void update();
   
   virtual int elementCount() const = 0;
   virtual QCPLayoutElement* elementAt(int index) const = 0;
@@ -59,6 +57,7 @@ public:
 protected:
   bool mInvalidated;
   
+  virtual void layoutElements();
   virtual void rectChangedEvent(const QRect &newRect);
   void adoptChild(QCPLayoutElement *el);
   void releaseChild(QCPLayoutElement *el);
@@ -81,7 +80,7 @@ public:
   void setRowStretchFactors(const QList<double> &factors);
   void expandTo(int rowCount, int columnCount);
   
-  virtual void update();
+  virtual void layoutElements();
   virtual int elementCount() const;
   virtual QCPLayoutElement* elementAt(int index) const;
   virtual QCPLayoutElement* takeAt(int index);

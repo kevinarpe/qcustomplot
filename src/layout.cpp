@@ -13,7 +13,7 @@ QCPLayoutElement::QCPLayoutElement(QCPLayout *parentLayout) :
   mRect(0, 0, 0, 0),
   mOuterRect(0, 0, 0, 0),
   mMargins(0, 0, 0, 0),
-  mAutoMargins(true)
+  mAutoMargins(QCP::msAll)
 {
 }
 
@@ -34,18 +34,14 @@ void QCPLayoutElement::setMargins(const QMargins &margins)
     mMargins = margins;
     mRect = mOuterRect.adjusted(mMargins.left(), mMargins.top(), -mMargins.right(), -mMargins.bottom());
     rectChangedEvent(mRect);
-    if (mParentLayout)
-      mParentLayout->invalidate();
   }
 }
 
-void QCPLayoutElement::setAutoMargins(bool enabled)
+void QCPLayoutElement::setAutoMargins(QCP::MarginSides sides)
 {
-  if (mAutoMargins != enabled)
+  if (mAutoMargins != sides)
   {
-    mAutoMargins = enabled;
-    if (mParentLayout)
-      mParentLayout->invalidate();
+    mAutoMargins = sides;
   }
 }
 
@@ -54,8 +50,6 @@ void QCPLayoutElement::setMinimumSize(const QSize &size)
   if (mMinimumSize != size)
   {
     mMinimumSize = size;
-    if (mParentLayout)
-      mParentLayout->invalidate();
   }
 }
 
@@ -64,8 +58,6 @@ void QCPLayoutElement::setMaximumSize(const QSize &size)
   if (mMaximumSize != size)
   {
     mMaximumSize = size;
-    if (mParentLayout)
-      mParentLayout->invalidate();
   }
 }
 
@@ -106,17 +98,27 @@ void QCPLayout::update()
   {
     if (QCPLayoutElement *el = elementAt(i))
     {
-      if (el->autoMargins())
-        el->setMargins(el->calculateAutoMargins());
+      QCP::MarginSides sides = el->autoMargins();
+      if (sides != QCP::msNone)
+      {
+        QMargins newMargins = el->calculateAutoMargins();
+        if (!sides.testFlag(QCP::msLeft))
+          newMargins.setLeft(mMargins.left());
+        if (!sides.testFlag(QCP::msRight))
+          newMargins.setRight(mMargins.right());
+        if (!sides.testFlag(QCP::msTop))
+          newMargins.setTop(mMargins.top());
+        if (!sides.testFlag(QCP::msBottom))
+          newMargins.setBottom(mMargins.bottom());
+        el->setMargins(newMargins);
+      }
     }
   }
+  layoutElements();
 }
 
-void QCPLayout::invalidate()
+void QCPLayout::layoutElements()
 {
-  mInvalidated = true;
-  if (mParentLayout)
-    mParentLayout->invalidate();
 }
 
 void QCPLayout::rectChangedEvent(const QRect &newRect)
@@ -292,10 +294,8 @@ void QCPLayoutGrid::expandTo(int rowCount, int columnCount)
   }
 }
 
-void QCPLayoutGrid::update()
+void QCPLayoutGrid::layoutElements()
 {
-  QCPLayout::update();
-  
   QVector<int> minColWidths, minRowHeights, maxColWidths, maxRowHeights;
   getMinimumRowColSizes(&minColWidths, &minRowHeights);
   getMaximumRowColSizes(&maxColWidths, &maxRowHeights);
@@ -396,8 +396,6 @@ void QCPLayoutGrid::update()
         mElements.at(row).at(col)->setOuterRect(QRect(xOffset, yOffset, columnWidths.at(col), rowHeights.at(row)));
     }
   }
-  
-  mInvalidated = false;
 }
 
 int QCPLayoutGrid::elementCount() const

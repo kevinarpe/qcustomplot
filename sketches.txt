@@ -1,9 +1,5 @@
 ### axis refactoring (branch layoutsystem):
 
-- incorporate bugfix done in MPI (in dropbox)
-
-- not working properly: update propagation. Layouts don't propagate update to sublayouts properly. Find a smarter way
-  that also takes into account margin changes properly etc.
 - not working properly: minimum size (if setting maximum size, probably should translate 0 to QWIDGETSIZE_MAX)
 
 > layout system

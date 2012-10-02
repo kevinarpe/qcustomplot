@@ -54,10 +54,24 @@
 #endif
 
 /*!
-  The QCP Namespace contains general enums and QFlags 
+  The QCP Namespace contains general enums and QFlags used throughout the QCustomPlot library
 */
 namespace QCP
 {
+/*!
+  Defines the sides of a rectangular entity to which margins can be applied.
+  
+  \see QCPLayoutElement::setAutoMargins, QCPAxisRect::setAutoMargins
+*/
+enum MarginSide { msNone     = 0x00 ///< <tt>0x00</tt> no margin
+                  ,msLeft    = 0x01 ///< <tt>0x01</tt> left margin
+                  ,msRight   = 0x02 ///< <tt>0x02</tt> right margin
+                  ,msTop     = 0x04 ///< <tt>0x04</tt> top margin
+                  ,msBottom  = 0x08 ///< <tt>0x08</tt> bottom margin
+                  ,msAll     = 0xFF ///< <tt>0xFF</tt> all margins
+                };
+Q_DECLARE_FLAGS(MarginSides, MarginSide)
+
 /*!
   Defines the symbol used for scatter points.
   
@@ -124,8 +138,11 @@ enum PlottingHint { phNone            = 0x000 ///< <tt>0x000</tt> No hints are s
                     ,phCacheLabels    = 0x004 ///< <tt>0x004</tt> axis (tick) labels will be cached as pixmaps, increasing replot performance.
                   };
 Q_DECLARE_FLAGS(PlottingHints, PlottingHint)
+
 } // end of namespace QCP
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::AntialiasedElements)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::PlottingHints)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::MarginSides)
 
 #endif // QCP_GLOBAL_H

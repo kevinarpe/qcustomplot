@@ -2625,22 +2625,34 @@ QMargins QCPAxisRect::calculateAutoMargins() const
   int bottomMargin = 0;
   QList<QCPAxis*> axesList;
   
-  // left margin:
-  axesList = mAxes.value(QCPAxis::atLeft);
-  for (int i=0; i<axesList.size(); ++i)
-    leftMargin += axesList.at(i)->calculateMargin();
-  // right margin:
-  axesList = mAxes.value(QCPAxis::atRight);
-  for (int i=0; i<axesList.size(); ++i)
-    rightMargin += axesList.at(i)->calculateMargin();
-  // top margin:
-  axesList = mAxes.value(QCPAxis::atTop);
-  for (int i=0; i<axesList.size(); ++i)
-    topMargin += axesList.at(i)->calculateMargin();
-  // bottom margin:
-  axesList = mAxes.value(QCPAxis::atBottom);
-  for (int i=0; i<axesList.size(); ++i)
-    bottomMargin += axesList.at(i)->calculateMargin();
+  if (mAutoMargins.testFlag(QCP::msLeft))
+  {
+    // left margin:
+    axesList = mAxes.value(QCPAxis::atLeft);
+    for (int i=0; i<axesList.size(); ++i)
+      leftMargin += axesList.at(i)->calculateMargin();
+  }
+  if (mAutoMargins.testFlag(QCP::msRight))
+  {
+    // right margin:
+    axesList = mAxes.value(QCPAxis::atRight);
+    for (int i=0; i<axesList.size(); ++i)
+      rightMargin += axesList.at(i)->calculateMargin();
+  }
+  if (mAutoMargins.testFlag(QCP::msTop))
+  {
+    // top margin:
+    axesList = mAxes.value(QCPAxis::atTop);
+    for (int i=0; i<axesList.size(); ++i)
+      topMargin += axesList.at(i)->calculateMargin();
+  }
+  if (mAutoMargins.testFlag(QCP::msBottom))
+  {
+    // bottom margin:
+    axesList = mAxes.value(QCPAxis::atBottom);
+    for (int i=0; i<axesList.size(); ++i)
+      bottomMargin += axesList.at(i)->calculateMargin();
+  }
   
   return QMargins(leftMargin, topMargin, rightMargin, bottomMargin);
 }
