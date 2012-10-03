@@ -441,6 +441,8 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   legend = new QCPLegend(this);
   legend->setVisible(false);
   legend->setLayer(axesLayer);
+  xAxis->setGrid(true);
+  yAxis->setGrid(true);
   xAxis2->setGrid(false);
   yAxis2->setGrid(false);
   xAxis2->setZeroLinePen(Qt::NoPen);
@@ -2604,8 +2606,7 @@ void QCustomPlot::draw(QCPPainter *painter)
       axes.at(k)->setupTickVectors();
   }
   
-  // recalculate layout rects if necessary:
-  //if (mPlotLayout->isInvalidated())
+  // recalculate layout:
   mPlotLayout->update();
   
   // position legend:

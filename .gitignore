@@ -36,8 +36,14 @@ ui_*.h
 
 # Other:
 
+sketches.txt
 *.graphml
 doc/html/*
 doc/qthelp/*
 doc/images/*
+
+# Amalgamated sources:
+
+/qcustomplot.h
+/qcustomplot.cpp
 

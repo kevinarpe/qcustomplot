@@ -1,3 +1,27 @@
+/***************************************************************************
+**                                                                        **
+**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
+**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**                                                                        **
+**  This program is free software: you can redistribute it and/or modify  **
+**  it under the terms of the GNU General Public License as published by  **
+**  the Free Software Foundation, either version 3 of the License, or     **
+**  (at your option) any later version.                                   **
+**                                                                        **
+**  This program is distributed in the hope that it will be useful,       **
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of        **
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         **
+**  GNU General Public License for more details.                          **
+**                                                                        **
+**  You should have received a copy of the GNU General Public License     **
+**  along with this program.  If not, see http://www.gnu.org/licenses/.   **
+**                                                                        **
+****************************************************************************
+**           Author: Emanuel Eichhammer                                   **
+**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
+**             Date: 09.06.12                                             **
+****************************************************************************/
+
 #ifndef QCP_LAYOUT_H
 #define QCP_LAYOUT_H
 
@@ -14,16 +38,19 @@ public:
   QRect rect() const { return mRect; }
   QRect outerRect() const { return mOuterRect; }
   QMargins margins() const { return mMargins; }
+  QMargins minimumMargins() const { return mMinimumMargins; }
   QCP::MarginSides autoMargins() const { return mAutoMargins; }
   QSize minimumSize() const { return mMinimumSize; }
   QSize maximumSize() const { return mMaximumSize; }
   
   void setOuterRect(const QRect &rect);
   void setMargins(const QMargins &margins);
+  void setMinimumMargins(const QMargins &margins);
   void setAutoMargins(QCP::MarginSides sides);
   void setMinimumSize(const QSize &size);
   void setMaximumSize(const QSize &size);
   
+  virtual void update();
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;
   
@@ -31,10 +58,9 @@ protected:
   QCPLayout *mParentLayout;
   QSize mMinimumSize, mMaximumSize;
   QRect mRect, mOuterRect;
-  QMargins mMargins;
+  QMargins mMargins, mMinimumMargins;
   QCP::MarginSides mAutoMargins;
   
-  virtual void rectChangedEvent(const QRect &newRect);
   virtual QMargins calculateAutoMargins() const;
   
   friend class QCPLayout;
@@ -46,7 +72,7 @@ class QCP_LIB_DECL QCPLayout : public QCPLayoutElement
 public:
   QCPLayout(QCPLayout *parentLayout=0);
   
-  void update();
+  virtual void update();
   
   virtual int elementCount() const = 0;
   virtual QCPLayoutElement* elementAt(int index) const = 0;
@@ -55,10 +81,7 @@ public:
   virtual void simplify() = 0;
   
 protected:
-  bool mInvalidated;
-  
   virtual void layoutElements();
-  virtual void rectChangedEvent(const QRect &newRect);
   void adoptChild(QCPLayoutElement *el);
   void releaseChild(QCPLayoutElement *el);
 };

@@ -1,5 +1,7 @@
 NEXT RELEASE:
 
+- expose mGrid as grid() and remove property forwarding in QCPAxis.
+
 > alternating axis section backgrounds
 
 - fix Q_PROPERTY entries

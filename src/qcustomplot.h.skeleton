@@ -32,6 +32,7 @@
 //amalgamation: add painter.h
 //amalgamation: add layer.h
 //amalgamation: add range.h
+//amalgamation: add layout.h
 //amalgamation: add axis.h
 //amalgamation: add legend.h
 //amalgamation: add plottable.h

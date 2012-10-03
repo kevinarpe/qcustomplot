@@ -379,13 +379,15 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 */
 QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   QCPLayerable(parent->parentPlot()),
-  mAxisRect(parent)
+  mAxisRect(parent),
+  mOffset(0)
 {
   setAxisType(type);
   mLabelCache.setMaxCost(16); // cache at most 16 (tick) labels
   mLowestVisibleTick = 0;
   mHighestVisibleTick = -1;
   mGrid = new QCPGrid(this);
+  setGrid(false);
   setScaleType(stLinear);
   setScaleLogBase(10);
   
@@ -1213,6 +1215,11 @@ void QCPAxis::setPadding(int padding)
   mPadding = padding;
 }
 
+void QCPAxis::setOffset(int offset)
+{
+  mOffset = offset;
+}
+
 /*!
   Sets the font that is used for tick labels when they are selected.
   
@@ -1729,13 +1736,13 @@ void QCPAxis::draw(QCPPainter *painter)
 {
   QPoint origin;
   if (mAxisType == atLeft)
-    origin = mAxisRect->bottomLeft();
+    origin = mAxisRect->bottomLeft()+QPoint(-mOffset, 0);
   else if (mAxisType == atRight)
-    origin = mAxisRect->bottomRight();
+    origin = mAxisRect->bottomRight()+QPoint(+mOffset, 0);
   else if (mAxisType == atTop)
-    origin = mAxisRect->topLeft();
+    origin = mAxisRect->topLeft()+QPoint(0, -mOffset);
   else if (mAxisType == atBottom)
-    origin = mAxisRect->bottomLeft();
+    origin = mAxisRect->bottomLeft()+QPoint(0, +mOffset);
   
   double xCor = 0, yCor = 0; // paint system correction, for pixel exact matches (affects baselines and ticks of top/right axes)
   switch (mAxisType)
@@ -1861,24 +1868,24 @@ void QCPAxis::draw(QCPPainter *painter)
   int selLabelOffset = selTickLabelOffset+selTickLabelSize+mLabelPadding;
   if (mAxisType == atLeft)
   {
-    mAxisSelectionBox.setCoords(mAxisRect->left()-selAxisOutSize, mAxisRect->top(), mAxisRect->left()+selAxisInSize, mAxisRect->bottom());
-    mTickLabelsSelectionBox.setCoords(mAxisRect->left()-selTickLabelOffset-selTickLabelSize, mAxisRect->top(), mAxisRect->left()-selTickLabelOffset, mAxisRect->bottom());
-    mLabelSelectionBox.setCoords(mAxisRect->left()-selLabelOffset-selLabelSize, mAxisRect->top(), mAxisRect->left()-selLabelOffset, mAxisRect->bottom());
+    mAxisSelectionBox.setCoords(origin.x()-selAxisOutSize, mAxisRect->top(), origin.x()+selAxisInSize, mAxisRect->bottom());
+    mTickLabelsSelectionBox.setCoords(origin.x()-selTickLabelOffset-selTickLabelSize, mAxisRect->top(), origin.x()-selTickLabelOffset, mAxisRect->bottom());
+    mLabelSelectionBox.setCoords(origin.x()-selLabelOffset-selLabelSize, mAxisRect->top(), origin.x()-selLabelOffset, mAxisRect->bottom());
   } else if (mAxisType == atRight)
   {
-    mAxisSelectionBox.setCoords(mAxisRect->right()-selAxisInSize, mAxisRect->top(), mAxisRect->right()+selAxisOutSize, mAxisRect->bottom());
-    mTickLabelsSelectionBox.setCoords(mAxisRect->right()+selTickLabelOffset+selTickLabelSize, mAxisRect->top(), mAxisRect->right()+selTickLabelOffset, mAxisRect->bottom());
-    mLabelSelectionBox.setCoords(mAxisRect->right()+selLabelOffset+selLabelSize, mAxisRect->top(), mAxisRect->right()+selLabelOffset, mAxisRect->bottom());
+    mAxisSelectionBox.setCoords(origin.x()-selAxisInSize, mAxisRect->top(), origin.x()+selAxisOutSize, mAxisRect->bottom());
+    mTickLabelsSelectionBox.setCoords(origin.x()+selTickLabelOffset+selTickLabelSize, mAxisRect->top(), origin.x()+selTickLabelOffset, mAxisRect->bottom());
+    mLabelSelectionBox.setCoords(origin.x()+selLabelOffset+selLabelSize, mAxisRect->top(), origin.x()+selLabelOffset, mAxisRect->bottom());
   } else if (mAxisType == atTop)
   {
-    mAxisSelectionBox.setCoords(mAxisRect->left(), mAxisRect->top()-selAxisOutSize, mAxisRect->right(), mAxisRect->top()+selAxisInSize);
-    mTickLabelsSelectionBox.setCoords(mAxisRect->left(), mAxisRect->top()-selTickLabelOffset-selTickLabelSize, mAxisRect->right(), mAxisRect->top()-selTickLabelOffset);
-    mLabelSelectionBox.setCoords(mAxisRect->left(), mAxisRect->top()-selLabelOffset-selLabelSize, mAxisRect->right(), mAxisRect->top()-selLabelOffset);
+    mAxisSelectionBox.setCoords(mAxisRect->left(), origin.y()-selAxisOutSize, mAxisRect->right(), origin.y()+selAxisInSize);
+    mTickLabelsSelectionBox.setCoords(mAxisRect->left(), origin.y()-selTickLabelOffset-selTickLabelSize, mAxisRect->right(), origin.y()-selTickLabelOffset);
+    mLabelSelectionBox.setCoords(mAxisRect->left(), origin.y()-selLabelOffset-selLabelSize, mAxisRect->right(), origin.y()-selLabelOffset);
   } else if (mAxisType == atBottom)
   {
-    mAxisSelectionBox.setCoords(mAxisRect->left(), mAxisRect->bottom()-selAxisInSize, mAxisRect->right(), mAxisRect->bottom()+selAxisOutSize);
-    mTickLabelsSelectionBox.setCoords(mAxisRect->left(), mAxisRect->bottom()+selTickLabelOffset+selTickLabelSize, mAxisRect->right(), mAxisRect->bottom()+selTickLabelOffset);
-    mLabelSelectionBox.setCoords(mAxisRect->left(), mAxisRect->bottom()+selLabelOffset+selLabelSize, mAxisRect->right(), mAxisRect->bottom()+selLabelOffset);
+    mAxisSelectionBox.setCoords(mAxisRect->left(), origin.y()-selAxisInSize, mAxisRect->right(), origin.y()+selAxisOutSize);
+    mTickLabelsSelectionBox.setCoords(mAxisRect->left(), origin.y()+selTickLabelOffset+selTickLabelSize, mAxisRect->right(), origin.y()+selTickLabelOffset);
+    mLabelSelectionBox.setCoords(mAxisRect->left(), origin.y()+selLabelOffset+selLabelSize, mAxisRect->right(), origin.y()+selLabelOffset);
   }
   // draw hitboxes for debug purposes:
   //painter->drawRects(QVector<QRect>() << mAxisSelectionBox << mTickLabelsSelectionBox << mLabelSelectionBox);
@@ -1908,10 +1915,10 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
   QPointF labelAnchor;
   switch (mAxisType)
   {
-    case atLeft:   labelAnchor = QPointF(mAxisRect->left()-distanceToAxis, position); break;
-    case atRight:  labelAnchor = QPointF(mAxisRect->right()+distanceToAxis, position); break;
-    case atTop:    labelAnchor = QPointF(position, mAxisRect->top()-distanceToAxis); break;
-    case atBottom: labelAnchor = QPointF(position, mAxisRect->bottom()+distanceToAxis); break;
+    case atLeft:   labelAnchor = QPointF(mAxisRect->left()-distanceToAxis-mOffset, position); break;
+    case atRight:  labelAnchor = QPointF(mAxisRect->right()+distanceToAxis+mOffset, position); break;
+    case atTop:    labelAnchor = QPointF(position, mAxisRect->top()-distanceToAxis-mOffset); break;
+    case atBottom: labelAnchor = QPointF(position, mAxisRect->bottom()+distanceToAxis+mOffset); break;
   }
   if (parentPlot()->plottingHints().testFlag(QCP::phCacheLabels)) // label caching enabled
   {
@@ -2410,15 +2417,15 @@ QColor QCPAxis::getLabelColor() const
   widget border in the actual \ref draw function (if \ref QCustomPlot::setAutoMargin is set to
   true).
   
-  The margin consists of: tick label padding, tick label size, label padding, label size. The
-  return value is the calculated margin for this axis. Thus, an axis with axis type \ref atLeft
-  will return an appropriate left margin, \ref atBottom will return an appropriate bottom margin
-  and so forth.
+  The margin consists of: outward tick size, tick label padding, tick label size, label padding,
+  label size and padding. The return value is the calculated margin for this axis. Thus, an axis with
+  axis type \ref atLeft will return an appropriate left margin, \ref atBottom will return an
+  appropriate bottom margin and so forth.
   
   \warning if anything is changed in this function, make sure it's synchronized with the actual
   drawing function \ref draw.
 */
-int QCPAxis::calculateMargin() const
+int QCPAxis::calculateMargin()
 {
   // run through similar steps as QCPAxis::draw, and caluclate margin needed to fit axis and its labels
   int margin = 0;
@@ -2428,7 +2435,8 @@ int QCPAxis::calculateMargin() const
     int lowTick, highTick;
     visibleTickBounds(lowTick, highTick);
     // get length of tick marks reaching outside axis rect:
-    margin += qMax(0, qMax(mTickLengthOut, mSubTickLengthOut));
+    if (mTicks)
+      margin += qMax(0, qMax(mTickLengthOut, mSubTickLengthOut));
     // calculate size of tick labels:
     QSize tickLabelsSize(0, 0);
     if (mTickLabels)
@@ -2453,8 +2461,6 @@ int QCPAxis::calculateMargin() const
   }
   margin += mPadding;
   
-  if (margin < 15) // need a bit of margin if no axis text is shown at all (i.e. only baseline and tick lines, or no axis at all)
-    margin = 15;
   return margin;
 }
 
@@ -2468,6 +2474,7 @@ QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot) :
   QCPLayoutElement(0),
   mParentPlot(parentPlot)
 {
+  setMinimumMargins(QMargins(15, 15, 15, 15));
   mAxes.insert(QCPAxis::atLeft, QList<QCPAxis*>());
   mAxes.insert(QCPAxis::atRight, QList<QCPAxis*>());
   mAxes.insert(QCPAxis::atTop, QList<QCPAxis*>());
@@ -2520,6 +2527,13 @@ QCPAxis *QCPAxisRect::addAxis(QCPAxis::AxisType type)
 {
   QCPAxis *newAxis = new QCPAxis(this, type);
   mAxes[type].append(newAxis);
+  
+  // place on default axis/grid layers, if they exist:
+  if (QCPLayer *axisLayer = parentPlot()->layer("axes"))
+    newAxis->setLayer(axisLayer);
+  if (QCPLayer *gridLayer = parentPlot()->layer("grid"))
+    newAxis->mGrid->setLayer(gridLayer);
+  
   return newAxis;
 }
 
@@ -2617,44 +2631,72 @@ void QCPAxisRect::drawBackground(QCPPainter *painter)
   }
 }
 
-QMargins QCPAxisRect::calculateAutoMargins() const
+void QCPAxisRect::updateAxisOffsets()
 {
-  int leftMargin = 0;
-  int rightMargin = 0;
-  int topMargin = 0;
-  int bottomMargin = 0;
   QList<QCPAxis*> axesList;
-  
   if (mAutoMargins.testFlag(QCP::msLeft))
   {
-    // left margin:
     axesList = mAxes.value(QCPAxis::atLeft);
-    for (int i=0; i<axesList.size(); ++i)
-      leftMargin += axesList.at(i)->calculateMargin();
+    for (int i=1; i<axesList.size(); ++i)
+      axesList.at(i)->setOffset(axesList.at(i-1)->offset() + axesList.at(i-1)->calculateMargin() + axesList.at(i)->tickLengthIn());
   }
   if (mAutoMargins.testFlag(QCP::msRight))
   {
-    // right margin:
     axesList = mAxes.value(QCPAxis::atRight);
-    for (int i=0; i<axesList.size(); ++i)
-      rightMargin += axesList.at(i)->calculateMargin();
+    for (int i=1; i<axesList.size(); ++i)
+      axesList.at(i)->setOffset(axesList.at(i-1)->offset() + axesList.at(i-1)->calculateMargin() + axesList.at(i)->tickLengthIn());
   }
   if (mAutoMargins.testFlag(QCP::msTop))
   {
-    // top margin:
     axesList = mAxes.value(QCPAxis::atTop);
-    for (int i=0; i<axesList.size(); ++i)
-      topMargin += axesList.at(i)->calculateMargin();
+    for (int i=1; i<axesList.size(); ++i)
+      axesList.at(i)->setOffset(axesList.at(i-1)->offset() + axesList.at(i-1)->calculateMargin() + axesList.at(i)->tickLengthIn());
   }
   if (mAutoMargins.testFlag(QCP::msBottom))
   {
-    // bottom margin:
     axesList = mAxes.value(QCPAxis::atBottom);
-    for (int i=0; i<axesList.size(); ++i)
-      bottomMargin += axesList.at(i)->calculateMargin();
+    for (int i=1; i<axesList.size(); ++i)
+      axesList.at(i)->setOffset(axesList.at(i-1)->offset() + axesList.at(i-1)->calculateMargin() + axesList.at(i)->tickLengthIn());
   }
+}
+
+void QCPAxisRect::update()
+{
+  updateAxisOffsets(); // call this before QCPLayoutElement::update(), because calculateAutoMargins() will use the offsets for total margin calculation
+  QCPLayoutElement::update();
+}
+
+QMargins QCPAxisRect::calculateAutoMargins() const
+{
+  QMargins result;
+  QList<QCPAxis*> axesList;
   
-  return QMargins(leftMargin, topMargin, rightMargin, bottomMargin);
+  // note: only need to look at the last (outer most) axis to determine the total margin
+  if (mAutoMargins.testFlag(QCP::msLeft))
+  {
+    axesList = mAxes.value(QCPAxis::atLeft);
+    if (axesList.size() > 0)
+      result.setLeft(axesList.last()->offset() + axesList.last()->calculateMargin());
+  }
+  if (mAutoMargins.testFlag(QCP::msRight))
+  {
+    axesList = mAxes.value(QCPAxis::atRight);
+    if (axesList.size() > 0)
+      result.setRight(axesList.last()->offset() + axesList.last()->calculateMargin());
+  }
+  if (mAutoMargins.testFlag(QCP::msTop))
+  {
+    axesList = mAxes.value(QCPAxis::atTop);
+    if (axesList.size() > 0)
+      result.setTop(axesList.last()->offset() + axesList.last()->calculateMargin());
+  }
+  if (mAutoMargins.testFlag(QCP::msBottom))
+  {
+    axesList = mAxes.value(QCPAxis::atBottom);
+    if (axesList.size() > 0)
+      result.setBottom(axesList.last()->offset() + axesList.last()->calculateMargin());
+  }
+  return result;
 }
 
 

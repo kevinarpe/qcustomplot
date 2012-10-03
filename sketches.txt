@@ -19,8 +19,10 @@
 
 - fix legend autoposition with new axis system. probably give legend an axisrect which it orients itself to. Or better: a QCPLayoutElement. This way
   we can have legends outside axis rects systematically. In the wake of that: make legend auto positions based on Qt::Alignment.
-
 - add setPlotLayout? should destroy old layout
+- update all the documentation referencing QCustomPlot::setMargin and QCustomPlot::setAutoMargin
+- check whether selection boxes of axes are properly positioned (also with rotated tick labels!)
+
 
 ### old thoughts about axis refactoring:
 

@@ -1,3 +1,27 @@
+/***************************************************************************
+**                                                                        **
+**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
+**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**                                                                        **
+**  This program is free software: you can redistribute it and/or modify  **
+**  it under the terms of the GNU General Public License as published by  **
+**  the Free Software Foundation, either version 3 of the License, or     **
+**  (at your option) any later version.                                   **
+**                                                                        **
+**  This program is distributed in the hope that it will be useful,       **
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of        **
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         **
+**  GNU General Public License for more details.                          **
+**                                                                        **
+**  You should have received a copy of the GNU General Public License     **
+**  along with this program.  If not, see http://www.gnu.org/licenses/.   **
+**                                                                        **
+****************************************************************************
+**           Author: Emanuel Eichhammer                                   **
+**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
+**             Date: 09.06.12                                             **
+****************************************************************************/
+
 #include "layout.h"
 
 
@@ -13,6 +37,7 @@ QCPLayoutElement::QCPLayoutElement(QCPLayout *parentLayout) :
   mRect(0, 0, 0, 0),
   mOuterRect(0, 0, 0, 0),
   mMargins(0, 0, 0, 0),
+  mMinimumMargins(0, 0, 0, 0),
   mAutoMargins(QCP::msAll)
 {
 }
@@ -23,7 +48,6 @@ void QCPLayoutElement::setOuterRect(const QRect &rect)
   {
     mOuterRect = rect;
     mRect = mOuterRect.adjusted(mMargins.left(), mMargins.top(), -mMargins.right(), -mMargins.bottom());
-    rectChangedEvent(mRect);
   }
 }
 
@@ -33,31 +57,44 @@ void QCPLayoutElement::setMargins(const QMargins &margins)
   {
     mMargins = margins;
     mRect = mOuterRect.adjusted(mMargins.left(), mMargins.top(), -mMargins.right(), -mMargins.bottom());
-    rectChangedEvent(mRect);
   }
+}
+
+void QCPLayoutElement::setMinimumMargins(const QMargins &margins)
+{
+  mMinimumMargins = margins;
 }
 
 void QCPLayoutElement::setAutoMargins(QCP::MarginSides sides)
 {
-  if (mAutoMargins != sides)
-  {
-    mAutoMargins = sides;
-  }
+  mAutoMargins = sides;
 }
 
 void QCPLayoutElement::setMinimumSize(const QSize &size)
 {
-  if (mMinimumSize != size)
-  {
-    mMinimumSize = size;
-  }
+  mMinimumSize = size;
 }
 
 void QCPLayoutElement::setMaximumSize(const QSize &size)
 {
-  if (mMaximumSize != size)
+  mMaximumSize = size;
+}
+
+void QCPLayoutElement::update()
+{
+  if (mAutoMargins != QCP::msNone)
   {
-    mMaximumSize = size;
+    QMargins autoMargins = calculateAutoMargins();
+    QMargins newMargins = mMargins;
+    if (mAutoMargins.testFlag(QCP::msLeft))
+      newMargins.setLeft(qMax(mMinimumMargins.left(), autoMargins.left()));
+    if (mAutoMargins.testFlag(QCP::msRight))
+      newMargins.setRight(qMax(mMinimumMargins.right(), autoMargins.right()));
+    if (mAutoMargins.testFlag(QCP::msTop))
+      newMargins.setTop(qMax(mMinimumMargins.top(), autoMargins.top()));
+    if (mAutoMargins.testFlag(QCP::msBottom))
+      newMargins.setBottom(qMax(mMinimumMargins.bottom(), autoMargins.bottom()));
+    setMargins(newMargins);
   }
 }
 
@@ -71,11 +108,6 @@ QSize QCPLayoutElement::maximumSizeHint() const
   return mMaximumSize;
 }
 
-void QCPLayoutElement::rectChangedEvent(const QRect &newRect)
-{
-  Q_UNUSED(newRect)
-}
-
 QMargins QCPLayoutElement::calculateAutoMargins() const
 {
   return mMargins;
@@ -87,44 +119,27 @@ QMargins QCPLayoutElement::calculateAutoMargins() const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 QCPLayout::QCPLayout(QCPLayout *parentLayout) :
-  QCPLayoutElement(parentLayout),
-  mInvalidated(true)
+  QCPLayoutElement(parentLayout)
 {
 }
 
 void QCPLayout::update()
 {
+  QCPLayoutElement::update();
+  
+  // set child element rects according to layout:
+  layoutElements();
+  
+  // propagate update call to child elements:
   for (int i=0; i<elementCount(); ++i)
   {
     if (QCPLayoutElement *el = elementAt(i))
-    {
-      QCP::MarginSides sides = el->autoMargins();
-      if (sides != QCP::msNone)
-      {
-        QMargins newMargins = el->calculateAutoMargins();
-        if (!sides.testFlag(QCP::msLeft))
-          newMargins.setLeft(mMargins.left());
-        if (!sides.testFlag(QCP::msRight))
-          newMargins.setRight(mMargins.right());
-        if (!sides.testFlag(QCP::msTop))
-          newMargins.setTop(mMargins.top());
-        if (!sides.testFlag(QCP::msBottom))
-          newMargins.setBottom(mMargins.bottom());
-        el->setMargins(newMargins);
-      }
-    }
+      el->update();
   }
-  layoutElements();
 }
 
 void QCPLayout::layoutElements()
 {
-}
-
-void QCPLayout::rectChangedEvent(const QRect &newRect)
-{
-  Q_UNUSED(newRect)
-  update();
 }
 
 void QCPLayout::adoptChild(QCPLayoutElement *el)

@@ -206,6 +206,7 @@ public:
   QString label() const { return mLabel; }
   int labelPadding() const { return mLabelPadding; }
   int padding() const { return mPadding; }
+  int offset() const { return mOffset; }
   SelectableParts selected() const { return mSelected; }
   SelectableParts selectable() const { return mSelectable; }
   QFont selectedTickLabelFont() const { return mSelectedTickLabelFont; }
@@ -261,6 +262,7 @@ public:
   void setLabel(const QString &str);
   void setLabelPadding(int padding);
   void setPadding(int padding);
+  void setOffset(int offset);
   void setSelectedTickLabelFont(const QFont &font);
   void setSelectedLabelFont(const QFont &font);
   void setSelectedTickLabelColor(const QColor &color);
@@ -318,7 +320,7 @@ protected:
   double mScaleLogBase, mScaleLogBaseLogInv;
   int mSubTickCount, mTickLengthIn, mTickLengthOut, mSubTickLengthIn, mSubTickLengthOut;
   int mAutoTickCount;
-  int mTickLabelPadding, mLabelPadding, mPadding;
+  int mTickLabelPadding, mLabelPadding, mPadding, mOffset;
   double mTickLabelRotation;
   bool mTicks, mTickLabels, mAutoTicks, mAutoTickLabels, mAutoTickStep, mAutoSubTicks;
   bool mRangeReversed;
@@ -340,14 +342,14 @@ protected:
   int mLowestVisibleTick, mHighestVisibleTick;
   QCache<QString, CachedLabel> mLabelCache;
   
-  // internal setters:
+  // internal getters and setters:
   void setAxisType(AxisType type);
   
   // introduced methods:
   virtual void setupTickVectors();
   virtual void generateAutoTicks();
   virtual int calculateAutoSubTickCount(double tickStep) const;
-  virtual int calculateMargin() const;
+  virtual int calculateMargin();
   virtual bool handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified);
   
   // drawing:
@@ -430,6 +432,8 @@ protected:
   Qt::AspectRatioMode mBackgroundScaledMode;
   
   void drawBackground(QCPPainter *painter);
+  void updateAxisOffsets();
+  virtual void update();
   virtual QMargins calculateAutoMargins() const;
   
   friend class QCustomPlot;

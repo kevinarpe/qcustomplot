@@ -491,39 +491,33 @@ void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
 
 void MainWindow::setupTestbed(QCustomPlot *customPlot)
 {
-  customPlot->addGraph();
-  customPlot->graph(0)->addData(1, 1);
-  customPlot->graph(0)->addData(2, 2);
-  customPlot->graph(0)->addData(3, 1.5);
-  customPlot->rescaleAxes();
   QCPLayoutGrid *topLayout = dynamic_cast<QCPLayoutGrid*>(customPlot->plotLayout());
-  
   QCPLayoutGrid *subLayout = new QCPLayoutGrid();
   topLayout->addElement(subLayout, 1, 0);
   
-  QCPAxisRect *newRect;
-  newRect = new QCPAxisRect(customPlot);
-  subLayout->addElement(newRect, 0, 0);
-  newRect->addAxis(QCPAxis::atLeft);
-  newRect->addAxis(QCPAxis::atRight);
-  newRect->addAxis(QCPAxis::atBottom);
-  newRect->addAxis(QCPAxis::atTop);
+  QCPAxisRect *subRectLeft = new QCPAxisRect(customPlot);
+  subLayout->addElement(subRectLeft, 0, 0);
+  subRectLeft->addAxis(QCPAxis::atLeft);
+  subRectLeft->addAxis(QCPAxis::atRight);
+  subRectLeft->addAxis(QCPAxis::atBottom);
+  subRectLeft->addAxis(QCPAxis::atTop);
   
-  newRect = new QCPAxisRect(customPlot);
-  subLayout->addElement(newRect, 0, 1);
-  newRect->addAxis(QCPAxis::atLeft);
-  newRect->addAxis(QCPAxis::atRight);
-  newRect->addAxis(QCPAxis::atBottom);
-  newRect->addAxis(QCPAxis::atTop);
+  QCPAxisRect *subRectRight = new QCPAxisRect(customPlot);
+  subLayout->addElement(subRectRight, 0, 1);
+  subRectRight->addAxis(QCPAxis::atLeft);
+  subRectRight->addAxis(QCPAxis::atRight);
+  subRectRight->addAxis(QCPAxis::atBottom);
+  subRectRight->addAxis(QCPAxis::atTop);
+
+  topLayout->setRowStretchFactors(QList<double>() << 1 << 1);
+  subLayout->setColumnStretchFactors(QList<double>() << 1 << 1);
   
-  subLayout->setColumnStretchFactor(0, 1);
-  subLayout->setColumnStretchFactor(1, 2);
-  newRect->setMinimumSize(QSize(100, 100));
+  subRectRight->setMaximumSize(QSize(200, 200));
   
   //newRect->setAutoMargins(false);
   //newRect->setMargins(QMargins(60, 60, 60, 60));
   
-  customPlot->setRangeDragAxes(newRect->axis(QCPAxis::atBottom, 0), newRect->axis(QCPAxis::atLeft, 0));
+  customPlot->setRangeDragAxes(subRectRight->axis(QCPAxis::atBottom, 0), subRectRight->axis(QCPAxis::atLeft, 0));
 }
 
 void MainWindow::setupIntegerTickStepCase(QCustomPlot *customPlot)
