@@ -391,9 +391,8 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::SelectableParts)
 class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement
 {
 public:
-  explicit QCPAxisRect(QCustomPlot *parent);
+  explicit QCPAxisRect(QCustomPlot *parentPlot);
   ~QCPAxisRect();
-  QCustomPlot *parentPlot() const { return mParentPlot; }
   QPixmap background() const { return mBackground; }
   bool backgroundScaled() const { return mBackgroundScaled; }
   Qt::AspectRatioMode backgroundScaledMode() const { return mBackgroundScaledMode; }
@@ -424,7 +423,6 @@ public:
   QPoint bottomRight() const { return mRect.bottomRight(); }
   
 protected:
-  QCustomPlot *mParentPlot;
   QHash<QCPAxis::AxisType, QList<QCPAxis*> > mAxes;
   QPixmap mBackground;
   QPixmap mScaledBackground;

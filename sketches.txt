@@ -1,13 +1,12 @@
 ### axis refactoring (branch layoutsystem):
 
-- not working properly: minimum size (if setting maximum size, probably should translate 0 to QWIDGETSIZE_MAX)
-
 > layout system
- - add column/row spacing to QCPGridLayout
- - add QCPLayoutSpacer (only has stretch factors and minimum width)
- - add QCPLayoutInset (maybe a QCPLayoutElement in back and front?) (maybe call it QCPLayoutOverlay?)
- - maximum/minimum update is probably buggy: if a column later in the prioritizedColumns list would have a maximum that gives space to previous columns
+ > maximum/minimum update is probably buggy: if a column later in the prioritizedColumns list would have a maximum that gives space to previous columns
    with a reached minimum, they wouldn't receive that space accordingly.
+   - Solve by iteration: As soon as a maximum is hit, add this column/row index to a QSet<int> and redo all layouting excluding the columns/rows in the set.
+ - add column/row spacing to QCPGridLayout
+ - add QCPLayoutSpacer (only has stretch factors and minimum/maximum width)
+ - add QCPLayoutInset (maybe a QCPLayoutElement in back and front?) (maybe call it QCPLayoutOverlay?)
  - Create QCPLayoutElement subclass that represents a plot title
 
 - find a good way to propagate removed axes and removed axisrects to the whole system.

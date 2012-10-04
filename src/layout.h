@@ -28,12 +28,14 @@
 #include "global.h"
 
 class QCPLayout;
+class QCustomPlot;
 
 class QCP_LIB_DECL QCPLayoutElement
 {
 public:
-  QCPLayoutElement(QCPLayout *parentLayout=0);
+  explicit QCPLayoutElement(QCustomPlot *parentPlot);
   
+  QCustomPlot *parentPlot() const { return mParentPlot; }
   QCPLayout *layout() const { return mParentLayout; }
   QRect rect() const { return mRect; }
   QRect outerRect() const { return mOuterRect; }
@@ -55,6 +57,7 @@ public:
   virtual QSize maximumSizeHint() const;
   
 protected:
+  QCustomPlot *mParentPlot;
   QCPLayout *mParentLayout;
   QSize mMinimumSize, mMaximumSize;
   QRect mRect, mOuterRect;
@@ -70,7 +73,7 @@ protected:
 class QCP_LIB_DECL QCPLayout : public QCPLayoutElement
 {
 public:
-  QCPLayout(QCPLayout *parentLayout=0);
+  explicit QCPLayout(QCustomPlot *parentPlot);
   
   virtual void update();
   
@@ -90,7 +93,7 @@ protected:
 class QCP_LIB_DECL QCPLayoutGrid : public QCPLayout
 {
 public:
-  QCPLayoutGrid();
+  explicit QCPLayoutGrid(QCustomPlot *parentPlot);
   
   int rows() const;
   int columns() const;
@@ -110,8 +113,8 @@ public:
   virtual bool take(QCPLayoutElement* element);
   virtual void simplify();
   
-  virtual QSize minimumSizeHint();
-  virtual QSize maximumSizeHint();
+  virtual QSize minimumSizeHint() const;
+  virtual QSize maximumSizeHint() const;
   
 protected:
   QList<QList<QCPLayoutElement*> > mElements;

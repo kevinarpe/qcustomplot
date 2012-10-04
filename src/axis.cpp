@@ -2471,8 +2471,7 @@ int QCPAxis::calculateMargin()
 
 
 QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot) :
-  QCPLayoutElement(0),
-  mParentPlot(parentPlot)
+  QCPLayoutElement(parentPlot)
 {
   setMinimumMargins(QMargins(15, 15, 15, 15));
   mAxes.insert(QCPAxis::atLeft, QList<QCPAxis*>());

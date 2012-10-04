@@ -8,7 +8,9 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(300, 300, 500, 500);
   mCustomPlot = new QCustomPlot(this);
-  setCentralWidget(mCustomPlot);
+  QHBoxLayout *layout = new QHBoxLayout();
+  ui->centralWidget->setLayout(layout);
+  layout->insertWidget(0, mCustomPlot);
   mCustomPlot->setupFullAxesBox();
   
   /*
@@ -492,32 +494,26 @@ void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
 void MainWindow::setupTestbed(QCustomPlot *customPlot)
 {
   QCPLayoutGrid *topLayout = dynamic_cast<QCPLayoutGrid*>(customPlot->plotLayout());
-  QCPLayoutGrid *subLayout = new QCPLayoutGrid();
-  topLayout->addElement(subLayout, 1, 0);
   
-  QCPAxisRect *subRectLeft = new QCPAxisRect(customPlot);
-  subLayout->addElement(subRectLeft, 0, 0);
-  subRectLeft->addAxis(QCPAxis::atLeft);
-  subRectLeft->addAxis(QCPAxis::atRight);
-  subRectLeft->addAxis(QCPAxis::atBottom);
-  subRectLeft->addAxis(QCPAxis::atTop);
-  
-  QCPAxisRect *subRectRight = new QCPAxisRect(customPlot);
-  subLayout->addElement(subRectRight, 0, 1);
-  subRectRight->addAxis(QCPAxis::atLeft);
-  subRectRight->addAxis(QCPAxis::atRight);
-  subRectRight->addAxis(QCPAxis::atBottom);
-  subRectRight->addAxis(QCPAxis::atTop);
-
-  topLayout->setRowStretchFactors(QList<double>() << 1 << 1);
-  subLayout->setColumnStretchFactors(QList<double>() << 1 << 1);
-  
-  subRectRight->setMaximumSize(QSize(200, 200));
-  
-  //newRect->setAutoMargins(false);
-  //newRect->setMargins(QMargins(60, 60, 60, 60));
-  
-  customPlot->setRangeDragAxes(subRectRight->axis(QCPAxis::atBottom, 0), subRectRight->axis(QCPAxis::atLeft, 0));
+  QCPAxisRect *sideRect = new QCPAxisRect(customPlot);
+  topLayout->addElement(sideRect, 0, 1);
+  sideRect->addAxis(QCPAxis::atLeft);
+  sideRect->addAxis(QCPAxis::atRight);
+  sideRect->addAxis(QCPAxis::atBottom);
+  sideRect->addAxis(QCPAxis::atTop);
+  QList<QCPAxis*> axes;
+  axes << dynamic_cast<QCPAxisRect*>(topLayout->element(0, 0))->axes() << dynamic_cast<QCPAxisRect*>(topLayout->element(0, 1))->axes();
+  for (int i=0; i<axes.size(); ++i)
+  {
+    axes.at(i)->setTicks(false);
+    axes.at(i)->setTickLabels(false);
+    axes.at(i)->setGrid(false);
+  }
+  topLayout->setColumnStretchFactors(QList<double>() << 1 << 1);
+  //sideRect->setMinimumSize(QSize(250, 0));
+  //sideRect->setMaximumSize(QSize(250, QWIDGETSIZE_MAX));
+  dynamic_cast<QCPAxisRect*>(topLayout->element(0, 0))->setMaximumSize(QSize(200, QWIDGETSIZE_MAX));
+  //dynamic_cast<QCPAxisRect*>(topLayout->element(0, 0))->setMinimumSize(QSize(200, 0));
 }
 
 void MainWindow::setupIntegerTickStepCase(QCustomPlot *customPlot)

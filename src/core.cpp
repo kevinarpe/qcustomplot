@@ -428,7 +428,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   setCurrentLayer(mainLayer);
   
   // create initial layout, axis rect and axes:
-  mPlotLayout = new QCPLayoutGrid();
+  mPlotLayout = new QCPLayoutGrid(this);
   QCPAxisRect *defaultAxisRect = new QCPAxisRect(this);
   defaultAxisRect->setBackgroundScaled(true);
   defaultAxisRect->setBackgroundScaledMode(Qt::KeepAspectRatioByExpanding);
@@ -2061,16 +2061,25 @@ bool QCustomPlot::saveBmp(const QString &fileName, int width, int height, double
 
 /*! \internal
   
-  Returns a minimum size hint of QSize(50, 50). This prevents QCustomPlot from being collapsed to
-  size/width zero when placed in a layout where other components try to take in as much space as
-  possible (e.g. QMdiArea).
-
-  (To overwrite this minimum size hint of QCustomPlot, simply call QWidget::setMinimumSize in the
-  QCustomPlot widget.)
+  Returns a minimum size hint that corresponds to the minimum size of the top level layout
+  (plotLayout()). To prevent QCustomPlot from being collapsed to size/width zero, set a minimum
+  size (setMinimumSize) either on the whole QCustomPlot or on any layout elements inside the plot.
+  This is especially important, when placed in a QLayout where other components try to take in as
+  much space as possible (e.g. QMdiArea).
 */
 QSize QCustomPlot::minimumSizeHint() const
 {
-  return QSize(50, 50);
+  return mPlotLayout->minimumSizeHint();
+}
+
+/*! \internal
+  
+  Returns a size hint that is the same as minimumSizeHint().
+  
+*/
+QSize QCustomPlot::sizeHint() const
+{
+  return mPlotLayout->minimumSizeHint();
 }
 
 /*! \internal

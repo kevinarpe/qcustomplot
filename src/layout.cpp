@@ -23,15 +23,15 @@
 ****************************************************************************/
 
 #include "layout.h"
-
+#include "core.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPLayoutElement
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-QCPLayoutElement::QCPLayoutElement(QCPLayout *parentLayout) :
-  mParentLayout(parentLayout),
+QCPLayoutElement::QCPLayoutElement(QCustomPlot *parentPlot) :
+  mParentPlot(parentPlot),
+  mParentLayout(0),
   mMinimumSize(0, 0),
   mMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX),
   mRect(0, 0, 0, 0),
@@ -72,12 +72,20 @@ void QCPLayoutElement::setAutoMargins(QCP::MarginSides sides)
 
 void QCPLayoutElement::setMinimumSize(const QSize &size)
 {
-  mMinimumSize = size;
+  if (mMinimumSize != size)
+  {
+    mMinimumSize = size;
+    mParentPlot->updateGeometry();
+  }
 }
 
 void QCPLayoutElement::setMaximumSize(const QSize &size)
 {
-  mMaximumSize = size;
+  if (mMaximumSize != size)
+  {
+    mMaximumSize = size;
+    mParentPlot->updateGeometry();
+  }
 }
 
 void QCPLayoutElement::update()
@@ -118,8 +126,8 @@ QMargins QCPLayoutElement::calculateAutoMargins() const
 //////////////////// QCPLayout
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-QCPLayout::QCPLayout(QCPLayout *parentLayout) :
-  QCPLayoutElement(parentLayout)
+QCPLayout::QCPLayout(QCustomPlot *parentPlot) :
+  QCPLayoutElement(parentPlot)
 {
 }
 
@@ -164,8 +172,8 @@ void QCPLayout::releaseChild(QCPLayoutElement *el)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-QCPLayoutGrid::QCPLayoutGrid() :
-  QCPLayout(0)
+QCPLayoutGrid::QCPLayoutGrid(QCustomPlot *parentPlot) :
+  QCPLayout(parentPlot)
 {
 }
 
@@ -314,41 +322,50 @@ void QCPLayoutGrid::layoutElements()
   QVector<int> minColWidths, minRowHeights, maxColWidths, maxRowHeights;
   getMinimumRowColSizes(&minColWidths, &minRowHeights);
   getMaximumRowColSizes(&maxColWidths, &maxRowHeights);
+  QList<double> colStretchFactors = mColumnStretchFactors;
+  QList<double> rowStretchFactors = mRowStretchFactors;
   
   // if provided width is forced smaller than total minimum column widths, ignore minimum widths (squeeze columns):
   int minColWidthsSum = 0;
   for (int i=0; i<minColWidths.size(); ++i)
     minColWidthsSum += minColWidths.at(i);
   if (mRect.width() < minColWidthsSum)
-    minColWidths = QVector<int>(minColWidths.size(), 0);
+  {
+    // new stretch factors are minimum widths and minimum widths are removed:
+    for (int i=0; i<colStretchFactors.size(); ++i)
+    {
+      colStretchFactors[i] = minColWidths.at(i);
+      minColWidths[i] = 0;
+    }
+  }
   
   // calculate column widths:
   int freeWidth = mRect.width(); // width pixels that are available for stretching unhandled columns
   double factorSum = 0;
   for (int i=0; i<columns(); ++i)
-    factorSum += mColumnStretchFactors.at(i);
+    factorSum += colStretchFactors.at(i);
   QVector<int> columnWidths(columns(), 0);
   QMultiMap<double, int> prioritizedColumns; // double is minWidth/StretchFactor, int is column index. Columns which will reach their minimum first are first in this map.
   for (int i=0; i<columns(); ++i)
-    prioritizedColumns.insert(minColWidths.at(i)/mColumnStretchFactors.at(i), i);
+    prioritizedColumns.insert(-minColWidths.at(i)/colStretchFactors.at(i), i);
   
   QMapIterator<double, int> columnIterator(prioritizedColumns);
   while (columnIterator.hasNext())
   {
     columnIterator.next();
     int colId = columnIterator.value();
-    double stretchedColWidth = mColumnStretchFactors.at(colId)/factorSum*freeWidth;
+    double stretchedColWidth = colStretchFactors.at(colId)/factorSum*freeWidth;
     if (stretchedColWidth < minColWidths.at(colId))
     {
       // column would become less than its minimum -> set to minimum and distribute rest of space on rest of columns
       columnWidths[colId] = minColWidths.at(colId);
       freeWidth = qMax(0, freeWidth - columnWidths[colId]);
-      factorSum -= mColumnStretchFactors.at(colId);
+      factorSum -= colStretchFactors.at(colId);
     } else if (stretchedColWidth > maxColWidths.at(colId))
     {
       columnWidths[colId] = maxColWidths.at(colId);
       freeWidth = qMax(0, freeWidth - columnWidths[colId]);
-      factorSum -= mColumnStretchFactors.at(colId);
+      factorSum -= colStretchFactors.at(colId);
     } else
     {
       columnWidths[colId] = stretchedColWidth;
@@ -360,36 +377,43 @@ void QCPLayoutGrid::layoutElements()
   for (int i=0; i<minRowHeights.size(); ++i)
     minRowHeightsSum += minRowHeights.at(i);
   if (mRect.height() < minRowHeightsSum)
-    minRowHeights = QVector<int>(minRowHeights.size(), 0);
+  {
+    // new stretch factors are minimum heights and minimum heights are removed:
+    for (int i=0; i<rowStretchFactors.size(); ++i)
+    {
+      rowStretchFactors[i] = minRowHeights.at(i);
+      minRowHeights[i] = 0;
+    }
+  }
   
   // calculate row heights:
   int freeHeight = mRect.height(); // height pixels that are available for stretching unhandled rows
   factorSum = 0;
   for (int i=0; i<rows(); ++i)
-    factorSum += mRowStretchFactors.at(i);
+    factorSum += rowStretchFactors.at(i);
   QVector<int> rowHeights(rows(), 0);
-  QMultiMap<double, int> prioritizedRows; // double is minHeight/StretchFactor, int is row index. Rows which will reach their minimum first are first in this map.
+  QMultiMap<double, int> prioritizedRows; // double is -minHeight/StretchFactor, int is row index. Rows which will reach their minimum first are first in this map.
   for (int i=0; i<rows(); ++i)
-    prioritizedRows.insert(minRowHeights.at(i)/mRowStretchFactors.at(i), i);
+    prioritizedRows.insert(-minRowHeights.at(i)/rowStretchFactors.at(i), i);
   
   QMapIterator<double, int> rowIterator(prioritizedRows);
   while (rowIterator.hasNext())
   {
     rowIterator.next();
     int rowId = rowIterator.value();
-    double stretchedRowHeight = mRowStretchFactors.at(rowId)/factorSum*freeHeight;
+    double stretchedRowHeight = rowStretchFactors.at(rowId)/factorSum*freeHeight;
     if (stretchedRowHeight < minRowHeights.at(rowId))
     {
       // row would become less than its minimum -> set to minimum and distribute rest of space on rest of rows
       rowHeights[rowId] = minRowHeights.at(rowId);
       freeHeight = qMax(0, freeHeight - rowHeights[rowId]);
-      factorSum -= mRowStretchFactors.at(rowId);
+      factorSum -= rowStretchFactors.at(rowId);
     } else if (stretchedRowHeight > maxRowHeights.at(rowId))
     {
       // row would become less than its minimum -> set to minimum and distribute rest of space on rest of rows
       rowHeights[rowId] = maxRowHeights.at(rowId);
       freeHeight = qMax(0, freeHeight - rowHeights[rowId]);
-      factorSum -= mRowStretchFactors.at(rowId);
+      factorSum -= rowStretchFactors.at(rowId);
     } else
     {
       rowHeights[rowId] = stretchedRowHeight;
@@ -499,7 +523,7 @@ void QCPLayoutGrid::simplify()
   }
 }
 
-QSize QCPLayoutGrid::minimumSizeHint()
+QSize QCPLayoutGrid::minimumSizeHint() const
 {
   QVector<int> minColWidths, minRowHeights;
   getMinimumRowColSizes(&minColWidths, &minRowHeights);
@@ -513,7 +537,7 @@ QSize QCPLayoutGrid::minimumSizeHint()
   return result;
 }
 
-QSize QCPLayoutGrid::maximumSizeHint()
+QSize QCPLayoutGrid::maximumSizeHint() const
 {
   QVector<int> maxColWidths, maxRowHeights;
   getMaximumRowColSizes(&maxColWidths, &maxRowHeights);
