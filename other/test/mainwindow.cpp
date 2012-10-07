@@ -495,25 +495,34 @@ void MainWindow::setupTestbed(QCustomPlot *customPlot)
 {
   QCPLayoutGrid *topLayout = dynamic_cast<QCPLayoutGrid*>(customPlot->plotLayout());
   
-  QCPAxisRect *sideRect = new QCPAxisRect(customPlot);
-  topLayout->addElement(sideRect, 0, 1);
-  sideRect->addAxis(QCPAxis::atLeft);
-  sideRect->addAxis(QCPAxis::atRight);
-  sideRect->addAxis(QCPAxis::atBottom);
-  sideRect->addAxis(QCPAxis::atTop);
-  QList<QCPAxis*> axes;
-  axes << dynamic_cast<QCPAxisRect*>(topLayout->element(0, 0))->axes() << dynamic_cast<QCPAxisRect*>(topLayout->element(0, 1))->axes();
-  for (int i=0; i<axes.size(); ++i)
+  QList<QCPAxisRect*> rects;
+  for (int i=0; i<5; ++i)
+    rects << new QCPAxisRect(customPlot);
+  
+  for (int i=0; i<rects.size(); ++i)
   {
-    axes.at(i)->setTicks(false);
-    axes.at(i)->setTickLabels(false);
-    axes.at(i)->setGrid(false);
+    topLayout->addElement(rects.at(i), 0, i+1);
+    rects.at(i)->addAxis(QCPAxis::atLeft);
+    rects.at(i)->addAxis(QCPAxis::atRight);
+    rects.at(i)->addAxis(QCPAxis::atBottom);
+    rects.at(i)->addAxis(QCPAxis::atTop);
+    for (int k=0; k<rects.at(i)->axes().size(); ++k)
+    {
+      QCPAxis *ax = rects.at(i)->axes().at(k);
+      ax->setTicks(false);
+      ax->setTickLabels(false);
+      ax->setGrid(false);
+    }
+    rects.at(i)->setAutoMargins(QCP::msNone);
+    rects.at(i)->setMargins(QMargins(1, 1, 1, 1));
   }
-  topLayout->setColumnStretchFactors(QList<double>() << 1 << 1);
-  //sideRect->setMinimumSize(QSize(250, 0));
-  //sideRect->setMaximumSize(QSize(250, QWIDGETSIZE_MAX));
-  dynamic_cast<QCPAxisRect*>(topLayout->element(0, 0))->setMaximumSize(QSize(200, QWIDGETSIZE_MAX));
-  //dynamic_cast<QCPAxisRect*>(topLayout->element(0, 0))->setMinimumSize(QSize(200, 0));
+  
+  topLayout->setColumnStretchFactors(QList<double>() << 1 << 1e9 << 1e7 << 1e9 << 1e3 << 1e1);
+  rects.at(0)->setMaximumSize(300, QWIDGETSIZE_MAX);
+  rects.at(1)->setMaximumSize(250, QWIDGETSIZE_MAX);
+  rects.at(2)->setMinimumSize(200, 0);
+  rects.at(3)->setMaximumSize(150, QWIDGETSIZE_MAX);
+  rects.at(4)->setMaximumSize(100, QWIDGETSIZE_MAX);
 }
 
 void MainWindow::setupIntegerTickStepCase(QCustomPlot *customPlot)

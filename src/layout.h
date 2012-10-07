@@ -89,6 +89,9 @@ protected:
   virtual void layoutElements();
   void adoptChild(QCPLayoutElement *el);
   void releaseChild(QCPLayoutElement *el);
+  
+  // layout helpers for subclasses:
+  QVector<int> getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const;
 };
 
 
@@ -125,7 +128,6 @@ protected:
   
   void getMinimumRowColSizes(QVector<int> *minColWidths, QVector<int> *minRowHeights) const;
   void getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<int> *maxRowHeights) const;
-  
 };
 
 #endif // QCP_LAYOUT_H
