@@ -50,7 +50,9 @@ public:
   void setMinimumMargins(const QMargins &margins);
   void setAutoMargins(QCP::MarginSides sides);
   void setMinimumSize(const QSize &size);
+  void setMinimumSize(int width, int height);
   void setMaximumSize(const QSize &size);
+  void setMaximumSize(int width, int height);
   
   virtual void update();
   virtual QSize minimumSizeHint() const;

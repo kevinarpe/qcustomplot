@@ -79,6 +79,11 @@ void QCPLayoutElement::setMinimumSize(const QSize &size)
   }
 }
 
+void QCPLayoutElement::setMinimumSize(int width, int height)
+{
+  setMinimumSize(QSize(width, height));
+}
+
 void QCPLayoutElement::setMaximumSize(const QSize &size)
 {
   if (mMaximumSize != size)
@@ -86,6 +91,11 @@ void QCPLayoutElement::setMaximumSize(const QSize &size)
     mMaximumSize = size;
     mParentPlot->updateGeometry();
   }
+}
+
+void QCPLayoutElement::setMaximumSize(int width, int height)
+{
+  setMaximumSize(QSize(width, height));
 }
 
 void QCPLayoutElement::update()
@@ -235,14 +245,10 @@ void QCPLayoutGrid::setColumnStretchFactor(int column, double factor)
 {
   if (column >= 0 && column < columns())
   {
-    if (factor >= 0)
-    {
+    if (factor > 0)
       mColumnStretchFactors[column] = factor;
-    } else
-    {
-      mColumnStretchFactors[column] = 0;
-      qDebug() << Q_FUNC_INFO << "Invalid stretch factor, must be positive or zero:" << factor;
-    }
+    else
+      qDebug() << Q_FUNC_INFO << "Invalid stretch factor, must be positive:" << factor;
   } else
     qDebug() << Q_FUNC_INFO << "Invalid column:" << column;
 }
@@ -254,10 +260,10 @@ void QCPLayoutGrid::setColumnStretchFactors(const QList<double> &factors)
     mColumnStretchFactors = factors;
     for (int i=0; i<mColumnStretchFactors.size(); ++i)
     {
-      if (mColumnStretchFactors.at(i) < 0)
+      if (mColumnStretchFactors.at(i) <= 0)
       {
-        qDebug() << Q_FUNC_INFO << "Invalid stretch factor, must be positive or zero:" << mColumnStretchFactors.at(i);
-        mColumnStretchFactors[i] = 0;
+        qDebug() << Q_FUNC_INFO << "Invalid stretch factor, must be positive:" << mColumnStretchFactors.at(i);
+        mColumnStretchFactors[i] = 1;
       }
     }
   } else
@@ -268,14 +274,10 @@ void QCPLayoutGrid::setRowStretchFactor(int row, double factor)
 {
   if (row >= 0 && row < rows())
   {
-    if (factor >= 0)
-    {
+    if (factor > 0)
       mRowStretchFactors[row] = factor;
-    } else
-    {
-      mRowStretchFactors[row] = 0;
-      qDebug() << Q_FUNC_INFO << "Invalid stretch factor, must be positive or zero:" << factor;
-    }
+    else
+      qDebug() << Q_FUNC_INFO << "Invalid stretch factor, must be positive:" << factor;
   } else
     qDebug() << Q_FUNC_INFO << "Invalid row:" << row;
 }
@@ -287,10 +289,10 @@ void QCPLayoutGrid::setRowStretchFactors(const QList<double> &factors)
     mRowStretchFactors = factors;
     for (int i=0; i<mRowStretchFactors.size(); ++i)
     {
-      if (mRowStretchFactors.at(i) < 0)
+      if (mRowStretchFactors.at(i) <= 0)
       {
-        qDebug() << Q_FUNC_INFO << "Invalid stretch factor, must be positive or zero:" << mRowStretchFactors.at(i);
-        mRowStretchFactors[i] = 0;
+        qDebug() << Q_FUNC_INFO << "Invalid stretch factor, must be positive:" << mRowStretchFactors.at(i);
+        mRowStretchFactors[i] = 1;
       }
     }
   } else
