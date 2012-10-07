@@ -2493,6 +2493,11 @@ QCPAxisRect::~QCPAxisRect()
   }
 }
 
+int QCPAxisRect::axisCount(QCPAxis::AxisType type) const
+{
+  return mAxes.value(type).size();
+}
+
 QCPAxis *QCPAxisRect::axis(QCPAxis::AxisType type, int index) const
 {
   QList<QCPAxis*> ax(mAxes.value(type));
