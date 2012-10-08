@@ -178,6 +178,8 @@ public:
   bool moveLayer(QCPLayer *layer, QCPLayer *otherLayer, LayerInsertMode insertMode=limAbove);
   
   // axis rect interface:
+  int axisRectCount() const;
+  QCPAxisRect* axisRect(int index=0) const;
   QList<QCPAxisRect*> axisRects() const;
   
   QList<QCPAxis*> selectedAxes() const;

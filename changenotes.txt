@@ -1,9 +1,10 @@
 #### Version 1.0.0 released on  ####
 
   Changes that break backward compatibility:
-    - QCustomPlot::axisRect() removed due to the extensive changes to how axes and axis rects are handled
+    - QCustomPlot::axisRect() changed meaning due to the extensive changes to how axes and axis rects are handled
+      it now returns a pointer to a QCPAxisRect and takes an integer index as parameter.
     - QCPAxis constructor changed to now take QCPAxisRect* as parent
-    - setMarginLeft/Right/Top/Bottom removed due to the axis rect changes
+    - setMarginLeft/Right/Top/Bottom removed due to the axis rect changes (see QCPAxisRect::setMargins)
     - setAxisRect removed due to the axis rect changes
     - setAxisBackground(-Scaled/-ScaledMode) now moved to QCPAxisRect as setBackground(-Scaled/ScaledMode) (access via QCustomPlot::axisRects())
 

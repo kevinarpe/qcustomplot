@@ -1694,6 +1694,16 @@ bool QCustomPlot::moveLayer(QCPLayer *layer, QCPLayer *otherLayer, QCustomPlot::
   return true;
 }
 
+int QCustomPlot::axisRectCount() const
+{
+  return axisRects().size();
+}
+
+QCPAxisRect *QCustomPlot::axisRect(int index) const
+{
+  return axisRects().at(index);
+}
+
 QList<QCPAxisRect*> QCustomPlot::axisRects() const
 {
   QList<QCPAxisRect*> result;
