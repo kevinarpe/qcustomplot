@@ -18,6 +18,7 @@
       (This allows space saving vertical tick labels by having the text direction parallel to the axis)
     - Added QCustomPlot::hasItem method for consistency with plottable interface, hasPlottable
     - Added QCPAxisRect::setMinimumMargins as replacement for hardcoded minimum axis margin (15 px) when auto margin is enabled
+    - Added Flags type QCPAxis::AxisTypes (from QCPAxis::AxisType), used in QCPAxisRect interface
 
   Bugfixes:
     - Fixed compile error on ARM

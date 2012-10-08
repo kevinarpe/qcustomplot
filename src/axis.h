@@ -121,12 +121,13 @@ public:
     marks are drawn, on which side the labels are placed etc.
     \see setAxisType
   */
-  enum AxisType { atLeft    ///< Axis is vertical and on the left side of the axis rect of the parent QCustomPlot
-                  ,atRight  ///< Axis is vertical and on the right side of the axis rect of the parent QCustomPlot
-                  ,atTop    ///< Axis is horizontal and on the top side of the axis rect of the parent QCustomPlot
-                  ,atBottom ///< Axis is horizontal and on the bottom side of the axis rect of the parent QCustomPlot
+  enum AxisType { atLeft    = 0x01  ///< <tt>0x01</tt> Axis is vertical and on the left side of the axis rect of the parent QCustomPlot
+                  ,atRight  = 0x02  ///< <tt>0x02</tt> Axis is vertical and on the right side of the axis rect of the parent QCustomPlot
+                  ,atTop    = 0x04  ///< <tt>0x04</tt> Axis is horizontal and on the top side of the axis rect of the parent QCustomPlot
+                  ,atBottom = 0x08  ///< <tt>0x08</tt> Axis is horizontal and on the bottom side of the axis rect of the parent QCustomPlot
                 };
   Q_ENUMS(AxisType)
+  Q_DECLARE_FLAGS(AxisTypes, AxisType)
   /*!
     When automatic tick label generation is enabled (\ref setAutoTickLabels), defines how the
     numerical value (coordinate) of the tick position is translated into a string that will be
@@ -385,6 +386,7 @@ private:
   friend class QCPAxisRect;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::SelectableParts)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::AxisTypes)
 
 
 
@@ -404,9 +406,10 @@ public:
   
   int axisCount(QCPAxis::AxisType type) const;
   QCPAxis *axis(QCPAxis::AxisType type, int index) const;
-  QList<QCPAxis*> axes(QCPAxis::AxisType type) const;
+  QList<QCPAxis*> axes(QCPAxis::AxisTypes types) const;
   QList<QCPAxis*> axes() const;
   QCPAxis *addAxis(QCPAxis::AxisType type);
+  QList<QCPAxis*> addAxes(QCPAxis::AxisTypes types);
   void moveAxis(QCPAxis::AxisType type, int fromIndex, int toIndex);
   bool removeAxis(QCPAxis *axis);
   

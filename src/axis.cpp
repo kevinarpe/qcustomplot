@@ -2511,9 +2511,18 @@ QCPAxis *QCPAxisRect::axis(QCPAxis::AxisType type, int index) const
   }
 }
 
-QList<QCPAxis *> QCPAxisRect::axes(QCPAxis::AxisType type) const
+QList<QCPAxis*> QCPAxisRect::axes(QCPAxis::AxisTypes types) const
 {
-  return mAxes.value(type);
+  QList<QCPAxis*> result;
+  if (types.testFlag(QCPAxis::atLeft))
+    result << mAxes.value(QCPAxis::atLeft);
+  if (types.testFlag(QCPAxis::atRight))
+    result << mAxes.value(QCPAxis::atRight);
+  if (types.testFlag(QCPAxis::atTop))
+    result << mAxes.value(QCPAxis::atTop);
+  if (types.testFlag(QCPAxis::atBottom))
+    result << mAxes.value(QCPAxis::atBottom);
+  return result;
 }
 
 QList<QCPAxis *> QCPAxisRect::axes() const
@@ -2540,6 +2549,20 @@ QCPAxis *QCPAxisRect::addAxis(QCPAxis::AxisType type)
     newAxis->mGrid->setLayer(gridLayer);
   
   return newAxis;
+}
+
+QList<QCPAxis*> QCPAxisRect::addAxes(QCPAxis::AxisTypes types)
+{
+  QList<QCPAxis*> result;
+  if (types.testFlag(QCPAxis::atLeft))
+    result << addAxis(QCPAxis::atLeft);
+  if (types.testFlag(QCPAxis::atRight))
+    result << addAxis(QCPAxis::atRight);
+  if (types.testFlag(QCPAxis::atTop))
+    result << addAxis(QCPAxis::atTop);
+  if (types.testFlag(QCPAxis::atBottom))
+    result << addAxis(QCPAxis::atBottom);
+  return result;
 }
 
 void QCPAxisRect::moveAxis(QCPAxis::AxisType type, int fromIndex, int toIndex)
