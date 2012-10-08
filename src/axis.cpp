@@ -914,7 +914,11 @@ void QCPAxis::setTickLabelRotation(double degrees)
 */
 void QCPAxis::setDateTimeFormat(const QString &format)
 {
-  mDateTimeFormat = format;
+  if (mDateTimeFormat != format)
+  {
+    mLabelCache.clear();
+    mDateTimeFormat = format;
+  }
 }
 
 /*!
@@ -955,6 +959,7 @@ void QCPAxis::setDateTimeFormat(const QString &format)
 */
 void QCPAxis::setNumberFormat(const QString &formatCode)
 {
+  mLabelCache.clear();
   if (formatCode.length() < 1) return;
   
   // interpret first char as number format char:
@@ -2007,6 +2012,7 @@ void QCPAxis::drawTickLabel(QCPPainter *painter, double x, double y, const QCPAx
     painter->drawText(labelData.baseBounds.width()+1, 0, labelData.expBounds.width(), labelData.expBounds.height(), Qt::TextDontClip,  labelData.expPart);
   } else
   {
+    painter->setFont(labelData.baseFont);
     painter->drawText(0, 0, labelData.totalBounds.width(), labelData.totalBounds.height(), Qt::TextDontClip | Qt::AlignHCenter, labelData.basePart);
   }
   
