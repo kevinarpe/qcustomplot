@@ -388,11 +388,10 @@ void QCPLayoutGrid::expandTo(int rowCount, int columnCount)
   for (int i=0; i<rows(); ++i)
   {
     while (mElements.at(i).size() < newColCount)
-    {
       mElements[i].append(0);
-      mColumnStretchFactors.append(1);
-    }
   }
+  while (mColumnStretchFactors.size() < newColCount)
+    mColumnStretchFactors.append(1);
 }
 
 void QCPLayoutGrid::layoutElements()
