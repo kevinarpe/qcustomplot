@@ -405,7 +405,7 @@ public:
   void setBackgroundScaledMode(Qt::AspectRatioMode mode);
   
   int axisCount(QCPAxis::AxisType type) const;
-  QCPAxis *axis(QCPAxis::AxisType type, int index) const;
+  QCPAxis *axis(QCPAxis::AxisType type, int index=0) const;
   QList<QCPAxis*> axes(QCPAxis::AxisTypes types) const;
   QList<QCPAxis*> axes() const;
   QCPAxis *addAxis(QCPAxis::AxisType type);
