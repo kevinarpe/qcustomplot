@@ -178,6 +178,7 @@ void QCPLayout::releaseChild(QCPLayoutElement *el)
 
 QVector<int> QCPLayout::getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const
 {
+  
   int sectionCount = stretchFactors.size();
   QVector<double> sectionSizes(sectionCount);
   // if provided total size is forced smaller than total minimum size, ignore minimum sizes (squeeze sections):
@@ -259,7 +260,9 @@ QVector<int> QCPLayout::getSectionSizes(QVector<int> maxSizes, QVector<int> minS
 
 
 QCPLayoutGrid::QCPLayoutGrid(QCustomPlot *parentPlot) :
-  QCPLayout(parentPlot)
+  QCPLayout(parentPlot),
+  mColumnSpacing(5),
+  mRowSpacing(5)
 {
 }
 
@@ -375,6 +378,16 @@ void QCPLayoutGrid::setRowStretchFactors(const QList<double> &factors)
     qDebug() << Q_FUNC_INFO << "More stretch factors passed than there are rows:" << factors;
 }
 
+void QCPLayoutGrid::setColumnSpacing(int pixels)
+{
+  mColumnSpacing = pixels;
+}
+
+void QCPLayoutGrid::setRowSpacing(int pixels)
+{
+  mRowSpacing = pixels;
+}
+
 void QCPLayoutGrid::expandTo(int rowCount, int columnCount)
 {
   // add rows as necessary:
@@ -400,20 +413,22 @@ void QCPLayoutGrid::layoutElements()
   getMinimumRowColSizes(&minColWidths, &minRowHeights);
   getMaximumRowColSizes(&maxColWidths, &maxRowHeights);
   
-  QVector<int> colWidths = getSectionSizes(maxColWidths, minColWidths, mColumnStretchFactors.toVector(), mRect.width());
-  QVector<int> rowHeights = getSectionSizes(maxRowHeights, minRowHeights, mRowStretchFactors.toVector(), mRect.height());
+  int totalRowSpacing = (rows()-1) * mRowSpacing;
+  int totalColSpacing = (columns()-1) * mColumnSpacing;
+  QVector<int> colWidths = getSectionSizes(maxColWidths, minColWidths, mColumnStretchFactors.toVector(), mRect.width()-totalColSpacing);
+  QVector<int> rowHeights = getSectionSizes(maxRowHeights, minRowHeights, mRowStretchFactors.toVector(), mRect.height()-totalRowSpacing);
   
   // go through cells and set rects accordingly:
   int yOffset = mRect.top();
   for (int row=0; row<rows(); ++row)
   {
     if (row > 0)
-      yOffset += rowHeights.at(row-1);
+      yOffset += rowHeights.at(row-1)+mRowSpacing;
     int xOffset = mRect.left();
     for (int col=0; col<columns(); ++col)
     {
       if (col > 0)
-        xOffset += colWidths.at(col-1);
+        xOffset += colWidths.at(col-1)+mColumnSpacing;
       if (mElements.at(row).at(col))
         mElements.at(row).at(col)->setOuterRect(QRect(xOffset, yOffset, colWidths.at(col), rowHeights.at(row)));
     }
@@ -510,13 +525,13 @@ QSize QCPLayoutGrid::minimumSizeHint() const
 {
   QVector<int> minColWidths, minRowHeights;
   getMinimumRowColSizes(&minColWidths, &minRowHeights);
-  
   QSize result(0, 0);
   for (int i=0; i<minColWidths.size(); ++i)
     result.rwidth() += minColWidths.at(i);
   for (int i=0; i<minRowHeights.size(); ++i)
     result.rheight() += minRowHeights.at(i);
-  
+  result.rwidth() += (columns()-1) * mColumnSpacing;
+  result.rheight() += (rows()-1) * mRowSpacing;
   return result;
 }
 

@@ -1,7 +1,6 @@
 ### axis refactoring (branch layoutsystem):
 
 > layout system
- - add column/row spacing to QCPGridLayout
  - add axisRect(int index=0) and axisRectCount() to QCustomPlot
  - add QCPLayoutSpacer (only has stretch factors and minimum/maximum width)
  - add QCPLayoutInset (maybe a QCPLayoutElement in back and front?) (maybe call it QCPLayoutOverlay?)

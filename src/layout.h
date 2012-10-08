@@ -102,13 +102,21 @@ public:
   
   int rows() const;
   int columns() const;
-  QCPLayoutElement *element(int row, int column) const;
-  bool addElement(QCPLayoutElement *element, int row, int column);
-  bool hasElement(int row, int column);
+  QList<double> columnStretchFactors() const { return mColumnStretchFactors; }
+  QList<double> rowStretchFactors() const { return mRowStretchFactors; }
+  int columnSpacing() const { return mColumnSpacing; }
+  int rowSpacing() const { return mRowSpacing; }
+  
   void setColumnStretchFactor(int column, double factor);
   void setColumnStretchFactors(const QList<double> &factors);
   void setRowStretchFactor(int row, double factor);
   void setRowStretchFactors(const QList<double> &factors);
+  void setColumnSpacing(int pixels);
+  void setRowSpacing(int pixels);
+  
+  QCPLayoutElement *element(int row, int column) const;
+  bool addElement(QCPLayoutElement *element, int row, int column);
+  bool hasElement(int row, int column);
   void expandTo(int rowCount, int columnCount);
   
   virtual void layoutElements();
@@ -125,6 +133,7 @@ protected:
   QList<QList<QCPLayoutElement*> > mElements;
   QList<double> mColumnStretchFactors;
   QList<double> mRowStretchFactors;
+  int mColumnSpacing, mRowSpacing;
   
   void getMinimumRowColSizes(QVector<int> *minColWidths, QVector<int> *minRowHeights) const;
   void getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<int> *maxRowHeights) const;
