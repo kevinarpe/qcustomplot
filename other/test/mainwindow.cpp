@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupTickLabelTest(mCustomPlot);
   //setupDaqPerformance(mCustomPlot);
   
-  setupTestbed(mCustomPlot);
+  setupLayoutTest(mCustomPlot);
 }
 
 MainWindow::~MainWindow()
@@ -370,6 +370,101 @@ void MainWindow::setupDaqPerformance(QCustomPlot *customPlot)
   mDataTimer.start();
 }
 
+void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
+{
+  customPlot->setFont(QFont(customPlot->font().family(), 7));
+  customPlot->axisRect(0)->axis(QCPAxis::atRight)->setTickLabels(true);
+  customPlot->axisRect(0)->axis(QCPAxis::atTop)->setTickLabels(true);
+  customPlot->axisRect(0)->axis(QCPAxis::atLeft)->setTickLabelFont(customPlot->font());
+  customPlot->axisRect(0)->axis(QCPAxis::atRight)->setTickLabelFont(customPlot->font());
+  customPlot->axisRect(0)->axis(QCPAxis::atTop)->setTickLabelFont(customPlot->font());
+  customPlot->axisRect(0)->axis(QCPAxis::atBottom)->setTickLabelFont(customPlot->font());
+  
+  QCPLayoutGrid *layout = dynamic_cast<QCPLayoutGrid*>(customPlot->plotLayout());
+  layout->setRowSpacing(8);
+  layout->setColumnSpacing(8);
+  layout->addElement(new QCPAxisRect(customPlot), 0, 1);
+  layout->addElement(new QCPAxisRect(customPlot), 1, 0);
+  
+  QCPLayoutGrid *subLayout = new QCPLayoutGrid(customPlot);
+  subLayout->addElement(new QCPAxisRect(customPlot), 0, 0);
+  subLayout->addElement(new QCPAxisRect(customPlot), 0, 1);
+  subLayout->setColumnStretchFactor(0, 0.7);
+  layout->addElement(subLayout, 1, 1);
+  
+  QList<QCPAxisRect*> rects = customPlot->axisRects();
+  for (int i=0; i<rects.size(); ++i)
+  {
+    rects.at(i)->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+    rects.at(i)->axis(QCPAxis::atLeft)->setGrid(true);
+    rects.at(i)->axis(QCPAxis::atBottom)->setGrid(true);
+  }
+  
+  QCPCurve *c = new QCPCurve(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(c);
+  
+  QCPCurveDataMap *d1 = new QCPCurveDataMap;
+  d1->insert(0, QCPCurveData(0, 2, 1));
+  d1->insert(1, QCPCurveData(1, 3, 2));
+  d1->insert(2, QCPCurveData(2, 6, 4));
+  
+  c->clearData();
+  c->setData(d1, false);
+  
+  QCPCurveDataMap *d2 = new QCPCurveDataMap;
+  d2->insert(0, QCPCurveData(0, 26, 14));
+  d2->insert(2, QCPCurveData(2, 31, 22));
+  d2->insert(4, QCPCurveData(4, 61, 42));
+  
+  c->clearData();
+  c->setData(d2, false);
+  
+  customPlot->replot();
+  
+  /*
+  QCPLayoutGrid *topLayout = dynamic_cast<QCPLayoutGrid*>(customPlot->plotLayout());
+  
+  QList<QCPAxisRect*> rects;
+  for (int i=0; i<5; ++i)
+    rects << new QCPAxisRect(customPlot);
+  
+  for (int i=0; i<rects.size(); ++i)
+  {
+    topLayout->addElement(rects.at(i), 0, i+1);
+    rects.at(i)->addAxis(QCPAxis::atLeft);
+    rects.at(i)->addAxis(QCPAxis::atRight);
+    rects.at(i)->addAxis(QCPAxis::atBottom);
+    rects.at(i)->addAxis(QCPAxis::atTop);
+    for (int k=0; k<rects.at(i)->axes().size(); ++k)
+    {
+      QCPAxis *ax = rects.at(i)->axes().at(k);
+      ax->setTicks(false);
+      ax->setTickLabels(false);
+      ax->setGrid(false);
+    }
+    rects.at(i)->setAutoMargins(QCP::msNone);
+    rects.at(i)->setMargins(QMargins(1, 1, 1, 1));
+  }
+  
+  topLayout->setColumnStretchFactors(QList<double>() << 1 << 1e9 << 1e7 << 1e9 << 1e3 << 1e1);
+  rects.at(0)->setMaximumSize(300, QWIDGETSIZE_MAX);
+  rects.at(1)->setMaximumSize(250, QWIDGETSIZE_MAX);
+  rects.at(2)->setMinimumSize(200, 0);
+  rects.at(3)->setMaximumSize(150, QWIDGETSIZE_MAX);
+  rects.at(4)->setMaximumSize(100, QWIDGETSIZE_MAX);
+  
+  QCPLayoutGrid *subLayout = new QCPLayoutGrid(customPlot);
+  topLayout->addElement(subLayout, 1, 3);
+  QCPAxisRect *r0 = new QCPAxisRect(customPlot);
+  subLayout->addElement(r0, 0, 0);
+  r0->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+  QCPAxisRect *r1 = new QCPAxisRect(customPlot);
+  subLayout->addElement(r1, 0, 1);
+  r1->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+  r1->setMaximumSize(200, QWIDGETSIZE_MAX);
+  */
+}
+
 void MainWindow::presetInteractive(QCustomPlot *customPlot)
 {
   customPlot->setInteractions(QCustomPlot::iRangeDrag|
@@ -436,7 +531,7 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
 void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
 {
   QImage colorMap(customPlot->axisRects().first()->size(), QImage::Format_RGB32);
-  colorMap.fill(Qt::blue);
+  colorMap.fill(QColor(Qt::blue).rgb());
   int offsetx = customPlot->axisRects().first()->left();
   int offsety = customPlot->axisRects().first()->top();
   // for items:
@@ -493,36 +588,7 @@ void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
 
 void MainWindow::setupTestbed(QCustomPlot *customPlot)
 {
-  QCPLayoutGrid *topLayout = dynamic_cast<QCPLayoutGrid*>(customPlot->plotLayout());
   
-  QList<QCPAxisRect*> rects;
-  for (int i=0; i<5; ++i)
-    rects << new QCPAxisRect(customPlot);
-  
-  for (int i=0; i<rects.size(); ++i)
-  {
-    topLayout->addElement(rects.at(i), 0, i+1);
-    rects.at(i)->addAxis(QCPAxis::atLeft);
-    rects.at(i)->addAxis(QCPAxis::atRight);
-    rects.at(i)->addAxis(QCPAxis::atBottom);
-    rects.at(i)->addAxis(QCPAxis::atTop);
-    for (int k=0; k<rects.at(i)->axes().size(); ++k)
-    {
-      QCPAxis *ax = rects.at(i)->axes().at(k);
-      ax->setTicks(false);
-      ax->setTickLabels(false);
-      ax->setGrid(false);
-    }
-    rects.at(i)->setAutoMargins(QCP::msNone);
-    rects.at(i)->setMargins(QMargins(1, 1, 1, 1));
-  }
-  
-  topLayout->setColumnStretchFactors(QList<double>() << 1 << 1e9 << 1e7 << 1e9 << 1e3 << 1e1);
-  rects.at(0)->setMaximumSize(300, QWIDGETSIZE_MAX);
-  rects.at(1)->setMaximumSize(250, QWIDGETSIZE_MAX);
-  rects.at(2)->setMinimumSize(200, 0);
-  rects.at(3)->setMaximumSize(150, QWIDGETSIZE_MAX);
-  rects.at(4)->setMaximumSize(100, QWIDGETSIZE_MAX);
 }
 
 void MainWindow::setupIntegerTickStepCase(QCustomPlot *customPlot)

@@ -3,7 +3,7 @@
 > layout system
  - add QCPLayoutSpacer (only has stretch factors and minimum/maximum width)
  - add QCPLayoutInset (maybe a QCPLayoutElement in back and front?) (maybe call it QCPLayoutOverlay?)
- - Create QCPLayoutElement subclass that represents a plot title
+ - Create QCPLayoutElement subclass that represents a plot title. How to get it drawn? Items?
 
 - find a good way to propagate removed axes and removed axisrects to the whole system.
 - when QCustomPlot is being freed, destroy objects that can be inside axis rects first before axis rects themselves for higher performance.
@@ -15,7 +15,7 @@
 - fix legend autoposition with new axis system. probably give legend an axisrect which it orients itself to. Or better: a QCPLayoutElement. This way
   we can have legends outside axis rects systematically. In the wake of that: make legend auto positions based on Qt::Alignment.
 - add setPlotLayout? should destroy old layout
-- update all the documentation referencing QCustomPlot::setMargin and QCustomPlot::setAutoMargin
+- update all the documentation referencing QCustomPlot::setMargin, QCustomPlot::setAutoMargin, QCustomPlot::axisRect
 - check whether selection boxes of axes are properly positioned (also with rotated tick labels!)
 
 
