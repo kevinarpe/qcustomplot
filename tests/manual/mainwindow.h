@@ -38,6 +38,7 @@ public:
   void setupLegendTest(QCustomPlot *customPlot);
   void setupMultiAxisRectInteractions(QCustomPlot *customPlot);
   void setupAdaptiveSamplingTest(QCustomPlot *customPlot);
+  void setupColorMapTest(QCustomPlot *customPlot);
   // testbed:
   void setupTestbed(QCustomPlot *customPlot);
   
@@ -65,6 +66,8 @@ public slots:
   void integerTickStepCase_yRangeChanged(QCPRange newRange);
   
   void mouseWheel(QWheelEvent *event);
+  void colorMapAnimation();
+  
 private:
   Ui::MainWindow *ui;
   QCustomPlot *mCustomPlot;

@@ -31,11 +31,36 @@
 
 class QCPPainter;
 class QCPAxis;
+class QCPColorMap;
 
 class QCP_LIB_DECL QCPColorMapData
 {
 public:
-  QCPColorMapData();
+  QCPColorMapData(const QSize &size, const QCPRange keyRange, const QCPRange valueRange);
+  
+  QSize size() const { return mSize; }
+  double value(double key, double value);
+  QCPRange keyRange() const { return mKeyRange; }
+  QCPRange valueRange() const { return mValueRange; }
+  QCPRange minMax() const { return mMinMax; }
+  
+  void setSize(const QSize &size);
+  void setValue(double key, double value, double z);
+  void setRange(const QCPRange keyRange, const QCPRange valueRange);
+  void setMinMax(const QCPRange minMax);
+  
+  void clear();
+  bool isEmpty() const { return mIsEmpty; }
+  
+protected:
+  double *mData;
+  QSize mSize;
+  QCPRange mKeyRange, mValueRange;
+  QCPRange mMinMax;
+  bool mModified;
+  bool mIsEmpty;
+  
+  friend class QCPColorMap;
 };
 
 class QCP_LIB_DECL QCPColorMap : public QCPAbstractPlottable
@@ -46,7 +71,7 @@ public:
   virtual ~QCPColorMap();
   
   // getters:
-  const QCPColorMapData *data() const { return mData; }
+  QCPColorMapData *data() const { return mData; }
   
   // setters:
   void setData(QCPColorMapData *data, bool copy=false);
@@ -57,9 +82,16 @@ public:
   
 protected:
   QCPColorMapData *mData;
+  QImage mMapImage;
+  QRgb *mColorGradient;
+  int mColorGradientLevels;
   
+  virtual void updateGradient(int levels);
+  virtual void updateMapImage();
   virtual void draw(QCPPainter *painter);
   virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
+  
+  QRgb wavelengthToRgb(double nm);
   
   virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
   virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
