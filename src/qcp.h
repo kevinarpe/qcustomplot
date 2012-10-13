@@ -40,6 +40,7 @@
 #include "plottables/plottable-curve.h"
 #include "plottables/plottable-bars.h"
 #include "plottables/plottable-statisticalbox.h"
+#include "plottables/plottable-colormap.h"
 #include "items/item-straightline.h"
 #include "items/item-line.h"
 #include "items/item-curve.h"
