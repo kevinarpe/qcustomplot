@@ -46,8 +46,7 @@
 */
 QCPPainter::QCPPainter() :
   QPainter(),
-  mScaledExportMode(false),
-  mPdfExportMode(false),
+  mModes(pmDefault),
   mIsAntialiasing(false)
 {
 }
@@ -58,8 +57,7 @@ QCPPainter::QCPPainter() :
 */
 QCPPainter::QCPPainter(QPaintDevice *device) :
   QPainter(device),
-  mScaledExportMode(false),
-  mPdfExportMode(false),
+  mModes(pmDefault),
   mIsAntialiasing(false)
 {
 }
@@ -86,7 +84,7 @@ void QCPPainter::setScatterPixmap(const QPixmap pm)
 void QCPPainter::setPen(const QPen &pen)
 {
   QPainter::setPen(pen);
-  if (mScaledExportMode)
+  if (mModes.testFlag(pmScaledPen))
     fixScaledPen();
 }
 
@@ -100,7 +98,7 @@ void QCPPainter::setPen(const QPen &pen)
 void QCPPainter::setPen(const QColor &color)
 {
   QPainter::setPen(color);
-  if (mScaledExportMode)
+  if (mModes.testFlag(pmScaledPen))
     fixScaledPen();
 }
 
@@ -114,7 +112,7 @@ void QCPPainter::setPen(const QColor &color)
 void QCPPainter::setPen(Qt::PenStyle penStyle)
 {
   QPainter::setPen(penStyle);
-  if (mScaledExportMode)
+  if (mModes.testFlag(pmScaledPen))
     fixScaledPen();
 }
 
@@ -141,7 +139,7 @@ void QCPPainter::drawLine(const QLineF &line)
 */
 void QCPPainter::setAntialiasing(bool enabled)
 {
-  if (mPdfExportMode)
+  if (mModes.testFlag(pmVectorExport))
     return;
   
   setRenderHint(QPainter::Antialiasing, enabled);
@@ -153,6 +151,27 @@ void QCPPainter::setAntialiasing(bool enabled)
       translate(0.5, 0.5);
     mIsAntialiasing = enabled;
   }
+}
+
+/*!
+  Sets the mode of the painter. This controls whether the painter shall adjust its
+  fixes/workarounds optimized for certain output devices.
+*/
+void QCPPainter::setModes(QCPPainter::PainterModes modes)
+{
+  mModes = modes;
+}
+
+/*! \overload
+  Sets the mode of the painter. This controls whether the painter shall adjust its
+  fixes/workarounds optimized for certain output devices.
+*/
+void QCPPainter::setMode(QCPPainter::PainterMode mode, bool enabled)
+{
+  if (!enabled && mModes.testFlag(mode))
+    mModes &= ~mode;
+  else if (enabled && !mModes.testFlag(mode))
+    mModes |= mode;
 }
 
 /*!
@@ -187,40 +206,16 @@ void QCPPainter::restore()
 }
 
 /*!
-  Sets whether the painter shall adjust its fixes/workarounds optimized for vectorized pdf export.
-
-  This means for example, that the antialiasing/non-antialiasing fix introduced with \ref
-  setAntialiasing is not used, since PDF is not rastered and thus works with floating point data
-  natively.
-*/
-void QCPPainter::setPdfExportMode(bool enabled)
-{
-  mPdfExportMode = enabled;
-}
-
-/*!
-  Sets whether the painter shall adjust its fixes/workarounds optimized for scaled export to
-  rastered image formats.
-
-  For example this provides a workaround for a QPainter bug that prevents scaling of pen widths for
-  pens with width 0, although the QPainter::NonCosmeticDefaultPen render hint is set.
-*/
-void QCPPainter::setScaledExportMode(bool enabled)
-{
-  mScaledExportMode = enabled;
-}
-
-/*!
   Provides a workaround for a QPainter bug that prevents scaling of pen widths for pens with width
   0, although the QPainter::NonCosmeticDefaultPen render hint is set.
   
   Changes the pen width from 0 to 1, if appropriate.
   
-  Does nothing if the QCPPainter is not in scaled export mode (\ref setScaledExportMode).
+  Does nothing if the QCPPainter is not in scaled pen mode (\ref setMode).
 */
 void QCPPainter::fixScaledPen()
 {
-  if (mScaledExportMode && pen().isCosmetic() && qFuzzyIsNull(pen().widthF()))
+  if (mModes.testFlag(pmScaledPen) && pen().isCosmetic() && qFuzzyIsNull(pen().widthF()))
   {
     QPen p = pen();
     p.setWidth(1);

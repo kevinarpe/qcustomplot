@@ -21,14 +21,14 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupItemAnchorTest(mCustomPlot);
   //setupItemTracerTest(mCustomPlot);
   //setupGraphTest(mCustomPlot);
-  //setupExportTest(mCustomPlot);
+  setupExportTest(mCustomPlot);
   //setupLogErrorsTest(mCustomPlot);
   //setupSelectTest(mCustomPlot);
   //setupDateTest(mCustomPlot);
   //setupTestbed(mCustomPlot);
   //setupIntegerTickStepCase(mCustomPlot);
   //setupTickLabelTest(mCustomPlot);
-  setupDaqPerformance(mCustomPlot);
+  //setupDaqPerformance(mCustomPlot);
 }
 
 MainWindow::~MainWindow()

@@ -2021,7 +2021,8 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   QCPPainter printpainter;
   if (printpainter.begin(&printer))
   {
-    printpainter.setPdfExportMode(true);
+    printpainter.setMode(QCPPainter::pmVectorExport);
+    printpainter.setMode(QCPPainter::pmNoCaching);
     printpainter.setWindow(mViewport);
     printpainter.setRenderHint(QPainter::NonCosmeticDefaultPen, noCosmeticPen);
     if (mColor != Qt::white && mColor != Qt::transparent && mColor.alpha() > 0) // draw pdf background color if not white/transparent
@@ -2818,7 +2819,8 @@ bool QCustomPlot::saveRastered(const QString &fileName, int width, int height, d
   {
     if (scale > 1.0) // for scale < 1 we always want cosmetic pens where possible, because else lines would disappear
     {
-      painter.setScaledExportMode(true);
+      painter.setMode(QCPPainter::pmScaledPen);
+      painter.setMode(QCPPainter::pmNoCaching);
       painter.setRenderHint(QPainter::NonCosmeticDefaultPen);
     }
     painter.scale(scale, scale);
@@ -2862,7 +2864,7 @@ QPixmap QCustomPlot::pixmap(int width, int height, double scale)
   {
     if (scale > 1.0) // for scale < 1 we always want cosmetic pens where possible, because else lines would disappear
     {
-      painter.setScaledExportMode(true);
+      painter.setMode(QCPPainter::pmScaledPen);
       painter.setRenderHint(QPainter::NonCosmeticDefaultPen);
     }
     painter.scale(scale, scale);

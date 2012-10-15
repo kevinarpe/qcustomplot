@@ -41,6 +41,18 @@ public:
 class QCP_LIB_DECL QCPPainter : public QPainter
 {
 public:
+  /*!
+    Defines special modes the painter can operate in. They disable or enable certain subsets of features/fixes/workarounds,
+    depending on whether they are wanted on the respective output device.
+  */
+  enum PainterMode {pmDefault       = 0x00  ///< <tt>0x00</tt> Default mode for painting on screen devices
+                    ,pmVectorExport = 0x01  ///< <tt>0x01</tt> Mode for vectorized painting (e.g. PDF export). For example, this prevents some antialiasing fixes.
+                    ,pmNoCaching    = 0x02  ///< <tt>0x02</tt> Mode for all sorts of exports (e.g. PNG, PDF). For example, this prevents using cached pixmap labels
+                    ,pmScaledPen    = 0x04  ///< <tt>0x04</tt> Enables a workaround for scaled pens, needed for scaled rastered export.
+                   };
+  Q_ENUMS(PainterMode)
+  Q_DECLARE_FLAGS(PainterModes, PainterMode)
+  
   QCPPainter();
   QCPPainter(QPaintDevice *device);
   ~QCPPainter();
@@ -48,14 +60,13 @@ public:
   // getters:
   QPixmap scatterPixmap() const { return mScatterPixmap; }
   bool antialiasing() const { return testRenderHint(QPainter::Antialiasing); }
-  bool pdfExportMode() const { return mPdfExportMode; }
-  bool scaledExportMode() const { return mScaledExportMode; }
+  PainterModes modes() const { return mModes; }
   
   // setters:
   void setScatterPixmap(const QPixmap pm);
   void setAntialiasing(bool enabled);
-  void setPdfExportMode(bool enabled);
-  void setScaledExportMode(bool enabled);
+  void setMode(PainterMode mode, bool enabled=true);
+  void setModes(PainterModes modes);
  
   // methods hiding non-virtual base class functions (QPainter bug workarounds):
   void setPen(const QPen &pen);
@@ -71,11 +82,11 @@ public:
   void drawScatter(double x, double y, double size, QCP::ScatterStyle style);
   
 protected:
+  PainterModes mModes;
   QPixmap mScatterPixmap;
-  bool mScaledExportMode;
-  bool mPdfExportMode;
   bool mIsAntialiasing;
   QStack<bool> mAntialiasingStack;
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCPPainter::PainterModes)
 
 #endif // QCP_PAINTER_H

@@ -398,7 +398,8 @@ void QCPCurve::draw(QCPPainter *painter)
     // if drawing solid line and not in PDF, use much faster line drawing instead of polyline:
     if (mParentPlot->plottingHints().testFlag(QCP::phFastPolylines) &&
         painter->pen().style() == Qt::SolidLine &&
-        !painter->pdfExportMode())
+        !painter->modes().testFlag(QCPPainter::pmVectorExport) &&
+        !painter->modes().testFlag(QCPPainter::pmNoCaching))
     {
       for (int i=1; i<lineData->size(); ++i)
         painter->drawLine(lineData->at(i-1), lineData->at(i));

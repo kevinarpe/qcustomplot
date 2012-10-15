@@ -1931,7 +1931,7 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
     case atTop:    labelAnchor = QPointF(position, mAxisRect.top()-distanceToAxis); break;
     case atBottom: labelAnchor = QPointF(position, mAxisRect.bottom()+distanceToAxis); break;
   }
-  if (parentPlot()->plottingHints().testFlag(QCP::phCacheLabels)) // label caching enabled
+  if (parentPlot()->plottingHints().testFlag(QCP::phCacheLabels) && !painter->modes().testFlag(QCPPainter::pmNoCaching)) // label caching enabled
   {
     if (!mLabelCache.contains(text))  // no cached label exists, create it
     {
