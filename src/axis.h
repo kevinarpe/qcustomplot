@@ -34,6 +34,8 @@ class QCPPainter;
 class QCustomPlot;
 class QCPAxis;
 class QCPAxisRect;
+class QCPAbstractPlottable;
+class QCPGraph;
 
 class QCP_LIB_DECL QCPGrid : public QCPLayerable
 {
@@ -412,6 +414,9 @@ public:
   QList<QCPAxis*> addAxes(QCPAxis::AxisTypes types);
   void moveAxis(QCPAxis::AxisType type, int fromIndex, int toIndex);
   bool removeAxis(QCPAxis *axis);
+  
+  QList<QCPAbstractPlottable*> plottables() const;
+  QList<QCPGraph*> graphs() const;
   
   // read-only interface imitating a QRect:
   int left() const { return mRect.left(); }

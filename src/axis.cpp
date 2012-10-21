@@ -26,6 +26,8 @@
 
 #include "painter.h"
 #include "core.h"
+#include "plottable.h"
+#include "plottables/plottable-graph.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPGrid
@@ -2577,6 +2579,28 @@ void QCPAxisRect::moveAxis(QCPAxis::AxisType type, int fromIndex, int toIndex)
 
 bool QCPAxisRect::removeAxis(QCPAxis *axis)
 {
+}
+
+QList<QCPAbstractPlottable *> QCPAxisRect::plottables() const
+{
+  QList<QCPAbstractPlottable*> result;
+  for (int i=0; i<mParentPlot->mPlottables.size(); ++i)
+  {
+    if (mParentPlot->mPlottables.at(i)->keyAxis()->axisRect() == this ||mParentPlot->mPlottables.at(i)->valueAxis()->axisRect() == this)
+      result.append(mParentPlot->mPlottables.at(i));
+  }
+  return result;
+}
+
+QList<QCPGraph*> QCPAxisRect::graphs() const
+{
+  QList<QCPGraph*> result;
+  for (int i=0; i<mParentPlot->mGraphs.size(); ++i)
+  {
+    if (mParentPlot->mGraphs.at(i)->keyAxis()->axisRect() == this || mParentPlot->mGraphs.at(i)->valueAxis()->axisRect() == this)
+      result.append(mParentPlot->mGraphs.at(i));
+  }
+  return result;
 }
 
 /*!
