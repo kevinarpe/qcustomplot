@@ -36,6 +36,7 @@ class QCPAxis;
 class QCPAxisRect;
 class QCPAbstractPlottable;
 class QCPGraph;
+class QCPAbstractItem;
 
 class QCP_LIB_DECL QCPGrid : public QCPLayerable
 {
@@ -283,6 +284,10 @@ public:
   double coordToPixel(double value) const;
   SelectablePart selectTest(const QPointF &pos) const;
   
+  QList<QCPAbstractPlottable*> plottables() const;
+  QList<QCPGraph*> graphs() const;
+  QList<QCPAbstractItem*> items() const;
+  
 public slots:
   // slot setters:
   void setRange(const QCPRange &range);
@@ -412,11 +417,11 @@ public:
   QList<QCPAxis*> axes() const;
   QCPAxis *addAxis(QCPAxis::AxisType type);
   QList<QCPAxis*> addAxes(QCPAxis::AxisTypes types);
-  void moveAxis(QCPAxis::AxisType type, int fromIndex, int toIndex);
   bool removeAxis(QCPAxis *axis);
   
   QList<QCPAbstractPlottable*> plottables() const;
   QList<QCPGraph*> graphs() const;
+  QList<QCPAbstractItem*> items() const;
   
   // read-only interface imitating a QRect:
   int left() const { return mRect.left(); }

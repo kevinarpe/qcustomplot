@@ -28,6 +28,7 @@
 #include "core.h"
 #include "plottable.h"
 #include "plottables/plottable-graph.h"
+#include "item.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPGrid
@@ -1497,6 +1498,46 @@ QCPAxis::SelectablePart QCPAxis::selectTest(const QPointF &pos) const
     return spNone;
 }
 
+QList<QCPAbstractPlottable*> QCPAxis::plottables() const
+{
+  QList<QCPAbstractPlottable*> result;
+  for (int i=0; i<mParentPlot->mPlottables.size(); ++i)
+  {
+    if (mParentPlot->mPlottables.at(i)->keyAxis() == this ||mParentPlot->mPlottables.at(i)->valueAxis() == this)
+      result.append(mParentPlot->mPlottables.at(i));
+  }
+  return result;
+}
+
+QList<QCPGraph*> QCPAxis::graphs() const
+{
+  QList<QCPGraph*> result;
+  for (int i=0; i<mParentPlot->mGraphs.size(); ++i)
+  {
+    if (mParentPlot->mGraphs.at(i)->keyAxis() == this || mParentPlot->mGraphs.at(i)->valueAxis() == this)
+      result.append(mParentPlot->mGraphs.at(i));
+  }
+  return result;
+}
+
+QList<QCPAbstractItem*> QCPAxis::items() const
+{
+  QList<QCPAbstractItem*> result;
+  for (int itemId=0; itemId<mParentPlot->mItems.size(); ++itemId)
+  {
+    QList<QCPItemPosition*> positions = mParentPlot->mItems.at(itemId)->positions();
+    for (int posId=0; posId<positions.size(); ++itemId)
+    {
+      if (positions.at(posId)->keyAxis() == this || positions.at(posId)->valueAxis() == this)
+      {
+        result.append(mParentPlot->mItems.at(itemId));
+        break;
+      }
+    }
+  }
+  return result;
+}
+
 /*! \internal
   
   This function is called before the grid and axis is drawn, in order to prepare the tick vector,
@@ -2573,10 +2614,6 @@ QList<QCPAxis*> QCPAxisRect::addAxes(QCPAxis::AxisTypes types)
   return result;
 }
 
-void QCPAxisRect::moveAxis(QCPAxis::AxisType type, int fromIndex, int toIndex)
-{
-}
-
 bool QCPAxisRect::removeAxis(QCPAxis *axis)
 {
 }
@@ -2599,6 +2636,29 @@ QList<QCPGraph*> QCPAxisRect::graphs() const
   {
     if (mParentPlot->mGraphs.at(i)->keyAxis()->axisRect() == this || mParentPlot->mGraphs.at(i)->valueAxis()->axisRect() == this)
       result.append(mParentPlot->mGraphs.at(i));
+  }
+  return result;
+}
+
+QList<QCPAbstractItem *> QCPAxisRect::items() const
+{
+  QList<QCPAbstractItem*> result;
+  for (int itemId=0; itemId<mParentPlot->mItems.size(); ++itemId)
+  {
+    if (mParentPlot->mItems.at(itemId)->clipAxisRect() == this)
+    {
+      result.append(mParentPlot->mItems.at(itemId));
+      continue;
+    }
+    QList<QCPItemPosition*> positions = mParentPlot->mItems.at(itemId)->positions();
+    for (int posId=0; posId<positions.size(); ++itemId)
+    {
+      if (positions.at(posId)->axisRect() == this)
+      {
+        result.append(mParentPlot->mItems.at(itemId));
+        break;
+      }
+    }
   }
   return result;
 }
