@@ -2618,8 +2618,9 @@ bool QCPAxisRect::removeAxis(QCPAxis *axis)
 {
 }
 
-QList<QCPAbstractPlottable *> QCPAxisRect::plottables() const
+QList<QCPAbstractPlottable*> QCPAxisRect::plottables() const
 {
+  // Note: don't append all QCPAxis::plottables() into a list, because we might get duplicate entries
   QList<QCPAbstractPlottable*> result;
   for (int i=0; i<mParentPlot->mPlottables.size(); ++i)
   {
@@ -2631,6 +2632,7 @@ QList<QCPAbstractPlottable *> QCPAxisRect::plottables() const
 
 QList<QCPGraph*> QCPAxisRect::graphs() const
 {
+  // Note: don't append all QCPAxis::graphs() into a list, because we might get duplicate entries
   QList<QCPGraph*> result;
   for (int i=0; i<mParentPlot->mGraphs.size(); ++i)
   {
@@ -2642,6 +2644,8 @@ QList<QCPGraph*> QCPAxisRect::graphs() const
 
 QList<QCPAbstractItem *> QCPAxisRect::items() const
 {
+  // Note: don't append all QCPAxis::items() into a list, because we might get duplicate entries
+  //       and miss those items that have this axis rect as clipAxisRect.
   QList<QCPAbstractItem*> result;
   for (int itemId=0; itemId<mParentPlot->mItems.size(); ++itemId)
   {
@@ -2653,7 +2657,9 @@ QList<QCPAbstractItem *> QCPAxisRect::items() const
     QList<QCPItemPosition*> positions = mParentPlot->mItems.at(itemId)->positions();
     for (int posId=0; posId<positions.size(); ++itemId)
     {
-      if (positions.at(posId)->axisRect() == this)
+      if (positions.at(posId)->axisRect() == this ||
+          positions.at(posId)->keyAxis()->axisRect() == this ||
+          positions.at(posId)->valueAxis()->axisRect() == this)
       {
         result.append(mParentPlot->mItems.at(itemId));
         break;
