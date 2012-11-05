@@ -274,6 +274,7 @@ protected:
   
   // introduced methods:
   virtual void draw(QCPPainter *painter);
+  virtual void axisRemoved(QCPAxis *axis);
   
   // helpers:
   bool selectTestTitle(const QPointF &pos) const;

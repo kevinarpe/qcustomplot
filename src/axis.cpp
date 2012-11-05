@@ -382,8 +382,8 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 */
 QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   QCPLayerable(parent->parentPlot()),
-  mAxisRect(parent),
-  mOffset(0)
+  mOffset(0),
+  mAxisRect(parent)
 {
   setAxisType(type);
   mLabelCache.setMaxCost(16); // cache at most 16 (tick) labels
@@ -2616,6 +2616,24 @@ QList<QCPAxis*> QCPAxisRect::addAxes(QCPAxis::AxisTypes types)
 
 bool QCPAxisRect::removeAxis(QCPAxis *axis)
 {
+  if (axis->plottables().isEmpty() && axis->items().isEmpty())
+  {
+    if (mAxes[axis->axisType()].contains(axis))
+    {
+      mAxes[axis->axisType()].removeOne(axis);
+      parentPlot()->axisRemoved(axis);
+      delete axis;
+      return true;
+    } else
+    {
+      qDebug() << Q_FUNC_INFO << "axis wasn't in expected hash bucket (report this error)";
+      return false;
+    }
+  } else
+  {
+    qDebug() << Q_FUNC_INFO << "can't remove axis because plottables or items are still associated with it";
+    return false;
+  }
 }
 
 QList<QCPAbstractPlottable*> QCPAxisRect::plottables() const

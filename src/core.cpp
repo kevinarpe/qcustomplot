@@ -2662,6 +2662,32 @@ void QCustomPlot::draw(QCPPainter *painter)
   }
 }
 
+void QCustomPlot::axisRemoved(QCPAxis *axis)
+{
+  if (xAxis == axis)
+    xAxis = 0;
+  if (xAxis2 == axis)
+    xAxis2 = 0;
+  if (yAxis == axis)
+    yAxis = 0;
+  if (yAxis2 == axis)
+    yAxis2 = 0;
+  
+  if (mRangeDragHorzAxis == axis && mRangeDragVertAxis == axis)
+    setRangeDragAxes(0, 0);
+  else if (mRangeDragHorzAxis == axis)
+    setRangeDragAxes(0, mRangeDragVertAxis);
+  else if (mRangeDragVertAxis == axis)
+    setRangeDragAxes(mRangeDragHorzAxis, 0);
+  
+  if (mRangeZoomHorzAxis == axis && mRangeZoomVertAxis == axis)
+    setRangeZoomAxes(0, 0);
+  else if (mRangeZoomHorzAxis == axis)
+    setRangeZoomAxes(0, mRangeZoomVertAxis);
+  else if (mRangeZoomVertAxis == axis)
+    setRangeZoomAxes(mRangeZoomHorzAxis, 0);
+}
+
 /*! \internal
   
   Returns whether the point \a pos in pixels hits the plot title.
