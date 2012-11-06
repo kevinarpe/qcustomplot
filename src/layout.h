@@ -34,6 +34,7 @@ class QCP_LIB_DECL QCPLayoutElement
 {
 public:
   explicit QCPLayoutElement(QCustomPlot *parentPlot);
+  virtual ~QCPLayoutElement() {}
   
   QCustomPlot *parentPlot() const { return mParentPlot; }
   QCPLayout *layout() const { return mParentLayout; }

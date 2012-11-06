@@ -401,7 +401,8 @@ class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement
 {
 public:
   explicit QCPAxisRect(QCustomPlot *parentPlot);
-  ~QCPAxisRect();
+  virtual ~QCPAxisRect();
+  
   QPixmap background() const { return mBackground; }
   bool backgroundScaled() const { return mBackgroundScaled; }
   Qt::AspectRatioMode backgroundScaledMode() const { return mBackgroundScaledMode; }
