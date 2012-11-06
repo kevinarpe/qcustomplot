@@ -14,6 +14,7 @@ NEXT RELEASE:
 - restructure tests. Have top level dir "tests" with subdir "manual", "automatic". place current "export test" and "test" into "manual".
 - Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs
 - maybe add concept of "current" axisrect, to make interaction with different axis rects easier.
+- give QCustomPlot::rescaleAxes() the parameter "bool onlyVisible=true" to allow rescaling only via visible graphs
 
 FUTURE RELEASE:
 
