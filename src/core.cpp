@@ -2796,39 +2796,11 @@ bool QCustomPlot::selectTestTitle(const QPointF &pos) const
 */
 bool QCustomPlot::saveRastered(const QString &fileName, int width, int height, double scale, const char *format, int quality)
 {
-  int newWidth, newHeight;
-  if (width == 0 || height == 0)
-  {
-    newWidth = this->width();
-    newHeight = this->height();
-  } else
-  {
-    newWidth = width;
-    newHeight = height;
-  }
-  int scaledWidth = qRound(scale*newWidth);
-  int scaledHeight = qRound(scale*newHeight);
-
-  QPixmap pngBuffer(scaledWidth, scaledHeight); // use QPixmap instead of QImage (like live painting buffer), because it supports background transparency (of mColor).
-  pngBuffer.fill(mColor);
-  QCPPainter painter(&pngBuffer);
-  QRect oldViewport = mViewport;
-  mViewport = QRect(0, 0, newWidth, newHeight);
-  updateAxisRect();
-  if (!qFuzzyCompare(scale, 1.0))
-  {
-    if (scale > 1.0) // for scale < 1 we always want cosmetic pens where possible, because else lines would disappear
-    {
-      painter.setMode(QCPPainter::pmScaledPen);
-      painter.setMode(QCPPainter::pmNoCaching);
-      painter.setRenderHint(QPainter::NonCosmeticDefaultPen);
-    }
-    painter.scale(scale, scale);
-  }
-  draw(&painter);
-  mViewport = oldViewport;
-  updateAxisRect();
-  return pngBuffer.save(fileName, format, quality);
+  QPixmap buffer = pixmap(width, height, scale);
+  if (!buffer.isNull())
+    return buffer.save(fileName, format, quality);
+  else
+    return false;
 }
 
 /*!
@@ -2856,21 +2828,31 @@ QPixmap QCustomPlot::pixmap(int width, int height, double scale)
 
   QPixmap result(scaledWidth, scaledHeight);
   result.fill(mColor);
-  QCPPainter painter(&result);
-  QRect oldViewport = mViewport;
-  mViewport = QRect(0, 0, newWidth, newHeight);
-  updateAxisRect();
-  if (!qFuzzyCompare(scale, 1.0))
+  QCPPainter painter;
+  painter.begin(&result);
+  if (painter.isActive())
   {
-    if (scale > 1.0) // for scale < 1 we always want cosmetic pens where possible, because else lines would disappear
+    QRect oldViewport = mViewport;
+    mViewport = QRect(0, 0, newWidth, newHeight);
+    updateAxisRect();
+    painter.setMode(QCPPainter::pmNoCaching);
+    if (!qFuzzyCompare(scale, 1.0))
     {
-      painter.setMode(QCPPainter::pmScaledPen);
-      painter.setRenderHint(QPainter::NonCosmeticDefaultPen);
+      if (scale > 1.0) // for scale < 1 we always want cosmetic pens where possible, because else lines would disappear
+      {
+        painter.setMode(QCPPainter::pmScaledPen);
+        painter.setRenderHint(QPainter::NonCosmeticDefaultPen);
+      }
+      painter.scale(scale, scale);
     }
-    painter.scale(scale, scale);
+    draw(&painter);
+    mViewport = oldViewport;
+    updateAxisRect();
+    painter.end();
+  } else // might happen if pixmap has width or height zero
+  {
+    qDebug() << Q_FUNC_INFO << "Couldn't activate painter on pixmap";
+    return QPixmap();
   }
-  draw(&painter);
-  mViewport = oldViewport;
-  updateAxisRect();
   return result;
 }
