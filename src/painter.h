@@ -46,7 +46,7 @@ public:
     depending on whether they are wanted on the respective output device.
   */
   enum PainterMode {pmDefault       = 0x00  ///< <tt>0x00</tt> Default mode for painting on screen devices
-                    ,pmVectorExport = 0x01  ///< <tt>0x01</tt> Mode for vectorized painting (e.g. PDF export). For example, this prevents some antialiasing fixes.
+                    ,pmVectorized   = 0x01  ///< <tt>0x01</tt> Mode for vectorized painting (e.g. PDF export). For example, this prevents some antialiasing fixes.
                     ,pmNoCaching    = 0x02  ///< <tt>0x02</tt> Mode for all sorts of exports (e.g. PNG, PDF). For example, this prevents using cached pixmap labels
                     ,pmScaledPen    = 0x04  ///< <tt>0x04</tt> Enables a workaround for scaled pens, needed for scaled rastered export.
                    };

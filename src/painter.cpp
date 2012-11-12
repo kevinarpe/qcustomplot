@@ -139,7 +139,7 @@ void QCPPainter::drawLine(const QLineF &line)
 */
 void QCPPainter::setAntialiasing(bool enabled)
 {
-  if (mModes.testFlag(pmVectorExport))
+  if (mModes.testFlag(pmVectorized))
     return;
   
   setRenderHint(QPainter::Antialiasing, enabled);

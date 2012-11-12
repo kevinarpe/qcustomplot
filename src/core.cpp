@@ -2021,7 +2021,7 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   QCPPainter printpainter;
   if (printpainter.begin(&printer))
   {
-    printpainter.setMode(QCPPainter::pmVectorExport);
+    printpainter.setMode(QCPPainter::pmVectorized);
     printpainter.setMode(QCPPainter::pmNoCaching);
     printpainter.setWindow(mViewport);
     printpainter.setRenderHint(QPainter::NonCosmeticDefaultPen, noCosmeticPen);
