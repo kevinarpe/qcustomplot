@@ -177,6 +177,21 @@
   data points stay unchanged, e.g. in a running measurement.
   \li Set the \a copy parameter of the setData functions to false, so only pointers get
   transferred. (Relevant only if preparing data maps with a large number of points, i.e. over 10000)
+  
+  \section Preprocessor Define Flags
+  
+  QCustomPlot understands some preprocessor defines that are useful for debugging and compilation:
+  <dl>
+  <dt>\c QCUSTOMPLOT_COMPILE_LIBRARY
+  <dd>Define this flag when you compile QCustomPlot as a shared library (.so/.dll)
+  <dt>\c QCUSTOMPLOT_USE_LIBRARY
+  <dd>Define this flag before including the header, when using QCustomPlot as a shared library
+  <dt>\c QCUSTOMPLOT_CHECK_DATA
+  <dd>If this flag is defined, the QCustomPlot plottables will perform data validity checks on every redraw.
+      This means they will give qDebug output when you plot \e inf or \e nan values, they will not
+      fix your data.
+  </dl>
+
 */
 
 /*! \page classoverview Class Overview

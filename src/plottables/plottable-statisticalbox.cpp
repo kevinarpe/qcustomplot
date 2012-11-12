@@ -332,6 +332,17 @@ double QCPStatisticalBox::selectTest(const QPointF &pos) const
 /* inherits documentation from base class */
 void QCPStatisticalBox::draw(QCPPainter *painter)
 {
+  // check data validity if flag set:
+#ifdef QCUSTOMPLOT_CHECK_DATA
+  if (QCP::isInvalidData(mKey, mMedian) ||
+      QCP::isInvalidData(mLowerQuartile, mUpperQuartile) ||
+      QCP::isInvalidData(mMinimum, mMaximum))
+    qDebug() << Q_FUNC_INFO << "Data point at" << mKey << "of drawn range has invalid data." << "Plottable name:" << name();
+  for (int i=0; i<mOutliers.size(); ++i)
+    if (QCP::isInvalidData(mOutliers.at(i)))
+      qDebug() << Q_FUNC_INFO << "Data point outlier at" << mKey << "of drawn range invalid." << "Plottable name:" << name();
+#endif
+  
   QRectF quartileBox;
   drawQuartileBox(painter, &quartileBox);
   
