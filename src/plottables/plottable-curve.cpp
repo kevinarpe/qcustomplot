@@ -379,8 +379,21 @@ void QCPCurve::draw(QCPPainter *painter)
   
   // allocate line vector:
   QVector<QPointF> *lineData = new QVector<QPointF>;
+  
   // fill with curve data:
   getCurveData(lineData);
+  
+  // check data validity if flag set:
+#ifdef QCUSTOMPLOT_CHECK_DATA
+  QCPCurveDataMap::const_iterator it;
+  for (it = mData->constBegin(); it != mData->constEnd(); ++it)
+  {
+    if (QCP::isInvalidData(it.value().t) ||
+        QCP::isInvalidData(it.value().key, it.value().value))
+      qDebug() << Q_FUNC_INFO << "Data point at" << it.key() << "invalid." << "Plottable name:" << name();
+  }
+#endif
+  
   // draw curve fill:
   if (mainBrush().style() != Qt::NoBrush && mainBrush().color().alpha() != 0)
   {
@@ -389,6 +402,7 @@ void QCPCurve::draw(QCPPainter *painter)
     painter->setBrush(mainBrush());
     painter->drawPolygon(QPolygonF(*lineData));
   }
+  
   // draw curve line:
   if (mLineStyle != lsNone && mainPen().style() != Qt::NoPen && mainPen().color().alpha() != 0)
   {
@@ -398,7 +412,7 @@ void QCPCurve::draw(QCPPainter *painter)
     // if drawing solid line and not in PDF, use much faster line drawing instead of polyline:
     if (mParentPlot->plottingHints().testFlag(QCP::phFastPolylines) &&
         painter->pen().style() == Qt::SolidLine &&
-        !painter->modes().testFlag(QCPPainter::pmVectorExport) &&
+        !painter->modes().testFlag(QCPPainter::pmVectorized) &&
         !painter->modes().testFlag(QCPPainter::pmNoCaching))
     {
       for (int i=1; i<lineData->size(); ++i)
@@ -408,9 +422,11 @@ void QCPCurve::draw(QCPPainter *painter)
       painter->drawPolyline(QPolygonF(*lineData));
     }
   }
+  
   // draw scatters:
   if (mScatterStyle != QCP::ssNone)
     drawScatterPlot(painter, lineData);
+  
   // free allocated line data:
   delete lineData;
 }

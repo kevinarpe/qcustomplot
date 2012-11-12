@@ -676,6 +676,18 @@ void QCPGraph::draw(QCPPainter *painter)
   
   // fill vectors with data appropriate to plot style:
   getPlotData(lineData, pointData);
+  
+  // check data validity if flag set:
+#ifdef QCUSTOMPLOT_CHECK_DATA
+  QCPDataMap::const_iterator it;
+  for (it = mData->constBegin(); it != mData->constEnd(); ++it)
+  {
+    if (QCP::isInvalidData(it.value().key, it.value().value) ||
+        QCP::isInvalidData(it.value().keyErrorPlus, it.value().keyErrorMinus) ||
+        QCP::isInvalidData(it.value().valueErrorPlus, it.value().valueErrorPlus))
+      qDebug() << Q_FUNC_INFO << "Data point at" << it.key() << "invalid." << "Plottable name:" << name();
+  }
+#endif
 
   // draw fill of graph:
   drawFill(painter, lineData);
@@ -1293,7 +1305,7 @@ void QCPGraph::drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) con
     // if drawing solid line and not in PDF, use much faster line drawing instead of polyline:
     if (mParentPlot->plottingHints().testFlag(QCP::phFastPolylines) &&
         painter->pen().style() == Qt::SolidLine &&
-        !painter->modes().testFlag(QCPPainter::pmVectorExport)&&
+        !painter->modes().testFlag(QCPPainter::pmVectorized)&&
         !painter->modes().testFlag(QCPPainter::pmNoCaching))
     {
       for (int i=1; i<lineData->size(); ++i)

@@ -390,8 +390,14 @@ void QCPBars::draw(QCPPainter *painter)
   QCPBarDataMap::const_iterator it;
   for (it = mData->constBegin(); it != mData->constEnd(); ++it)
   {
+    // skip bar if not visible in key axis range:
     if (it.key()+mWidth*0.5 < mKeyAxis->range().lower || it.key()-mWidth*0.5 > mKeyAxis->range().upper)
       continue;
+    // check data validity if flag set:
+#ifdef QCUSTOMPLOT_CHECK_DATA
+    if (QCP::isInvalidData(it.value().key, it.value().value))
+      qDebug() << Q_FUNC_INFO << "Data point at" << it.key() << "of drawn range invalid." << "Plottable name:" << name();
+#endif
     QPolygonF barPolygon = getBarPolygon(it.key(), it.value().value);
     // draw bar fill:
     if (mainBrush().style() != Qt::NoBrush && mainBrush().color().alpha() != 0)

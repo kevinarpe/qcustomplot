@@ -124,6 +124,30 @@ enum PlottingHint { phNone            = 0x000 ///< <tt>0x000</tt> No hints are s
                     ,phCacheLabels    = 0x004 ///< <tt>0x004</tt> axis (tick) labels will be cached as pixmaps, increasing replot performance.
                   };
 Q_DECLARE_FLAGS(PlottingHints, PlottingHint)
+
+
+/*! \internal
+  Returns whether the specified \a value is considered an invalid data value for plottables (i.e. is \e nan or \e +/-inf). This
+  function is used to check data validity upon replots, when the compiler flag \c
+  QCUSTOMPLOT_CHECK_DATA is set.
+*/
+inline bool isInvalidData(double value)
+{
+  return (!isnan(value) &&
+          value != std::numeric_limits<double>::infinity() &&
+          value != -std::numeric_limits<double>::infinity());
+}
+
+/*! \internal
+  \overload
+  
+  Checks two arguments instead of one.
+*/
+inline bool isInvalidData(double value1, double value2)
+{
+  return isInvalidData(value1) || isInvalidData(value2);
+}
+
 } // end of namespace QCP
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::AntialiasedElements)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::PlottingHints)
