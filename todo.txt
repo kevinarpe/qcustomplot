@@ -1,19 +1,14 @@
 NEXT RELEASE:
 
-> alternating axis section backgrounds
-
+- alternating axis section backgrounds
 - Refactor scatter system. User should be able to fill all scatters with a color he likes. (Make example line plot with white-filled circles and a non-white background. Looks good) 
-- add QCP_CHECK_DATA_VALID define to allow checking for NaN/Inf in draw routine (probably not in setData/addData routines because there are too many)
-  and find a good place to document that
 - doc: duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between
   QCustomPlot::/QCPGraph::/QCPAbstractPlottable::rescaleAxes 
 - add doc-note and qDebug output for case when addToLegend (QCPGraph/QCPAbstractPlottable) is called without the plottable being in the plot. 
 - doc: explain ltDateTime mode on axes better. Probably give examples with numbers
-- multiple axes per side, probably leads to complete axis system refactoring
 - Experiment with better styled background, Gradients/patterns. Maybe replace setColor with setBrush or overload setColor to also accept QBrush.
 - restructure tests. Have top level dir "tests" with subdir "manual", "automatic". place current "export test" and "test" into "manual".
 - Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs
-- maybe add concept of "current" axisrect, to make interaction with different axis rects easier.
 - give QCustomPlot::rescaleAxes() the parameter "bool onlyVisible=true" to allow rescaling only via visible graphs
 
 FUTURE RELEASE:
