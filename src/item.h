@@ -123,7 +123,7 @@ public:
   
   // getters:
   bool clipToAxisRect() const { return mClipToAxisRect; }
-  QCPAxisRect *clipAxisRect() const { return mClipAxisRect; }
+  QCPAxisRect *clipAxisRect() const { return mClipAxisRect.data(); }
   bool selectable() const { return mSelectable; }
   bool selected() const { return mSelected; }
   
@@ -143,7 +143,7 @@ public:
   
 protected:
   bool mClipToAxisRect;
-  QCPAxisRect *mClipAxisRect;
+  QWeakPointer<QCPAxisRect> mClipAxisRect;
   bool mSelectable, mSelected;
   QList<QCPItemPosition*> mPositions;
   QList<QCPItemAnchor*> mAnchors;

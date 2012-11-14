@@ -750,7 +750,6 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
 QCPAbstractItem::QCPAbstractItem(QCustomPlot *parentPlot) :
   QCPLayerable(parentPlot),
   mClipToAxisRect(false),
-  mClipAxisRect(0),
   mSelectable(true),
   mSelected(false)
 {
@@ -899,7 +898,7 @@ bool QCPAbstractItem::hasAnchor(const QString &name) const
 QRect QCPAbstractItem::clipRect() const
 {
   if (mClipToAxisRect && mClipAxisRect)
-    return mClipAxisRect->rect();
+    return mClipAxisRect.data()->rect();
   else
     return mParentPlot->viewport();
 }
