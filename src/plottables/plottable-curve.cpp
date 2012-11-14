@@ -479,6 +479,7 @@ void QCPCurve::getCurveData(QVector<QPointF> *lineData) const
      fills inside R consistent.
      The region R has index 5.
   */
+  QRect axisRect = mKeyAxis->axisRect()->rect() & mValueAxis->axisRect()->rect();
   lineData->reserve(mData->size());
   QCPCurveDataMap::const_iterator it;
   int lastRegion = 5;
@@ -560,9 +561,9 @@ void QCPCurve::getCurveData(QVector<QPointF> *lineData) const
       {
         // always add last point if not added already, optimized:
         if (!addedLastAlready)
-          lineData->append(outsideCoordsToPixels((it-1).value().key, (it-1).value().value, currentRegion));
+          lineData->append(outsideCoordsToPixels((it-1).value().key, (it-1).value().value, currentRegion, axisRect));
         // add current point, optimized:
-        lineData->append(outsideCoordsToPixels(it.value().key, it.value().value, currentRegion));
+        lineData->append(outsideCoordsToPixels(it.value().key, it.value().value, currentRegion, axisRect));
       }
       addedLastAlready = true; // so that if next point enters 5, or crosses another region boundary, we don't add this point twice
     } else // neither in R, nor crossed a region boundary, skip current point
@@ -615,15 +616,15 @@ double QCPCurve::pointDistance(const QPointF &pixelPoint) const
   This is a specialized \ref coordsToPixels function for points that are outside the visible
   axisRect and just crossing a boundary (since \ref getCurveData reduces non-visible curve segments
   to those line segments that cross region boundaries, see documentation there). It only uses the
-  coordinate parallel to the region boundary of the axisRect. The other coordinate is picked 10
-  pixels outside the axisRect. Together with the optimization in \ref getCurveData this improves
-  performance for large curves (or zoomed in ones) significantly while keeping the illusion the
-  whole curve and its filling is still being drawn for the viewer.
+  coordinate parallel to the region boundary of the axisRect. The other coordinate is picked just
+  outside the axisRect (how far is determined by the scatter size and the line width). Together
+  with the optimization in \ref getCurveData this improves performance for large curves (or zoomed
+  in ones) significantly while keeping the illusion the whole curve and its filling is still being
+  drawn for the viewer.
 */
-QPointF QCPCurve::outsideCoordsToPixels(double key, double value, int region) const
+QPointF QCPCurve::outsideCoordsToPixels(double key, double value, int region, QRect axisRect) const
 {
-  int margin = 10;
-  QRect axisRect = mKeyAxis->axisRect()->rect() & mValueAxis->axisRect()->rect();
+  int margin = qCeil(qMax(mScatterSize, (double)mPen.widthF())) + 2;
   QPointF result = coordsToPixels(key, value);
   switch (region)
   {
