@@ -48,8 +48,8 @@ public:
   QPen selectedPen() const { return mSelectedPen; }
   QBrush brush() const { return mBrush; }
   QBrush selectedBrush() const { return mSelectedBrush; }
-  QCPAxis *keyAxis() const { return mKeyAxis; }
-  QCPAxis *valueAxis() const { return mValueAxis; }
+  QCPAxis *keyAxis() const { return mKeyAxis.data(); }
+  QCPAxis *valueAxis() const { return mValueAxis.data(); }
   bool selectable() const { return mSelectable; }
   bool selected() const { return mSelected; }
   
@@ -91,7 +91,7 @@ protected:
   bool mAntialiasedFill, mAntialiasedScatters, mAntialiasedErrorBars;
   QPen mPen, mSelectedPen;
   QBrush mBrush, mSelectedBrush;
-  QCPAxis *mKeyAxis, *mValueAxis;
+  QWeakPointer<QCPAxis> mKeyAxis, mValueAxis;
   bool mSelected, mSelectable;
   
   virtual QRect clipRect() const;

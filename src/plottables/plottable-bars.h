@@ -62,8 +62,8 @@ public:
   
   // getters:
   double width() const { return mWidth; }
-  QCPBars *barBelow() const { return mBarBelow; }
-  QCPBars *barAbove() const { return mBarAbove; }
+  QCPBars *barBelow() const { return mBarBelow.data(); }
+  QCPBars *barAbove() const { return mBarAbove.data(); }
   const QCPBarDataMap *data() const { return mData; }
   
   // setters:
@@ -88,7 +88,7 @@ public:
 protected:
   QCPBarDataMap *mData;
   double mWidth;
-  QCPBars *mBarBelow, *mBarAbove;
+  QWeakPointer<QCPBars> mBarBelow, mBarAbove;
   
   virtual void draw(QCPPainter *painter);
   virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;

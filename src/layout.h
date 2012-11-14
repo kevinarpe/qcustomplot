@@ -30,8 +30,9 @@
 class QCPLayout;
 class QCustomPlot;
 
-class QCP_LIB_DECL QCPLayoutElement
+class QCP_LIB_DECL QCPLayoutElement : public QObject
 {
+  Q_OBJECT
 public:
   explicit QCPLayoutElement(QCustomPlot *parentPlot);
   virtual ~QCPLayoutElement() {}

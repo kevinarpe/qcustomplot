@@ -459,14 +459,14 @@ void QCPGraph::setChannelFillGraph(QCPGraph *targetGraph)
   if (targetGraph == this)
   {
     qDebug() << Q_FUNC_INFO << "targetGraph is this graph itself";
-    mChannelFillGraph = 0;
+    mChannelFillGraph.clear();
     return;
   }
   // prevent setting channel target to a graph not in the plot:
   if (targetGraph && targetGraph->mParentPlot != mParentPlot)
   {
     qDebug() << Q_FUNC_INFO << "targetGraph not in same plot";
-    mChannelFillGraph = 0;
+    mChannelFillGraph.clear();
     return;
   }
   
@@ -610,10 +610,13 @@ void QCPGraph::rescaleKeyAxis(bool onlyEnlarge, bool includeErrorBars) const
   // this code is a copy of QCPAbstractPlottable::rescaleKeyAxis with the only change
   // that getKeyRange is passed the includeErrorBars value.
   if (mData->isEmpty()) return;
+  
+  QCPAxis *keyAxis = mKeyAxis.data();
+  if (!keyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
 
   SignDomain signDomain = sdBoth;
-  if (mKeyAxis->scaleType() == QCPAxis::stLogarithmic)
-    signDomain = (mKeyAxis->range().upper < 0 ? sdNegative : sdPositive);
+  if (keyAxis->scaleType() == QCPAxis::stLogarithmic)
+    signDomain = (keyAxis->range().upper < 0 ? sdNegative : sdPositive);
   
   bool validRange;
   QCPRange newRange = getKeyRange(validRange, signDomain, includeErrorBars);
@@ -622,12 +625,12 @@ void QCPGraph::rescaleKeyAxis(bool onlyEnlarge, bool includeErrorBars) const
   {
     if (onlyEnlarge)
     {
-      if (mKeyAxis->range().lower < newRange.lower)
-        newRange.lower = mKeyAxis->range().lower;
-      if (mKeyAxis->range().upper > newRange.upper)
-        newRange.upper = mKeyAxis->range().upper;
+      if (keyAxis->range().lower < newRange.lower)
+        newRange.lower = keyAxis->range().lower;
+      if (keyAxis->range().upper > newRange.upper)
+        newRange.upper = keyAxis->range().upper;
     }
-    mKeyAxis->setRange(newRange);
+    keyAxis->setRange(newRange);
   }
 }
 
@@ -641,10 +644,13 @@ void QCPGraph::rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const
   // this code is a copy of QCPAbstractPlottable::rescaleValueAxis with the only change
   // is that getValueRange is passed the includeErrorBars value.
   if (mData->isEmpty()) return;
+  
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!valueAxis) { qDebug() << Q_FUNC_INFO << "invalid value axis"; return; }
 
   SignDomain signDomain = sdBoth;
-  if (mValueAxis->scaleType() == QCPAxis::stLogarithmic)
-    signDomain = (mValueAxis->range().upper < 0 ? sdNegative : sdPositive);
+  if (valueAxis->scaleType() == QCPAxis::stLogarithmic)
+    signDomain = (valueAxis->range().upper < 0 ? sdNegative : sdPositive);
   
   bool validRange;
   QCPRange newRange = getValueRange(validRange, signDomain, includeErrorBars);
@@ -653,19 +659,21 @@ void QCPGraph::rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const
   {
     if (onlyEnlarge)
     {
-      if (mValueAxis->range().lower < newRange.lower)
-        newRange.lower = mValueAxis->range().lower;
-      if (mValueAxis->range().upper > newRange.upper)
-        newRange.upper = mValueAxis->range().upper;
+      if (valueAxis->range().lower < newRange.lower)
+        newRange.lower = valueAxis->range().lower;
+      if (valueAxis->range().upper > newRange.upper)
+        newRange.upper = valueAxis->range().upper;
     }
-    mValueAxis->setRange(newRange);
+    valueAxis->setRange(newRange);
   }
 }
 
 /* inherits documentation from base class */
 void QCPGraph::draw(QCPPainter *painter)
 {
-  if (mKeyAxis->range().size() <= 0 || mData->isEmpty()) return;
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
+  if (mKeyAxis.data()->range().size() <= 0 || mData->isEmpty()) return;
   if (mLineStyle == lsNone && mScatterStyle == QCP::ssNone) return;
   
   // allocate line and (if necessary) point vectors:
@@ -766,6 +774,8 @@ void QCPGraph::getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointDa
 void QCPGraph::getScatterPlotData(QVector<QCPData> *pointData) const
 {
   if (!pointData) return;
+  QCPAxis *keyAxis = mKeyAxis.data();
+  if (!keyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
   
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
@@ -779,7 +789,7 @@ void QCPGraph::getScatterPlotData(QVector<QCPData> *pointData) const
   QCPDataMap::const_iterator it = lower;
   QCPDataMap::const_iterator upperEnd = upper+1;
   int i = 0;
-  if (mKeyAxis->orientation() == Qt::Vertical)
+  if (keyAxis->orientation() == Qt::Vertical)
   {
     while (it != upperEnd)
     {
@@ -810,6 +820,10 @@ void QCPGraph::getScatterPlotData(QVector<QCPData> *pointData) const
 */
 void QCPGraph::getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
   int dataCount;
@@ -828,14 +842,14 @@ void QCPGraph::getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *poi
   QCPDataMap::const_iterator it = lower;
   QCPDataMap::const_iterator upperEnd = upper+1;
   int i = 0;
-  if (mKeyAxis->orientation() == Qt::Vertical)
+  if (keyAxis->orientation() == Qt::Vertical)
   {
     while (it != upperEnd)
     {
       if (pointData)
         (*pointData)[i] = it.value();
-      (*lineData)[i].setX(mValueAxis->coordToPixel(it.value().value));
-      (*lineData)[i].setY(mKeyAxis->coordToPixel(it.key()));
+      (*lineData)[i].setX(valueAxis->coordToPixel(it.value().value));
+      (*lineData)[i].setY(keyAxis->coordToPixel(it.key()));
       ++i;
       ++it;
     }
@@ -845,8 +859,8 @@ void QCPGraph::getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *poi
     {
       if (pointData)
         (*pointData)[i] = it.value();
-      (*lineData)[i].setX(mKeyAxis->coordToPixel(it.key()));
-      (*lineData)[i].setY(mValueAxis->coordToPixel(it.value().value));
+      (*lineData)[i].setX(keyAxis->coordToPixel(it.key()));
+      (*lineData)[i].setY(valueAxis->coordToPixel(it.value().value));
       ++i;
       ++it;
     }
@@ -865,6 +879,10 @@ void QCPGraph::getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *poi
 */
 void QCPGraph::getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
   int dataCount;
@@ -885,9 +903,9 @@ void QCPGraph::getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> 
   QCPDataMap::const_iterator upperEnd = upper+1;
   int i = 0;
   int ipoint = 0;
-  if (mKeyAxis->orientation() == Qt::Vertical)
+  if (keyAxis->orientation() == Qt::Vertical)
   {
-    double lastValue = mValueAxis->coordToPixel(it.value().value);
+    double lastValue = valueAxis->coordToPixel(it.value().value);
     double key;
     while (it != upperEnd)
     {
@@ -896,11 +914,11 @@ void QCPGraph::getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> 
         (*pointData)[ipoint] = it.value();
         ++ipoint;
       }
-      key = mKeyAxis->coordToPixel(it.key());
+      key = keyAxis->coordToPixel(it.key());
       (*lineData)[i].setX(lastValue);
       (*lineData)[i].setY(key);
       ++i;
-      lastValue = mValueAxis->coordToPixel(it.value().value);
+      lastValue = valueAxis->coordToPixel(it.value().value);
       (*lineData)[i].setX(lastValue);
       (*lineData)[i].setY(key);
       ++i;
@@ -908,7 +926,7 @@ void QCPGraph::getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> 
     }
   } else // key axis is horizontal
   {
-    double lastValue = mValueAxis->coordToPixel(it.value().value);
+    double lastValue = valueAxis->coordToPixel(it.value().value);
     double key;
     while (it != upperEnd)
     {
@@ -917,11 +935,11 @@ void QCPGraph::getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> 
         (*pointData)[ipoint] = it.value();
         ++ipoint;
       }
-      key = mKeyAxis->coordToPixel(it.key());
+      key = keyAxis->coordToPixel(it.key());
       (*lineData)[i].setX(key);
       (*lineData)[i].setY(lastValue);
       ++i;
-      lastValue = mValueAxis->coordToPixel(it.value().value);
+      lastValue = valueAxis->coordToPixel(it.value().value);
       (*lineData)[i].setX(key);
       (*lineData)[i].setY(lastValue);
       ++i;
@@ -942,6 +960,10 @@ void QCPGraph::getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> 
 */
 void QCPGraph::getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
   int dataCount;
@@ -962,9 +984,9 @@ void QCPGraph::getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData>
   QCPDataMap::const_iterator upperEnd = upper+1;
   int i = 0;
   int ipoint = 0;
-  if (mKeyAxis->orientation() == Qt::Vertical)
+  if (keyAxis->orientation() == Qt::Vertical)
   {
-    double lastKey = mKeyAxis->coordToPixel(it.key());
+    double lastKey = keyAxis->coordToPixel(it.key());
     double value;
     while (it != upperEnd)
     {
@@ -973,11 +995,11 @@ void QCPGraph::getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData>
         (*pointData)[ipoint] = it.value();
         ++ipoint;
       }
-      value = mValueAxis->coordToPixel(it.value().value);
+      value = valueAxis->coordToPixel(it.value().value);
       (*lineData)[i].setX(value);
       (*lineData)[i].setY(lastKey);
       ++i;
-      lastKey = mKeyAxis->coordToPixel(it.key());
+      lastKey = keyAxis->coordToPixel(it.key());
       (*lineData)[i].setX(value);
       (*lineData)[i].setY(lastKey);
       ++i;
@@ -985,7 +1007,7 @@ void QCPGraph::getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData>
     }
   } else // key axis is horizontal
   {
-    double lastKey = mKeyAxis->coordToPixel(it.key());
+    double lastKey = keyAxis->coordToPixel(it.key());
     double value;
     while (it != upperEnd)
     {
@@ -994,11 +1016,11 @@ void QCPGraph::getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData>
         (*pointData)[ipoint] = it.value();
         ++ipoint;
       }
-      value = mValueAxis->coordToPixel(it.value().value);
+      value = valueAxis->coordToPixel(it.value().value);
       (*lineData)[i].setX(lastKey);
       (*lineData)[i].setY(value);
       ++i;
-      lastKey = mKeyAxis->coordToPixel(it.key());
+      lastKey = keyAxis->coordToPixel(it.key());
       (*lineData)[i].setX(lastKey);
       (*lineData)[i].setY(value);
       ++i;
@@ -1019,6 +1041,10 @@ void QCPGraph::getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData>
 */
 void QCPGraph::getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
   int dataCount;
@@ -1039,10 +1065,10 @@ void QCPGraph::getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData
   QCPDataMap::const_iterator upperEnd = upper+1;
   int i = 0;
   int ipoint = 0;
-  if (mKeyAxis->orientation() == Qt::Vertical)
+  if (keyAxis->orientation() == Qt::Vertical)
   {
-    double lastKey = mKeyAxis->coordToPixel(it.key());
-    double lastValue = mValueAxis->coordToPixel(it.value().value);
+    double lastKey = keyAxis->coordToPixel(it.key());
+    double lastValue = valueAxis->coordToPixel(it.value().value);
     double key;
     if (pointData)
     {
@@ -1060,12 +1086,12 @@ void QCPGraph::getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData
         (*pointData)[ipoint] = it.value();
         ++ipoint;
       }
-      key = (mKeyAxis->coordToPixel(it.key())-lastKey)*0.5 + lastKey;
+      key = (keyAxis->coordToPixel(it.key())-lastKey)*0.5 + lastKey;
       (*lineData)[i].setX(lastValue);
       (*lineData)[i].setY(key);
       ++i;
-      lastValue = mValueAxis->coordToPixel(it.value().value);
-      lastKey = mKeyAxis->coordToPixel(it.key());
+      lastValue = valueAxis->coordToPixel(it.value().value);
+      lastKey = keyAxis->coordToPixel(it.key());
       (*lineData)[i].setX(lastValue);
       (*lineData)[i].setY(key);
       ++it;
@@ -1075,8 +1101,8 @@ void QCPGraph::getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData
     (*lineData)[i].setY(lastKey);
   } else // key axis is horizontal
   {
-    double lastKey = mKeyAxis->coordToPixel(it.key());
-    double lastValue = mValueAxis->coordToPixel(it.value().value);
+    double lastKey = keyAxis->coordToPixel(it.key());
+    double lastValue = valueAxis->coordToPixel(it.value().value);
     double key;
     if (pointData)
     {
@@ -1094,12 +1120,12 @@ void QCPGraph::getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData
         (*pointData)[ipoint] = it.value();
         ++ipoint;
       }
-      key = (mKeyAxis->coordToPixel(it.key())-lastKey)*0.5 + lastKey;
+      key = (keyAxis->coordToPixel(it.key())-lastKey)*0.5 + lastKey;
       (*lineData)[i].setX(key);
       (*lineData)[i].setY(lastValue);
       ++i;
-      lastValue = mValueAxis->coordToPixel(it.value().value);
-      lastKey = mKeyAxis->coordToPixel(it.key());
+      lastValue = valueAxis->coordToPixel(it.value().value);
+      lastKey = keyAxis->coordToPixel(it.key());
       (*lineData)[i].setX(key);
       (*lineData)[i].setY(lastValue);
       ++it;
@@ -1122,6 +1148,10 @@ void QCPGraph::getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData
 */
 void QCPGraph::getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
   int dataCount;
@@ -1140,9 +1170,9 @@ void QCPGraph::getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *
   QCPDataMap::const_iterator upperEnd = upper+1;
   int i = 0;
   int ipoint = 0;
-  if (mKeyAxis->orientation() == Qt::Vertical)
+  if (keyAxis->orientation() == Qt::Vertical)
   {
-    double zeroPointX = mValueAxis->coordToPixel(0);
+    double zeroPointX = valueAxis->coordToPixel(0);
     double key;
     while (it != upperEnd)
     {
@@ -1151,18 +1181,18 @@ void QCPGraph::getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *
         (*pointData)[ipoint] = it.value();
         ++ipoint;
       }
-      key = mKeyAxis->coordToPixel(it.key());
+      key = keyAxis->coordToPixel(it.key());
       (*lineData)[i].setX(zeroPointX);
       (*lineData)[i].setY(key);
       ++i;
-      (*lineData)[i].setX(mValueAxis->coordToPixel(it.value().value));
+      (*lineData)[i].setX(valueAxis->coordToPixel(it.value().value));
       (*lineData)[i].setY(key);
       ++i;
       ++it;
     }
   } else // key axis is horizontal
   {
-    double zeroPointY = mValueAxis->coordToPixel(0);
+    double zeroPointY = valueAxis->coordToPixel(0);
     double key;
     while (it != upperEnd)
     {
@@ -1171,12 +1201,12 @@ void QCPGraph::getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *
         (*pointData)[ipoint] = it.value();
         ++ipoint;
       }
-      key = mKeyAxis->coordToPixel(it.key());
+      key = keyAxis->coordToPixel(it.key());
       (*lineData)[i].setX(key);
       (*lineData)[i].setY(zeroPointY);
       ++i;
       (*lineData)[i].setX(key);
-      (*lineData)[i].setY(mValueAxis->coordToPixel(it.value().value));
+      (*lineData)[i].setY(valueAxis->coordToPixel(it.value().value));
       ++i;
       ++it;
     }
@@ -1226,19 +1256,23 @@ void QCPGraph::drawFill(QCPPainter *painter, QVector<QPointF> *lineData) const
 */
 void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
   // draw error bars:
   if (mErrorType != etNone)
   {
     applyErrorBarsAntialiasingHint(painter);
     painter->setPen(mErrorPen);
-    if (mKeyAxis->orientation() == Qt::Vertical)
+    if (keyAxis->orientation() == Qt::Vertical)
     {
       for (int i=0; i<pointData->size(); ++i)
-        drawError(painter, mValueAxis->coordToPixel(pointData->at(i).value), mKeyAxis->coordToPixel(pointData->at(i).key), pointData->at(i));
+        drawError(painter, valueAxis->coordToPixel(pointData->at(i).value), keyAxis->coordToPixel(pointData->at(i).key), pointData->at(i));
     } else
     {
       for (int i=0; i<pointData->size(); ++i)
-        drawError(painter, mKeyAxis->coordToPixel(pointData->at(i).key), mValueAxis->coordToPixel(pointData->at(i).value), pointData->at(i));
+        drawError(painter, keyAxis->coordToPixel(pointData->at(i).key), valueAxis->coordToPixel(pointData->at(i).value), pointData->at(i));
     }
   }
   
@@ -1247,14 +1281,14 @@ void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData)
   painter->setPen(mainPen());
   painter->setBrush(mainBrush());
   painter->setScatterPixmap(mScatterPixmap);
-  if (mKeyAxis->orientation() == Qt::Vertical)
+  if (keyAxis->orientation() == Qt::Vertical)
   {
     for (int i=0; i<pointData->size(); ++i)
-      painter->drawScatter(mValueAxis->coordToPixel(pointData->at(i).value), mKeyAxis->coordToPixel(pointData->at(i).key), mScatterSize, mScatterStyle);
+      painter->drawScatter(valueAxis->coordToPixel(pointData->at(i).value), keyAxis->coordToPixel(pointData->at(i).key), mScatterSize, mScatterStyle);
   } else
   {
     for (int i=0; i<pointData->size(); ++i)
-      painter->drawScatter(mKeyAxis->coordToPixel(pointData->at(i).key), mValueAxis->coordToPixel(pointData->at(i).value), mScatterSize, mScatterStyle);
+      painter->drawScatter(keyAxis->coordToPixel(pointData->at(i).key), valueAxis->coordToPixel(pointData->at(i).value), mScatterSize, mScatterStyle);
   }
 }
 
@@ -1333,18 +1367,22 @@ void QCPGraph::drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) 
 */
 void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData &data) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
   double a, b; // positions of error bar bounds in pixels
   double barWidthHalf = mErrorBarSize*0.5;
   double skipSymbolMargin = mScatterSize*1.25; // pixels left blank per side, when mErrorBarSkipSymbol is true
 
-  if (mKeyAxis->orientation() == Qt::Vertical)
+  if (keyAxis->orientation() == Qt::Vertical)
   {
     // draw key error vertically and value error horizontally
     if (mErrorType == etKey || mErrorType == etBoth)
     {
-      a = mKeyAxis->coordToPixel(data.key-data.keyErrorMinus);
-      b = mKeyAxis->coordToPixel(data.key+data.keyErrorPlus);
-      if (mKeyAxis->rangeReversed())
+      a = keyAxis->coordToPixel(data.key-data.keyErrorMinus);
+      b = keyAxis->coordToPixel(data.key+data.keyErrorPlus);
+      if (keyAxis->rangeReversed())
         qSwap(a,b);
       // draw spine:
       if (mErrorBarSkipSymbol)
@@ -1361,9 +1399,9 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
     }
     if (mErrorType == etValue || mErrorType == etBoth)
     {
-      a = mValueAxis->coordToPixel(data.value-data.valueErrorMinus);
-      b = mValueAxis->coordToPixel(data.value+data.valueErrorPlus);
-      if (mValueAxis->rangeReversed())
+      a = valueAxis->coordToPixel(data.value-data.valueErrorMinus);
+      b = valueAxis->coordToPixel(data.value+data.valueErrorPlus);
+      if (valueAxis->rangeReversed())
         qSwap(a,b);
       // draw spine:
       if (mErrorBarSkipSymbol)
@@ -1383,9 +1421,9 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
     // draw value error vertically and key error horizontally
     if (mErrorType == etKey || mErrorType == etBoth)
     {
-      a = mKeyAxis->coordToPixel(data.key-data.keyErrorMinus);
-      b = mKeyAxis->coordToPixel(data.key+data.keyErrorPlus);
-      if (mKeyAxis->rangeReversed())
+      a = keyAxis->coordToPixel(data.key-data.keyErrorMinus);
+      b = keyAxis->coordToPixel(data.key+data.keyErrorPlus);
+      if (keyAxis->rangeReversed())
         qSwap(a,b);
       // draw spine:
       if (mErrorBarSkipSymbol)
@@ -1402,9 +1440,9 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
     }
     if (mErrorType == etValue || mErrorType == etBoth)
     {
-      a = mValueAxis->coordToPixel(data.value-data.valueErrorMinus);
-      b = mValueAxis->coordToPixel(data.value+data.valueErrorPlus);
-      if (mValueAxis->rangeReversed())
+      a = valueAxis->coordToPixel(data.value-data.valueErrorMinus);
+      b = valueAxis->coordToPixel(data.value+data.valueErrorPlus);
+      if (valueAxis->rangeReversed())
         qSwap(a,b);
       // draw spine:
       if (mErrorBarSkipSymbol)
@@ -1437,9 +1475,11 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
 */
 void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper, int &count) const
 {
+  if (!mKeyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
+  
   // get visible data range as QMap iterators
-  QCPDataMap::const_iterator lbound = mData->lowerBound(mKeyAxis->range().lower);
-  QCPDataMap::const_iterator ubound = mData->upperBound(mKeyAxis->range().upper)-1;
+  QCPDataMap::const_iterator lbound = mData->lowerBound(mKeyAxis.data()->range().lower);
+  QCPDataMap::const_iterator ubound = mData->upperBound(mKeyAxis.data()->range().upper)-1;
   bool lowoutlier = lbound != mData->constBegin(); // indicates whether there exist points below axis range
   bool highoutlier = ubound+1 != mData->constEnd(); // indicates whether there exist points above axis range
   lower = (lowoutlier ? lbound-1 : lbound); // data pointrange that will be actually drawn
@@ -1455,14 +1495,14 @@ void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMa
   }
 }
 
-/*! 
-  \internal
-  The line data vector generated by e.g. getLinePlotData contains only the line
-  that connects the data points. If the graph needs to be filled, two additional points
-  need to be added at the value-zero-line in the lower and upper key positions, the graph
-  reaches. This function calculates these points and adds them to the end of \a lineData.
-  Since the fill is typically drawn before the line stroke, these added points need to
-  be removed again after the fill is done, with the removeFillBasePoints function.
+/*! \internal
+  
+  The line data vector generated by e.g. getLinePlotData contains only the line that connects the
+  data points. If the graph needs to be filled, two additional points need to be added at the
+  value-zero-line in the lower and upper key positions of the graph. This function calculates these
+  points and adds them to the end of \a lineData. Since the fill is typically drawn before the line
+  stroke, these added points need to be removed again after the fill is done, with the
+  removeFillBasePoints function.
   
   The expanding of \a lineData by two points will not cause unnecessary memory reallocations,
   because the data vector generation functions (getLinePlotData etc.) reserve two extra points
@@ -1471,8 +1511,10 @@ void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMa
 */
 void QCPGraph::addFillBasePoints(QVector<QPointF> *lineData) const
 {
+  if (!mKeyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
+  
   // append points that close the polygon fill at the key axis:
-  if (mKeyAxis->orientation() == Qt::Vertical)
+  if (mKeyAxis.data()->orientation() == Qt::Vertical)
   {
     *lineData << upperFillBasePoint(lineData->last().y());
     *lineData << lowerFillBasePoint(lineData->first().y());
@@ -1508,46 +1550,50 @@ void QCPGraph::removeFillBasePoints(QVector<QPointF> *lineData) const
 */
 QPointF QCPGraph::lowerFillBasePoint(double lowerKey) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return QPointF(); }
+  
   QPointF point;
-  if (mValueAxis->scaleType() == QCPAxis::stLinear)
+  if (valueAxis->scaleType() == QCPAxis::stLinear)
   {
-    if (mKeyAxis->axisType() == QCPAxis::atLeft)
+    if (keyAxis->axisType() == QCPAxis::atLeft)
     {
-      point.setX(mValueAxis->coordToPixel(0));
+      point.setX(valueAxis->coordToPixel(0));
       point.setY(lowerKey);
-    } else if (mKeyAxis->axisType() == QCPAxis::atRight)
+    } else if (keyAxis->axisType() == QCPAxis::atRight)
     {
-      point.setX(mValueAxis->coordToPixel(0));
+      point.setX(valueAxis->coordToPixel(0));
       point.setY(lowerKey);
-    } else if (mKeyAxis->axisType() == QCPAxis::atTop)
+    } else if (keyAxis->axisType() == QCPAxis::atTop)
     {
       point.setX(lowerKey);
-      point.setY(mValueAxis->coordToPixel(0));
-    } else if (mKeyAxis->axisType() == QCPAxis::atBottom)
+      point.setY(valueAxis->coordToPixel(0));
+    } else if (keyAxis->axisType() == QCPAxis::atBottom)
     {
       point.setX(lowerKey);
-      point.setY(mValueAxis->coordToPixel(0));
+      point.setY(valueAxis->coordToPixel(0));
     }
-  } else // mValueAxis->mScaleType == QCPAxis::stLogarithmic
+  } else // valueAxis->mScaleType == QCPAxis::stLogarithmic
   {
     // In logarithmic scaling we can't just draw to value zero so we just fill all the way
     // to the axis which is in the direction towards zero
-    if (mKeyAxis->orientation() == Qt::Vertical)
+    if (keyAxis->orientation() == Qt::Vertical)
     {
-      if ((mValueAxis->range().upper < 0 && !mValueAxis->rangeReversed()) ||
-          (mValueAxis->range().upper > 0 && mValueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
-        point.setX(mKeyAxis->axisRect()->right());
+      if ((valueAxis->range().upper < 0 && !valueAxis->rangeReversed()) ||
+          (valueAxis->range().upper > 0 && valueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
+        point.setX(keyAxis->axisRect()->right());
       else
-        point.setX(mKeyAxis->axisRect()->left());
+        point.setX(keyAxis->axisRect()->left());
       point.setY(lowerKey);
-    } else if (mKeyAxis->axisType() == QCPAxis::atTop || mKeyAxis->axisType() == QCPAxis::atBottom)
+    } else if (keyAxis->axisType() == QCPAxis::atTop || keyAxis->axisType() == QCPAxis::atBottom)
     {
       point.setX(lowerKey);
-      if ((mValueAxis->range().upper < 0 && !mValueAxis->rangeReversed()) ||
-          (mValueAxis->range().upper > 0 && mValueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
-        point.setY(mKeyAxis->axisRect()->top());
+      if ((valueAxis->range().upper < 0 && !valueAxis->rangeReversed()) ||
+          (valueAxis->range().upper > 0 && valueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
+        point.setY(keyAxis->axisRect()->top());
       else
-        point.setY(mKeyAxis->axisRect()->bottom());
+        point.setY(keyAxis->axisRect()->bottom());
     }
   }
   return point;
@@ -1568,46 +1614,50 @@ QPointF QCPGraph::lowerFillBasePoint(double lowerKey) const
 */
 QPointF QCPGraph::upperFillBasePoint(double upperKey) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return QPointF(); }
+  
   QPointF point;
-  if (mValueAxis->scaleType() == QCPAxis::stLinear)
+  if (valueAxis->scaleType() == QCPAxis::stLinear)
   {
-    if (mKeyAxis->axisType() == QCPAxis::atLeft)
+    if (keyAxis->axisType() == QCPAxis::atLeft)
     {
-      point.setX(mValueAxis->coordToPixel(0));
+      point.setX(valueAxis->coordToPixel(0));
       point.setY(upperKey);
-    } else if (mKeyAxis->axisType() == QCPAxis::atRight)
+    } else if (keyAxis->axisType() == QCPAxis::atRight)
     {
-      point.setX(mValueAxis->coordToPixel(0));
+      point.setX(valueAxis->coordToPixel(0));
       point.setY(upperKey);
-    } else if (mKeyAxis->axisType() == QCPAxis::atTop)
+    } else if (keyAxis->axisType() == QCPAxis::atTop)
     {
       point.setX(upperKey);
-      point.setY(mValueAxis->coordToPixel(0));
-    } else if (mKeyAxis->axisType() == QCPAxis::atBottom)
+      point.setY(valueAxis->coordToPixel(0));
+    } else if (keyAxis->axisType() == QCPAxis::atBottom)
     {
       point.setX(upperKey);
-      point.setY(mValueAxis->coordToPixel(0));
+      point.setY(valueAxis->coordToPixel(0));
     }
-  } else // mValueAxis->mScaleType == QCPAxis::stLogarithmic
+  } else // valueAxis->mScaleType == QCPAxis::stLogarithmic
   {
     // In logarithmic scaling we can't just draw to value 0 so we just fill all the way
     // to the axis which is in the direction towards 0
-    if (mKeyAxis->orientation() == Qt::Vertical)
+    if (keyAxis->orientation() == Qt::Vertical)
     {
-      if ((mValueAxis->range().upper < 0 && !mValueAxis->rangeReversed()) ||
-          (mValueAxis->range().upper > 0 && mValueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
-        point.setX(mKeyAxis->axisRect()->right());
+      if ((valueAxis->range().upper < 0 && !valueAxis->rangeReversed()) ||
+          (valueAxis->range().upper > 0 && valueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
+        point.setX(keyAxis->axisRect()->right());
       else
-        point.setX(mKeyAxis->axisRect()->left());
+        point.setX(keyAxis->axisRect()->left());
       point.setY(upperKey);
-    } else if (mKeyAxis->axisType() == QCPAxis::atTop || mKeyAxis->axisType() == QCPAxis::atBottom)
+    } else if (keyAxis->axisType() == QCPAxis::atTop || keyAxis->axisType() == QCPAxis::atBottom)
     {
       point.setX(upperKey);
-      if ((mValueAxis->range().upper < 0 && !mValueAxis->rangeReversed()) ||
-          (mValueAxis->range().upper > 0 && mValueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
-        point.setY(mKeyAxis->axisRect()->top());
+      if ((valueAxis->range().upper < 0 && !valueAxis->rangeReversed()) ||
+          (valueAxis->range().upper > 0 && valueAxis->rangeReversed())) // if range is negative, zero is on opposite side of key axis
+        point.setY(keyAxis->axisRect()->top());
       else
-        point.setY(mKeyAxis->axisRect()->bottom());
+        point.setY(keyAxis->axisRect()->bottom());
     }
   }
   return point;
@@ -1624,12 +1674,20 @@ QPointF QCPGraph::upperFillBasePoint(double upperKey) const
 */
 const QPolygonF QCPGraph::getChannelFillPolygon(const QVector<QPointF> *lineData) const
 {
-  if (mChannelFillGraph->mKeyAxis->orientation() != mKeyAxis->orientation())
+  if (!mChannelFillGraph)
+    return QPolygonF();
+  
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return QPolygonF(); }
+  if (!mChannelFillGraph.data()->mKeyAxis) { qDebug() << Q_FUNC_INFO << "channel fill target key axis invalid"; return QPolygonF(); }
+  
+  if (mChannelFillGraph.data()->mKeyAxis.data()->orientation() != keyAxis->orientation())
     return QPolygonF(); // don't have same axis orientation, can't fill that (Note: if keyAxis fits, valueAxis will fit too, because it's always orthogonal to keyAxis)
   
   if (lineData->isEmpty()) return QPolygonF();
   QVector<QPointF> otherData;
-  mChannelFillGraph->getPlotData(&otherData, 0);
+  mChannelFillGraph.data()->getPlotData(&otherData, 0);
   if (otherData.isEmpty()) return QPolygonF();
   QVector<QPointF> thisData;
   thisData.reserve(lineData->size()+otherData.size()); // because we will join both vectors at end of this function
@@ -1641,7 +1699,7 @@ const QPolygonF QCPGraph::getChannelFillPolygon(const QVector<QPointF> *lineData
   QVector<QPointF> *croppedData = &otherData;
   
   // crop both vectors to ranges in which the keys overlap (which coord is key, depends on axisType):
-  if (mKeyAxis->orientation() == Qt::Horizontal)
+  if (keyAxis->orientation() == Qt::Horizontal)
   {
     // x is key
     // if an axis range is reversed, the data point keys will be descending. Reverse them, since following algorithm assumes ascending keys:

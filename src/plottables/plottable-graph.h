@@ -96,7 +96,7 @@ public:
   QPen errorPen() const { return mErrorPen; }
   double errorBarSize() const { return mErrorBarSize; }
   bool errorBarSkipSymbol() const { return mErrorBarSkipSymbol; }
-  QCPGraph *channelFillGraph() const { return mChannelFillGraph; }
+  QCPGraph *channelFillGraph() const { return mChannelFillGraph.data(); }
   
   // setters:
   void setData(QCPDataMap *data, bool copy=false);
@@ -145,7 +145,7 @@ protected:
   ErrorType mErrorType;
   double mErrorBarSize;
   bool mErrorBarSkipSymbol;
-  QCPGraph *mChannelFillGraph;
+  QWeakPointer<QCPGraph> mChannelFillGraph;
 
   virtual void draw(QCPPainter *painter);
   virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;

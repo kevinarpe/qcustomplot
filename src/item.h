@@ -87,9 +87,9 @@ public:
   double key() const { return mKey; }
   double value() const { return mValue; }
   QPointF coords() const { return QPointF(mKey, mValue); }
-  QCPAxis *keyAxis() const { return mKeyAxis; }
-  QCPAxis *valueAxis() const { return mValueAxis; }
-  QCPAxisRect *axisRect() const { return mAxisRect; }
+  QCPAxis *keyAxis() const { return mKeyAxis.data(); }
+  QCPAxis *valueAxis() const { return mValueAxis.data(); }
+  QCPAxisRect *axisRect() const { return mAxisRect.data(); }
   virtual QPointF pixelPoint() const;
   
   // setters:
@@ -103,8 +103,8 @@ public:
   
 protected:
   PositionType mPositionType;
-  QCPAxis *mKeyAxis, *mValueAxis;
-  QCPAxisRect *mAxisRect;
+  QWeakPointer<QCPAxis> mKeyAxis, mValueAxis;
+  QWeakPointer<QCPAxisRect> mAxisRect;
   double mKey, mValue;
   QCPItemAnchor *mParentAnchor;
   

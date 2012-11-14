@@ -1,12 +1,14 @@
 ### axis refactoring (branch layoutsystem):
 
+> make all axis-/axisrect-attached objects (plottables, items, positions, anchors) null-pointer-safe and based on smart pointers (QWeakPointer with QObject tracking)
+
 > layout system
  - make QCustomPlot axis pointers null-safe (especially range drag axis etc. in events)
  - add QCPLayoutSpacer (only has stretch factors and minimum/maximum width)
  - add QCPLayoutInset (maybe a QCPLayoutElement in back and front?) (maybe call it QCPLayoutOverlay?)
  - Create QCPLayoutElement subclass that represents a plot title. How to get it drawn? Items?
-
-> find a good way to propagate removed axes and removed axisrects to the whole system.
+ - modify selectedAxes to include all axes
+ 
 - when QCustomPlot is being freed, destroy objects that can be inside axis rects first before axis rects themselves for higher performance.
 - fix (or remove) QCPAxis::setAxisType (watch out that orientation is still updated somewhere, probably in ctor because that's the only place where
   type is currently assigned)

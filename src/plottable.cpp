@@ -92,8 +92,9 @@
     <td>QBrush \b mSelectedBrush</td>
     <td>The generic brush that should be used when the plottable is selected (hint: \ref mainBrush gives you the right brush, depending on selection state).</td>
   </tr><tr>
-    <td>QCPAxis *\b mKeyAxis, *\b mValueAxis</td>
-    <td>The key and value axes this plottable is attached to. Call their QCPAxis::coordToPixel functions to translate coordinates to pixels in either the key or value dimension.</td>
+    <td>QWeakPointer<QCPAxis>\b mKeyAxis, \b mValueAxis</td>
+    <td>The key and value axes this plottable is attached to. Call their QCPAxis::coordToPixel functions to translate coordinates to pixels in either the key or value dimension.
+        Make sure to check whether the weak pointer is null before using it. (In that case don't draw the plottable.)</td>
   </tr><tr>
     <td>bool \b mSelected</td>
     <td>indicates whether the plottable is selected or not.</td>
@@ -406,9 +407,12 @@ void QCPAbstractPlottable::rescaleAxes(bool onlyEnlarge) const
 */
 void QCPAbstractPlottable::rescaleKeyAxis(bool onlyEnlarge) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  if (!keyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
+  
   SignDomain signDomain = sdBoth;
-  if (mKeyAxis->scaleType() == QCPAxis::stLogarithmic)
-    signDomain = (mKeyAxis->range().upper < 0 ? sdNegative : sdPositive);
+  if (keyAxis->scaleType() == QCPAxis::stLogarithmic)
+    signDomain = (keyAxis->range().upper < 0 ? sdNegative : sdPositive);
   
   bool validRange;
   QCPRange newRange = getKeyRange(validRange, signDomain);
@@ -416,12 +420,12 @@ void QCPAbstractPlottable::rescaleKeyAxis(bool onlyEnlarge) const
   {
     if (onlyEnlarge)
     {
-      if (mKeyAxis->range().lower < newRange.lower)
-        newRange.lower = mKeyAxis->range().lower;
-      if (mKeyAxis->range().upper > newRange.upper)
-        newRange.upper = mKeyAxis->range().upper;
+      if (keyAxis->range().lower < newRange.lower)
+        newRange.lower = keyAxis->range().lower;
+      if (keyAxis->range().upper > newRange.upper)
+        newRange.upper = keyAxis->range().upper;
     }
-    mKeyAxis->setRange(newRange);
+    keyAxis->setRange(newRange);
   }
 }
 
@@ -432,9 +436,12 @@ void QCPAbstractPlottable::rescaleKeyAxis(bool onlyEnlarge) const
 */
 void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
 {
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!valueAxis) { qDebug() << Q_FUNC_INFO << "invalid value axis"; return; }
+  
   SignDomain signDomain = sdBoth;
-  if (mValueAxis->scaleType() == QCPAxis::stLogarithmic)
-    signDomain = (mValueAxis->range().upper < 0 ? sdNegative : sdPositive);
+  if (valueAxis->scaleType() == QCPAxis::stLogarithmic)
+    signDomain = (valueAxis->range().upper < 0 ? sdNegative : sdPositive);
   
   bool validRange;
   QCPRange newRange = getValueRange(validRange, signDomain);
@@ -443,12 +450,12 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
   {
     if (onlyEnlarge)
     {
-      if (mValueAxis->range().lower < newRange.lower)
-        newRange.lower = mValueAxis->range().lower;
-      if (mValueAxis->range().upper > newRange.upper)
-        newRange.upper = mValueAxis->range().upper;
+      if (valueAxis->range().lower < newRange.lower)
+        newRange.lower = valueAxis->range().lower;
+      if (valueAxis->range().upper > newRange.upper)
+        newRange.upper = valueAxis->range().upper;
     }
-    mValueAxis->setRange(newRange);
+    valueAxis->setRange(newRange);
   }
 }
 
@@ -495,7 +502,10 @@ bool QCPAbstractPlottable::removeFromLegend() const
 /* inherits documentation from base class */
 QRect QCPAbstractPlottable::clipRect() const
 {
-  return mKeyAxis->axisRect()->rect() & mValueAxis->axisRect()->rect();
+  if (mKeyAxis && mValueAxis)
+    return mKeyAxis.data()->axisRect()->rect() & mValueAxis.data()->axisRect()->rect();
+  else
+    return QRect();
 }
 
 /*! \internal
@@ -510,14 +520,18 @@ QRect QCPAbstractPlottable::clipRect() const
 */
 void QCPAbstractPlottable::coordsToPixels(double key, double value, double &x, double &y) const
 {
-  if (mKeyAxis->orientation() == Qt::Horizontal)
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
+  if (keyAxis->orientation() == Qt::Horizontal)
   {
-    x = mKeyAxis->coordToPixel(key);
-    y = mValueAxis->coordToPixel(value);
+    x = keyAxis->coordToPixel(key);
+    y = valueAxis->coordToPixel(value);
   } else
   {
-    y = mKeyAxis->coordToPixel(key);
-    x = mValueAxis->coordToPixel(value);
+    y = keyAxis->coordToPixel(key);
+    x = valueAxis->coordToPixel(value);
   }
 }
 
@@ -528,10 +542,14 @@ void QCPAbstractPlottable::coordsToPixels(double key, double value, double &x, d
 */
 const QPointF QCPAbstractPlottable::coordsToPixels(double key, double value) const
 {
-  if (mKeyAxis->orientation() == Qt::Horizontal)
-    return QPointF(mKeyAxis->coordToPixel(key), mValueAxis->coordToPixel(value));
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return QPointF(); }
+  
+  if (keyAxis->orientation() == Qt::Horizontal)
+    return QPointF(keyAxis->coordToPixel(key), valueAxis->coordToPixel(value));
   else
-    return QPointF(mValueAxis->coordToPixel(value), mKeyAxis->coordToPixel(key));
+    return QPointF(valueAxis->coordToPixel(value), keyAxis->coordToPixel(key));
 }
 
 /*! \internal
@@ -546,14 +564,18 @@ const QPointF QCPAbstractPlottable::coordsToPixels(double key, double value) con
 */
 void QCPAbstractPlottable::pixelsToCoords(double x, double y, double &key, double &value) const
 {
-  if (mKeyAxis->orientation() == Qt::Horizontal)
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
+  if (keyAxis->orientation() == Qt::Horizontal)
   {
-    key = mKeyAxis->pixelToCoord(x);
-    value = mValueAxis->pixelToCoord(y);
+    key = keyAxis->pixelToCoord(x);
+    value = valueAxis->pixelToCoord(y);
   } else
   {
-    key = mKeyAxis->pixelToCoord(y);
-    value = mValueAxis->pixelToCoord(x);
+    key = keyAxis->pixelToCoord(y);
+    value = valueAxis->pixelToCoord(x);
   }
 }
 

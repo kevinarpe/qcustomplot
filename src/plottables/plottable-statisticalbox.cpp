@@ -314,6 +314,8 @@ void QCPStatisticalBox::clearData()
 /* inherits documentation from base class */
 double QCPStatisticalBox::selectTest(const QPointF &pos) const
 {
+  if (!mKeyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return -1; }
+  
   double posKey, posValue;
   pixelsToCoords(pos, posKey, posValue);
   // quartile box:
@@ -324,7 +326,7 @@ double QCPStatisticalBox::selectTest(const QPointF &pos) const
   
   // min/max whiskers:
   if (QCPRange(mMinimum, mMaximum).contains(posValue))
-    return qAbs(mKeyAxis->coordToPixel(mKey)-mKeyAxis->coordToPixel(posKey));
+    return qAbs(mKeyAxis.data()->coordToPixel(mKey)-mKeyAxis.data()->coordToPixel(posKey));
   
   return -1;
 }

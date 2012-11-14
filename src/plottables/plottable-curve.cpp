@@ -479,15 +479,19 @@ void QCPCurve::getCurveData(QVector<QPointF> *lineData) const
      fills inside R consistent.
      The region R has index 5.
   */
-  QRect axisRect = mKeyAxis->axisRect()->rect() & mValueAxis->axisRect()->rect();
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
+  QRect axisRect = mKeyAxis.data()->axisRect()->rect() & mValueAxis.data()->axisRect()->rect();
   lineData->reserve(mData->size());
   QCPCurveDataMap::const_iterator it;
   int lastRegion = 5;
   int currentRegion = 5;
-  double RLeft = mKeyAxis->range().lower;
-  double RRight = mKeyAxis->range().upper;
-  double RBottom = mValueAxis->range().lower;
-  double RTop = mValueAxis->range().upper;
+  double RLeft = keyAxis->range().lower;
+  double RRight = keyAxis->range().upper;
+  double RBottom = valueAxis->range().lower;
+  double RTop = valueAxis->range().upper;
   double x, y; // current key/value
   bool addedLastAlready = true;
   bool firstPoint = true; // first point must always be drawn, to make sure fill works correctly

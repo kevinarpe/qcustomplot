@@ -236,7 +236,7 @@ protected:
   QList<QCPAbstractItem*> mItems;
   QList<QCPLayer*> mLayers;
   Qt::Orientations mRangeDrag, mRangeZoom;
-  QCPAxis *mRangeDragHorzAxis, *mRangeDragVertAxis, *mRangeZoomHorzAxis, *mRangeZoomVertAxis;
+  QWeakPointer<QCPAxis> mRangeDragHorzAxis, mRangeDragVertAxis, mRangeZoomHorzAxis, mRangeZoomVertAxis;
   double mRangeZoomFactorHorz, mRangeZoomFactorVert;
   bool mDragging;
   QCP::AntialiasedElements mAntialiasedElements, mNotAntialiasedElements;

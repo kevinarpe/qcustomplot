@@ -65,7 +65,7 @@ public:
   void setSectionBrushes(const QBrush &brushEven, const QBrush &brushOdd);
   
 protected:
-  QCPAxis *mParentAxis;
+  QWeakPointer<QCPAxis> mParentAxis;
   bool mSubGridVisible;
   bool mAntialiasedSubGrid, mAntialiasedZeroLine;
   QPen mPen, mSubGridPen, mZeroLinePen;

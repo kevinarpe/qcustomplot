@@ -164,9 +164,6 @@ void QCPItemAnchor::removeChild(QCPItemPosition *pos)
 QCPItemPosition::QCPItemPosition(QCustomPlot *parentPlot, QCPAbstractItem *parentItem, const QString name) :
   QCPItemAnchor(parentPlot, parentItem, name),
   mPositionType(ptAbsolute),
-  mKeyAxis(0),
-  mValueAxis(0),
-  mAxisRect(0),
   mKey(0),
   mValue(0),
   mParentAnchor(0)
@@ -353,12 +350,12 @@ QPointF QCPItemPosition::pixelPoint() const
       {
         if (mParentAnchor)
         {
-          return QPointF(mKey*mAxisRect->width(),
-                         mValue*mAxisRect->height()) + mParentAnchor->pixelPoint();
+          return QPointF(mKey*mAxisRect.data()->width(),
+                         mValue*mAxisRect.data()->height()) + mParentAnchor->pixelPoint();
         } else
         {
-          return QPointF(mKey*mAxisRect->width(),
-                       mValue*mAxisRect->height()) + mAxisRect->topLeft();
+          return QPointF(mKey*mAxisRect.data()->width(),
+                       mValue*mAxisRect.data()->height()) + mAxisRect.data()->topLeft();
         }
       } else
       {
@@ -373,37 +370,37 @@ QPointF QCPItemPosition::pixelPoint() const
       if (mKeyAxis && mValueAxis)
       {
         // both key and value axis are given, translate key/value to x/y coordinates:
-        if (mKeyAxis->orientation() == Qt::Horizontal)
+        if (mKeyAxis.data()->orientation() == Qt::Horizontal)
         {
-          x = mKeyAxis->coordToPixel(mKey);
-          y = mValueAxis->coordToPixel(mValue);
+          x = mKeyAxis.data()->coordToPixel(mKey);
+          y = mValueAxis.data()->coordToPixel(mValue);
         } else
         {
-          y = mKeyAxis->coordToPixel(mKey);
-          x = mValueAxis->coordToPixel(mValue);
+          y = mKeyAxis.data()->coordToPixel(mKey);
+          x = mValueAxis.data()->coordToPixel(mValue);
         }
       } else if (mKeyAxis)
       {
         // only key axis is given, depending on orientation only transform x or y to key coordinate, other stays pixel:
-        if (mKeyAxis->orientation() == Qt::Horizontal)
+        if (mKeyAxis.data()->orientation() == Qt::Horizontal)
         {
-          x = mKeyAxis->coordToPixel(mKey);
+          x = mKeyAxis.data()->coordToPixel(mKey);
           y = mValue;
         } else
         {
-          y = mKeyAxis->coordToPixel(mKey);
+          y = mKeyAxis.data()->coordToPixel(mKey);
           x = mValue;
         }
       } else if (mValueAxis)
       {
         // only value axis is given, depending on orientation only transform x or y to value coordinate, other stays pixel:
-        if (mValueAxis->orientation() == Qt::Horizontal)
+        if (mValueAxis.data()->orientation() == Qt::Horizontal)
         {
-          x = mValueAxis->coordToPixel(mValue);
+          x = mValueAxis.data()->coordToPixel(mValue);
           y = mKey;
         } else
         {
-          y = mValueAxis->coordToPixel(mValue);
+          y = mValueAxis.data()->coordToPixel(mValue);
           x = mKey;
         }
       } else
@@ -488,14 +485,14 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
         if (mParentAnchor)
         {
           QPointF p(pixelPoint-mParentAnchor->pixelPoint());
-          p.rx() /= (double)mAxisRect->width();
-          p.ry() /= (double)mAxisRect->height();
+          p.rx() /= (double)mAxisRect.data()->width();
+          p.ry() /= (double)mAxisRect.data()->height();
           setCoords(p);
         } else
         {
-          QPointF p(pixelPoint-mAxisRect->topLeft());
-          p.rx() /= (double)mAxisRect->width();
-          p.ry() /= (double)mAxisRect->height();
+          QPointF p(pixelPoint-mAxisRect.data()->topLeft());
+          p.rx() /= (double)mAxisRect.data()->width();
+          p.ry() /= (double)mAxisRect.data()->height();
           setCoords(p);
         }
       } else
@@ -512,38 +509,38 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
       if (mKeyAxis && mValueAxis)
       {
         // both key and value axis are given, translate point to key/value coordinates:
-        if (mKeyAxis->orientation() == Qt::Horizontal)
+        if (mKeyAxis.data()->orientation() == Qt::Horizontal)
         {
-          newKey = mKeyAxis->pixelToCoord(pixelPoint.x());
-          newValue = mValueAxis->pixelToCoord(pixelPoint.y());
+          newKey = mKeyAxis.data()->pixelToCoord(pixelPoint.x());
+          newValue = mValueAxis.data()->pixelToCoord(pixelPoint.y());
         } else
         {
-          newKey = mKeyAxis->pixelToCoord(pixelPoint.y());
-          newValue = mValueAxis->pixelToCoord(pixelPoint.x());
+          newKey = mKeyAxis.data()->pixelToCoord(pixelPoint.y());
+          newValue = mValueAxis.data()->pixelToCoord(pixelPoint.x());
         }
       } else if (mKeyAxis)
       {
         // only key axis is given, depending on orientation only transform x or y to key coordinate, other stays pixel:
-        if (mKeyAxis->orientation() == Qt::Horizontal)
+        if (mKeyAxis.data()->orientation() == Qt::Horizontal)
         {
-          newKey = mKeyAxis->pixelToCoord(pixelPoint.x());
+          newKey = mKeyAxis.data()->pixelToCoord(pixelPoint.x());
           newValue = pixelPoint.y();
         } else
         {
-          newKey = mKeyAxis->pixelToCoord(pixelPoint.y());
+          newKey = mKeyAxis.data()->pixelToCoord(pixelPoint.y());
           newValue = pixelPoint.x();
         }
       } else if (mValueAxis)
       {
         // only value axis is given, depending on orientation only transform x or y to value coordinate, other stays pixel:
-        if (mValueAxis->orientation() == Qt::Horizontal)
+        if (mValueAxis.data()->orientation() == Qt::Horizontal)
         {
           newKey = pixelPoint.y();
-          newValue = mValueAxis->pixelToCoord(pixelPoint.x());
+          newValue = mValueAxis.data()->pixelToCoord(pixelPoint.x());
         } else
         {
           newKey = pixelPoint.x();
-          newValue = mValueAxis->pixelToCoord(pixelPoint.y());
+          newValue = mValueAxis.data()->pixelToCoord(pixelPoint.y());
         }
       } else
       {

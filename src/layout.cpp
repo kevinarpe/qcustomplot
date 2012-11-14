@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 QCPLayoutElement::QCPLayoutElement(QCustomPlot *parentPlot) :
+  QObject(parentPlot),
   mParentPlot(parentPlot),
   mParentLayout(0),
   mMinimumSize(0, 0),

@@ -506,7 +506,7 @@ QCustomPlot::~QCustomPlot()
 */
 QCPAxis *QCustomPlot::rangeDragAxis(Qt::Orientation orientation)
 {
-  return (orientation == Qt::Horizontal ? mRangeDragHorzAxis : mRangeDragVertAxis);
+  return (orientation == Qt::Horizontal ? mRangeDragHorzAxis.data() : mRangeDragVertAxis.data());
 }
 
 /*!
@@ -515,7 +515,7 @@ QCPAxis *QCustomPlot::rangeDragAxis(Qt::Orientation orientation)
 */
 QCPAxis *QCustomPlot::rangeZoomAxis(Qt::Orientation orientation)
 {
-  return (orientation == Qt::Horizontal ? mRangeZoomHorzAxis : mRangeZoomVertAxis);
+  return (orientation == Qt::Horizontal ? mRangeZoomHorzAxis.data() : mRangeZoomVertAxis.data());
 }
 
 /*!
@@ -626,10 +626,8 @@ void QCustomPlot::setRangeZoom(Qt::Orientations orientations)
 */
 void QCustomPlot::setRangeDragAxes(QCPAxis *horizontal, QCPAxis *vertical)
 {
-  if (horizontal)
-    mRangeDragHorzAxis = horizontal;
-  if (vertical)
-    mRangeDragVertAxis = vertical;
+  mRangeDragHorzAxis = horizontal;
+  mRangeDragVertAxis = vertical;
 }
 
 /*!
@@ -641,10 +639,8 @@ void QCustomPlot::setRangeDragAxes(QCPAxis *horizontal, QCPAxis *vertical)
 */
 void QCustomPlot::setRangeZoomAxes(QCPAxis *horizontal, QCPAxis *vertical)
 {
-  if (horizontal)
-    mRangeZoomHorzAxis = horizontal;
-  if (vertical)
-    mRangeZoomVertAxis = vertical;
+  mRangeZoomHorzAxis = horizontal;
+  mRangeZoomVertAxis = vertical;
 }
 
 /*!
@@ -1227,6 +1223,11 @@ QCPGraph *QCustomPlot::addGraph(QCPAxis *keyAxis, QCPAxis *valueAxis)
 {
   if (!keyAxis) keyAxis = xAxis;
   if (!valueAxis) valueAxis = yAxis;
+  if (!keyAxis || !valueAxis)
+  {
+    qDebug() << Q_FUNC_INFO << "can't use default QCustomPlot xAxis or yAxis, because at least one is invalid (has been deleted)";
+    return 0;
+  }
   if (keyAxis->parentPlot() != this || valueAxis->parentPlot() != this)
   {
     qDebug() << Q_FUNC_INFO << "passed keyAxis or valueAxis doesn't have this QCustomPlot as parent";
@@ -2208,8 +2209,10 @@ void QCustomPlot::mousePressEvent(QMouseEvent *event)
     // Mouse range dragging interaction:
     if (mInteractions.testFlag(iRangeDrag))
     {
-      mDragStartHorzRange = mRangeDragHorzAxis->range();
-      mDragStartVertRange = mRangeDragVertAxis->range();
+      if (mRangeDragHorzAxis)
+        mDragStartHorzRange = mRangeDragHorzAxis.data()->range();
+      if (mRangeDragVertAxis)
+        mDragStartVertRange = mRangeDragVertAxis.data()->range();
     }
   }
   
@@ -2234,26 +2237,32 @@ void QCustomPlot::mouseMoveEvent(QMouseEvent *event)
     {
       if (mRangeDrag.testFlag(Qt::Horizontal))
       {
-        if (mRangeDragHorzAxis->mScaleType == QCPAxis::stLinear)
+        if (QCPAxis *rangeDragHorzAxis = mRangeDragHorzAxis.data())
         {
-          double diff = mRangeDragHorzAxis->pixelToCoord(mDragStart.x()) - mRangeDragHorzAxis->pixelToCoord(event->pos().x());
-          mRangeDragHorzAxis->setRange(mDragStartHorzRange.lower+diff, mDragStartHorzRange.upper+diff);
-        } else if (mRangeDragHorzAxis->mScaleType == QCPAxis::stLogarithmic)
-        {
-          double diff = mRangeDragHorzAxis->pixelToCoord(mDragStart.x()) / mRangeDragHorzAxis->pixelToCoord(event->pos().x());
-          mRangeDragHorzAxis->setRange(mDragStartHorzRange.lower*diff, mDragStartHorzRange.upper*diff);
+          if (rangeDragHorzAxis->mScaleType == QCPAxis::stLinear)
+          {
+            double diff = rangeDragHorzAxis->pixelToCoord(mDragStart.x()) - rangeDragHorzAxis->pixelToCoord(event->pos().x());
+            rangeDragHorzAxis->setRange(mDragStartHorzRange.lower+diff, mDragStartHorzRange.upper+diff);
+          } else if (rangeDragHorzAxis->mScaleType == QCPAxis::stLogarithmic)
+          {
+            double diff = rangeDragHorzAxis->pixelToCoord(mDragStart.x()) / rangeDragHorzAxis->pixelToCoord(event->pos().x());
+            rangeDragHorzAxis->setRange(mDragStartHorzRange.lower*diff, mDragStartHorzRange.upper*diff);
+          }
         }
       }
       if (mRangeDrag.testFlag(Qt::Vertical))
       {
-        if (mRangeDragVertAxis->mScaleType == QCPAxis::stLinear)
+        if (QCPAxis *rangeDragVertAxis = mRangeDragVertAxis.data())
         {
-          double diff = mRangeDragVertAxis->pixelToCoord(mDragStart.y()) - mRangeDragVertAxis->pixelToCoord(event->pos().y());
-          mRangeDragVertAxis->setRange(mDragStartVertRange.lower+diff, mDragStartVertRange.upper+diff);
-        } else if (mRangeDragVertAxis->mScaleType == QCPAxis::stLogarithmic)
-        {
-          double diff = mRangeDragVertAxis->pixelToCoord(mDragStart.y()) / mRangeDragVertAxis->pixelToCoord(event->pos().y());
-          mRangeDragVertAxis->setRange(mDragStartVertRange.lower*diff, mDragStartVertRange.upper*diff);
+          if (rangeDragVertAxis->mScaleType == QCPAxis::stLinear)
+          {
+            double diff = rangeDragVertAxis->pixelToCoord(mDragStart.y()) - rangeDragVertAxis->pixelToCoord(event->pos().y());
+            rangeDragVertAxis->setRange(mDragStartVertRange.lower+diff, mDragStartVertRange.upper+diff);
+          } else if (rangeDragVertAxis->mScaleType == QCPAxis::stLogarithmic)
+          {
+            double diff = rangeDragVertAxis->pixelToCoord(mDragStart.y()) / rangeDragVertAxis->pixelToCoord(event->pos().y());
+            rangeDragVertAxis->setRange(mDragStartVertRange.lower*diff, mDragStartVertRange.upper*diff);
+          }
         }
       }
       if (mRangeDrag != 0) // if either vertical or horizontal drag was enabled, do a replot
@@ -2409,12 +2418,14 @@ void QCustomPlot::wheelEvent(QWheelEvent *event)
       if (mRangeZoom.testFlag(Qt::Horizontal))
       {
         factor = pow(mRangeZoomFactorHorz, wheelSteps);
-        mRangeZoomHorzAxis->scaleRange(factor, mRangeZoomHorzAxis->pixelToCoord(event->pos().x()));
+        if (mRangeZoomHorzAxis.data())
+          mRangeZoomHorzAxis.data()->scaleRange(factor, mRangeZoomHorzAxis.data()->pixelToCoord(event->pos().x()));
       }
       if (mRangeZoom.testFlag(Qt::Vertical))
       {
         factor = pow(mRangeZoomFactorVert, wheelSteps);
-        mRangeZoomVertAxis->scaleRange(factor, mRangeZoomVertAxis->pixelToCoord(event->pos().y()));
+        if (mRangeZoomVertAxis.data())
+          mRangeZoomVertAxis.data()->scaleRange(factor, mRangeZoomVertAxis.data()->pixelToCoord(event->pos().y()));
       }
       replot();
     }
@@ -2673,19 +2684,7 @@ void QCustomPlot::axisRemoved(QCPAxis *axis)
   if (yAxis2 == axis)
     yAxis2 = 0;
   
-  if (mRangeDragHorzAxis == axis && mRangeDragVertAxis == axis)
-    setRangeDragAxes(0, 0);
-  else if (mRangeDragHorzAxis == axis)
-    setRangeDragAxes(0, mRangeDragVertAxis);
-  else if (mRangeDragVertAxis == axis)
-    setRangeDragAxes(mRangeDragHorzAxis, 0);
-  
-  if (mRangeZoomHorzAxis == axis && mRangeZoomVertAxis == axis)
-    setRangeZoomAxes(0, 0);
-  else if (mRangeZoomHorzAxis == axis)
-    setRangeZoomAxes(0, mRangeZoomVertAxis);
-  else if (mRangeZoomVertAxis == axis)
-    setRangeZoomAxes(mRangeZoomHorzAxis, 0);
+  // Note: No need to take care of range drag axes and range zoom axes, because they are stored in smart pointers
 }
 
 /*! \internal
