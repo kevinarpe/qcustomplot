@@ -183,7 +183,6 @@ void QCPLayout::releaseChild(QCPLayoutElement *el)
 
 QVector<int> QCPLayout::getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const
 {
-  
   int sectionCount = stretchFactors.size();
   QVector<double> sectionSizes(sectionCount);
   // if provided total size is forced smaller than total minimum size, ignore minimum sizes (squeeze sections):
@@ -200,57 +199,87 @@ QVector<int> QCPLayout::getSectionSizes(QVector<int> maxSizes, QVector<int> minS
     }
   }
   
+  QList<int> minimumLockedSections;
   QList<int> unfinishedSections;
   for (int i=0; i<sectionCount; ++i)
     unfinishedSections.append(i);
   double freeSize = totalSize;
-  // set all section sizes to their respective minimum:
-  for (int i=0; i<sectionCount; ++i)
-  {
-    sectionSizes[i] = minSizes.at(i);
-    freeSize -= sectionSizes.at(i);
-  }
   
-  int iteration = 0;
-  while (!unfinishedSections.isEmpty() && iteration < sectionCount*2) // the iteration check ist just a failsafe in case something really strange happens
+  int outerIterations = 0;
+  while (!unfinishedSections.isEmpty() && outerIterations < sectionCount*2) // the iteration check ist just a failsafe in case something really strange happens
   {
-    ++iteration;
-    // find section that hits its maximum next:
-    int nextId = -1;
-    double nextMax = 1e12;
-    for (int i=0; i<unfinishedSections.size(); ++i)
+    ++outerIterations;
+    int innerIterations = 0;
+    while (!unfinishedSections.isEmpty() && innerIterations < sectionCount*2) // the iteration check ist just a failsafe in case something really strange happens
     {
-      int secId = unfinishedSections.at(i);
-      double hitsMaxAt = (maxSizes.at(secId)-sectionSizes.at(secId))/stretchFactors.at(secId);
-      if (hitsMaxAt < nextMax)
+      ++innerIterations;
+      // find section that hits its maximum next:
+      int nextId = -1;
+      double nextMax = 1e12;
+      for (int i=0; i<unfinishedSections.size(); ++i)
       {
-        nextMax = hitsMaxAt;
-        nextId = secId;
+        int secId = unfinishedSections.at(i);
+        double hitsMaxAt = (maxSizes.at(secId)-sectionSizes.at(secId))/stretchFactors.at(secId);
+        if (hitsMaxAt < nextMax)
+        {
+          nextMax = hitsMaxAt;
+          nextId = secId;
+        }
+      }
+      // check if that maximum is actually within the bounds of the total size (i.e. can we stretch all remaining sections so far that the found section
+      // actually hits its maximum, without exceeding the total size when we add up all sections)
+      double stretchFactorSum = 0;
+      for (int i=0; i<unfinishedSections.size(); ++i)
+        stretchFactorSum += stretchFactors.at(unfinishedSections.at(i));
+      double nextMaxLimit = freeSize/stretchFactorSum;
+      if (nextMax < nextMaxLimit) // next maximum is actually hit, move forward to that point and fix the size of that section
+      {
+        for (int i=0; i<unfinishedSections.size(); ++i)
+        {
+          sectionSizes[unfinishedSections.at(i)] += nextMax*stretchFactors.at(unfinishedSections.at(i)); // increment all sections
+          freeSize -= nextMax*stretchFactors.at(unfinishedSections.at(i));
+        }
+        unfinishedSections.removeOne(nextId); // exclude the section that is now at maximum from further changes
+      } else // next maximum isn't hit, just distribute rest of free space on remaining sections
+      {
+        for (int i=0; i<unfinishedSections.size(); ++i)
+          sectionSizes[unfinishedSections.at(i)] += nextMaxLimit*stretchFactors.at(unfinishedSections.at(i)); // increment all sections
+        unfinishedSections.clear();
       }
     }
-    // check if that maximum is actually within the bounds of the total size (i.e. can we stretch all remaining sections so far that the found section
-    // actually hits its maximum, without exceeding the total size when we add up all sections)
-    double stretchFactorSum = 0;
-    for (int i=0; i<unfinishedSections.size(); ++i)
-      stretchFactorSum += stretchFactors.at(unfinishedSections.at(i));
-    double nextMaxLimit = freeSize/stretchFactorSum;
-    if (nextMax < nextMaxLimit) // next maximum is actually hit, move forward to that point and fix the size of that section
+    if (innerIterations == sectionCount*2)
+      qDebug() << Q_FUNC_INFO << "Exceeded maximum expected inner iteration count, layouting aborted. Input was:" << maxSizes << minSizes << stretchFactors << totalSize;
+    
+    // now check whether the resulting section sizes violate minimum restrictions:
+    bool foundMinimumViolation = false;
+    for (int i=0; i<sectionSizes.size(); ++i)
     {
-      for (int i=0; i<unfinishedSections.size(); ++i)
+      if (minimumLockedSections.contains(i))
+        continue;
+      if (sectionSizes.at(i) < minSizes.at(i)) // section violates minimum
       {
-        sectionSizes[unfinishedSections.at(i)] += nextMax*stretchFactors.at(unfinishedSections.at(i)); // increment all sections
-        freeSize -= nextMax*stretchFactors.at(unfinishedSections.at(i));
+        sectionSizes[i] = minSizes.at(i); // set it to minimum
+        foundMinimumViolation = true; // make sure we repeat the whole optimization process
+        minimumLockedSections.append(i);
       }
-      unfinishedSections.removeOne(nextId); // exclude the section that is now at maximum from further changes
-    } else // next maximum isn't hit, just distribute rest of free space on remaining sections
+    }
+    if (foundMinimumViolation)
     {
+      freeSize = totalSize;
+      for (int i=0; i<sectionCount; ++i)
+      {
+        if (!minimumLockedSections.contains(i)) // only put sections that haven't hit their minimum back into the pool
+          unfinishedSections.append(i);
+        else
+          freeSize -= sectionSizes.at(i); // remove size of minimum locked sections from available space in next round
+      }
+      // reset all section sizes to zero that are in unfinished sections (all others have been set to their minimum):
       for (int i=0; i<unfinishedSections.size(); ++i)
-        sectionSizes[unfinishedSections.at(i)] += nextMaxLimit*stretchFactors.at(unfinishedSections.at(i)); // increment all sections
-      unfinishedSections.clear();
+        sectionSizes[unfinishedSections.at(i)] = 0;
     }
   }
-  if (iteration == sectionCount*2)
-    qDebug() << Q_FUNC_INFO << "Exceeded maximum expected iteration count, layouting aborted. Input was:" << maxSizes << minSizes << stretchFactors << totalSize;
+  if (outerIterations == sectionCount*2)
+    qDebug() << Q_FUNC_INFO << "Exceeded maximum expected outer iteration count, layouting aborted. Input was:" << maxSizes << minSizes << stretchFactors << totalSize;
   
   QVector<int> result(sectionCount);
   for (int i=0; i<sectionCount; ++i)
