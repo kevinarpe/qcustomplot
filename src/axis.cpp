@@ -54,7 +54,7 @@
   internally
 */
 QCPGrid::QCPGrid(QCPAxis *parentAxis) :
-  QCPLayerable(parentAxis->parentPlot()),
+  QCPLayerable(parentAxis, parentAxis->parentPlot(), "grid"),
   mParentAxis(parentAxis),
   mSectionBrushEven(Qt::NoBrush),
   mSectionBrushOdd(Qt::NoBrush)
@@ -392,7 +392,7 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   Constructs an Axis instance of Type \a type inside \a parentPlot.
 */
 QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
-  QCPLayerable(parent->parentPlot()),
+  QCPLayerable(parent, parent->parentPlot(), "axes"),
   mOffset(0),
   mAxisRect(parent)
 {
@@ -2601,12 +2601,6 @@ QCPAxis *QCPAxisRect::addAxis(QCPAxis::AxisType type)
 {
   QCPAxis *newAxis = new QCPAxis(this, type);
   mAxes[type].append(newAxis);
-  
-  // place on default axis/grid layers, if they exist:
-  if (QCPLayer *axisLayer = parentPlot()->layer("axes"))
-    newAxis->setLayer(axisLayer);
-  if (QCPLayer *gridLayer = parentPlot()->layer("grid"))
-    newAxis->mGrid->setLayer(gridLayer);
   
   return newAxis;
 }

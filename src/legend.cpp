@@ -402,7 +402,7 @@ QSize QCPPlottableLegendItem::size(const QSize &targetSize) const
   setVisible).
 */
 QCPLegend::QCPLegend(QCustomPlot *parentPlot) :
-  QCPLayerable(parentPlot)
+  QCPLayerable(parentPlot, parentPlot)
 {
   setAntialiased(false);
   setPositionStyle(psTopRight);

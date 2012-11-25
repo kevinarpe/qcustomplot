@@ -214,16 +214,25 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
   
   Since QCPLayerable is an abstract base class, it can't be instantiated directly. Use one of the
   derived classes.
+  
+  If \a plot is provided, it automatically places itself on the layer named \a targetLayer. If \a
+  targetLayer is an empty string, it places itself on the current layer of the plot (see \ref
+  QCustomPlot::setCurrentLayer).
 */
-QCPLayerable::QCPLayerable(QCustomPlot *parentPlot) :
-  QObject(0), // rather not bind to parentPlot, incase we want to allow moving of objects between customplots some day
+QCPLayerable::QCPLayerable(QObject *parent, QCustomPlot *plot, QString targetLayer) :
+  QObject(parent),
   mVisible(true),
-  mParentPlot(parentPlot),
+  mParentPlot(plot),
   mLayer(0),
   mAntialiased(true)
 {
   if (mParentPlot)
-    setLayer(mParentPlot->currentLayer());
+  {
+    if (targetLayer.isEmpty())
+      setLayer(mParentPlot->currentLayer());
+    else if (!setLayer(targetLayer))
+      qDebug() << Q_FUNC_INFO << "setting QCPlayerable initial layer to" << targetLayer << "failed.";
+  }
 }
 
 QCPLayerable::~QCPLayerable()

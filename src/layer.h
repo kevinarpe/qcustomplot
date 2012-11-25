@@ -61,7 +61,7 @@ class QCP_LIB_DECL QCPLayerable : public QObject
 {
   Q_OBJECT
 public:
-  QCPLayerable(QCustomPlot *parentPlot);
+  QCPLayerable(QObject *parent, QCustomPlot *plot, QString targetLayer="");
   ~QCPLayerable();
   
   // getters:

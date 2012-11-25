@@ -748,7 +748,7 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
   Base class constructor which initializes base class members.
 */
 QCPAbstractItem::QCPAbstractItem(QCustomPlot *parentPlot) :
-  QCPLayerable(parentPlot),
+  QCPLayerable(parentPlot, parentPlot),
   mClipToAxisRect(false),
   mSelectable(true),
   mSelected(false)
