@@ -136,15 +136,6 @@ QCPGraph::QCPGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
 
 QCPGraph::~QCPGraph()
 {
-  if (mParentPlot)
-  {
-    // if another graph has a channel fill towards this graph, set it to zero
-    for (int i=0; i<mParentPlot->graphCount(); ++i)
-    {
-      if (mParentPlot->graph(i)->channelFillGraph() == this)
-        mParentPlot->graph(i)->setChannelFillGraph(0);
-    }
-  }
   delete mData;
 }
 
