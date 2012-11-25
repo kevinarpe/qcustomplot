@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 QCPLayoutElement::QCPLayoutElement(QCustomPlot *parentPlot) :
-  QObject(parentPlot),
+  QObject(parentPlot), // parenthood is changed as soon as layout element gets inserted into a layout (except for top level layout)
   mParentPlot(parentPlot),
   mParentLayout(0),
   mMinimumSize(0, 0),

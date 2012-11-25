@@ -37,7 +37,6 @@ class QCP_LIB_DECL QCPStatisticalBox : public QCPAbstractPlottable
   Q_OBJECT
 public:
   explicit QCPStatisticalBox(QCPAxis *keyAxis, QCPAxis *valueAxis);
-  virtual ~QCPStatisticalBox();
   
   // getters:
   double key() const { return mKey; }

@@ -43,7 +43,6 @@ class QCP_LIB_DECL QCPGrid : public QCPLayerable
   Q_OBJECT
 public:
   QCPGrid(QCPAxis *parentAxis);
-  ~QCPGrid();
   
   // getters:
   bool subGridVisible() const { return mSubGridVisible; }
@@ -162,7 +161,6 @@ public:
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)
   
   explicit QCPAxis(QCPAxisRect *parent, AxisType type);
-  virtual ~QCPAxis();
       
   // getters:
   AxisType axisType() const { return mAxisType; }

@@ -37,7 +37,6 @@ class QCP_LIB_DECL QCPAbstractPlottable : public QCPLayerable
   Q_OBJECT
 public:
   QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis);
-  virtual ~QCPAbstractPlottable() {}
   
   // getters:
   QString name() const { return mName; }

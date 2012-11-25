@@ -36,7 +36,6 @@ class QCP_LIB_DECL QCPLayer : public QObject
   Q_OBJECT
 public:
   QCPLayer(QCustomPlot* parentPlot, const QString &layerName);
-  ~QCPLayer();
   
   // getters:
   QCustomPlot *parentPlot() const { return mParentPlot; }

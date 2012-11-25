@@ -71,10 +71,6 @@ QCPGrid::QCPGrid(QCPAxis *parentAxis) :
   //setSectionBrushes(QBrush(Qt::lightGray), QBrush(Qt::gray));
 }
 
-QCPGrid::~QCPGrid()
-{
-}
-
 /*!
   Sets whether grid lines at sub tick marks are drawn.
   
@@ -465,11 +461,6 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
     setTickLabelPadding(5);
     setLabelPadding(10);
   }
-}
-
-QCPAxis::~QCPAxis()
-{
-  delete mGrid;
 }
 
 /* No documentation as it is a property getter */

@@ -663,7 +663,6 @@ void QCPGraph::rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const
 void QCPGraph::draw(QCPPainter *painter)
 {
   if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
-  
   if (mKeyAxis.data()->range().size() <= 0 || mData->isEmpty()) return;
   if (mLineStyle == lsNone && mScatterStyle == QCP::ssNone) return;
   

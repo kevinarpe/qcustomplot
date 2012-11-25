@@ -117,10 +117,6 @@ QCPStatisticalBox::QCPStatisticalBox(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   setSelectedBrush(Qt::NoBrush);
 }
 
-QCPStatisticalBox::~QCPStatisticalBox()
-{
-}
-
 /*!
   Sets the key coordinate of the statistical box.
 */

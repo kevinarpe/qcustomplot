@@ -38,7 +38,6 @@ class QCP_LIB_DECL QCPAbstractLegendItem : public QObject
   Q_OBJECT
 public:
   QCPAbstractLegendItem(QCPLegend *parent);
-  virtual ~QCPAbstractLegendItem() {}
   
   // getters:
   bool antialiased() const { return mAntialiased; }
@@ -86,7 +85,6 @@ class QCP_LIB_DECL QCPPlottableLegendItem : public QCPAbstractLegendItem
   Q_OBJECT
 public:
   QCPPlottableLegendItem(QCPLegend *parent, QCPAbstractPlottable *plottable);
-  virtual ~QCPPlottableLegendItem() {}
   
   // getters:
   QCPAbstractPlottable *plottable() { return mPlottable; }

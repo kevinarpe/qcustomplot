@@ -35,7 +35,6 @@ class QCP_LIB_DECL QCPLayoutElement : public QObject
   Q_OBJECT
 public:
   explicit QCPLayoutElement(QCustomPlot *parentPlot);
-  virtual ~QCPLayoutElement() {}
   
   QCustomPlot *parentPlot() const { return mParentPlot; }
   QCPLayout *layout() const { return mParentLayout; }
@@ -67,7 +66,6 @@ protected:
   QRect mRect, mOuterRect;
   QMargins mMargins, mMinimumMargins;
   QCP::MarginSides mAutoMargins;
-  
   virtual QMargins calculateAutoMargins() const;
   
 private:

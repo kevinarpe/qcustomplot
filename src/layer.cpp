@@ -94,12 +94,8 @@ QCPLayer::QCPLayer(QCustomPlot *parentPlot, const QString &layerName) :
   mParentPlot(parentPlot),
   mName(layerName)
 {
-  // Note: no need to make sure layerName doesn't already, because layer
+  // Note: no need to make sure layerName is unique, because layer
   // management is done with QCustomPlot functions.
-}
-
-QCPLayer::~QCPLayer()
-{
 }
 
 /*!
