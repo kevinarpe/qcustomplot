@@ -383,8 +383,8 @@ double QCPBars::selectTest(const QPointF &pos) const
 /* inherits documentation from base class */
 void QCPBars::draw(QCPPainter *painter)
 {
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
   if (mData->isEmpty()) return;
-  if (!mKeyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
   
   QCPBarDataMap::const_iterator it;
   for (it = mData->constBegin(); it != mData->constEnd(); ++it)

@@ -314,7 +314,7 @@ void QCPStatisticalBox::clearData()
 /* inherits documentation from base class */
 double QCPStatisticalBox::selectTest(const QPointF &pos) const
 {
-  if (!mKeyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return -1; }
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
   
   double posKey, posValue;
   pixelsToCoords(pos, posKey, posValue);
@@ -334,6 +334,8 @@ double QCPStatisticalBox::selectTest(const QPointF &pos) const
 /* inherits documentation from base class */
 void QCPStatisticalBox::draw(QCPPainter *painter)
 {
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
   QRectF quartileBox;
   drawQuartileBox(painter, &quartileBox);
   
