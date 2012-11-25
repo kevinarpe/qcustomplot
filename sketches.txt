@@ -6,8 +6,6 @@
  - Create QCPLayoutElement subclass that represents a plot title. How to get it drawn? Items?
  - modify selectedAxes to include all axes
  
-- fix (or remove) QCPAxis::setAxisType (watch out that orientation is still updated somewhere, probably in ctor because that's the only place where
-  type is currently assigned)
 - moveAxis is kind of a strange interface (from/to index won't work properly when wanting to move all the way to bottom and top of stack)
 - provide way to get the QCPAxisRect a QPoint is on.
 

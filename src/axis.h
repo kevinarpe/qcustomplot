@@ -85,7 +85,6 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
 {
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
-  Q_PROPERTY(AxisType axisType READ axisType WRITE setAxisType)
   Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType)
   Q_PROPERTY(double scaleLogBase READ scaleLogBase WRITE setScaleLogBase)
   Q_PROPERTY(QCPRange range READ range WRITE setRange)
@@ -121,7 +120,6 @@ public:
   /*!
     Defines at which side of the axis rect the axis will appear. This also affects how the tick
     marks are drawn, on which side the labels are placed etc.
-    \see setAxisType
   */
   enum AxisType { atLeft    = 0x01  ///< <tt>0x01</tt> Axis is vertical and on the left side of the axis rect of the parent QCustomPlot
                   ,atRight  = 0x02  ///< <tt>0x02</tt> Axis is vertical and on the right side of the axis rect of the parent QCustomPlot
@@ -347,9 +345,6 @@ protected:
   Qt::Orientation mOrientation;
   int mLowestVisibleTick, mHighestVisibleTick;
   QCache<QString, CachedLabel> mLabelCache;
-  
-  // internal getters and setters:
-  void setAxisType(AxisType type);
   
   // introduced methods:
   virtual void setupTickVectors();

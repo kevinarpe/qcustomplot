@@ -389,7 +389,8 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mOffset(0),
   mAxisRect(parent)
 {
-  setAxisType(type);
+  mAxisType = type;
+  mOrientation = (type == atBottom || type == atTop) ? Qt::Horizontal : Qt::Vertical;
   mLabelCache.setMaxCost(16); // cache at most 16 (tick) labels
   mLowestVisibleTick = 0;
   mHighestVisibleTick = -1;
@@ -475,18 +476,6 @@ QString QCPAxis::numberFormat() const
       result.append("c");
   }
   return result;
-}
-
-/*! \internal
-  
-  Sets the axis type. This determines the \ref orientation and together with the current axis rect
-  (see \ref setAxisRect), the position of the axis. Depending on \a type, ticks, tick labels, and
-  label are drawn on corresponding sides of the axis base line.
-*/
-void QCPAxis::setAxisType(AxisType type)
-{
-  mAxisType = type;
-  mOrientation = (type == atBottom || type == atTop) ? Qt::Horizontal : Qt::Vertical;
 }
 
 /*!
