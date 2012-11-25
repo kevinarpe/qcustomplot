@@ -1723,9 +1723,9 @@ QList<QCPAxisRect*> QCustomPlot::axisRects() const
     for (int i=0; i<layout->elementCount(); ++i)
     {
       QCPLayoutElement *element = layout->elementAt(i);
-      if (QCPAxisRect *r = dynamic_cast<QCPAxisRect*>(element))
+      if (QCPAxisRect *r = qobject_cast<QCPAxisRect*>(element))
         result.append(r);
-      else if (QCPLayout *l = dynamic_cast<QCPLayout*>(element))
+      else if (QCPLayout *l = qobject_cast<QCPLayout*>(element))
         layoutStack.push(l);
     }
   }
