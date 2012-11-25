@@ -2618,22 +2618,15 @@ QList<QCPAxis*> QCPAxisRect::addAxes(QCPAxis::AxisTypes types)
 
 bool QCPAxisRect::removeAxis(QCPAxis *axis)
 {
-  if (axis->plottables().isEmpty() && axis->items().isEmpty()) // TODO: Remove this and allow plottables/items to have null axes (won't be drawn)
+  if (mAxes[axis->axisType()].contains(axis))
   {
-    if (mAxes[axis->axisType()].contains(axis))
-    {
-      mAxes[axis->axisType()].removeOne(axis);
-      parentPlot()->axisRemoved(axis);
-      delete axis;
-      return true;
-    } else
-    {
-      qDebug() << Q_FUNC_INFO << "axis wasn't in expected hash bucket (report this error)";
-      return false;
-    }
+    mAxes[axis->axisType()].removeOne(axis);
+    parentPlot()->axisRemoved(axis);
+    delete axis;
+    return true;
   } else
   {
-    qDebug() << Q_FUNC_INFO << "can't remove axis because plottables or items are still associated with it";
+    qDebug() << Q_FUNC_INFO << "axis wasn't in expected hash bucket";
     return false;
   }
 }
