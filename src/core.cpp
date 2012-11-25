@@ -419,13 +419,10 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   mPaintBuffer = QPixmap(size());
   
   // create initial layers:
-  QCPLayer *gridLayer = new QCPLayer(this, "grid");
-  QCPLayer *mainLayer = new QCPLayer(this, "main");
-  QCPLayer *axesLayer = new QCPLayer(this, "axes");
-  mLayers.append(gridLayer);
-  mLayers.append(mainLayer);
-  mLayers.append(axesLayer);
-  setCurrentLayer(mainLayer);
+  mLayers.append(new QCPLayer(this, "grid"));
+  mLayers.append(new QCPLayer(this, "main"));
+  mLayers.append(new QCPLayer(this, "axes"));
+  setCurrentLayer("main");
   
   // create initial layout, axis rect and axes:
   mPlotLayout = new QCPLayoutGrid(this);
@@ -440,7 +437,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
 
   legend = new QCPLegend(this);
   legend->setVisible(false);
-  legend->setLayer(axesLayer);
+  legend->setLayer("axes");
   xAxis->setGrid(true);
   yAxis->setGrid(true);
   xAxis2->setGrid(false);
@@ -449,14 +446,6 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   yAxis2->setZeroLinePen(Qt::NoPen);
   xAxis2->setVisible(false);
   yAxis2->setVisible(false);
-  xAxis->setLayer(axesLayer);
-  yAxis->setLayer(axesLayer);
-  xAxis2->setLayer(axesLayer);
-  yAxis2->setLayer(axesLayer);
-  xAxis->mGrid->setLayer(gridLayer);
-  yAxis->mGrid->setLayer(gridLayer);
-  xAxis2->mGrid->setLayer(gridLayer);
-  yAxis2->mGrid->setLayer(gridLayer);
   setViewport(rect());
   
   setNoAntialiasingOnDrag(false);
@@ -491,12 +480,20 @@ QCustomPlot::~QCustomPlot()
 {
   clearPlottables();
   clearItems();
-  delete legend;
-  delete xAxis;
-  delete yAxis;
-  delete xAxis2;
-  delete yAxis2;
-  qDeleteAll(mLayers);
+  
+  if (legend)
+  {
+    delete legend;
+    legend = 0;
+  }
+  
+  if (mPlotLayout)
+  {
+    delete mPlotLayout;
+    mPlotLayout = 0;
+  }
+  
+  qDeleteAll(mLayers); // don't use removeLayer, because it would prevent the last layer to be removed
   mLayers.clear();
 }
 
