@@ -1699,7 +1699,15 @@ int QCustomPlot::axisRectCount() const
 
 QCPAxisRect *QCustomPlot::axisRect(int index) const
 {
-  return axisRects().at(index);
+  const QList<QCPAxisRect*> rectList = axisRects();
+  if (index >= 0 && index < rectList.size())
+  {
+    return rectList.at(index);
+  } else
+  {
+    qDebug() << Q_FUNC_INFO << "invalid axis rect index" << index;
+    return 0;
+  }
 }
 
 QList<QCPAxisRect*> QCustomPlot::axisRects() const
