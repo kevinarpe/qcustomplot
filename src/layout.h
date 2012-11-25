@@ -92,10 +92,9 @@ public:
   virtual void simplify() = 0;
   
 protected:
-  virtual void layoutElements();
+  virtual void updateLayout();
   void adoptChild(QCPLayoutElement *el);
   void releaseChild(QCPLayoutElement *el);
-  
   // layout helpers for subclasses:
   QVector<int> getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const;
   
@@ -111,8 +110,8 @@ class QCP_LIB_DECL QCPLayoutGrid : public QCPLayout
 public:
   explicit QCPLayoutGrid(QCustomPlot *parentPlot);
   
-  int rows() const;
-  int columns() const;
+  int rowCount() const;
+  int columnCount() const;
   QList<double> columnStretchFactors() const { return mColumnStretchFactors; }
   QList<double> rowStretchFactors() const { return mRowStretchFactors; }
   int columnSpacing() const { return mColumnSpacing; }
@@ -128,9 +127,9 @@ public:
   QCPLayoutElement *element(int row, int column) const;
   bool addElement(QCPLayoutElement *element, int row, int column);
   bool hasElement(int row, int column);
-  void expandTo(int rowCount, int columnCount);
+  void expandTo(int rows, int columns);
   
-  virtual void layoutElements();
+  virtual void updateLayout();
   virtual int elementCount() const;
   virtual QCPLayoutElement* elementAt(int index) const;
   virtual QCPLayoutElement* takeAt(int index);

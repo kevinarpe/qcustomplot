@@ -144,10 +144,10 @@ QCPLayout::QCPLayout(QCustomPlot *parentPlot) :
 
 void QCPLayout::update()
 {
-  QCPLayoutElement::update();
+  QCPLayoutElement::update(); // recalculates (auto-)margins
   
   // set child element rects according to layout:
-  layoutElements();
+  updateLayout();
   
   // propagate update call to child elements:
   for (int i=0; i<elementCount(); ++i)
@@ -157,7 +157,7 @@ void QCPLayout::update()
   }
 }
 
-void QCPLayout::layoutElements()
+void QCPLayout::updateLayout()
 {
 }
 
@@ -285,12 +285,12 @@ QCPLayoutElement *QCPLayoutGrid::element(int row, int column) const
   return 0;
 }
 
-int QCPLayoutGrid::rows() const
+int QCPLayoutGrid::rowCount() const
 {
   return mElements.size();
 }
 
-int QCPLayoutGrid::columns() const
+int QCPLayoutGrid::columnCount() const
 {
   if (mElements.size() > 0)
     return mElements.first().size();
@@ -311,7 +311,7 @@ bool QCPLayoutGrid::addElement(QCPLayoutElement *element, int row, int column)
       adoptChild(element);
       return true;
     } else
-      qDebug() << Q_FUNC_INFO << "The specified cell is already occupied by an element:" << row << column; 
+      qDebug() << Q_FUNC_INFO << "There is already an element in the specified row/column:" << row << column; 
   } else
     qDebug() << Q_FUNC_INFO << "Can't add null element to row/column:" << row << column;
   return false;
@@ -319,7 +319,7 @@ bool QCPLayoutGrid::addElement(QCPLayoutElement *element, int row, int column)
 
 bool QCPLayoutGrid::hasElement(int row, int column)
 {
-  if (row >= 0 && row < rows() && column >= 0 && column < columns())
+  if (row >= 0 && row < rowCount() && column >= 0 && column < columnCount())
     return mElements.at(row).at(column);
   else
     return false;
@@ -327,7 +327,7 @@ bool QCPLayoutGrid::hasElement(int row, int column)
 
 void QCPLayoutGrid::setColumnStretchFactor(int column, double factor)
 {
-  if (column >= 0 && column < columns())
+  if (column >= 0 && column < columnCount())
   {
     if (factor > 0)
       mColumnStretchFactors[column] = factor;
@@ -351,12 +351,12 @@ void QCPLayoutGrid::setColumnStretchFactors(const QList<double> &factors)
       }
     }
   } else
-    qDebug() << Q_FUNC_INFO << "More stretch factors passed than there are columns:" << factors;
+    qDebug() << Q_FUNC_INFO << "Column count not equal to passed stretch factor count:" << factors;
 }
 
 void QCPLayoutGrid::setRowStretchFactor(int row, double factor)
 {
-  if (row >= 0 && row < rows())
+  if (row >= 0 && row < rowCount())
   {
     if (factor > 0)
       mRowStretchFactors[row] = factor;
@@ -380,7 +380,7 @@ void QCPLayoutGrid::setRowStretchFactors(const QList<double> &factors)
       }
     }
   } else
-    qDebug() << Q_FUNC_INFO << "More stretch factors passed than there are rows:" << factors;
+    qDebug() << Q_FUNC_INFO << "Row count not equal to passed stretch factor count:" << factors;
 }
 
 void QCPLayoutGrid::setColumnSpacing(int pixels)
@@ -393,17 +393,17 @@ void QCPLayoutGrid::setRowSpacing(int pixels)
   mRowSpacing = pixels;
 }
 
-void QCPLayoutGrid::expandTo(int rowCount, int columnCount)
+void QCPLayoutGrid::expandTo(int rows, int columns)
 {
   // add rows as necessary:
-  while (rows() < rowCount)
+  while (rowCount() < rows)
   {
     mElements.append(QList<QCPLayoutElement*>());
     mRowStretchFactors.append(1);
   }
   // go through rows and expand columns as necessary:
-  int newColCount = qMax(columns(), columnCount);
-  for (int i=0; i<rows(); ++i)
+  int newColCount = qMax(columnCount(), columns);
+  for (int i=0; i<rowCount(); ++i)
   {
     while (mElements.at(i).size() < newColCount)
       mElements[i].append(0);
@@ -412,25 +412,25 @@ void QCPLayoutGrid::expandTo(int rowCount, int columnCount)
     mColumnStretchFactors.append(1);
 }
 
-void QCPLayoutGrid::layoutElements()
+void QCPLayoutGrid::updateLayout()
 {
   QVector<int> minColWidths, minRowHeights, maxColWidths, maxRowHeights;
   getMinimumRowColSizes(&minColWidths, &minRowHeights);
   getMaximumRowColSizes(&maxColWidths, &maxRowHeights);
   
-  int totalRowSpacing = (rows()-1) * mRowSpacing;
-  int totalColSpacing = (columns()-1) * mColumnSpacing;
+  int totalRowSpacing = (rowCount()-1) * mRowSpacing;
+  int totalColSpacing = (columnCount()-1) * mColumnSpacing;
   QVector<int> colWidths = getSectionSizes(maxColWidths, minColWidths, mColumnStretchFactors.toVector(), mRect.width()-totalColSpacing);
   QVector<int> rowHeights = getSectionSizes(maxRowHeights, minRowHeights, mRowStretchFactors.toVector(), mRect.height()-totalRowSpacing);
   
   // go through cells and set rects accordingly:
   int yOffset = mRect.top();
-  for (int row=0; row<rows(); ++row)
+  for (int row=0; row<rowCount(); ++row)
   {
     if (row > 0)
       yOffset += rowHeights.at(row-1)+mRowSpacing;
     int xOffset = mRect.left();
-    for (int col=0; col<columns(); ++col)
+    for (int col=0; col<columnCount(); ++col)
     {
       if (col > 0)
         xOffset += colWidths.at(col-1)+mColumnSpacing;
@@ -442,13 +442,13 @@ void QCPLayoutGrid::layoutElements()
 
 int QCPLayoutGrid::elementCount() const
 {
-  return rows()*columns();
+  return rowCount()*columnCount();
 }
 
 QCPLayoutElement *QCPLayoutGrid::elementAt(int index) const
 {
   if (index >= 0 && index < elementCount())
-    return mElements.at(index / columns()).at(index % columns());
+    return mElements.at(index / columnCount()).at(index % columnCount());
   else
     return 0;
 }
@@ -458,7 +458,7 @@ QCPLayoutElement *QCPLayoutGrid::takeAt(int index)
   if (QCPLayoutElement *el = elementAt(index))
   {
     releaseChild(el);
-    mElements[index / columns()][index % columns()] = 0;
+    mElements[index / columnCount()][index % columnCount()] = 0;
     return el;
   } else
   {
@@ -487,10 +487,10 @@ bool QCPLayoutGrid::take(QCPLayoutElement *element)
 void QCPLayoutGrid::simplify()
 {
   // remove rows with only empty cells:
-  for (int row=rows()-1; row>=0; --row)
+  for (int row=rowCount()-1; row>=0; --row)
   {
     bool hasElements = false;
-    for (int col=0; col<columns(); ++col)
+    for (int col=0; col<columnCount(); ++col)
     {
       if (mElements.at(row).at(col))
       {
@@ -506,10 +506,10 @@ void QCPLayoutGrid::simplify()
   }
   
   // remove columns with only empty cells:
-  for (int col=columns()-1; col>=0; --col)
+  for (int col=columnCount()-1; col>=0; --col)
   {
     bool hasElements = false;
-    for (int row=0; row<rows(); ++row)
+    for (int row=0; row<rowCount(); ++row)
     {
       if (mElements.at(row).at(col))
       {
@@ -520,7 +520,7 @@ void QCPLayoutGrid::simplify()
     if (!hasElements)
     {
       mColumnStretchFactors.removeAt(col);
-      for (int row=0; row<rows(); ++row)
+      for (int row=0; row<rowCount(); ++row)
         mElements[row].removeAt(col);
     }
   }
@@ -535,8 +535,8 @@ QSize QCPLayoutGrid::minimumSizeHint() const
     result.rwidth() += minColWidths.at(i);
   for (int i=0; i<minRowHeights.size(); ++i)
     result.rheight() += minRowHeights.at(i);
-  result.rwidth() += (columns()-1) * mColumnSpacing;
-  result.rheight() += (rows()-1) * mRowSpacing;
+  result.rwidth() += (columnCount()-1) * mColumnSpacing;
+  result.rheight() += (rowCount()-1) * mRowSpacing;
   return result;
 }
 
@@ -556,11 +556,11 @@ QSize QCPLayoutGrid::maximumSizeHint() const
 
 void QCPLayoutGrid::getMinimumRowColSizes(QVector<int> *minColWidths, QVector<int> *minRowHeights) const
 {
-  *minColWidths = QVector<int> (columns(), 0);
-  *minRowHeights = QVector<int> (rows(), 0);
-  for (int row=0; row<rows(); ++row)
+  *minColWidths = QVector<int> (columnCount(), 0);
+  *minRowHeights = QVector<int> (rowCount(), 0);
+  for (int row=0; row<rowCount(); ++row)
   {
-    for (int col=0; col<columns(); ++col)
+    for (int col=0; col<columnCount(); ++col)
     {
       if (mElements.at(row).at(col))
       {
@@ -578,11 +578,11 @@ void QCPLayoutGrid::getMinimumRowColSizes(QVector<int> *minColWidths, QVector<in
 
 void QCPLayoutGrid::getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<int> *maxRowHeights) const
 {
-  *maxColWidths = QVector<int> (columns(), QWIDGETSIZE_MAX);
-  *maxRowHeights = QVector<int> (rows(), QWIDGETSIZE_MAX);
-  for (int row=0; row<rows(); ++row)
+  *maxColWidths = QVector<int> (columnCount(), QWIDGETSIZE_MAX);
+  *maxRowHeights = QVector<int> (rowCount(), QWIDGETSIZE_MAX);
+  for (int row=0; row<rowCount(); ++row)
   {
-    for (int col=0; col<columns(); ++col)
+    for (int col=0; col<columnCount(); ++col)
     {
       if (mElements.at(row).at(col))
       {
