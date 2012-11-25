@@ -70,12 +70,16 @@ protected:
   
   virtual QMargins calculateAutoMargins() const;
   
+private:
+  Q_DISABLE_COPY(QCPLayoutElement)
+  
   friend class QCPLayout;
 };
 
 
 class QCP_LIB_DECL QCPLayout : public QCPLayoutElement
 {
+  Q_OBJECT
 public:
   explicit QCPLayout(QCustomPlot *parentPlot);
   
@@ -94,11 +98,16 @@ protected:
   
   // layout helpers for subclasses:
   QVector<int> getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const;
+  
+private:
+  Q_DISABLE_COPY(QCPLayout)
+  
 };
 
 
 class QCP_LIB_DECL QCPLayoutGrid : public QCPLayout
 {
+  Q_OBJECT
 public:
   explicit QCPLayoutGrid(QCustomPlot *parentPlot);
   

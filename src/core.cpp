@@ -432,7 +432,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   QCPAxisRect *defaultAxisRect = new QCPAxisRect(this);
   defaultAxisRect->setBackgroundScaled(true);
   defaultAxisRect->setBackgroundScaledMode(Qt::KeepAspectRatioByExpanding);
-  dynamic_cast<QCPLayoutGrid*>(mPlotLayout)->addElement(defaultAxisRect, 0, 0);
+  qobject_cast<QCPLayoutGrid*>(mPlotLayout)->addElement(defaultAxisRect, 0, 0);
   yAxis = defaultAxisRect->addAxis(QCPAxis::atLeft);
   yAxis2 = defaultAxisRect->addAxis(QCPAxis::atRight);
   xAxis2 = defaultAxisRect->addAxis(QCPAxis::atTop);

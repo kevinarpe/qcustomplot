@@ -31,8 +31,9 @@ class QCPPainter;
 class QCustomPlot;
 class QCPLayerable;
 
-class QCP_LIB_DECL QCPLayer
+class QCP_LIB_DECL QCPLayer : public QObject
 {
+  Q_OBJECT
 public:
   QCPLayer(QCustomPlot* parentPlot, const QString &layerName);
   ~QCPLayer();

@@ -399,6 +399,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::AxisTypes)
 
 class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement
 {
+  Q_OBJECT
 public:
   explicit QCPAxisRect(QCustomPlot *parentPlot);
   virtual ~QCPAxisRect();

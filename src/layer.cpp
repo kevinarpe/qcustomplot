@@ -90,6 +90,7 @@
   This check is only performed by QCustomPlot::addLayer.
 */
 QCPLayer::QCPLayer(QCustomPlot *parentPlot, const QString &layerName) :
+  QObject(parentPlot),
   mParentPlot(parentPlot),
   mName(layerName)
 {

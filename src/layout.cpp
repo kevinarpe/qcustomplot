@@ -164,16 +164,20 @@ void QCPLayout::layoutElements()
 void QCPLayout::adoptChild(QCPLayoutElement *el)
 {
   if (el)
+  {
     el->mParentLayout = this;
-  else
+    el->setParent(this);
+  } else
     qDebug() << Q_FUNC_INFO << "Null element passed";
 }
 
 void QCPLayout::releaseChild(QCPLayoutElement *el)
 {
   if (el)
+  {
     el->mParentLayout = 0;
-  else
+    el->setParent(mParentPlot);
+  } else
     qDebug() << Q_FUNC_INFO << "Null element passed";
 }
 
