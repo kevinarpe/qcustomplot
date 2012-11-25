@@ -8,7 +8,8 @@ private slots:
   void init();
   void cleanup();
   
-  void basicElementManagement();
+  void layoutGridElementManagement();
+  void layoutGridLayout();
   
 private:
   QCustomPlot *mPlot;

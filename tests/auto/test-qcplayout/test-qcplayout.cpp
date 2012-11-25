@@ -3,14 +3,17 @@
 void TestQCPLayout::init()
 {
   mPlot = new QCustomPlot(0);
+  mPlot->show();
+  QTest::qWaitForWindowShown(mPlot);
 }
+
 
 void TestQCPLayout::cleanup()
 {
   delete mPlot;
 }
 
-void TestQCPLayout::basicElementManagement()
+void TestQCPLayout::layoutGridElementManagement()
 {
   QCPLayoutGrid *mainLayout = qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout());
   QVERIFY(mainLayout);
@@ -107,4 +110,52 @@ void TestQCPLayout::basicElementManagement()
   QCPAxisRect *r4 = new QCPAxisRect(mPlot);
   QVERIFY(mainLayout->addElement(r4, 0, 0));
   QCOMPARE(mPlot->axisRect(0), r4);
+}
+
+void TestQCPLayout::layoutGridLayout()
+{
+  mPlot->setGeometry(50, 50, 500, 500);
+  QCPLayoutGrid *mainLayout = qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout());
+  delete mainLayout->takeAt(0); // remove initial axis rect
+  // create 3x3 grid:
+  mainLayout->addElement(new QCPAxisRect(mPlot), 0, 0);
+  mainLayout->addElement(new QCPAxisRect(mPlot), 0, 1);
+  mainLayout->addElement(new QCPAxisRect(mPlot), 0, 2);
+  mainLayout->addElement(new QCPAxisRect(mPlot), 1, 0);
+  mainLayout->addElement(new QCPAxisRect(mPlot), 1, 1);
+  mainLayout->addElement(new QCPAxisRect(mPlot), 1, 2);
+  mainLayout->addElement(new QCPAxisRect(mPlot), 2, 0);
+  mainLayout->addElement(new QCPAxisRect(mPlot), 2, 1);
+  mainLayout->addElement(new QCPAxisRect(mPlot), 2, 2);
+  QList<QCPAxisRect*> rlist;
+  for (int i=0; i<mainLayout->elementCount(); ++i)
+  {
+    rlist << qobject_cast<QCPAxisRect*>(mainLayout->elementAt(i));
+    rlist.last()->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+  }
+  
+  // test with no spacing:
+  mainLayout->setRowSpacing(0);
+  mainLayout->setColumnSpacing(0);
+  mPlot->replot();
+  foreach (QCPAxisRect *r, rlist)
+  {
+    QCOMPARE(r->outerRect().width(), qRound(500/3.0));
+    QCOMPARE(r->outerRect().height(), qRound(500/3.0));
+  }
+  
+  mainLayout->setColumnStretchFactors(QList<double>() << 1 << 2 << 1);
+  mainLayout->setRowStretchFactors(QList<double>() << 1 << 2 << 3);
+  mPlot->replot();
+  mPlot->savePng("./out.png");
+  QTest::qWait(500);
+  qDebug() << mainLayout->element(0, 0)->outerRect().width() << mainLayout->element(0, 1)->outerRect().width() << mainLayout->element(0, 2)->outerRect().width();
+  QCOMPARE(mainLayout->element(0, 0)->outerRect().width(), qRound(500/4.0*1));
+  QCOMPARE(mainLayout->element(0, 1)->outerRect().width(), qRound(500/4.0*2));
+  QCOMPARE(mainLayout->element(0, 2)->outerRect().width(), qRound(500/4.0*1));
+  QCOMPARE(mainLayout->element(0, 0)->outerRect().height(), qRound(500/6.0*1));
+  QCOMPARE(mainLayout->element(1, 0)->outerRect().height(), qRound(500/6.0*2));
+  QCOMPARE(mainLayout->element(2, 0)->outerRect().height(), qRound(500/6.0*3));
+  QCOMPARE(mainLayout->element(2, 2)->outerRect().width(), qRound(500/4.0*1));
+  QCOMPARE(mainLayout->element(2, 2)->outerRect().height(), qRound(500/6.0*3));
 }
