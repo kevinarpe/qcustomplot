@@ -1740,12 +1740,17 @@ QList<QCPAxisRect*> QCustomPlot::axisRects() const
 */
 QList<QCPAxis*> QCustomPlot::selectedAxes() const
 {
-  QList<QCPAxis*> result = QList<QCPAxis*>() << xAxis << yAxis << xAxis2 << yAxis2;
-  for (int i=result.size()-1; i>=0; --i)
+  QList<QCPAxis*> result, allAxes;
+  QList<QCPAxisRect*> rects = axisRects();
+  for (int i=0; i<rects.size(); ++i)
+    allAxes << rects.at(i)->axes();
+  
+  for (int i=0; i<allAxes.size(); ++i)
   {
-    if (result.at(i)->selected() == QCPAxis::spNone)
-      result.removeAt(i);
+    if (allAxes.at(i)->selected() != QCPAxis::spNone)
+      result.append(allAxes.at(i));
   }
+  
   return result;
 }
 

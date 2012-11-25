@@ -4,7 +4,6 @@
  - add QCPLayoutSpacer (only has stretch factors and minimum/maximum width)
  - add QCPLayoutInset (maybe a QCPLayoutElement in back and front?) (maybe call it QCPLayoutOverlay?)
  - Create QCPLayoutElement subclass that represents a plot title. How to get it drawn? Items?
- - modify selectedAxes to include all axes
  
 - moveAxis is kind of a strange interface (from/to index won't work properly when wanting to move all the way to bottom and top of stack)
 - provide way to get the QCPAxisRect a QPoint is on.
