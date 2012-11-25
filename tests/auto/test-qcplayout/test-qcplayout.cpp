@@ -134,7 +134,7 @@ void TestQCPLayout::layoutGridLayout()
     rlist.last()->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
   }
   
-  // test with no spacing:
+  // disable spacing for testing of layout functions:
   mainLayout->setRowSpacing(0);
   mainLayout->setColumnSpacing(0);
   mPlot->replot();
@@ -144,12 +144,10 @@ void TestQCPLayout::layoutGridLayout()
     QCOMPARE(r->outerRect().height(), qRound(500/3.0));
   }
   
+  // test stretch factors:
   mainLayout->setColumnStretchFactors(QList<double>() << 1 << 2 << 1);
   mainLayout->setRowStretchFactors(QList<double>() << 1 << 2 << 3);
   mPlot->replot();
-  mPlot->savePng("./out.png");
-  QTest::qWait(500);
-  qDebug() << mainLayout->element(0, 0)->outerRect().width() << mainLayout->element(0, 1)->outerRect().width() << mainLayout->element(0, 2)->outerRect().width();
   QCOMPARE(mainLayout->element(0, 0)->outerRect().width(), qRound(500/4.0*1));
   QCOMPARE(mainLayout->element(0, 1)->outerRect().width(), qRound(500/4.0*2));
   QCOMPARE(mainLayout->element(0, 2)->outerRect().width(), qRound(500/4.0*1));
@@ -158,4 +156,28 @@ void TestQCPLayout::layoutGridLayout()
   QCOMPARE(mainLayout->element(2, 0)->outerRect().height(), qRound(500/6.0*3));
   QCOMPARE(mainLayout->element(2, 2)->outerRect().width(), qRound(500/4.0*1));
   QCOMPARE(mainLayout->element(2, 2)->outerRect().height(), qRound(500/6.0*3));
+  
+  // test maximum size:
+  mainLayout->element(0, 0)->setMaximumSize(100, QWIDGETSIZE_MAX);
+  mPlot->replot();
+  QCOMPARE(mainLayout->element(0, 0)->outerRect().width(), 100);
+  QCOMPARE(mainLayout->element(0, 1)->outerRect().width(), qRound(400/3.0*2));
+  QCOMPARE(mainLayout->element(0, 2)->outerRect().width(), qRound(400/3.0*1));
+  
+  // test minimum size:
+  mainLayout->element(0, 0)->setMinimumSize(100, 200);
+  mPlot->replot();
+  QCOMPARE(mainLayout->element(0, 0)->outerRect().width(), 100);
+  QCOMPARE(mainLayout->element(0, 0)->outerRect().height(), 200);
+  QCOMPARE(mainLayout->element(1, 0)->outerRect().height(), qRound(300/5.0*2));
+  QCOMPARE(mainLayout->element(2, 0)->outerRect().height(), qRound(300/5.0*3));
+  
+  // test minimum size hint on parent layout:
+  QCOMPARE(mainLayout->minimumSizeHint(), QSize(100+50+50, 200+50+50));
+  
+  // add spacing:
+  mainLayout->setRowSpacing(10);
+  mainLayout->setColumnSpacing(15);
+  // test minimum size hint on parent layout with spacing:
+  QCOMPARE(mainLayout->minimumSizeHint(), QSize(100+15+50+15+50, 200+10+50+10+50));
 }
