@@ -1,29 +1,5 @@
-#include <QtTest/QtTest>
-#include "../../../qcustomplot.h"
-
-class TestQCPGraph : public QObject
-{
-  Q_OBJECT
-private slots:
-  void init();
-  void cleanup();
-  
-  void specializedGraphInterface();
-  void dataManipulation();
-  
-private:
-  QCustomPlot *mPlot;
-  QCPGraph *mGraph;
-};
-
-#include "test-qcpgraph.moc"
-QTEST_MAIN(TestQCPGraph)
-
-
-////////////////////////////////////////////////////////////////////
-/////// TestQCPGraph Implementation
-////////////////////////////////////////////////////////////////////
-
+#include "test-qcpgraph.h"
+#include <QMainWindow>
 
 void TestQCPGraph::init()
 {
@@ -175,7 +151,4 @@ void TestQCPGraph::dataManipulation()
   QCOMPARE((mGraph->data()->begin()+5).value().value, 5.0);
   QCOMPARE((mGraph->data()->begin()+6).value().value, 6.0);
 }
-
-
-
-
+ 
