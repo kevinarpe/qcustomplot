@@ -30,8 +30,8 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupIntegerTickStepCase(mCustomPlot);
   //setupTickLabelTest(mCustomPlot);
   //setupDaqPerformance(mCustomPlot);
-  
   setupLayoutTest(mCustomPlot);
+  
 }
 
 MainWindow::~MainWindow()
@@ -372,6 +372,34 @@ void MainWindow::setupDaqPerformance(QCustomPlot *customPlot)
 
 void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
 {
+  QCPLayoutGrid *mainLayout = qobject_cast<QCPLayoutGrid*>(customPlot->plotLayout());
+  delete mainLayout->takeAt(0); // remove initial axis rect
+  // create 3x3 grid:
+  mainLayout->addElement(new QCPAxisRect(customPlot), 0, 0);
+  mainLayout->addElement(new QCPAxisRect(customPlot), 0, 1);
+  mainLayout->addElement(new QCPAxisRect(customPlot), 0, 2);
+  mainLayout->addElement(new QCPAxisRect(customPlot), 1, 0);
+  mainLayout->addElement(new QCPAxisRect(customPlot), 1, 1);
+  mainLayout->addElement(new QCPAxisRect(customPlot), 1, 2);
+  mainLayout->addElement(new QCPAxisRect(customPlot), 2, 0);
+  mainLayout->addElement(new QCPAxisRect(customPlot), 2, 1);
+  mainLayout->addElement(new QCPAxisRect(customPlot), 2, 2);
+  QList<QCPAxisRect*> rlist;
+  for (int i=0; i<mainLayout->elementCount(); ++i)
+  {
+    rlist << qobject_cast<QCPAxisRect*>(mainLayout->elementAt(i));
+    rlist.last()->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+  }
+  
+  mainLayout->setColumnStretchFactors(QList<double>() << 1 << 2 << 1);
+  mainLayout->setRowStretchFactors(QList<double>() << 1 << 2 << 3);
+  
+  mainLayout->element(0, 0)->setMinimumSize(200, 100);
+  mainLayout->element(0, 1)->setMaximumSize(150, 100);
+  mainLayout->element(2, 2)->setMinimumSize(100, 100);
+  
+  
+  /*
   customPlot->setFont(QFont(customPlot->font().family(), 7));
   customPlot->axisRect(0)->axis(QCPAxis::atRight)->setTickLabels(true);
   customPlot->axisRect(0)->axis(QCPAxis::atTop)->setTickLabels(true);
@@ -380,7 +408,7 @@ void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
   customPlot->axisRect(0)->axis(QCPAxis::atTop)->setTickLabelFont(customPlot->font());
   customPlot->axisRect(0)->axis(QCPAxis::atBottom)->setTickLabelFont(customPlot->font());
   
-  QCPLayoutGrid *layout = dynamic_cast<QCPLayoutGrid*>(customPlot->plotLayout());
+  QCPLayoutGrid *layout = qobject_cast<QCPLayoutGrid*>(customPlot->plotLayout());
   layout->setRowSpacing(8);
   layout->setColumnSpacing(8);
   layout->addElement(new QCPAxisRect(customPlot), 0, 1);
@@ -420,7 +448,7 @@ void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
   c->setData(d2, false);
   
   customPlot->replot();
-  
+  */
   /*
   QCPLayoutGrid *topLayout = dynamic_cast<QCPLayoutGrid*>(customPlot->plotLayout());
   
