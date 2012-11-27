@@ -30,7 +30,8 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupIntegerTickStepCase(mCustomPlot);
   //setupTickLabelTest(mCustomPlot);
   //setupDaqPerformance(mCustomPlot);
-  setupLayoutTest(mCustomPlot);
+  //setupLayoutTest(mCustomPlot);
+  setupMultiAxisTest(mCustomPlot);
   
 }
 
@@ -491,6 +492,14 @@ void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
   r1->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
   r1->setMaximumSize(200, QWIDGETSIZE_MAX);
   */
+}
+
+void MainWindow::setupMultiAxisTest(QCustomPlot *customPlot)
+{
+  presetInteractive(customPlot);
+  customPlot->axisRect()->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+  customPlot->axisRect()->axis(QCPAxis::atRight, 0)->setTickLabels(true);
+  customPlot->axisRect()->axis(QCPAxis::atTop, 0)->setTickLabels(true);
 }
 
 void MainWindow::presetInteractive(QCustomPlot *customPlot)
