@@ -2580,10 +2580,14 @@ bool QCustomPlot::handleItemSelection(QMouseEvent *event, bool additiveSelection
 */
 bool QCustomPlot::handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified)
 {
+  QList<QCPAxis*> allAxes;
+  QList<QCPAxisRect*> rects = axisRects();
+  for (int i=0; i<rects.size(); ++i)
+    allAxes << rects.at(i)->axes();
+  
   bool selectionFound = false;
-  QVector<QCPAxis*> axes = QVector<QCPAxis*>() << xAxis << yAxis << xAxis2 << yAxis2;
-  for (int i=0; i<axes.size(); ++i)
-    selectionFound |= axes.at(i)->handleAxisSelection((!selectionFound || additiveSelection) ? event : 0, additiveSelection, modified);
+  for (int i=0; i<allAxes.size(); ++i)
+    selectionFound |= allAxes.at(i)->handleAxisSelection((!selectionFound || additiveSelection) ? event : 0, additiveSelection, modified);
   return selectionFound;
 }
 
