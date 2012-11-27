@@ -444,7 +444,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   setSelectedTickPen(blueThickPen);
   setSelectedSubTickPen(blueThickPen);
   
-  setPadding(0);
+  setPadding(5);
   if (type == atTop)
   {
     setTickLabelPadding(3);
