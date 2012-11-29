@@ -216,8 +216,7 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
   targetLayer is an empty string, it places itself on the current layer of the plot (see \ref
   QCustomPlot::setCurrentLayer).
 */
-QCPLayerable::QCPLayerable(QObject *parent, QCustomPlot *plot, QString targetLayer) :
-  QObject(parent),
+QCPLayerable::QCPLayerable(QCustomPlot *plot, QString targetLayer) :
   mVisible(true),
   mParentPlot(plot),
   mLayer(0),

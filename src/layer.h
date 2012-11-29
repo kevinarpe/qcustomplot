@@ -57,11 +57,10 @@ private:
   friend class QCPLayerable;
 };
 
-class QCP_LIB_DECL QCPLayerable : public QObject
+class QCP_LIB_DECL QCPLayerable
 {
-  Q_OBJECT
 public:
-  QCPLayerable(QObject *parent, QCustomPlot *plot, QString targetLayer="");
+  QCPLayerable(QCustomPlot *plot, QString targetLayer="");
   ~QCPLayerable();
   
   // getters:
