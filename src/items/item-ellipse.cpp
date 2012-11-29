@@ -149,14 +149,18 @@ void QCPItemEllipse::draw(QCPPainter *painter)
   {
     painter->setPen(mainPen());
     painter->setBrush(mainBrush());
+#ifdef __EXCEPTIONS
     try
     {
+#endif
       painter->drawEllipse(ellipseRect);
+#ifdef __EXCEPTIONS
     } catch (...)
     {
       qDebug() << Q_FUNC_INFO << "Item too large for memory, setting invisible";
       setVisible(false);
     }
+#endif
   }
 }
 
