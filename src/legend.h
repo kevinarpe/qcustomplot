@@ -106,7 +106,7 @@ protected:
 };
 
 
-class QCP_LIB_DECL QCPLegend : public QCPLayerable
+class QCP_LIB_DECL QCPLegend : public QObject, public QCPLayerable // TODO: Change this to inherit from QCPLayoutElement instead of QObject directly
 {
   Q_OBJECT
 public:

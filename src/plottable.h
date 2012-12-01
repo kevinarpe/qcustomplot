@@ -32,7 +32,7 @@
 class QCPPainter;
 class QCPAxis;
 
-class QCP_LIB_DECL QCPAbstractPlottable : public QCPLayerable
+class QCP_LIB_DECL QCPAbstractPlottable : public QObject, public QCPLayerable
 {
   Q_OBJECT
 public:
