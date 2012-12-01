@@ -157,6 +157,32 @@ void QCPLayout::update()
   }
 }
 
+bool QCPLayout::removeAt(int index)
+{
+  if (QCPLayoutElement *el = takeAt(index))
+  {
+    delete el;
+    return true;
+  } else
+    return false;
+}
+
+bool QCPLayout::remove(QCPLayoutElement *element)
+{
+  if (take(element))
+  {
+    delete element;
+    return true;
+  } else
+    return false;
+}
+
+void QCPLayout::clear()
+{
+  for (int i=elementCount()-1; i>=0; --i)
+    removeAt(i);
+}
+
 void QCPLayout::updateLayout()
 {
 }

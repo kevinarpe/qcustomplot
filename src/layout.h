@@ -88,6 +88,9 @@ public:
   virtual QCPLayoutElement* takeAt(int index) = 0;
   virtual bool take(QCPLayoutElement* element) = 0;
   virtual void simplify() = 0;
+  bool removeAt(int index);
+  bool remove(QCPLayoutElement* element);
+  void clear();
   
 protected:
   virtual void updateLayout();
