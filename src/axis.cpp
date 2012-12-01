@@ -2520,14 +2520,9 @@ QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot) :
 
 QCPAxisRect::~QCPAxisRect()
 {
-  QHashIterator<QCPAxis::AxisType, QList<QCPAxis*> > it(mAxes);
-  while (it.hasNext())
-  {
-    it.next();
-    QList<QCPAxis*> ax(it.value());
-    for (int i=0; i<ax.size(); ++i)
-      removeAxis(ax.at(i));
-  }
+  QList<QCPAxis*> axesList = axes();
+  for (int i=0; i<axesList.size(); ++i)
+    removeAxis(axesList.at(i));
 }
 
 int QCPAxisRect::axisCount(QCPAxis::AxisType type) const
