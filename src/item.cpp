@@ -1034,8 +1034,8 @@ QCPItemPosition *QCPAbstractItem::createPosition(const QString &name)
   QCPItemPosition *newPosition = new QCPItemPosition(mParentPlot, this, name);
   mPositions.append(newPosition);
   mAnchors.append(newPosition); // every position is also an anchor
-  newPosition->setType(QCPItemPosition::ptPlotCoords);
   newPosition->setAxes(mParentPlot->xAxis, mParentPlot->yAxis);
+  newPosition->setType(QCPItemPosition::ptPlotCoords);
   QList<QCPAxisRect*> rects = mParentPlot->axisRects();
   if (rects.size() > 0)
     newPosition->setAxisRect(rects.first());
