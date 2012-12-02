@@ -388,65 +388,71 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   QObject(parent),
   QCPLayerable(parent->parentPlot(), "axes"),
+  // axis base:
+  mAxisType(type),
+  mAxisRect(parent),
   mOffset(0),
-  mAxisRect(parent)
+  mPadding(5),
+  mOrientation((type == atBottom || type == atTop) ? Qt::Horizontal : Qt::Vertical),
+  mSelectable(spAxis | spTickLabels | spAxisLabel),
+  mSelected(spNone),
+  mBasePen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
+  mSelectedBasePen(QPen(Qt::blue, 2)),
+  // axis label:
+  mLabelPadding(0),
+  mLabel(""),
+  mLabelFont(mParentPlot->font()),
+  mSelectedLabelFont(QFont(mLabelFont.family(), mLabelFont.pointSize(), QFont::Bold)),
+  mLabelColor(Qt::black),
+  mSelectedLabelColor(Qt::blue),
+  // tick labels:
+  mTickLabelPadding(0),
+  mTickLabels(true),
+  mAutoTickLabels(true),
+  mTickLabelRotation(0),
+  mTickLabelType(ltNumber),
+  mTickLabelFont(mParentPlot->font()),
+  mSelectedTickLabelFont(QFont(mTickLabelFont.family(), mTickLabelFont.pointSize(), QFont::Bold)),
+  mTickLabelColor(Qt::black),
+  mSelectedTickLabelColor(Qt::blue),
+  mDateTimeFormat("hh:mm:ss\ndd.MM.yy"),
+  mNumberPrecision(6),
+  mNumberFormatChar('g'),
+  mNumberBeautifulPowers(true),
+  mNumberMultiplyCross(false),
+  // ticks and subticks:
+  mTicks(true),
+  mTickStep(1),
+  mSubTickCount(4),
+  mAutoTickCount(6),
+  mAutoTicks(true),
+  mAutoTickStep(true),
+  mAutoSubTicks(true),
+  mTickLengthIn(5),
+  mTickLengthOut(0),
+  mSubTickLengthIn(2),
+  mSubTickLengthOut(0),
+  mTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
+  mSelectedTickPen(QPen(Qt::blue, 2)),
+  mSubTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
+  mSelectedSubTickPen(QPen(Qt::blue, 2)),
+  // scale and range:
+  mRange(0, 5),
+  mRangeReversed(false),
+  mScaleType(stLinear),
+  mScaleLogBase(10),
+  mScaleLogBaseLogInv(1.0/qLn(mScaleLogBase)),
+  // internal members:
+  mGrid(new QCPGrid(this)),
+  mLabelCache(16), // cache at most 16 (tick) labels
+  mLowestVisibleTick(0),
+  mHighestVisibleTick(-1),
+  mExponentialChar(mParentPlot->locale().exponential()),
+  mPositiveSignChar(mParentPlot->locale().positiveSign())
 {
-  mAxisType = type;
-  mOrientation = (type == atBottom || type == atTop) ? Qt::Horizontal : Qt::Vertical;
-  mLabelCache.setMaxCost(16); // cache at most 16 (tick) labels
-  mLowestVisibleTick = 0;
-  mHighestVisibleTick = -1;
-  mGrid = new QCPGrid(this);
   setGrid(false);
-  setScaleType(stLinear);
-  setScaleLogBase(10);
-  
   setAntialiased(false);
-  setRange(0, 5);
-  setRangeReversed(false);
   
-  setTicks(true);
-  setTickStep(1);
-  setAutoTickCount(6);
-  setAutoTicks(true);
-  setAutoTickLabels(true);
-  setAutoTickStep(true);
-  setTickLabelFont(parentPlot()->font());
-  setTickLabelColor(Qt::black);
-  setTickLength(5);
-  setTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap));
-  setTickLabels(true);
-  setTickLabelType(ltNumber);
-  setTickLabelRotation(0);
-  setDateTimeFormat("hh:mm:ss\ndd.MM.yy");
-  setNumberFormat("gbd");
-  setNumberPrecision(6);
-  setLabel("");
-  setLabelFont(parentPlot()->font());
-  setLabelColor(Qt::black);
-  
-  setAutoSubTicks(true);
-  setSubTickCount(4);
-  setSubTickLength(2);
-  setSubTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap));
-  setBasePen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap));
-  
-  setSelected(spNone);
-  setSelectable(spAxis | spTickLabels | spAxisLabel);
-  QFont selTickLabelFont = tickLabelFont();
-  selTickLabelFont.setBold(true);
-  setSelectedTickLabelFont(selTickLabelFont);
-  QFont selLabelFont = labelFont();
-  selLabelFont.setBold(true);
-  setSelectedLabelFont(selLabelFont);
-  setSelectedTickLabelColor(Qt::blue);
-  setSelectedLabelColor(Qt::blue);
-  QPen blueThickPen(Qt::blue, 2);
-  setSelectedBasePen(blueThickPen);
-  setSelectedTickPen(blueThickPen);
-  setSelectedSubTickPen(blueThickPen);
-  
-  setPadding(5);
   if (type == atTop)
   {
     setTickLabelPadding(3);

@@ -611,8 +611,8 @@ QSize QCPLayoutGrid::maximumSizeHint() const
 
 void QCPLayoutGrid::getMinimumRowColSizes(QVector<int> *minColWidths, QVector<int> *minRowHeights) const
 {
-  *minColWidths = QVector<int> (columnCount(), 0);
-  *minRowHeights = QVector<int> (rowCount(), 0);
+  *minColWidths = QVector<int>(columnCount(), 0);
+  *minRowHeights = QVector<int>(rowCount(), 0);
   for (int row=0; row<rowCount(); ++row)
   {
     for (int col=0; col<columnCount(); ++col)
@@ -633,8 +633,8 @@ void QCPLayoutGrid::getMinimumRowColSizes(QVector<int> *minColWidths, QVector<in
 
 void QCPLayoutGrid::getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<int> *maxRowHeights) const
 {
-  *maxColWidths = QVector<int> (columnCount(), QWIDGETSIZE_MAX);
-  *maxRowHeights = QVector<int> (rowCount(), QWIDGETSIZE_MAX);
+  *maxColWidths = QVector<int>(columnCount(), QWIDGETSIZE_MAX);
+  *maxRowHeights = QVector<int>(rowCount(), QWIDGETSIZE_MAX);
   for (int row=0; row<rowCount(); ++row)
   {
     for (int col=0; col<columnCount(); ++col)

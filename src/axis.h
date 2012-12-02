@@ -308,43 +308,54 @@ protected:
     QFont baseFont, expFont;
   };
   
-  // simple properties with getters and setters:
-  QVector<double> mTickVector;
-  QVector<QString> mTickVectorLabels;
-  QCPRange mRange;
-  QString mDateTimeFormat;
-  QString mLabel;
-  QPen mBasePen, mTickPen, mSubTickPen;
-  QFont mTickLabelFont, mLabelFont;
-  QColor mTickLabelColor, mLabelColor;
-  LabelType mTickLabelType;
-  ScaleType mScaleType;
+  // properties exposed with getter, setter or both:
+  // axis base:
   AxisType mAxisType;
-  double mTickStep;
-  double mScaleLogBase, mScaleLogBaseLogInv;
-  int mSubTickCount, mTickLengthIn, mTickLengthOut, mSubTickLengthIn, mSubTickLengthOut;
-  int mAutoTickCount;
-  int mTickLabelPadding, mLabelPadding, mPadding, mOffset;
-  double mTickLabelRotation;
-  bool mTicks, mTickLabels, mAutoTicks, mAutoTickLabels, mAutoTickStep, mAutoSubTicks;
-  bool mRangeReversed;
-  SelectableParts mSelectable, mSelected;
-  QFont mSelectedTickLabelFont, mSelectedLabelFont;
-  QColor mSelectedTickLabelColor, mSelectedLabelColor;
-  QPen mSelectedBasePen, mSelectedTickPen, mSelectedSubTickPen;
-  QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
-  
-  // internal or not explicitly exposed properties:
   QCPAxisRect *mAxisRect;
-  QCPGrid *mGrid;
-  QVector<double> mSubTickVector;
-  QChar mExponentialChar, mPositiveSignChar;
+  int mOffset, mPadding;
+  Qt::Orientation mOrientation;
+  SelectableParts mSelectable, mSelected;
+  QPen mBasePen, mSelectedBasePen;
+  // axis label:
+  int mLabelPadding;
+  QString mLabel;
+  QFont mLabelFont, mSelectedLabelFont;
+  QColor mLabelColor, mSelectedLabelColor;
+  // tick labels:
+  int mTickLabelPadding;
+  bool mTickLabels, mAutoTickLabels;
+  double mTickLabelRotation;
+  LabelType mTickLabelType;
+  QFont mTickLabelFont, mSelectedTickLabelFont;
+  QColor mTickLabelColor, mSelectedTickLabelColor;
+  QString mDateTimeFormat;
   int mNumberPrecision;
   char mNumberFormatChar;
-  bool mNumberBeautifulPowers, mNumberMultiplyCross;
-  Qt::Orientation mOrientation;
-  int mLowestVisibleTick, mHighestVisibleTick;
+  bool mNumberBeautifulPowers;
+  bool mNumberMultiplyCross;
+  // ticks and subticks:
+  bool mTicks;
+  double mTickStep;
+  int mSubTickCount, mAutoTickCount;
+  bool mAutoTicks, mAutoTickStep, mAutoSubTicks;
+  int mTickLengthIn, mTickLengthOut, mSubTickLengthIn, mSubTickLengthOut;
+  QPen mTickPen, mSelectedTickPen;
+  QPen mSubTickPen, mSelectedSubTickPen;
+  // scale and range:
+  QCPRange mRange;
+  bool mRangeReversed;
+  ScaleType mScaleType;
+  double mScaleLogBase, mScaleLogBaseLogInv;
+  
+  // internal members:
+  QCPGrid *mGrid;
   QCache<QString, CachedLabel> mLabelCache;
+  int mLowestVisibleTick, mHighestVisibleTick;
+  QChar mExponentialChar, mPositiveSignChar;
+  QVector<double> mTickVector;
+  QVector<QString> mTickVectorLabels;
+  QVector<double> mSubTickVector;
+  QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
   
   // introduced methods:
   virtual void setupTickVectors();
