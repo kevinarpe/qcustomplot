@@ -40,6 +40,7 @@ public:
 
 class QCP_LIB_DECL QCPPainter : public QPainter
 {
+Q_GADGET
 public:
   /*!
     Defines special modes the painter can operate in. They disable or enable certain subsets of features/fixes/workarounds,

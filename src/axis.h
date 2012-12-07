@@ -28,17 +28,21 @@
 #include "global.h"
 #include "range.h"
 #include "layer.h"
+#include "layout.h"
 
 class QCPPainter;
 class QCustomPlot;
 class QCPAxis;
+class QCPAxisRect;
+class QCPAbstractPlottable;
+class QCPGraph;
+class QCPAbstractItem;
 
-class QCP_LIB_DECL QCPGrid : public QCPLayerable
+class QCP_LIB_DECL QCPGrid : public QObject, public QCPLayerable
 {
   Q_OBJECT
 public:
   QCPGrid(QCPAxis *parentAxis);
-  ~QCPGrid();
   
   // getters:
   bool subGridVisible() const { return mSubGridVisible; }
@@ -77,14 +81,12 @@ protected:
 };
 
 
-class QCP_LIB_DECL QCPAxis : public QCPLayerable
+class QCP_LIB_DECL QCPAxis : public QObject, public QCPLayerable
 {
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
-  Q_PROPERTY(AxisType axisType READ axisType WRITE setAxisType)
   Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType)
   Q_PROPERTY(double scaleLogBase READ scaleLogBase WRITE setScaleLogBase)
-  Q_PROPERTY(QRect axisRect READ axisRect WRITE setAxisRect)
   Q_PROPERTY(QCPRange range READ range WRITE setRange)
   Q_PROPERTY(bool grid READ grid WRITE setGrid)
   Q_PROPERTY(bool subGrid READ subGrid WRITE setSubGrid)
@@ -118,14 +120,14 @@ public:
   /*!
     Defines at which side of the axis rect the axis will appear. This also affects how the tick
     marks are drawn, on which side the labels are placed etc.
-    \see setAxisType
   */
-  enum AxisType { atLeft    ///< Axis is vertical and on the left side of the axis rect of the parent QCustomPlot
-                  ,atRight  ///< Axis is vertical and on the right side of the axis rect of the parent QCustomPlot
-                  ,atTop    ///< Axis is horizontal and on the top side of the axis rect of the parent QCustomPlot
-                  ,atBottom ///< Axis is horizontal and on the bottom side of the axis rect of the parent QCustomPlot
+  enum AxisType { atLeft    = 0x01  ///< <tt>0x01</tt> Axis is vertical and on the left side of the axis rect of the parent QCustomPlot
+                  ,atRight  = 0x02  ///< <tt>0x02</tt> Axis is vertical and on the right side of the axis rect of the parent QCustomPlot
+                  ,atTop    = 0x04  ///< <tt>0x04</tt> Axis is horizontal and on the top side of the axis rect of the parent QCustomPlot
+                  ,atBottom = 0x08  ///< <tt>0x08</tt> Axis is horizontal and on the bottom side of the axis rect of the parent QCustomPlot
                 };
   Q_ENUMS(AxisType)
+  Q_DECLARE_FLAGS(AxisTypes, AxisType)
   /*!
     When automatic tick label generation is enabled (\ref setAutoTickLabels), defines how the
     numerical value (coordinate) of the tick position is translated into a string that will be
@@ -156,12 +158,11 @@ public:
   Q_ENUMS(SelectablePart)
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)
   
-  explicit QCPAxis(QCustomPlot *parentPlot, AxisType type);
-  virtual ~QCPAxis();
+  explicit QCPAxis(QCPAxisRect *parent, AxisType type);
       
   // getters:
   AxisType axisType() const { return mAxisType; }
-  QRect axisRect() const { return mAxisRect; }
+  QCPAxisRect *axisRect() const { return mAxisRect; }
   ScaleType scaleType() const { return mScaleType; }
   double scaleLogBase() const { return mScaleLogBase; }
   const QCPRange range() const { return mRange; }
@@ -205,6 +206,7 @@ public:
   QString label() const { return mLabel; }
   int labelPadding() const { return mLabelPadding; }
   int padding() const { return mPadding; }
+  int offset() const { return mOffset; }
   SelectableParts selected() const { return mSelected; }
   SelectableParts selectable() const { return mSelectable; }
   QFont selectedTickLabelFont() const { return mSelectedTickLabelFont; }
@@ -260,6 +262,7 @@ public:
   void setLabel(const QString &str);
   void setLabelPadding(int padding);
   void setPadding(int padding);
+  void setOffset(int offset);
   void setSelectedTickLabelFont(const QFont &font);
   void setSelectedLabelFont(const QFont &font);
   void setSelectedTickLabelColor(const QColor &color);
@@ -276,6 +279,10 @@ public:
   double pixelToCoord(double value) const;
   double coordToPixel(double value) const;
   SelectablePart selectTest(const QPointF &pos) const;
+  
+  QList<QCPAbstractPlottable*> plottables() const;
+  QList<QCPGraph*> graphs() const;
+  QList<QCPAbstractItem*> items() const;
   
 public slots:
   // slot setters:
@@ -301,53 +308,60 @@ protected:
     QFont baseFont, expFont;
   };
   
-  // simple properties with getters and setters:
-  QVector<double> mTickVector;
-  QVector<QString> mTickVectorLabels;
-  QCPRange mRange;
-  QString mDateTimeFormat;
-  QString mLabel;
-  QRect mAxisRect;
-  QPen mBasePen, mTickPen, mSubTickPen;
-  QFont mTickLabelFont, mLabelFont;
-  QColor mTickLabelColor, mLabelColor;
-  LabelType mTickLabelType;
-  ScaleType mScaleType;
+  // properties exposed with getter, setter or both:
+  // axis base:
   AxisType mAxisType;
-  double mTickStep;
-  double mScaleLogBase, mScaleLogBaseLogInv;
-  int mSubTickCount, mTickLengthIn, mTickLengthOut, mSubTickLengthIn, mSubTickLengthOut;
-  int mAutoTickCount;
-  int mTickLabelPadding, mLabelPadding, mPadding;
-  double mTickLabelRotation;
-  bool mTicks, mTickLabels, mAutoTicks, mAutoTickLabels, mAutoTickStep, mAutoSubTicks;
-  bool mRangeReversed;
+  QCPAxisRect *mAxisRect;
+  int mOffset, mPadding;
+  Qt::Orientation mOrientation;
   SelectableParts mSelectable, mSelected;
-  QFont mSelectedTickLabelFont, mSelectedLabelFont;
-  QColor mSelectedTickLabelColor, mSelectedLabelColor;
-  QPen mSelectedBasePen, mSelectedTickPen, mSelectedSubTickPen;
-  QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
-  
-  // internal or not explicitly exposed properties:
-  QCPGrid *mGrid;
-  QVector<double> mSubTickVector;
-  QChar mExponentialChar, mPositiveSignChar;
+  QPen mBasePen, mSelectedBasePen;
+  // axis label:
+  int mLabelPadding;
+  QString mLabel;
+  QFont mLabelFont, mSelectedLabelFont;
+  QColor mLabelColor, mSelectedLabelColor;
+  // tick labels:
+  int mTickLabelPadding;
+  bool mTickLabels, mAutoTickLabels;
+  double mTickLabelRotation;
+  LabelType mTickLabelType;
+  QFont mTickLabelFont, mSelectedTickLabelFont;
+  QColor mTickLabelColor, mSelectedTickLabelColor;
+  QString mDateTimeFormat;
   int mNumberPrecision;
   char mNumberFormatChar;
-  bool mNumberBeautifulPowers, mNumberMultiplyCross;
-  Qt::Orientation mOrientation;
-  int mLowestVisibleTick, mHighestVisibleTick;
-  QCache<QString, CachedLabel> mLabelCache;
+  bool mNumberBeautifulPowers;
+  bool mNumberMultiplyCross;
+  // ticks and subticks:
+  bool mTicks;
+  double mTickStep;
+  int mSubTickCount, mAutoTickCount;
+  bool mAutoTicks, mAutoTickStep, mAutoSubTicks;
+  int mTickLengthIn, mTickLengthOut, mSubTickLengthIn, mSubTickLengthOut;
+  QPen mTickPen, mSelectedTickPen;
+  QPen mSubTickPen, mSelectedSubTickPen;
+  // scale and range:
+  QCPRange mRange;
+  bool mRangeReversed;
+  ScaleType mScaleType;
+  double mScaleLogBase, mScaleLogBaseLogInv;
   
-  // internal setters:
-  void setAxisType(AxisType type);
-  void setAxisRect(const QRect &rect);
+  // internal members:
+  QCPGrid *mGrid;
+  QCache<QString, CachedLabel> mLabelCache;
+  int mLowestVisibleTick, mHighestVisibleTick;
+  QChar mExponentialChar, mPositiveSignChar;
+  QVector<double> mTickVector;
+  QVector<QString> mTickVectorLabels;
+  QVector<double> mSubTickVector;
+  QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
   
   // introduced methods:
   virtual void setupTickVectors();
   virtual void generateAutoTicks();
   virtual int calculateAutoSubTickCount(double tickStep) const;
-  virtual int calculateMargin() const;
+  virtual int calculateMargin();
   virtual bool handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified);
   
   // drawing:
@@ -380,7 +394,73 @@ private:
   
   friend class QCustomPlot;
   friend class QCPGrid;
+  friend class QCPAxisRect;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::SelectableParts)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::AxisTypes)
+
+
+
+class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement
+{
+  Q_OBJECT
+public:
+  explicit QCPAxisRect(QCustomPlot *parentPlot);
+  virtual ~QCPAxisRect();
+  
+  QPixmap background() const { return mBackground; }
+  bool backgroundScaled() const { return mBackgroundScaled; }
+  Qt::AspectRatioMode backgroundScaledMode() const { return mBackgroundScaledMode; }
+
+  void setBackground(const QPixmap &pm);
+  void setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode=Qt::KeepAspectRatioByExpanding);
+  void setBackgroundScaled(bool scaled);
+  void setBackgroundScaledMode(Qt::AspectRatioMode mode);
+  
+  int axisCount(QCPAxis::AxisType type) const;
+  QCPAxis *axis(QCPAxis::AxisType type, int index=0) const;
+  QList<QCPAxis*> axes(QCPAxis::AxisTypes types) const;
+  QList<QCPAxis*> axes() const;
+  QCPAxis *addAxis(QCPAxis::AxisType type);
+  QList<QCPAxis*> addAxes(QCPAxis::AxisTypes types);
+  bool removeAxis(QCPAxis *axis);
+  
+  QList<QCPAbstractPlottable*> plottables() const;
+  QList<QCPGraph*> graphs() const;
+  QList<QCPAbstractItem*> items() const;
+  
+  // read-only interface imitating a QRect:
+  int left() const { return mRect.left(); }
+  int right() const { return mRect.right(); }
+  int top() const { return mRect.top(); }
+  int bottom() const { return mRect.bottom(); }
+  int width() const { return mRect.width(); }
+  int height() const { return mRect.height(); }
+  QSize size() const { return mRect.size(); }
+  QPoint topLeft() const { return mRect.topLeft(); }
+  QPoint topRight() const { return mRect.topRight(); }
+  QPoint bottomLeft() const { return mRect.bottomLeft(); }
+  QPoint bottomRight() const { return mRect.bottomRight(); }
+  
+protected:
+  QHash<QCPAxis::AxisType, QList<QCPAxis*> > mAxes;
+  QPixmap mBackground;
+  QPixmap mScaledBackground;
+  bool mBackgroundScaled;
+  Qt::AspectRatioMode mBackgroundScaledMode;
+  
+  void drawBackground(QCPPainter *painter);
+  void updateAxisOffsets();
+  virtual void update();
+  virtual QMargins calculateAutoMargins() const;
+  
+  friend class QCustomPlot;
+};
+
+
+
+
+
+
 
 #endif // QCP_AXIS_H

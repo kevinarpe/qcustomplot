@@ -117,10 +117,6 @@ QCPStatisticalBox::QCPStatisticalBox(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   setSelectedBrush(Qt::NoBrush);
 }
 
-QCPStatisticalBox::~QCPStatisticalBox()
-{
-}
-
 /*!
   Sets the key coordinate of the statistical box.
 */
@@ -314,6 +310,8 @@ void QCPStatisticalBox::clearData()
 /* inherits documentation from base class */
 double QCPStatisticalBox::selectTest(const QPointF &pos) const
 {
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
+  
   double posKey, posValue;
   pixelsToCoords(pos, posKey, posValue);
   // quartile box:
@@ -324,7 +322,7 @@ double QCPStatisticalBox::selectTest(const QPointF &pos) const
   
   // min/max whiskers:
   if (QCPRange(mMinimum, mMaximum).contains(posValue))
-    return qAbs(mKeyAxis->coordToPixel(mKey)-mKeyAxis->coordToPixel(posKey));
+    return qAbs(mKeyAxis.data()->coordToPixel(mKey)-mKeyAxis.data()->coordToPixel(posKey));
   
   return -1;
 }
@@ -332,6 +330,8 @@ double QCPStatisticalBox::selectTest(const QPointF &pos) const
 /* inherits documentation from base class */
 void QCPStatisticalBox::draw(QCPPainter *painter)
 {
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+
   // check data validity if flag set:
 #ifdef QCUSTOMPLOT_CHECK_DATA
   if (QCP::isInvalidData(mKey, mMedian) ||

@@ -114,7 +114,7 @@ protected:
   void getCurveData(QVector<QPointF> *lineData) const;
   double pointDistance(const QPointF &pixelPoint) const;
 
-  QPointF outsideCoordsToPixels(double key, double value, int region) const;
+  QPointF outsideCoordsToPixels(double key, double value, int region, QRect axisRect) const;
   virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
   virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
   

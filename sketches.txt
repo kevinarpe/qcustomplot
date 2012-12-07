@@ -1,0 +1,80 @@
+### axis refactoring (branch layoutsystem):
+
+> layout system
+ - add QCPLayoutSpacer (only has stretch factors and minimum/maximum width)
+ - add QCPLayoutInset (maybe a QCPLayoutElement in back and front?) (maybe call it QCPLayoutOverlay?)
+ - Create QCPLayoutElement subclass that represents a plot title. How to get it drawn? Items?
+ - adapt QCustomPlot methods that were based on old axis system (handleAxisSelection and selectedAxes done)
+ 
+- moveAxis is kind of a strange interface (from/to index won't work properly when wanting to move all the way to bottom and top of stack)
+- provide way to get the QCPAxisRect a QPoint is on.
+
+- fix legend autoposition with new axis system. probably give legend an axisrect which it orients itself to. Or better: a QCPLayoutElement. This way
+  we can have legends outside axis rects systematically. In the wake of that: make legend auto positions based on Qt::Alignment.
+- add setPlotLayout? should destroy old layout
+- update all the documentation referencing QCustomPlot::setMargin, QCustomPlot::setAutoMargin, QCustomPlot::axisRect
+- check whether selection boxes of axes are properly positioned (also with rotated tick labels!)
+- remove delete legend from QCP dtor after legend integrated into layout system
+- make sure legend QCPLayoutElement passes the layout as parent of QCPLayerable (currently set to parentPlot)
+
+### old thoughts about axis refactoring:
+
+think about:
+- replace axes system with QList<QCPAxis*> mAxes which handles all axes (and contains by default the four axes xAxes,...) maybe they're undeletable?
+  Or if deletable, set xAxis=0? Yes do that, because xAxis() function wouldn't know what entry in the list is the real x axis etc. and margin calculation etc.
+  When using non-standard axes, margins have to be done manually probably.
+    
+Axes system refactoring:
+- how will range sanitizing/validating work when ScaleType enum is replaced with subclasses? Put the sanitizing/validating in the hands of the respective QCPAxis?
+  -> shouldn't be a big problem, since the sanitizing is only used in QCPAxis methods anyway.
+- QCPAxis abstract base class. To do this, the following extra methods are needed:
+  * void dragRange(QCPRange dragStart, int dragDiffInPixels)
+  * SignDomain validSignDomain()
+- probably export some enums (e.g. SignDomain) to QCP namespace.
+- watch out for externally saved pointers to QCPAxis...
+problem: How to switch between axis types while there are already plottables attached to the axis.
+
+maybe an internal QCPAxisEngine so the axes themselves needn't be replaced?
+problem: how to pass type specific info from generic QCPAxis interface to QCPAxisEngine? Like base in log engine
+ -> maybe expose the engine abstract class and let user typecast it if he needs access to axis type specific options
+it should provide:
+  dragRange
+  pixelToCoord and coordToPixel
+  
+  interface between axis and engine basically is just setting the tick vector, label vector and subtickvector.
+  
+  generateTickVectors
+  generateAutoTicks
+  calculateAutoSubTickCount
+  calculateMargin
+  
+
+possible (abstract?) base class:
+/*
+class QCPAxis : public QObject
+{
+  Q_OBJECT
+  
+  public virtuals:
+  virtual void moveRange(double diff);
+  virtual void dragRange(QCPRange dragStart, int dragPixels);
+  virtual void scaleRange(double factor, double center);
+  virtual double pixelToCoord(double value) const;
+  virtual double coordToPixel(double value) const;
+  virtual SlectablePart selectTest(QPoint pos) const;
+  
+  protected virtuals:
+  virtual void generateTickVectors();
+  pure virtual void generateAutoTicks();
+  virtual int calculateAutoSubTickCount(double tickStep) const;
+  virtual int calculateMargin() const;
+  virtual void drawGrid(QCPPainter *painter);
+  virtual void drawSubGrid(QCPPainter *painter);
+  virtual void drawAxis(QCPPainter *painter);
+  virtual void drawTickLabel(QCPPainter *painter, double position, int distanceToAxis, const QString &text, QSize *tickLabelsSize);
+  virtual void getMaxTickLabelSize(const QFont &font, const QString &text, QSize *tickLabelsSize) const;
+  
+  friend class QCustomPlot;
+};
+*/
+ 

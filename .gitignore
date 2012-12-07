@@ -19,6 +19,7 @@ ui_*.h
 *.qm
 *.ts
 *.autosave
+*.moc
 
 # Compilation Binaries:
 
@@ -36,7 +37,6 @@ ui_*.h
 
 # Other:
 
-sketches.txt
 *.graphml
 doc/html/*
 doc/qthelp/*

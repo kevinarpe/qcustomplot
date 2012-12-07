@@ -29,6 +29,7 @@
 //amalgamation: add painter.cpp
 //amalgamation: add layer.cpp
 //amalgamation: add range.cpp
+//amalgamation: add layout.cpp
 //amalgamation: add axis.cpp
 //amalgamation: add legend.cpp
 //amalgamation: add plottable.cpp

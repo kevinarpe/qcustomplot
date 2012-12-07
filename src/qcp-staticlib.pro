@@ -18,11 +18,11 @@ VERSION = 0.9.0
 TARGET = qcustomplot
 CONFIG(debug, debug|release) {
   TARGET = $$join(TARGET,,,d) # if compiling in debug mode, append a "d" to the library name
-  MOC_DIR= build-debug
-  OBJECTS_DIR= build-debug
+  MOC_DIR = build-debug
+  OBJECTS_DIR = build-debug
 } else {
-  MOC_DIR= build-release
-  OBJECTS_DIR= build-release
+  MOC_DIR = build-release
+  OBJECTS_DIR = build-release
 }
 
 HEADERS += \
@@ -36,6 +36,7 @@ plottable.h \
 item.h \
 lineending.h \
 core.h \
+layout.h \
 plottables/plottable-graph.h \
 plottables/plottable-curve.h \
 plottables/plottable-bars.h \
@@ -60,6 +61,7 @@ plottable.cpp \
 item.cpp \
 lineending.cpp \
 core.cpp \
+layout.cpp \
 plottables/plottable-graph.cpp \
 plottables/plottable-curve.cpp \
 plottables/plottable-bars.cpp \

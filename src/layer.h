@@ -31,11 +31,11 @@ class QCPPainter;
 class QCustomPlot;
 class QCPLayerable;
 
-class QCP_LIB_DECL QCPLayer
+class QCP_LIB_DECL QCPLayer : public QObject
 {
+  Q_OBJECT
 public:
   QCPLayer(QCustomPlot* parentPlot, const QString &layerName);
-  ~QCPLayer();
   
   // getters:
   QCustomPlot *parentPlot() const { return mParentPlot; }
@@ -57,11 +57,10 @@ private:
   friend class QCPLayerable;
 };
 
-class QCP_LIB_DECL QCPLayerable : public QObject
+class QCP_LIB_DECL QCPLayerable
 {
-  Q_OBJECT
 public:
-  QCPLayerable(QCustomPlot *parentPlot);
+  QCPLayerable(QCustomPlot *plot, QString targetLayer="");
   ~QCPLayerable();
   
   // getters:

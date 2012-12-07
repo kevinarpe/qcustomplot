@@ -27,6 +27,8 @@ public:
   void setupDateTest(QCustomPlot *customPlot);
   void setupTickLabelTest(QCustomPlot *customPlot);
   void setupDaqPerformance(QCustomPlot *customPlot);
+  void setupLayoutTest(QCustomPlot* customPlot);
+  void setupMultiAxisTest(QCustomPlot* customPlot);
   
   // presets:
   void presetInteractive(QCustomPlot *customPlot);

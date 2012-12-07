@@ -41,11 +41,6 @@ class QCP_LIB_DECL QCustomPlot : public QWidget
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
   Q_PROPERTY(QString title READ title WRITE setTitle)
-  Q_PROPERTY(QRect axisRect READ axisRect WRITE setAxisRect)
-  Q_PROPERTY(int marginLeft READ marginLeft WRITE setMarginLeft)
-  Q_PROPERTY(int marginRight READ marginRight WRITE setMarginRight)
-  Q_PROPERTY(int marginTop READ marginTop WRITE setMarginTop)
-  Q_PROPERTY(int marginBottom READ marginBottom WRITE setMarginBottom)
   Q_PROPERTY(int autoMargin READ autoMargin WRITE setAutoMargin)
   Q_PROPERTY(QColor color READ color WRITE setColor)
   Q_PROPERTY(Qt::Orientations rangeDrag READ rangeDrag WRITE setRangeDrag)
@@ -86,12 +81,8 @@ public:
   QString title() const { return mTitle; }
   QFont titleFont() const { return mTitleFont; }
   QColor titleColor() const { return mTitleColor; }
-  QRect axisRect() const { return mAxisRect; }
   QRect viewport() const { return mViewport; }
-  int marginLeft() const { return mMarginLeft; }
-  int marginRight() const { return mMarginRight; }
-  int marginTop() const { return mMarginTop; }
-  int marginBottom() const { return mMarginBottom; }
+  QCPLayout *plotLayout() const { return mPlotLayout; }
   bool autoMargin() const { return mAutoMargin; }
   QColor color() const { return mColor; }
   Qt::Orientations rangeDrag() const { return mRangeDrag; }
@@ -102,9 +93,6 @@ public:
   QCP::AntialiasedElements antialiasedElements() const { return mAntialiasedElements; }
   QCP::AntialiasedElements notAntialiasedElements() const { return mNotAntialiasedElements; }
   bool autoAddPlottableToLegend() const { return mAutoAddPlottableToLegend; }
-  QPixmap axisBackground() const { return mAxisBackground; }
-  bool axisBackgroundScaled() const { return mAxisBackgroundScaled; }
-  Qt::AspectRatioMode axisBackgroundScaledMode() const { return mAxisBackgroundScaledMode; }
   const Interactions interactions() const { return mInteractions; }
   int selectionTolerance() const { return mSelectionTolerance; }
   QFont selectedTitleFont() const { return mSelectedTitleFont; }
@@ -118,12 +106,7 @@ public:
   void setTitle(const QString &title);
   void setTitleFont(const QFont &font);
   void setTitleColor(const QColor &color);
-  void setAxisRect(const QRect &arect);
-  void setMarginLeft(int margin);
-  void setMarginRight(int margin);
-  void setMarginTop(int margin);
-  void setMarginBottom(int margin);
-  void setMargin(int left, int right, int top, int bottom);
+  void setViewport(const QRect &rect);
   void setAutoMargin(bool enabled);
   void setColor(const QColor &color);
   void setRangeDrag(Qt::Orientations orientations);
@@ -137,10 +120,6 @@ public:
   void setNotAntialiasedElements(const QCP::AntialiasedElements &notAntialiasedElements);
   void setNotAntialiasedElement(QCP::AntialiasedElement notAntialiasedElement, bool enabled=true);
   void setAutoAddPlottableToLegend(bool on);
-  void setAxisBackground(const QPixmap &pm);
-  void setAxisBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode=Qt::KeepAspectRatioByExpanding);
-  void setAxisBackgroundScaled(bool scaled);
-  void setAxisBackgroundScaledMode(Qt::AspectRatioMode mode);
   void setInteractions(const Interactions &interactions);
   void setInteraction(const Interaction &interaction, bool enabled=true);
   void setSelectionTolerance(int pixels);
@@ -185,6 +164,7 @@ public:
   int itemCount() const;
   QList<QCPAbstractItem*> selectedItems() const;
   QCPAbstractItem *itemAt(const QPointF &pos, bool onlySelectable=false) const;
+  bool hasItem(QCPAbstractItem *item) const;
   
   // layer interface:
   QCPLayer *layer(const QString &name) const;
@@ -196,6 +176,11 @@ public:
   bool addLayer(const QString &name, QCPLayer *otherLayer=0, LayerInsertMode insertMode=limAbove);
   bool removeLayer(QCPLayer *layer);
   bool moveLayer(QCPLayer *layer, QCPLayer *otherLayer, LayerInsertMode insertMode=limAbove);
+  
+  // axis rect interface:
+  int axisRectCount() const;
+  QCPAxisRect* axisRect(int index=0) const;
+  QList<QCPAxisRect*> axisRects() const;
   
   QList<QCPAxis*> selectedAxes() const;
   QList<QCPLegend*> selectedLegends() const;
@@ -242,22 +227,19 @@ protected:
   QFont mTitleFont, mSelectedTitleFont;
   QColor mTitleColor, mSelectedTitleColor;
   QRect mViewport;
-  QRect mAxisRect;
   int mMarginLeft, mMarginRight, mMarginTop, mMarginBottom;
   bool mAutoMargin, mAutoAddPlottableToLegend;
   QColor mColor;
+  QCPLayout *mPlotLayout;
   QList<QCPAbstractPlottable*> mPlottables;
   QList<QCPGraph*> mGraphs; // extra list of items also in mPlottables that are of type QCPGraph
   QList<QCPAbstractItem*> mItems;
   QList<QCPLayer*> mLayers;
   Qt::Orientations mRangeDrag, mRangeZoom;
-  QCPAxis *mRangeDragHorzAxis, *mRangeDragVertAxis, *mRangeZoomHorzAxis, *mRangeZoomVertAxis;
+  QWeakPointer<QCPAxis> mRangeDragHorzAxis, mRangeDragVertAxis, mRangeZoomHorzAxis, mRangeZoomVertAxis;
   double mRangeZoomFactorHorz, mRangeZoomFactorVert;
   bool mDragging;
   QCP::AntialiasedElements mAntialiasedElements, mNotAntialiasedElements;
-  QPixmap mAxisBackground;
-  bool mAxisBackgroundScaled;
-  Qt::AspectRatioMode mAxisBackgroundScaledMode;
   Interactions mInteractions;
   int mSelectionTolerance;
   bool mTitleSelected;
@@ -267,7 +249,7 @@ protected:
   QPixmap mPaintBuffer;
   QPoint mDragStart;
   QCPRange mDragStartHorzRange, mDragStartVertRange;
-  QPixmap mScaledAxisBackground;
+  
   bool mReplotting;
   QCP::AntialiasedElements mAADragBackup, mNotAADragBackup;
   QCPLayer *mCurrentLayer;
@@ -276,6 +258,7 @@ protected:
   
   // reimplemented methods:
   virtual QSize minimumSizeHint() const;
+  virtual QSize sizeHint() const;
   virtual void paintEvent(QPaintEvent *event);
   virtual void resizeEvent(QResizeEvent *event);
   virtual void mouseDoubleClickEvent(QMouseEvent *event);
@@ -291,14 +274,14 @@ protected:
   
   // introduced methods:
   virtual void draw(QCPPainter *painter);
-  virtual void drawAxisBackground(QCPPainter *painter);
+  virtual void axisRemoved(QCPAxis *axis);
   
   // helpers:
-  void updateAxisRect();
   bool selectTestTitle(const QPointF &pos) const;
   friend class QCPLegend;
   friend class QCPAxis;
   friend class QCPLayer;
+  friend class QCPAxisRect;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCustomPlot::Interactions)
 

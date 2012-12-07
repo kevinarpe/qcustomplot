@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(400, 250, 542, 390);
   
-  setupDemo(15);
+  setupDemo(0);
   //setupPlayground(ui->customPlot);
   // 0:  setupQuadraticDemo(ui->customPlot);
   // 1:  setupSimpleDemo(ui->customPlot);
@@ -329,7 +329,7 @@ void MainWindow::setupLineStyleDemo(QCustomPlot *customPlot)
 void MainWindow::setupScatterPixmapDemo(QCustomPlot *customPlot)
 {
   demoName = "Scatter Pixmap Demo";
-  customPlot->setAxisBackground(QPixmap("./solarpanels.jpg"));
+  customPlot->axisRect()->setBackground(QPixmap("./solarpanels.jpg"));
   customPlot->addGraph();
   customPlot->graph()->setLineStyle(QCPGraph::lsLine);
   QPen pen;

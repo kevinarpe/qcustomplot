@@ -38,7 +38,6 @@ class QCP_LIB_DECL QCPAbstractLegendItem : public QObject
   Q_OBJECT
 public:
   QCPAbstractLegendItem(QCPLegend *parent);
-  virtual ~QCPAbstractLegendItem() {}
   
   // getters:
   bool antialiased() const { return mAntialiased; }
@@ -86,7 +85,6 @@ class QCP_LIB_DECL QCPPlottableLegendItem : public QCPAbstractLegendItem
   Q_OBJECT
 public:
   QCPPlottableLegendItem(QCPLegend *parent, QCPAbstractPlottable *plottable);
-  virtual ~QCPPlottableLegendItem() {}
   
   // getters:
   QCPAbstractPlottable *plottable() { return mPlottable; }
@@ -108,7 +106,7 @@ protected:
 };
 
 
-class QCP_LIB_DECL QCPLegend : public QCPLayerable
+class QCP_LIB_DECL QCPLegend : public QObject, public QCPLayerable // TODO: Change this to inherit from QCPLayoutElement instead of QObject directly
 {
   Q_OBJECT
 public:

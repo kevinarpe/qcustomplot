@@ -431,44 +431,40 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   QLocale currentLocale = locale();
   currentLocale.setNumberOptions(QLocale::OmitGroupSeparator);
   setLocale(currentLocale);
-  
-  // create very first layers:
-  QCPLayer *gridLayer = new QCPLayer(this, "grid");
-  QCPLayer *mainLayer = new QCPLayer(this, "main");
-  QCPLayer *axesLayer = new QCPLayer(this, "axes");
-  mLayers.append(gridLayer);
-  mLayers.append(mainLayer);
-  mLayers.append(axesLayer);
-  setCurrentLayer(mainLayer);
-
   mPaintBuffer = QPixmap(size());
+  
+  // create initial layers:
+  mLayers.append(new QCPLayer(this, "grid"));
+  mLayers.append(new QCPLayer(this, "main"));
+  mLayers.append(new QCPLayer(this, "axes"));
+  setCurrentLayer("main");
+  
+  // create initial layout, axis rect and axes:
+  mPlotLayout = new QCPLayoutGrid(this);
+  QCPAxisRect *defaultAxisRect = new QCPAxisRect(this);
+  defaultAxisRect->setBackgroundScaled(true);
+  defaultAxisRect->setBackgroundScaledMode(Qt::KeepAspectRatioByExpanding);
+  qobject_cast<QCPLayoutGrid*>(mPlotLayout)->addElement(defaultAxisRect, 0, 0);
+  yAxis = defaultAxisRect->addAxis(QCPAxis::atLeft);
+  yAxis2 = defaultAxisRect->addAxis(QCPAxis::atRight);
+  xAxis2 = defaultAxisRect->addAxis(QCPAxis::atTop);
+  xAxis = defaultAxisRect->addAxis(QCPAxis::atBottom);
+
   legend = new QCPLegend(this);
   legend->setVisible(false);
-  legend->setLayer(axesLayer);
-  xAxis = new QCPAxis(this, QCPAxis::atBottom);
-  yAxis = new QCPAxis(this, QCPAxis::atLeft);
-  xAxis2 = new QCPAxis(this, QCPAxis::atTop);
-  yAxis2 = new QCPAxis(this, QCPAxis::atRight);
+  legend->setLayer("axes");
+  xAxis->setGrid(true);
+  yAxis->setGrid(true);
   xAxis2->setGrid(false);
   yAxis2->setGrid(false);
   xAxis2->setZeroLinePen(Qt::NoPen);
   yAxis2->setZeroLinePen(Qt::NoPen);
   xAxis2->setVisible(false);
   yAxis2->setVisible(false);
-  xAxis->setLayer(axesLayer);
-  yAxis->setLayer(axesLayer);
-  xAxis2->setLayer(axesLayer);
-  yAxis2->setLayer(axesLayer);
-  xAxis->mGrid->setLayer(gridLayer);
-  yAxis->mGrid->setLayer(gridLayer);
-  xAxis2->mGrid->setLayer(gridLayer);
-  yAxis2->mGrid->setLayer(gridLayer);
-  mViewport = rect();
+  setViewport(rect());
   
   setNoAntialiasingOnDrag(false);
   setAutoAddPlottableToLegend(true);
-  setAxisBackgroundScaled(true);
-  setAxisBackgroundScaledMode(Qt::KeepAspectRatioByExpanding);
   setTitleFont(QFont(font().family(), 14, QFont::Bold));
   setTitleColor(Qt::black);
   setSelectedTitleFont(QFont(font().family(), 14, QFont::Bold));
@@ -491,7 +487,6 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   setRangeZoomFactor(0.85);
   setSelectionTolerance(8);
   
-  setMargin(0, 0, 0, 0); // also initializes the mAxisRect
   setAutoMargin(true);
   replot();
 }
@@ -500,12 +495,20 @@ QCustomPlot::~QCustomPlot()
 {
   clearPlottables();
   clearItems();
-  delete legend;
-  delete xAxis;
-  delete yAxis;
-  delete xAxis2;
-  delete yAxis2;
-  qDeleteAll(mLayers);
+  
+  if (legend)
+  {
+    delete legend;
+    legend = 0;
+  }
+  
+  if (mPlotLayout)
+  {
+    delete mPlotLayout;
+    mPlotLayout = 0;
+  }
+  
+  qDeleteAll(mLayers); // don't use removeLayer, because it would prevent the last layer to be removed
   mLayers.clear();
 }
 
@@ -515,7 +518,7 @@ QCustomPlot::~QCustomPlot()
 */
 QCPAxis *QCustomPlot::rangeDragAxis(Qt::Orientation orientation)
 {
-  return (orientation == Qt::Horizontal ? mRangeDragHorzAxis : mRangeDragVertAxis);
+  return (orientation == Qt::Horizontal ? mRangeDragHorzAxis.data() : mRangeDragVertAxis.data());
 }
 
 /*!
@@ -524,7 +527,7 @@ QCPAxis *QCustomPlot::rangeDragAxis(Qt::Orientation orientation)
 */
 QCPAxis *QCustomPlot::rangeZoomAxis(Qt::Orientation orientation)
 {
-  return (orientation == Qt::Horizontal ? mRangeZoomHorzAxis : mRangeZoomVertAxis);
+  return (orientation == Qt::Horizontal ? mRangeZoomHorzAxis.data() : mRangeZoomVertAxis.data());
 }
 
 /*!
@@ -565,82 +568,6 @@ void QCustomPlot::setTitleFont(const QFont &font)
 void QCustomPlot::setTitleColor(const QColor &color)
 {
   mTitleColor = color;
-}
-
-/*!
-  An alternative way to set the margins, by directly setting the wanted axis rect. The rect
-  will be translated into appropriate margin values.
-  
-  \warning Setting the axis rect with this function does not guarantee that the axis rect will stay
-  like this indefinitely. In QCustomPlot, margins are the fixed values (if \ref setAutoMargin is
-  false). Hence the axis rect is automatically changed when the widget size changes, but the
-  margins (distances between axis rect sides and widget/viewport rect sides) stay the same.
-
-  \see setMargin
-*/
-void QCustomPlot::setAxisRect(const QRect &arect)
-{
-  mMarginLeft = arect.left()-mViewport.left();
-  mMarginRight = mViewport.right()-arect.right();
-  mMarginTop = arect.top()-mViewport.top();
-  mMarginBottom = mViewport.bottom()-arect.bottom();
-  updateAxisRect();
-}
-
-/*!
-  Sets the left margin manually. Will only have effect, if \ref setAutoMargin is set to false.
-  see \ref setMargin for an explanation of what margins mean in QCustomPlot.
-*/
-void QCustomPlot::setMarginLeft(int margin)
-{
-  mMarginLeft = margin;
-  updateAxisRect();
-}
-
-/*!
-  Sets the right margin manually. Will only have effect, if \ref setAutoMargin is set to false.
-  see \ref setMargin for an explanation of what margins mean in QCustomPlot.
-*/
-void QCustomPlot::setMarginRight(int margin)
-{
-  mMarginRight = margin;
-  updateAxisRect();
-}
-
-/*!
-  Sets the top margin manually. Will only have effect, if \ref setAutoMargin is set to false.
-  see \ref setMargin for an explanation of what margins mean in QCustomPlot.
-*/
-void QCustomPlot::setMarginTop(int margin)
-{
-  mMarginTop = margin;
-  updateAxisRect();
-}
-
-/*!
-  Sets the bottom margin manually. Will only have effect, if \ref setAutoMargin is set to false.
-  see \ref setMargin for an explanation of what margins mean in QCustomPlot.
-*/
-void QCustomPlot::setMarginBottom(int margin)
-{
-  mMarginBottom = margin;
-  updateAxisRect();
-}
-
-/*!
-  Sets the margins manually. Will only have effect, if \ref setAutoMargin is set to false.
-  The margins are the distances in pixels between the axes box and the viewport box.
-  The viewport box normally is the entire QCustomPlot widget or the entire image, if
-  using one of the export functions. Positive margin values always mean the axes box
-  is shrinked, going inward from the sides of the viewport box.
-*/
-void QCustomPlot::setMargin(int left, int right, int top, int bottom)
-{
-  mMarginLeft = left;
-  mMarginRight = right;
-  mMarginTop = top;
-  mMarginBottom = bottom;
-  updateAxisRect();
 }
 
 /*!
@@ -711,10 +638,8 @@ void QCustomPlot::setRangeZoom(Qt::Orientations orientations)
 */
 void QCustomPlot::setRangeDragAxes(QCPAxis *horizontal, QCPAxis *vertical)
 {
-  if (horizontal)
-    mRangeDragHorzAxis = horizontal;
-  if (vertical)
-    mRangeDragVertAxis = vertical;
+  mRangeDragHorzAxis = horizontal;
+  mRangeDragVertAxis = vertical;
 }
 
 /*!
@@ -726,10 +651,8 @@ void QCustomPlot::setRangeDragAxes(QCPAxis *horizontal, QCPAxis *vertical)
 */
 void QCustomPlot::setRangeZoomAxes(QCPAxis *horizontal, QCPAxis *vertical)
 {
-  if (horizontal)
-    mRangeZoomHorzAxis = horizontal;
-  if (vertical)
-    mRangeZoomVertAxis = vertical;
+  mRangeZoomHorzAxis = horizontal;
+  mRangeZoomVertAxis = vertical;
 }
 
 /*!
@@ -872,59 +795,6 @@ void QCustomPlot::setNotAntialiasedElement(QCP::AntialiasedElement notAntialiase
 void QCustomPlot::setAutoAddPlottableToLegend(bool on)
 {
   mAutoAddPlottableToLegend = on;
-}
-
-/*!
-  Sets \a pm as the axis background pixmap. The axis background pixmap will be drawn inside the current
-  axis rect, before anything else (e.g. the axes themselves, grids, graphs, etc.) is drawn.
-  If the provided pixmap doesn't have the same size as the axis rect, scaling can be enabled with \ref setAxisBackgroundScaled
-  and the scaling mode (i.e. whether and how the aspect ratio is preserved) can be set with \ref setAxisBackgroundScaledMode.
-  To set all these options in one call, consider using the overloaded version of this function.
-  \see setAxisBackgroundScaled, setAxisBackgroundScaledMode
-*/
-void QCustomPlot::setAxisBackground(const QPixmap &pm)
-{
-  mAxisBackground = pm;
-  mScaledAxisBackground = QPixmap();
-}
-
-/*!
-  \overload
-  Allows setting the background pixmap, whether it shall be scaled and how it shall be scaled in one call.
-  \see setAxisBackground(const QPixmap &pm), setAxisBackgroundScaled, setAxisBackgroundScaledMode
-*/
-void QCustomPlot::setAxisBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode)
-{
-  mAxisBackground = pm;
-  mScaledAxisBackground = QPixmap();
-  mAxisBackgroundScaled = scaled;
-  mAxisBackgroundScaledMode = mode;
-}
-
-/*!
-  Sets whether the axis background pixmap shall be scaled to fit the current axis rect or not. If
-  \a scaled is set to true, you may control whether and how the aspect ratio of the original pixmap is
-  preserved with \ref setAxisBackgroundScaledMode.
-  
-  Note that the scaled version of the original pixmap is buffered, so there is no performance penalty
-  on replots, when enabling the scaling. (Except of course, the axis rect is continuously
-  changed, but that's not very likely.)
-  
-  \see setAxisBackground, setAxisBackgroundScaledMode
-*/
-void QCustomPlot::setAxisBackgroundScaled(bool scaled)
-{
-  mAxisBackgroundScaled = scaled;
-}
-
-/*!
-  If scaling of the axis background pixmap is enabled (\ref setAxisBackgroundScaled), use this function to
-  define whether and how the aspect ratio of the original pixmap passed to \ref setAxisBackground is preserved.
-  \see setAxisBackground, setAxisBackgroundScaled
-*/
-void QCustomPlot::setAxisBackgroundScaledMode(Qt::AspectRatioMode mode)
-{
-  mAxisBackgroundScaledMode = mode;
 }
 
 /*!
@@ -1104,6 +974,17 @@ void QCustomPlot::setMultiSelectModifier(Qt::KeyboardModifier modifier)
 }
 
 /*!
+  Sets the viewport of this QCustomPlot. The Viewport is the area that the top level layout
+  (QCustomPlot::plotLayout()) uses as its rect. Normally, the viewport is the entire widget rect.
+*/
+void QCustomPlot::setViewport(const QRect &rect)
+{
+  mViewport = rect;
+  if (mPlotLayout)
+    mPlotLayout->setOuterRect(mViewport);
+}
+
+/*!
   Returns the plottable with \a index. If the index is invalid, returns 0.
   
   There is an overloaded version of this function with no parameter which returns the last added
@@ -1278,7 +1159,7 @@ QCPAbstractPlottable *QCustomPlot::plottableAt(const QPointF &pos, bool onlySele
     QCPAbstractPlottable *currentPlottable = mPlottables[i];
     if (onlySelectable && !currentPlottable->selectable())
       continue;
-    if ((currentPlottable->keyAxis()->axisRect() | currentPlottable->valueAxis()->axisRect()).contains(pos.toPoint())) // only consider clicks inside the rect that is spanned by the plottable's key/value axes
+    if ((currentPlottable->keyAxis()->axisRect()->rect() & currentPlottable->valueAxis()->axisRect()->rect()).contains(pos.toPoint())) // only consider clicks inside the rect that is spanned by the plottable's key/value axes
     {
       double currentDistance = currentPlottable->selectTest(pos);
       if (currentDistance >= 0 && currentDistance < resultDistance)
@@ -1354,6 +1235,11 @@ QCPGraph *QCustomPlot::addGraph(QCPAxis *keyAxis, QCPAxis *valueAxis)
 {
   if (!keyAxis) keyAxis = xAxis;
   if (!valueAxis) valueAxis = yAxis;
+  if (!keyAxis || !valueAxis)
+  {
+    qDebug() << Q_FUNC_INFO << "can't use default QCustomPlot xAxis or yAxis, because at least one is invalid (has been deleted)";
+    return 0;
+  }
   if (keyAxis->parentPlot() != this || valueAxis->parentPlot() != this)
   {
     qDebug() << Q_FUNC_INFO << "passed keyAxis or valueAxis doesn't have this QCustomPlot as parent";
@@ -1611,6 +1497,16 @@ QCPAbstractItem *QCustomPlot::itemAt(const QPointF &pos, bool onlySelectable) co
 }
 
 /*!
+  Returns whether this QCustomPlot instance contains the \a item.
+  
+  \see addItem
+*/
+bool QCustomPlot::hasItem(QCPAbstractItem *item) const
+{
+  return mItems.contains(item);
+}
+
+/*!
   Returns the layer with the specified \a name.
   
   \see addLayer, moveLayer, removeLayer
@@ -1811,6 +1707,47 @@ bool QCustomPlot::moveLayer(QCPLayer *layer, QCPLayer *otherLayer, QCustomPlot::
   return true;
 }
 
+int QCustomPlot::axisRectCount() const
+{
+  return axisRects().size();
+}
+
+QCPAxisRect *QCustomPlot::axisRect(int index) const
+{
+  const QList<QCPAxisRect*> rectList = axisRects();
+  if (index >= 0 && index < rectList.size())
+  {
+    return rectList.at(index);
+  } else
+  {
+    qDebug() << Q_FUNC_INFO << "invalid axis rect index" << index;
+    return 0;
+  }
+}
+
+QList<QCPAxisRect*> QCustomPlot::axisRects() const
+{
+  QList<QCPAxisRect*> result;
+  QStack<QCPLayout*> layoutStack;
+  if (mPlotLayout)
+    layoutStack.push(mPlotLayout);
+  
+  while (!layoutStack.isEmpty())
+  {
+    QCPLayout *layout = layoutStack.pop();
+    for (int i=0; i<layout->elementCount(); ++i)
+    {
+      QCPLayoutElement *element = layout->elementAt(i);
+      if (QCPAxisRect *r = qobject_cast<QCPAxisRect*>(element))
+        result.append(r);
+      else if (QCPLayout *l = qobject_cast<QCPLayout*>(element))
+        layoutStack.push(l);
+    }
+  }
+  
+  return result;
+}
+
 /*!
   Returns the axes that currently have selected parts, i.e. whose selection is not \ref QCPAxis::spNone.
   
@@ -1818,12 +1755,17 @@ bool QCustomPlot::moveLayer(QCPLayer *layer, QCPLayer *otherLayer, QCustomPlot::
 */
 QList<QCPAxis*> QCustomPlot::selectedAxes() const
 {
-  QList<QCPAxis*> result = QList<QCPAxis*>() << xAxis << yAxis << xAxis2 << yAxis2;
-  for (int i=result.size()-1; i>=0; --i)
+  QList<QCPAxis*> result, allAxes;
+  QList<QCPAxisRect*> rects = axisRects();
+  for (int i=0; i<rects.size(); ++i)
+    allAxes << rects.at(i)->axes();
+  
+  for (int i=0; i<allAxes.size(); ++i)
   {
-    if (result.at(i)->selected() == QCPAxis::spNone)
-      result.removeAt(i);
+    if (allAxes.at(i)->selected() != QCPAxis::spNone)
+      result.append(allAxes.at(i));
   }
+  
   return result;
 }
 
@@ -1894,13 +1836,13 @@ void QCustomPlot::replot()
   painter.begin(&mPaintBuffer);
   if (painter.isActive()) 
   {
-    painter.setRenderHint(QPainter::HighQualityAntialiasing);
+    painter.setRenderHint(QPainter::HighQualityAntialiasing); // to make Antialiasing look good if using the OpenGL graphicssystem
     draw(&painter);
+    painter.end();
     if (mPlottingHints.testFlag(QCP::phForceRepaint))
       repaint();
     else
       update();
-    painter.end();
   } else // might happen if QCustomPlot has width or height zero
     qDebug() << Q_FUNC_INFO << "Couldn't activate painter on buffer";
   emit afterReplot();
@@ -2029,10 +1971,9 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   QPrinter printer(QPrinter::ScreenResolution);
   printer.setOutputFileName(fileName);
   printer.setFullPage(true);
-  QRect oldViewport = mViewport;
-  mViewport = QRect(0, 0, newWidth, newHeight);
-  updateAxisRect();
-  printer.setPaperSize(mViewport.size(), QPrinter::DevicePixel);
+  QRect oldViewport = viewport();
+  setViewport(QRect(0, 0, newWidth, newHeight));
+  printer.setPaperSize(viewport().size(), QPrinter::DevicePixel);
   QCPPainter printpainter;
   if (printpainter.begin(&printer))
   {
@@ -2041,13 +1982,12 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
     printpainter.setWindow(mViewport);
     printpainter.setRenderHint(QPainter::NonCosmeticDefaultPen, noCosmeticPen);
     if (mColor != Qt::white && mColor != Qt::transparent && mColor.alpha() > 0) // draw pdf background color if not white/transparent
-      printpainter.fillRect(mViewport, mColor);
+      printpainter.fillRect(viewport(), mColor);
     draw(&printpainter);
     printpainter.end();
     success = true;
   }
-  mViewport = oldViewport;
-  updateAxisRect();
+  setViewport(oldViewport);
   return success;
 }
 
@@ -2158,16 +2098,25 @@ bool QCustomPlot::saveBmp(const QString &fileName, int width, int height, double
 
 /*! \internal
   
-  Returns a minimum size hint of QSize(50, 50). This prevents QCustomPlot from being collapsed to
-  size/width zero when placed in a layout where other components try to take in as much space as
-  possible (e.g. QMdiArea).
-
-  (To overwrite this minimum size hint of QCustomPlot, simply call QWidget::setMinimumSize in the
-  QCustomPlot widget.)
+  Returns a minimum size hint that corresponds to the minimum size of the top level layout
+  (plotLayout()). To prevent QCustomPlot from being collapsed to size/width zero, set a minimum
+  size (setMinimumSize) either on the whole QCustomPlot or on any layout elements inside the plot.
+  This is especially important, when placed in a QLayout where other components try to take in as
+  much space as possible (e.g. QMdiArea).
 */
 QSize QCustomPlot::minimumSizeHint() const
 {
-  return QSize(50, 50);
+  return mPlotLayout->minimumSizeHint();
+}
+
+/*! \internal
+  
+  Returns a size hint that is the same as minimumSizeHint().
+  
+*/
+QSize QCustomPlot::sizeHint() const
+{
+  return mPlotLayout->minimumSizeHint();
 }
 
 /*! \internal
@@ -2192,8 +2141,7 @@ void QCustomPlot::resizeEvent(QResizeEvent *event)
 {
   // resize and repaint the buffer:
   mPaintBuffer = QPixmap(event->size());
-  mViewport = rect();
-  updateAxisRect();
+  setViewport(rect());
   replot();
 }
 
@@ -2287,8 +2235,10 @@ void QCustomPlot::mousePressEvent(QMouseEvent *event)
     // Mouse range dragging interaction:
     if (mInteractions.testFlag(iRangeDrag))
     {
-      mDragStartHorzRange = mRangeDragHorzAxis->range();
-      mDragStartVertRange = mRangeDragVertAxis->range();
+      if (mRangeDragHorzAxis)
+        mDragStartHorzRange = mRangeDragHorzAxis.data()->range();
+      if (mRangeDragVertAxis)
+        mDragStartVertRange = mRangeDragVertAxis.data()->range();
     }
   }
   
@@ -2313,26 +2263,32 @@ void QCustomPlot::mouseMoveEvent(QMouseEvent *event)
     {
       if (mRangeDrag.testFlag(Qt::Horizontal))
       {
-        if (mRangeDragHorzAxis->mScaleType == QCPAxis::stLinear)
+        if (QCPAxis *rangeDragHorzAxis = mRangeDragHorzAxis.data())
         {
-          double diff = mRangeDragHorzAxis->pixelToCoord(mDragStart.x()) - mRangeDragHorzAxis->pixelToCoord(event->pos().x());
-          mRangeDragHorzAxis->setRange(mDragStartHorzRange.lower+diff, mDragStartHorzRange.upper+diff);
-        } else if (mRangeDragHorzAxis->mScaleType == QCPAxis::stLogarithmic)
-        {
-          double diff = mRangeDragHorzAxis->pixelToCoord(mDragStart.x()) / mRangeDragHorzAxis->pixelToCoord(event->pos().x());
-          mRangeDragHorzAxis->setRange(mDragStartHorzRange.lower*diff, mDragStartHorzRange.upper*diff);
+          if (rangeDragHorzAxis->mScaleType == QCPAxis::stLinear)
+          {
+            double diff = rangeDragHorzAxis->pixelToCoord(mDragStart.x()) - rangeDragHorzAxis->pixelToCoord(event->pos().x());
+            rangeDragHorzAxis->setRange(mDragStartHorzRange.lower+diff, mDragStartHorzRange.upper+diff);
+          } else if (rangeDragHorzAxis->mScaleType == QCPAxis::stLogarithmic)
+          {
+            double diff = rangeDragHorzAxis->pixelToCoord(mDragStart.x()) / rangeDragHorzAxis->pixelToCoord(event->pos().x());
+            rangeDragHorzAxis->setRange(mDragStartHorzRange.lower*diff, mDragStartHorzRange.upper*diff);
+          }
         }
       }
       if (mRangeDrag.testFlag(Qt::Vertical))
       {
-        if (mRangeDragVertAxis->mScaleType == QCPAxis::stLinear)
+        if (QCPAxis *rangeDragVertAxis = mRangeDragVertAxis.data())
         {
-          double diff = mRangeDragVertAxis->pixelToCoord(mDragStart.y()) - mRangeDragVertAxis->pixelToCoord(event->pos().y());
-          mRangeDragVertAxis->setRange(mDragStartVertRange.lower+diff, mDragStartVertRange.upper+diff);
-        } else if (mRangeDragVertAxis->mScaleType == QCPAxis::stLogarithmic)
-        {
-          double diff = mRangeDragVertAxis->pixelToCoord(mDragStart.y()) / mRangeDragVertAxis->pixelToCoord(event->pos().y());
-          mRangeDragVertAxis->setRange(mDragStartVertRange.lower*diff, mDragStartVertRange.upper*diff);
+          if (rangeDragVertAxis->mScaleType == QCPAxis::stLinear)
+          {
+            double diff = rangeDragVertAxis->pixelToCoord(mDragStart.y()) - rangeDragVertAxis->pixelToCoord(event->pos().y());
+            rangeDragVertAxis->setRange(mDragStartVertRange.lower+diff, mDragStartVertRange.upper+diff);
+          } else if (rangeDragVertAxis->mScaleType == QCPAxis::stLogarithmic)
+          {
+            double diff = rangeDragVertAxis->pixelToCoord(mDragStart.y()) / rangeDragVertAxis->pixelToCoord(event->pos().y());
+            rangeDragVertAxis->setRange(mDragStartVertRange.lower*diff, mDragStartVertRange.upper*diff);
+          }
         }
       }
       if (mRangeDrag != 0) // if either vertical or horizontal drag was enabled, do a replot
@@ -2488,12 +2444,14 @@ void QCustomPlot::wheelEvent(QWheelEvent *event)
       if (mRangeZoom.testFlag(Qt::Horizontal))
       {
         factor = pow(mRangeZoomFactorHorz, wheelSteps);
-        mRangeZoomHorzAxis->scaleRange(factor, mRangeZoomHorzAxis->pixelToCoord(event->pos().x()));
+        if (mRangeZoomHorzAxis.data())
+          mRangeZoomHorzAxis.data()->scaleRange(factor, mRangeZoomHorzAxis.data()->pixelToCoord(event->pos().x()));
       }
       if (mRangeZoom.testFlag(Qt::Vertical))
       {
         factor = pow(mRangeZoomFactorVert, wheelSteps);
-        mRangeZoomVertAxis->scaleRange(factor, mRangeZoomVertAxis->pixelToCoord(event->pos().y()));
+        if (mRangeZoomVertAxis.data())
+          mRangeZoomVertAxis.data()->scaleRange(factor, mRangeZoomVertAxis.data()->pixelToCoord(event->pos().y()));
       }
       replot();
     }
@@ -2638,10 +2596,14 @@ bool QCustomPlot::handleItemSelection(QMouseEvent *event, bool additiveSelection
 */
 bool QCustomPlot::handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified)
 {
+  QList<QCPAxis*> allAxes;
+  QList<QCPAxisRect*> rects = axisRects();
+  for (int i=0; i<rects.size(); ++i)
+    allAxes << rects.at(i)->axes();
+  
   bool selectionFound = false;
-  QVector<QCPAxis*> axes = QVector<QCPAxis*>() << xAxis << yAxis << xAxis2 << yAxis2;
-  for (int i=0; i<axes.size(); ++i)
-    selectionFound |= axes.at(i)->handleAxisSelection((!selectionFound || additiveSelection) ? event : 0, additiveSelection, modified);
+  for (int i=0; i<allAxes.size(); ++i)
+    selectionFound |= allAxes.at(i)->handleAxisSelection((!selectionFound || additiveSelection) ? event : 0, additiveSelection, modified);
   return selectionFound;
 }
 
@@ -2691,28 +2653,28 @@ void QCustomPlot::draw(QCPPainter *painter)
   if (!mTitle.isEmpty())
   {
     painter->setFont(titleSelected() ? mSelectedTitleFont : mTitleFont);
-    mTitleBoundingBox = painter->fontMetrics().boundingRect(mViewport, Qt::TextDontClip | Qt::AlignHCenter, mTitle);
+    mTitleBoundingBox = painter->fontMetrics().boundingRect(viewport(), Qt::TextDontClip | Qt::AlignHCenter, mTitle);
   } else
     mTitleBoundingBox = QRect();
   
-  // prepare values of ticks and tick strings:
-  xAxis->setupTickVectors();
-  yAxis->setupTickVectors();
-  xAxis2->setupTickVectors();
-  yAxis2->setupTickVectors();
-  // set auto margin such that tick/axis labels etc. are not clipped:
-  if (mAutoMargin)
+  QList<QCPAxisRect*> axisRectList = axisRects();
+  for (int i=0; i<axisRectList.size(); ++i)
   {
-    setMargin(yAxis->calculateMargin(),
-              yAxis2->calculateMargin(),
-              xAxis2->calculateMargin()+mTitleBoundingBox.height(),
-              xAxis->calculateMargin());
+    // prepare values of ticks and tick strings on axes:
+    QList<QCPAxis*> axes = axisRectList.at(i)->axes();
+    for (int k=0; k<axes.size(); ++k)
+      axes.at(k)->setupTickVectors();
   }
+  
+  // recalculate layout:
+  mPlotLayout->update();
+  
   // position legend:
   legend->reArrange();
   
-  // draw axis background:
-  drawAxisBackground(painter);
+  // draw axis backgrounds:
+  for (int i=0; i<axisRectList.size(); ++i)
+    axisRectList.at(i)->drawBackground(painter);
   
   // draw all layered objects (grid, axes, plottables, items, legend,...):
   for (int layerIndex=0; layerIndex < mLayers.size(); ++layerIndex)
@@ -2741,51 +2703,18 @@ void QCustomPlot::draw(QCPPainter *painter)
   }
 }
 
-/*! \internal
-
-  If an axis background is provided via \ref setAxisBackground, this function first buffers the
-  scaled version depending on \ref setAxisBackgroundScaled and \ref setAxisBackgroundScaledMode and
-  then draws it inside the current axisRect with the provided \a painter. The scaled version is
-  buffered in mScaledAxisBackground to prevent the need for rescaling at every redraw. It is only
-  updated, when the axisRect has changed in a way that requires a rescale of the background pixmap
-  (this is dependant on the \ref setAxisBackgroundScaledMode), or when a differend axis backgroud
-  was set.
-  
-  \see draw, setAxisBackground, setAxisBackgroundScaled, setAxisBackgroundScaledMode
-*/
-void QCustomPlot::drawAxisBackground(QCPPainter *painter)
+void QCustomPlot::axisRemoved(QCPAxis *axis)
 {
-  if (!mAxisBackground.isNull())
-  {
-    if (mAxisBackgroundScaled)
-    {
-      // check whether mScaledAxisBackground needs to be updated:
-      QSize scaledSize(mAxisBackground.size());
-      scaledSize.scale(mAxisRect.size(), mAxisBackgroundScaledMode);
-      if (mScaledAxisBackground.size() != scaledSize)
-        mScaledAxisBackground = mAxisBackground.scaled(mAxisRect.size(), mAxisBackgroundScaledMode, Qt::SmoothTransformation);
-      painter->drawPixmap(mAxisRect.topLeft(), mScaledAxisBackground, QRect(0, 0, mAxisRect.width(), mAxisRect.height()) & mScaledAxisBackground.rect());
-    } else
-    {
-      painter->drawPixmap(mAxisRect.topLeft(), mAxisBackground, QRect(0, 0, mAxisRect.width(), mAxisRect.height()));
-    }
-  }
-}
-
-/*! \internal
+  if (xAxis == axis)
+    xAxis = 0;
+  if (xAxis2 == axis)
+    xAxis2 = 0;
+  if (yAxis == axis)
+    yAxis = 0;
+  if (yAxis2 == axis)
+    yAxis2 = 0;
   
-  calculates mAxisRect by applying the margins inward to mViewport. The axisRect is then passed on
-  to all axes via QCPAxis::setAxisRect
-  
-  \see setMargin, setAxisRect
-*/
-void QCustomPlot::updateAxisRect()
-{
-  mAxisRect = mViewport.adjusted(mMarginLeft, mMarginTop, -mMarginRight, -mMarginBottom);
-  xAxis->setAxisRect(mAxisRect);
-  yAxis->setAxisRect(mAxisRect);
-  xAxis2->setAxisRect(mAxisRect);
-  yAxis2->setAxisRect(mAxisRect);
+  // Note: No need to take care of range drag axes and range zoom axes, because they are stored in smart pointers
 }
 
 /*! \internal
@@ -2847,9 +2776,8 @@ QPixmap QCustomPlot::pixmap(int width, int height, double scale)
   painter.begin(&result);
   if (painter.isActive())
   {
-    QRect oldViewport = mViewport;
-    mViewport = QRect(0, 0, newWidth, newHeight);
-    updateAxisRect();
+    QRect oldViewport = viewport();
+    setViewport(QRect(0, 0, newWidth, newHeight));
     painter.setMode(QCPPainter::pmNoCaching);
     if (!qFuzzyCompare(scale, 1.0))
     {
@@ -2861,8 +2789,7 @@ QPixmap QCustomPlot::pixmap(int width, int height, double scale)
       painter.scale(scale, scale);
     }
     draw(&painter);
-    mViewport = oldViewport;
-    updateAxisRect();
+    setViewport(oldViewport);
     painter.end();
   } else // might happen if pixmap has width or height zero
   {

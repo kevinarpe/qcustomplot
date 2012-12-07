@@ -33,6 +33,7 @@ class QCustomPlot;
 class QCPItemPosition;
 class QCPAbstractItem;
 class QCPAxis;
+class QCPAxisRect;
 
 class QCP_LIB_DECL QCPItemAnchor
 {
@@ -86,8 +87,9 @@ public:
   double key() const { return mKey; }
   double value() const { return mValue; }
   QPointF coords() const { return QPointF(mKey, mValue); }
-  QCPAxis *keyAxis() const { return mKeyAxis; }
-  QCPAxis *valueAxis() const { return mValueAxis; }
+  QCPAxis *keyAxis() const { return mKeyAxis.data(); }
+  QCPAxis *valueAxis() const { return mValueAxis.data(); }
+  QCPAxisRect *axisRect() const { return mAxisRect.data(); }
   virtual QPointF pixelPoint() const;
   
   // setters:
@@ -96,11 +98,13 @@ public:
   void setCoords(double key, double value);
   void setCoords(const QPointF &coords);
   void setAxes(QCPAxis* keyAxis, QCPAxis* valueAxis);
+  void setAxisRect(QCPAxisRect *axisRect);
   void setPixelPoint(const QPointF &pixelPoint);
   
 protected:
   PositionType mPositionType;
-  QCPAxis *mKeyAxis, *mValueAxis;
+  QWeakPointer<QCPAxis> mKeyAxis, mValueAxis;
+  QWeakPointer<QCPAxisRect> mAxisRect;
   double mKey, mValue;
   QCPItemAnchor *mParentAnchor;
   
@@ -110,7 +114,7 @@ private:
 };
 
 
-class QCP_LIB_DECL QCPAbstractItem : public QCPLayerable
+class QCP_LIB_DECL QCPAbstractItem : public QObject, public QCPLayerable
 {
   Q_OBJECT
 public:
@@ -119,16 +123,13 @@ public:
   
   // getters:
   bool clipToAxisRect() const { return mClipToAxisRect; }
-  QCPAxis *clipKeyAxis() const { return mClipKeyAxis; }
-  QCPAxis *clipValueAxis() const { return mClipValueAxis; }
+  QCPAxisRect *clipAxisRect() const { return mClipAxisRect.data(); }
   bool selectable() const { return mSelectable; }
   bool selected() const { return mSelected; }
   
   // setters:
   void setClipToAxisRect(bool clip);
-  void setClipAxes(QCPAxis *keyAxis, QCPAxis *valueAxis);
-  void setClipKeyAxis(QCPAxis *axis);
-  void setClipValueAxis(QCPAxis *axis);
+  void setClipAxisRect(QCPAxisRect *rect);
   void setSelectable(bool selectable);
   void setSelected(bool selected);
   
@@ -142,7 +143,7 @@ public:
   
 protected:
   bool mClipToAxisRect;
-  QCPAxis *mClipKeyAxis, *mClipValueAxis;
+  QWeakPointer<QCPAxisRect> mClipAxisRect;
   bool mSelectable, mSelected;
   QList<QCPItemPosition*> mPositions;
   QList<QCPItemAnchor*> mAnchors;
