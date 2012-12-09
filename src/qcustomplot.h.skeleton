@@ -52,6 +52,7 @@
 //amalgamation: add items/item-pixmap.h
 //amalgamation: add items/item-tracer.h
 //amalgamation: add items/item-bracket.h
+//amalgamation: add layoutelements/layoutelement-axisrect.h
 
 #endif // QCUSTOMPLOT_H
 

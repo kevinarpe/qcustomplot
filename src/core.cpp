@@ -29,10 +29,11 @@
 #include "painter.h"
 #include "layer.h"
 #include "axis.h"
-#include "legend.h"
+#include "layoutelements/layoutelement-axisrect.h"
 #include "plottable.h"
-#include "item.h"
 #include "plottables/plottable-graph.h"
+#include "legend.h"
+#include "item.h"
 
 /*! \mainpage %QCustomPlot Documentation
  

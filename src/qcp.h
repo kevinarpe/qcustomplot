@@ -48,5 +48,6 @@
 #include "items/item-pixmap.h"
 #include "items/item-tracer.h"
 #include "items/item-bracket.h"
+#include "layoutelements/layoutelement-axisrect.h"
 
 #endif // QCP_H
