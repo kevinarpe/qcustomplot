@@ -40,16 +40,20 @@ public:
   
   QSize size() const { return mSize; }
   double value(double key, double value);
+  double cell(int key, int value);
   QCPRange keyRange() const { return mKeyRange; }
   QCPRange valueRange() const { return mValueRange; }
   QCPRange minMax() const { return mMinMax; }
   
   void setSize(const QSize &size);
   void setValue(double key, double value, double z);
+  void setCell(int key, int value, double z);
   void setRange(const QCPRange keyRange, const QCPRange valueRange);
   void setMinMax(const QCPRange minMax);
+  void recalculateMinMax();
   
   void clear();
+  void reset(double z=0);
   bool isEmpty() const { return mIsEmpty; }
   
 protected:

@@ -46,6 +46,7 @@ QCPColorMapData::QCPColorMapData(const QSize &size, const QCPRange keyRange, con
   mIsEmpty(true)
 {
   setSize(size);
+  reset();
 }
 
 double QCPColorMapData::value(double key, double value)
@@ -56,6 +57,14 @@ double QCPColorMapData::value(double key, double value)
     int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*mSize.height()-0.5; // -0.5 since we inverted the scale
     return mData[valueCell*mSize.width() + keyCell];
   } else
+    return 0;
+}
+
+double QCPColorMapData::cell(int key, int value)
+{
+  if (key >= 0 && key < mSize.width() && value >= 0 && value < mSize.height())
+    return mData[value*mSize.width() + key];
+  else
     return 0;
 }
 
@@ -89,6 +98,19 @@ void QCPColorMapData::setValue(double key, double value, double z)
   }
 }
 
+void QCPColorMapData::setCell(int key, int value, double z)
+{
+  if (key >= 0 && key < mSize.width() && value >= 0 && value < mSize.height())
+  {
+    mData[value*mSize.width() + key] = z;
+    if (z < mMinMax.lower)
+      mMinMax.lower = z;
+    if (z > mMinMax.upper)
+      mMinMax.upper = z;
+     mModified = true;
+  }
+}
+
 void QCPColorMapData::setRange(const QCPRange keyRange, const QCPRange valueRange)
 {
   mKeyRange = keyRange;
@@ -104,13 +126,47 @@ void QCPColorMapData::setMinMax(const QCPRange minMax)
   }
 }
 
+void QCPColorMapData::recalculateMinMax()
+{
+  int maxValue = mSize.height();
+  int maxKey = mSize.width();
+  if (maxValue > 0 && maxKey > 0)
+  {
+    double minHeight = mData[0];
+    double maxHeight = mData[0];
+    for (int value=0; value<maxValue; ++value)
+    {
+      for (int key=0; key<maxKey; ++key)
+      {
+        if (mData[value*maxKey + key] > maxHeight)
+          maxHeight = mData[value*maxKey + key];
+        if (mData[value*maxKey + key] < minHeight)
+          minHeight = mData[value*maxKey + key];
+      }
+    }
+    mMinMax.lower = minHeight;
+    mMinMax.upper = maxHeight;
+    mModified = true;
+  }
+}
+
 void QCPColorMapData::clear()
 {
   setSize(QSize(1, 1));
 }
 
-
-
+void QCPColorMapData::reset(double z)
+{
+  int maxValue = mSize.height();
+  int maxKey = mSize.width();
+  for (int key=0; key<maxKey; ++key)
+  {
+    for (int value=0; value<maxValue; ++value)
+    {
+      mData[value*maxKey + key] = z;
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPColorMap
@@ -180,13 +236,13 @@ void QCPColorMap::setData(QCPColorMapData *data, bool copy)
 */
 void QCPColorMap::clearData()
 {
-  //mData->clear();
+  //mData->clear(); // DBG
 }
 
 /* inherits documentation from base class */
 double QCPColorMap::selectTest(const QPointF &pos) const
 {
-  return -1;
+  return -1; // DBG
 }
 
 void QCPColorMap::updateGradient(int levels)
