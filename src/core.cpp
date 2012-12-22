@@ -1652,7 +1652,7 @@ bool QCustomPlot::removeLayer(QCPLayer *layer)
     qDebug() << Q_FUNC_INFO << "layer not a layer of this QCustomPlot:" << reinterpret_cast<quintptr>(layer);
     return false;
   }
-  if (!mLayers.size() > 1)
+  if (mLayers.size() < 2)
   {
     qDebug() << Q_FUNC_INFO << "can't remove last layer";
     return false;
