@@ -1970,6 +1970,7 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   
   QPrinter printer(QPrinter::ScreenResolution);
   printer.setOutputFileName(fileName);
+  printer.setOutputFormat(QPrinter::PdfFormat);
   printer.setFullPage(true);
   QRect oldViewport = viewport();
   setViewport(QRect(0, 0, newWidth, newHeight));
