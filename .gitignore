@@ -9,7 +9,7 @@ desktop.ini
 
 build-release/
 build-debug/
-*.pro.user
+*.pro.user*
 Makefile*
 moc_*.cpp
 qrc_*.cpp
