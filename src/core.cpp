@@ -1653,7 +1653,7 @@ bool QCustomPlot::removeLayer(QCPLayer *layer)
     qDebug() << Q_FUNC_INFO << "layer not a layer of this QCustomPlot:" << reinterpret_cast<quintptr>(layer);
     return false;
   }
-  if (!mLayers.size() > 1)
+  if (mLayers.size() < 2)
   {
     qDebug() << Q_FUNC_INFO << "can't remove last layer";
     return false;
@@ -1971,6 +1971,7 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   
   QPrinter printer(QPrinter::ScreenResolution);
   printer.setOutputFileName(fileName);
+  printer.setOutputFormat(QPrinter::PdfFormat);
   printer.setFullPage(true);
   QRect oldViewport = viewport();
   setViewport(QRect(0, 0, newWidth, newHeight));
