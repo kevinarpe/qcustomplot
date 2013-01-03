@@ -76,7 +76,8 @@ public:
   QPoint topRight() const { return mRect.topRight(); }
   QPoint bottomLeft() const { return mRect.bottomLeft(); }
   QPoint bottomRight() const { return mRect.bottomRight(); }
-  
+  QPoint center() const { return mRect.center(); }
+
 protected:
   QHash<QCPAxis::AxisType, QList<QCPAxis*> > mAxes;
   QPixmap mBackground;
