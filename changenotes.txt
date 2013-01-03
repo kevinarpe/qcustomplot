@@ -22,6 +22,7 @@
     - Added QCPAxisRect::setMinimumMargins as replacement for hardcoded minimum axis margin (15 px) when auto margin is enabled
     - Added Flags type QCPAxis::AxisTypes (from QCPAxis::AxisType), used in QCPAxisRect interface
     - QCPAxis and QCPAxisRect now allow easy access to all plottables(), graphs() and items() that are associated with them
+    - Automatic margin calculation can now be enabled/disabled on a per-side basis, see QCPAxisRect::setAutoMargins
 
   Bugfixes:
     - Fixed compile error on ARM
