@@ -304,7 +304,8 @@ void QCPAxisRect::updateAxisOffsets()
 
 void QCPAxisRect::update()
 {
-  updateAxisOffsets(); // call this before QCPLayoutElement::update(), because calculateAutoMargins() will use the offsets for total margin calculation
+  updateAxisOffsets(); // call this before QCPLayoutElement::update(), because calculateAutoMargins() needs offsets for total margin.
+                       // But don't move call to calculateAutoMargins() because that is only called when automatic margin calculation is enabled
   QCPLayoutElement::update();
 }
 
