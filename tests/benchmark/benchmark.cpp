@@ -14,7 +14,11 @@ private slots:
   void QCPGraph_Standard();
   void QCPGraph_ManyPoints();
   void QCPGraph_ManyLines();
-  
+  void QCPGraph_RemoveDataBetween();
+  void QCPGraph_RemoveDataAfter();
+  void QCPGraph_RemoveDataBefore();
+  void QCPGraph_AddData();
+
   void QCPAxis_TickLabels();
   void QCPAxis_TickLabelsCached();
   
@@ -133,6 +137,89 @@ void Benchmark::QCPGraph_ManyLines()
   QBENCHMARK
   {
     mPlot->replot();
+  }
+}
+
+void Benchmark::QCPGraph_AddData()
+{
+  QCPGraph *graph = mPlot->addGraph();
+  int n = 500000;
+  QVector<double> x1(n), y1(n), x2(n), y2(n);
+  for (int i=0; i<n; ++i)
+  {
+    x1[i] = i/(double)n;
+    y1[i] = qSin(x1[i]*10*M_PI);
+    x2[i] = (i+n)/(double)n;
+    y2[i] = qSin(x2[i]*10*M_PI);
+  }
+
+  graph->setData(x1, y1);
+  QBENCHMARK_ONCE
+  {
+    graph->addData(x2, y2);
+  }
+}
+
+void Benchmark::QCPGraph_RemoveDataBetween()
+{
+  QCPGraph *graph = mPlot->addGraph();
+  int n = 500000;
+  QVector<double> x1(n), y1(n), x2(n), y2(n);
+  for (int i=0; i<n; ++i)
+  {
+    x1[i] = i/(double)n;
+    y1[i] = qSin(x1[i]*10*M_PI);
+    x2[i] = (i+n)/(double)n;
+    y2[i] = qSin(x2[i]*10*M_PI);
+  }
+
+  graph->setData(x1, y1);
+  graph->addData(x2, y2);
+  QBENCHMARK_ONCE
+  {
+    graph->removeData(0.5, 1.5); // 50% of total data in center
+  }
+}
+
+void Benchmark::QCPGraph_RemoveDataAfter()
+{
+  QCPGraph *graph = mPlot->addGraph();
+  int n = 500000;
+  QVector<double> x1(n), y1(n), x2(n), y2(n);
+  for (int i=0; i<n; ++i)
+  {
+    x1[i] = i/(double)n;
+    y1[i] = qSin(x1[i]*10*M_PI);
+    x2[i] = (i+n)/(double)n;
+    y2[i] = qSin(x2[i]*10*M_PI);
+  }
+
+  graph->setData(x1, y1);
+  graph->addData(x2, y2);
+  QBENCHMARK_ONCE
+  {
+    graph->removeDataAfter(1.0); // last 50% of total data
+  }
+}
+
+void Benchmark::QCPGraph_RemoveDataBefore()
+{
+  QCPGraph *graph = mPlot->addGraph();
+  int n = 500000;
+  QVector<double> x1(n), y1(n), x2(n), y2(n);
+  for (int i=0; i<n; ++i)
+  {
+    x1[i] = i/(double)n;
+    y1[i] = qSin(x1[i]*10*M_PI);
+    x2[i] = (i+n)/(double)n;
+    y2[i] = qSin(x2[i]*10*M_PI);
+  }
+
+  graph->setData(x1, y1);
+  graph->addData(x2, y2);
+  QBENCHMARK_ONCE
+  {
+    graph->removeDataBefore(1.0); // first 50% of total dat
   }
 }
 
