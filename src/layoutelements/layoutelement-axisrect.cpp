@@ -123,17 +123,21 @@ QList<QCPAxis*> QCPAxisRect::addAxes(QCPAxis::AxisTypes types)
 
 bool QCPAxisRect::removeAxis(QCPAxis *axis)
 {
-  if (mAxes[axis->axisType()].contains(axis))
+  // don't access axis->axisType() to provide safety when axis is an invalid pointer, rather go through all axis containers:
+  QHashIterator<QCPAxis::AxisType, QList<QCPAxis*> > it(mAxes);
+  while (it.hasNext())
   {
-    mAxes[axis->axisType()].removeOne(axis);
-    parentPlot()->axisRemoved(axis);
-    delete axis;
-    return true;
-  } else
-  {
-    qDebug() << Q_FUNC_INFO << "axis wasn't in expected hash bucket";
-    return false;
+    it.next();
+    if (it.value().contains(axis))
+    {
+      mAxes[it.key()].removeOne(axis);
+      parentPlot()->axisRemoved(axis);
+      delete axis;
+      return true;
+    }
   }
+  qDebug() << Q_FUNC_INFO << "Axis isn't in axis rect:" << reinterpret_cast<quintptr>(axis);
+  return false;
 }
 
 QList<QCPAbstractPlottable*> QCPAxisRect::plottables() const
