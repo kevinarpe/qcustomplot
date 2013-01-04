@@ -2,6 +2,7 @@
 #include <QtCore>
 #include "test-qcpgraph/test-qcpgraph.h"
 #include "test-qcplayout/test-qcplayout.h"
+#include "test-qcpaxisrect/test-qcpaxisrect.h"
 
 #define QCPTEST(t) t t##instance; QTest::qExec(&t##instance)
 
@@ -11,6 +12,7 @@ int main(int argc, char **argv)
   
   QCPTEST(TestQCPGraph);
   QCPTEST(TestQCPLayout);
+  QCPTEST(TestQCPAxisRect);
   
   return 0;
 }
