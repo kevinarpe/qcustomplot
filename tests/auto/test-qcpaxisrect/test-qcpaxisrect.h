@@ -12,6 +12,8 @@ private slots:
   void multiAxisMargins();
   void axisRemovalConsequencesToPlottables();
   void axisRemovalConsequencesToItems();
+  void axisRectRemovalConsequencesToPlottables();
+  void axisRectRemovalConsequencesToItems();
   
 private:
   QCustomPlot *mPlot;

@@ -15,7 +15,7 @@ void TestQCPAxisRect::cleanup()
 
 void TestQCPAxisRect::multiAxis()
 {
-  QCPAxisRect *ar = mPlot->axisRect(0);
+  QCPAxisRect *ar = mPlot->axisRect();
   QCOMPARE(ar->axisCount(QCPAxis::atLeft), 1);
   QCOMPARE(ar->axisCount(QCPAxis::atRight), 1);
   QCOMPARE(ar->axisCount(QCPAxis::atBottom), 1);
@@ -38,7 +38,7 @@ void TestQCPAxisRect::multiAxis()
 
 void TestQCPAxisRect::multiAxisMargins()
 {
-  QCPAxisRect *ar = mPlot->axisRect(0);
+  QCPAxisRect *ar = mPlot->axisRect();
   
   // test the increasing margin when axes are added:
   mPlot->replot();
@@ -75,7 +75,7 @@ void TestQCPAxisRect::axisRemovalConsequencesToPlottables()
   graph->setData(QVector<double>() << 1 << 2 << 3, QVector<double>() << 1 << 0 << -1);
   mPlot->replot();
 
-  QVERIFY(mPlot->axisRect(0)->removeAxis(mPlot->xAxis));
+  QVERIFY(mPlot->axisRect()->removeAxis(mPlot->xAxis));
   QTest::ignoreMessage(QtDebugMsg, "virtual void QCPGraph::draw(QCPPainter*) invalid key or value axis ");
   mPlot->replot();
   QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleKeyAxis(bool) const invalid key axis ");
@@ -84,7 +84,7 @@ void TestQCPAxisRect::axisRemovalConsequencesToPlottables()
   graph->rescaleAxes();
   
   // test replacement of previously removed axis:
-  QCPAxis *newAxis = mPlot->axisRect(0)->addAxis(QCPAxis::atBottom);
+  QCPAxis *newAxis = mPlot->axisRect()->addAxis(QCPAxis::atBottom);
   graph->setKeyAxis(newAxis);
   mPlot->replot();
   mPlot->rescaleAxes();
@@ -98,9 +98,9 @@ void TestQCPAxisRect::axisRemovalConsequencesToItems()
   mPlot->addItem(item);
   mPlot->replot();
 
-  QVERIFY(mPlot->axisRect(0)->removeAxis(mPlot->xAxis));
+  QVERIFY(mPlot->axisRect()->removeAxis(mPlot->xAxis));
   mPlot->replot(); // currently, QCPItemPosition handles this gracefully by assuming pixels for the missing axis coordinate, so we expect no debug output
-  QVERIFY(mPlot->axisRect(0)->removeAxis(mPlot->yAxis));
+  QVERIFY(mPlot->axisRect()->removeAxis(mPlot->yAxis));
   QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axes defined "); // for start position
   QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axes defined "); // for end position
   mPlot->replot();
@@ -122,9 +122,79 @@ void TestQCPAxisRect::axisRemovalConsequencesToItems()
   item->end->setType(QCPItemPosition::ptPlotCoords);
   
   // test replacement of previously removed axis:
-  QCPAxis *newAxis = mPlot->axisRect(0)->addAxis(QCPAxis::atBottom);
+  QCPAxis *newAxis = mPlot->axisRect()->addAxis(QCPAxis::atBottom);
   item->start->setAxes(newAxis, item->start->valueAxis());
   item->end->setAxes(newAxis, item->start->valueAxis());
+  mPlot->replot();
+}
+
+void TestQCPAxisRect::axisRectRemovalConsequencesToPlottables()
+{
+  // test consequences to plottables when the axis rect is removed:
+  QCPGraph *graph = mPlot->addGraph(mPlot->xAxis, mPlot->yAxis);
+  graph->setData(QVector<double>() << 1 << 2 << 3, QVector<double>() << 1 << 0 << -1);
+  mPlot->replot();
+
+  QVERIFY(mPlot->plotLayout()->removeAt(0));
+  mPlot->plotLayout()->simplify();
+  QCOMPARE(mPlot->plotLayout()->elementCount(), 0);
+  QTest::ignoreMessage(QtDebugMsg, "virtual void QCPGraph::draw(QCPPainter*) invalid key or value axis ");
+  mPlot->replot();
+  QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleKeyAxis(bool) const invalid key axis ");
+  QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleValueAxis(bool) const invalid value axis ");
+  mPlot->rescaleAxes();
+  QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleKeyAxis(bool) const invalid key axis ");
+  QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleValueAxis(bool) const invalid value axis ");
+  graph->rescaleAxes();
+  
+  // test replacement of previously removed axis:
+  qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout())->addElement(new QCPAxisRect(mPlot), 0, 0);
+  mPlot->axisRect()->addAxes(QCPAxis::atBottom|QCPAxis::atLeft);
+  graph->setKeyAxis(mPlot->axisRect()->axis(QCPAxis::atBottom));
+  graph->setValueAxis(mPlot->axisRect()->axis(QCPAxis::atLeft));
+  mPlot->replot();
+  mPlot->rescaleAxes();
+  graph->rescaleAxes();
+}
+
+void TestQCPAxisRect::axisRectRemovalConsequencesToItems()
+{
+  // test consequences to items when their axes are removed:
+  QCPItemLine *item = new QCPItemLine(mPlot);
+  mPlot->addItem(item);
+  item->setClipAxisRect(mPlot->axisRect());
+  item->setClipToAxisRect(true);
+  item->start->setAxisRect(mPlot->axisRect());
+  item->start->setType(QCPItemPosition::ptAxisRectRatio);
+  mPlot->replot();
+  
+  QVERIFY(mPlot->plotLayout()->removeAt(0));
+  mPlot->plotLayout()->simplify();
+  QCOMPARE(mPlot->plotLayout()->elementCount(), 0);
+  
+  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axis rect defined "); // for start position
+  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axes defined "); // for end position
+  mPlot->replot();
+  
+  QTest::ignoreMessage(QtDebugMsg, "void QCPItemPosition::setPixelPoint(const QPointF&) No axis rect defined ");
+  item->start->setPixelPoint(QPointF(1, 2));
+  
+  // change type to axisRect-independent coordinates:
+  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axis rect defined ");
+  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axes defined ");
+  item->start->setType(QCPItemPosition::ptAbsolute);
+  item->end->setType(QCPItemPosition::ptAbsolute);
+  mPlot->replot(); // shouldn't output any debug messages now because we've changed the type to be independent of axesRect
+  // change back to axisRect-dependent coordinates:
+  QTest::ignoreMessage(QtDebugMsg, "void QCPItemPosition::setPixelPoint(const QPointF&) No axis rect defined ");
+  QTest::ignoreMessage(QtDebugMsg, "void QCPItemPosition::setPixelPoint(const QPointF&) No axes defined ");
+  item->start->setType(QCPItemPosition::ptAxisRectRatio);
+  item->end->setType(QCPItemPosition::ptPlotCoords);
+  // test replacement of previously removed axis:
+  qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout())->addElement(new QCPAxisRect(mPlot), 0, 0);
+  mPlot->axisRect()->addAxes(QCPAxis::atBottom|QCPAxis::atLeft);
+  item->start->setAxisRect(mPlot->axisRect());
+  item->end->setAxes(mPlot->axisRect()->axis(QCPAxis::atBottom), mPlot->axisRect()->axis(QCPAxis::atLeft));
   mPlot->replot();
 }
 
