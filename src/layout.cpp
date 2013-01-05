@@ -209,6 +209,13 @@ void QCPLayout::releaseChild(QCPLayoutElement *el)
 
 QVector<int> QCPLayout::getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const
 {
+  if (maxSizes.size() != minSizes.size() || minSizes.size() != stretchFactors.size())
+  {
+    qDebug() << Q_FUNC_INFO << "Passed vector sizes aren't equal:" << maxSizes << minSizes << stretchFactors;
+    return QVector<int>();
+  }
+  if (stretchFactors.isEmpty())
+    return QVector<int>();
   int sectionCount = stretchFactors.size();
   QVector<double> sectionSizes(sectionCount);
   // if provided total size is forced smaller than total minimum size, ignore minimum sizes (squeeze sections):
