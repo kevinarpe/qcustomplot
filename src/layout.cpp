@@ -564,6 +564,8 @@ void QCPLayoutGrid::simplify()
     {
       mRowStretchFactors.removeAt(row);
       mElements.removeAt(row);
+      if (mElements.isEmpty()) // removed last element, also remove stretch factor (wouldn't happen below because also columnCount changed to 0 now)
+        mColumnStretchFactors.clear();
     }
   }
   
