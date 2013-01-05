@@ -148,7 +148,7 @@ void TestQCPAxisRect::axisRectRemovalConsequencesToPlottables()
   graph->rescaleAxes();
   
   // test replacement of previously removed axis:
-  qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout())->addElement(new QCPAxisRect(mPlot), 0, 0);
+  qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout())->addElement(0, 0, new QCPAxisRect(mPlot));
   mPlot->axisRect()->addAxes(QCPAxis::atBottom|QCPAxis::atLeft);
   graph->setKeyAxis(mPlot->axisRect()->axis(QCPAxis::atBottom));
   graph->setValueAxis(mPlot->axisRect()->axis(QCPAxis::atLeft));
@@ -191,7 +191,7 @@ void TestQCPAxisRect::axisRectRemovalConsequencesToItems()
   item->start->setType(QCPItemPosition::ptAxisRectRatio);
   item->end->setType(QCPItemPosition::ptPlotCoords);
   // test replacement of previously removed axis:
-  qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout())->addElement(new QCPAxisRect(mPlot), 0, 0);
+  qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout())->addElement(0, 0, new QCPAxisRect(mPlot));
   mPlot->axisRect()->addAxes(QCPAxis::atBottom|QCPAxis::atLeft);
   item->start->setAxisRect(mPlot->axisRect());
   item->end->setAxes(mPlot->axisRect()->axis(QCPAxis::atBottom), mPlot->axisRect()->axis(QCPAxis::atLeft));

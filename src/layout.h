@@ -126,7 +126,7 @@ public:
   void setRowSpacing(int pixels);
   
   QCPLayoutElement *element(int row, int column) const;
-  bool addElement(QCPLayoutElement *element, int row, int column);
+  bool addElement(int row, int column, QCPLayoutElement *element);
   bool hasElement(int row, int column);
   void expandTo(int rows, int columns);
   

@@ -360,7 +360,7 @@ int QCPLayoutGrid::columnCount() const
     return 0;
 }
 
-bool QCPLayoutGrid::addElement(QCPLayoutElement *element, int row, int column)
+bool QCPLayoutGrid::addElement(int row, int column, QCPLayoutElement *element)
 {
   if (element)
   {

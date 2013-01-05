@@ -27,21 +27,21 @@ void TestQCPLayout::layoutGridElementManagement()
   QCPAxisRect *r2 = new QCPAxisRect(mPlot);
   QCPAxisRect *r3 = new QCPAxisRect(mPlot);
   
-  QTest::ignoreMessage(QtDebugMsg, "bool QCPLayoutGrid::addElement(QCPLayoutElement*, int, int) There is already an element in the specified row/column: 0 0 ");
-  QVERIFY(!mainLayout->addElement(r1, 0, 0));
-  QVERIFY(mainLayout->addElement(r1, 0, 1));
+  QTest::ignoreMessage(QtDebugMsg, "bool QCPLayoutGrid::addElement(int, int, QCPLayoutElement*) There is already an element in the specified row/column: 0 0 ");
+  QVERIFY(!mainLayout->addElement(0, 0, r1));
+  QVERIFY(mainLayout->addElement(0, 1, r1));
   QCOMPARE(mainLayout->columnCount(), 2);
   QCOMPARE(mainLayout->rowCount(), 1);
   
-  QTest::ignoreMessage(QtDebugMsg, "bool QCPLayoutGrid::addElement(QCPLayoutElement*, int, int) There is already an element in the specified row/column: 0 1 ");
-  QVERIFY(!mainLayout->addElement(r2, 0, 1));
-  QVERIFY(mainLayout->addElement(r2, 1, 0));
+  QTest::ignoreMessage(QtDebugMsg, "bool QCPLayoutGrid::addElement(int, int, QCPLayoutElement*) There is already an element in the specified row/column: 0 1 ");
+  QVERIFY(!mainLayout->addElement(0, 1, r2));
+  QVERIFY(mainLayout->addElement(1, 0, r2));
   QCOMPARE(mainLayout->columnCount(), 2);
   QCOMPARE(mainLayout->rowCount(), 2);
   
-  QTest::ignoreMessage(QtDebugMsg, "bool QCPLayoutGrid::addElement(QCPLayoutElement*, int, int) There is already an element in the specified row/column: 1 0 ");
-  QVERIFY(!mainLayout->addElement(r3, 1, 0));
-  QVERIFY(mainLayout->addElement(r3, 2, 4));
+  QTest::ignoreMessage(QtDebugMsg, "bool QCPLayoutGrid::addElement(int, int, QCPLayoutElement*) There is already an element in the specified row/column: 1 0 ");
+  QVERIFY(!mainLayout->addElement(1, 0, r3));
+  QVERIFY(mainLayout->addElement(2, 4, r3));
   QCOMPARE(mainLayout->columnCount(), 5);
   QCOMPARE(mainLayout->rowCount(), 3);
   /*
@@ -108,7 +108,7 @@ void TestQCPLayout::layoutGridElementManagement()
   QVERIFY(!(bool)mPlot->axisRect());
   // repopulate:
   QCPAxisRect *r4 = new QCPAxisRect(mPlot);
-  QVERIFY(mainLayout->addElement(r4, 0, 0));
+  QVERIFY(mainLayout->addElement(0, 0, r4));
   QCOMPARE(mPlot->axisRect(0), r4);
 }
 
@@ -116,17 +116,10 @@ void TestQCPLayout::layoutGridLayout()
 {
   mPlot->setGeometry(50, 50, 500, 500);
   QCPLayoutGrid *mainLayout = qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout());
-  delete mainLayout->takeAt(0); // remove initial axis rect
+  mainLayout->removeAt(0); // remove initial axis rect
   // create 3x3 grid:
-  mainLayout->addElement(new QCPAxisRect(mPlot), 0, 0);
-  mainLayout->addElement(new QCPAxisRect(mPlot), 0, 1);
-  mainLayout->addElement(new QCPAxisRect(mPlot), 0, 2);
-  mainLayout->addElement(new QCPAxisRect(mPlot), 1, 0);
-  mainLayout->addElement(new QCPAxisRect(mPlot), 1, 1);
-  mainLayout->addElement(new QCPAxisRect(mPlot), 1, 2);
-  mainLayout->addElement(new QCPAxisRect(mPlot), 2, 0);
-  mainLayout->addElement(new QCPAxisRect(mPlot), 2, 1);
-  mainLayout->addElement(new QCPAxisRect(mPlot), 2, 2);
+  for (int i=0; i<3*3; ++i)
+    mainLayout->addElement(i/3, i%3, new QCPAxisRect(mPlot));
   QList<QCPAxisRect*> rlist;
   for (int i=0; i<mainLayout->elementCount(); ++i)
   {
