@@ -509,6 +509,7 @@ QCustomPlot::~QCustomPlot()
     mPlotLayout = 0;
   }
   
+  mCurrentLayer = 0;
   qDeleteAll(mLayers); // don't use removeLayer, because it would prevent the last layer to be removed
   mLayers.clear();
 }

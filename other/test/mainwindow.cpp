@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupDaqPerformance(mCustomPlot);
   setupLayoutTest(mCustomPlot);
   //setupMultiAxisTest(mCustomPlot);
+  //setupLayoutElementBugTest(mCustomPlot);
   
 }
 
@@ -500,6 +501,15 @@ void MainWindow::setupMultiAxisTest(QCustomPlot *customPlot)
   customPlot->axisRect()->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
   customPlot->axisRect()->axis(QCPAxis::atRight, 0)->setTickLabels(true);
   customPlot->axisRect()->axis(QCPAxis::atTop, 0)->setTickLabels(true);
+}
+
+void MainWindow::setupLayoutElementBugTest(QCustomPlot *customPlot)
+{
+  QCPLayoutGrid *topLayout = qobject_cast<QCPLayoutGrid*>(customPlot->plotLayout());
+  
+  QCPAxisRect *r = new QCPAxisRect(customPlot);
+  r->addAxes(QCPAxis::atLeft);
+  topLayout->addElement(0, 0, r);
 }
 
 void MainWindow::presetInteractive(QCustomPlot *customPlot)

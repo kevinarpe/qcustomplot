@@ -98,6 +98,20 @@ QCPLayer::QCPLayer(QCustomPlot *parentPlot, const QString &layerName) :
   // management is done with QCustomPlot functions.
 }
 
+QCPLayer::~QCPLayer()
+{
+  // If child layerables are still on this layer, detach them, so they don't try to reach back to this
+  // then invalid layer once they get deleted/moved themselves. This only happens when layers are deleted
+  // directly, like in the QCustomPlot destructor. (The regular layer removal procedure for the user is to
+  // call QCustomPlot::removeLayer, which moves all layerables off this layer before deleting it.)
+  
+  while (!mChildren.isEmpty())
+    mChildren.last()->setLayer(0); // removes itself from mChildren via removeChild()
+  
+  if (mParentPlot->currentLayer() == this)
+    qDebug() << Q_FUNC_INFO << "The parent plot's mCurrentLayer will be a dangling pointer. Should have been set to a valid layer or 0 beforehand.";
+}
+
 /*!
   Returns the index this layer has in the QCustomPlot. The index is the integer number by which this layer can be
   accessed via QCustomPlot::layer.
@@ -303,7 +317,7 @@ void QCPLayerable::setAntialiased(bool enabled)
 */
 bool QCPLayerable::moveToLayer(QCPLayer *layer, bool prepend)
 {
-  if (!mParentPlot)
+  if (layer && !mParentPlot)
   {
     qDebug() << Q_FUNC_INFO << "no parent QCustomPlot set";
     return false;
