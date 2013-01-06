@@ -449,7 +449,9 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mLowestVisibleTick(0),
   mHighestVisibleTick(-1),
   mExponentialChar(mParentPlot->locale().exponential()),
-  mPositiveSignChar(mParentPlot->locale().positiveSign())
+  mPositiveSignChar(mParentPlot->locale().positiveSign()),
+  mCachedMarginValid(false),
+  mCachedMargin(0)
 {
   setGrid(false);
   setAntialiased(false);
@@ -502,9 +504,13 @@ QString QCPAxis::numberFormat() const
 */
 void QCPAxis::setScaleType(ScaleType type)
 {
-  mScaleType = type;
-  if (mScaleType == stLogarithmic)
-    mRange = mRange.sanitizedForLogScale();
+  if (mScaleType != type)
+  {
+    mScaleType = type;
+    if (mScaleType == stLogarithmic)
+      mRange = mRange.sanitizedForLogScale();
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -520,6 +526,7 @@ void QCPAxis::setScaleLogBase(double base)
   {
     mScaleLogBase = base;
     mScaleLogBaseLogInv = 1.0/qLn(mScaleLogBase); // buffer for faster baseLog() calculation
+    mCachedMarginValid = false;
   } else
     qDebug() << Q_FUNC_INFO << "Invalid logarithmic scale base (must be greater 1):" << base;
 }
@@ -545,6 +552,7 @@ void QCPAxis::setRange(const QCPRange &range)
   {
     mRange = range.sanitizedForLinScale();
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
@@ -613,6 +621,7 @@ void QCPAxis::setRange(double lower, double upper)
   {
     mRange = mRange.sanitizedForLinScale();
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
@@ -656,6 +665,7 @@ void QCPAxis::setRangeLower(double lower)
   {
     mRange = mRange.sanitizedForLinScale();
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
@@ -676,6 +686,7 @@ void QCPAxis::setRangeUpper(double upper)
   {
     mRange = mRange.sanitizedForLinScale();
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
@@ -688,7 +699,11 @@ void QCPAxis::setRangeUpper(double upper)
 */
 void QCPAxis::setRangeReversed(bool reversed)
 {
-  mRangeReversed = reversed;
+  if (mRangeReversed != reversed)
+  {
+    mRangeReversed = reversed;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -756,7 +771,11 @@ void QCPAxis::setSubGrid(bool show)
 */
 void QCPAxis::setAutoTicks(bool on)
 {
-  mAutoTicks = on;
+  if (mAutoTicks != on)
+  {
+    mAutoTicks = on;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -767,10 +786,15 @@ void QCPAxis::setAutoTicks(bool on)
 */
 void QCPAxis::setAutoTickCount(int approximateCount)
 {
-  if (approximateCount > 0)
-    mAutoTickCount = approximateCount;
-  else
-    qDebug() << Q_FUNC_INFO << "approximateCount must be greater than zero:" << approximateCount;
+  if (mAutoTickCount != approximateCount)
+  {
+    if (approximateCount > 0)
+    {
+      mAutoTickCount = approximateCount;
+      mCachedMarginValid = false;
+    } else
+      qDebug() << Q_FUNC_INFO << "approximateCount must be greater than zero:" << approximateCount;
+  }
 }
 
 /*!
@@ -787,7 +811,11 @@ void QCPAxis::setAutoTickCount(int approximateCount)
 */
 void QCPAxis::setAutoTickLabels(bool on)
 {
-  mAutoTickLabels = on;
+  if (mAutoTickLabels != on)
+  {
+    mAutoTickLabels = on;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -802,7 +830,11 @@ void QCPAxis::setAutoTickLabels(bool on)
 */
 void QCPAxis::setAutoTickStep(bool on)
 {
-  mAutoTickStep = on;
+  if (mAutoTickStep != on)
+  {
+    mAutoTickStep = on;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -813,7 +845,11 @@ void QCPAxis::setAutoTickStep(bool on)
 */
 void QCPAxis::setAutoSubTicks(bool on)
 {
-  mAutoSubTicks = on;
+  if (mAutoSubTicks != on)
+  {
+    mAutoSubTicks = on;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -822,7 +858,11 @@ void QCPAxis::setAutoSubTicks(bool on)
 */
 void QCPAxis::setTicks(bool show)
 {
-  mTicks = show;
+  if (mTicks != show)
+  {
+    mTicks = show;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -830,7 +870,11 @@ void QCPAxis::setTicks(bool show)
 */
 void QCPAxis::setTickLabels(bool show)
 {
-  mTickLabels = show;
+  if (mTickLabels != show)
+  {
+    mTickLabels = show;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -839,7 +883,11 @@ void QCPAxis::setTickLabels(bool show)
 */
 void QCPAxis::setTickLabelPadding(int padding)
 {
-  mTickLabelPadding = padding;
+  if (mTickLabelPadding != padding)
+  {
+    mTickLabelPadding = padding;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -862,7 +910,11 @@ void QCPAxis::setTickLabelPadding(int padding)
 */
 void QCPAxis::setTickLabelType(LabelType type)
 {
-  mTickLabelType = type;
+  if (mTickLabelType != type)
+  {
+    mTickLabelType = type;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -875,6 +927,7 @@ void QCPAxis::setTickLabelFont(const QFont &font)
   if (font != mTickLabelFont)
   {
     mTickLabelFont = font;
+    mCachedMarginValid = false;
     mLabelCache.clear();
   }
 }
@@ -889,6 +942,7 @@ void QCPAxis::setTickLabelColor(const QColor &color)
   if (color != mTickLabelColor)
   {
     mTickLabelColor = color;
+    mCachedMarginValid = false;
     mLabelCache.clear();
   }
 }
@@ -903,6 +957,7 @@ void QCPAxis::setTickLabelRotation(double degrees)
   if (!qFuzzyIsNull(degrees-mTickLabelRotation))
   {
     mTickLabelRotation = qBound(-90.0, degrees, 90.0);
+    mCachedMarginValid = false;
     mLabelCache.clear();
   }
 }
@@ -916,8 +971,9 @@ void QCPAxis::setDateTimeFormat(const QString &format)
 {
   if (mDateTimeFormat != format)
   {
-    mLabelCache.clear();
     mDateTimeFormat = format;
+    mCachedMarginValid = false;
+    mLabelCache.clear();
   }
 }
 
@@ -965,6 +1021,7 @@ void QCPAxis::setNumberFormat(const QString &formatCode)
     return;
   }
   mLabelCache.clear();
+  mCachedMarginValid = false;
   
   // interpret first char as number format char:
   QString allowedFormatChars = "eEfgG";
@@ -1025,7 +1082,11 @@ void QCPAxis::setNumberFormat(const QString &formatCode)
 */
 void QCPAxis::setNumberPrecision(int precision)
 {
-  mNumberPrecision = precision;
+  if (mNumberPrecision != precision)
+  {
+    mNumberPrecision = precision;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -1035,7 +1096,11 @@ void QCPAxis::setNumberPrecision(int precision)
 */
 void QCPAxis::setTickStep(double step)
 {
-  mTickStep = step;
+  if (mTickStep != step)
+  {
+    mTickStep = step;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -1054,7 +1119,9 @@ void QCPAxis::setTickStep(double step)
 */
 void QCPAxis::setTickVector(const QVector<double> &vec)
 {
+  // don't check whether mTickVector != vec here, because it takes longer than we would save
   mTickVector = vec;
+  mCachedMarginValid = false;
 }
 
 /*!
@@ -1071,7 +1138,9 @@ void QCPAxis::setTickVector(const QVector<double> &vec)
 */
 void QCPAxis::setTickVectorLabels(const QVector<QString> &vec)
 {
+  // don't check whether mTickVectorLabels != vec here, because it takes longer than we would save
   mTickVectorLabels = vec;
+  mCachedMarginValid = false;
 }
 
 /*!
@@ -1083,8 +1152,15 @@ void QCPAxis::setTickVectorLabels(const QVector<QString> &vec)
 */
 void QCPAxis::setTickLength(int inside, int outside)
 {
-  mTickLengthIn = inside;
-  mTickLengthOut = outside;
+  if (mTickLengthIn != inside)
+  {
+    mTickLengthIn = inside;
+  }
+  if (mTickLengthOut != outside)
+  {
+    mTickLengthOut = outside;
+    mCachedMarginValid = false; // only outside tick length can change margin
+  }
 }
 
 /*!
@@ -1110,8 +1186,15 @@ void QCPAxis::setSubTickCount(int count)
 */
 void QCPAxis::setSubTickLength(int inside, int outside)
 {
-  mSubTickLengthIn = inside;
-  mSubTickLengthOut = outside;
+  if (mSubTickLengthIn != inside)
+  {
+    mSubTickLengthIn = inside;
+  }
+  if (mSubTickLengthOut != outside)
+  {
+    mSubTickLengthOut = outside;
+    mCachedMarginValid = false; // only outside tick length can change margin
+  }
 }
 
 /*!
@@ -1180,7 +1263,11 @@ void QCPAxis::setSubTickPen(const QPen &pen)
 */
 void QCPAxis::setLabelFont(const QFont &font)
 {
-  mLabelFont = font;
+  if (mLabelFont != font)
+  {
+    mLabelFont = font;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -1198,7 +1285,11 @@ void QCPAxis::setLabelColor(const QColor &color)
 */
 void QCPAxis::setLabel(const QString &str)
 {
-  mLabel = str;
+  if (mLabel != str)
+  {
+    mLabel = str;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -1207,7 +1298,11 @@ void QCPAxis::setLabel(const QString &str)
 */
 void QCPAxis::setLabelPadding(int padding)
 {
-  mLabelPadding = padding;
+  if (mLabelPadding != padding)
+  {
+    mLabelPadding = padding;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -1225,12 +1320,20 @@ void QCPAxis::setLabelPadding(int padding)
 */
 void QCPAxis::setPadding(int padding)
 {
-  mPadding = padding;
+  if (mPadding != padding)
+  {
+    mPadding = padding;
+    mCachedMarginValid = false;
+  }
 }
 
 void QCPAxis::setOffset(int offset)
 {
-  mOffset = offset;
+  if (mOffset != offset)
+  {
+    mOffset = offset;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -1244,6 +1347,7 @@ void QCPAxis::setSelectedTickLabelFont(const QFont &font)
   {
     mSelectedTickLabelFont = font;
     mLabelCache.clear();
+    // don't set mCachedMarginValid to false here because margin calculation is always done with non-selected fonts
   }
 }
 
@@ -1255,6 +1359,7 @@ void QCPAxis::setSelectedTickLabelFont(const QFont &font)
 void QCPAxis::setSelectedLabelFont(const QFont &font)
 {
   mSelectedLabelFont = font;
+  // don't set mCachedMarginValid to false here because margin calculation is always done with non-selected fonts
 }
 
 /*!
@@ -1329,6 +1434,7 @@ void QCPAxis::moveRange(double diff)
     mRange.lower *= diff;
     mRange.upper *= diff;
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
@@ -1340,7 +1446,6 @@ void QCPAxis::moveRange(double diff)
 */
 void QCPAxis::scaleRange(double factor, double center)
 {
-  
   if (mScaleType == stLinear)
   {
     QCPRange newRange;
@@ -1360,6 +1465,7 @@ void QCPAxis::scaleRange(double factor, double center)
     } else
       qDebug() << Q_FUNC_INFO << "Center of scaling operation doesn't lie in same logarithmic sign domain as range:" << center;
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
@@ -2495,21 +2601,24 @@ QColor QCPAxis::getLabelColor() const
 
 /*! \internal
   
-  Simulates the steps of \ref draw by calculating all appearing text bounding boxes. From this
-  information, the appropriate margin for this axis is determined, so nothing is drawn beyond the
-  widget border in the actual \ref draw function (if \ref QCustomPlot::setAutoMargin is set to
-  true).
+  Returns the appropriate outward margin for this axis. It is needed to make sure nothing is drawn
+  beyond the widget border in the actual \ref draw function, if \ref QCPAxisRect::setAutoMargins is
+  set appropriately on the parent axis rect. An axis with axis type \ref atLeft will return an
+  appropriate left margin, \ref atBottom will return an appropriate bottom margin and so forth. For
+  the calculation, this function goes through similar steps as \ref draw, so changing one function
+  likely requires the modification of the other one aswell.
   
-  The margin consists of: outward tick size, tick label padding, tick label size, label padding,
-  label size and padding. The return value is the calculated margin for this axis. Thus, an axis with
-  axis type \ref atLeft will return an appropriate left margin, \ref atBottom will return an
-  appropriate bottom margin and so forth.
+  The margin consists of: outward tick length, tick label padding, tick label size, label padding,
+  label size and padding.
   
-  \warning if anything is changed in this function, make sure it's synchronized with the actual
-  drawing function \ref draw.
+  The margin is cached internally, so repeated calls without changing the axis range, fonts, etc.
+  are very fast.
 */
 int QCPAxis::calculateMargin()
 {
+  if (mCachedMarginValid)
+    return mCachedMargin;
+  
   // run through similar steps as QCPAxis::draw, and caluclate margin needed to fit axis and its labels
   int margin = 0;
   
@@ -2540,6 +2649,8 @@ int QCPAxis::calculateMargin()
   }
   margin += mPadding;
   
+  mCachedMargin = margin;
+  mCachedMarginValid = true;
   return margin;
 }
 

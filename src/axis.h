@@ -356,6 +356,8 @@ protected:
   QVector<QString> mTickVectorLabels;
   QVector<double> mSubTickVector;
   QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
+  bool mCachedMarginValid;
+  int mCachedMargin;
   
   // introduced methods:
   virtual void setupTickVectors();
