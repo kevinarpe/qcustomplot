@@ -30,8 +30,8 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupIntegerTickStepCase(mCustomPlot);
   //setupTickLabelTest(mCustomPlot);
   //setupDaqPerformance(mCustomPlot);
-  //setupLayoutTest(mCustomPlot);
-  setupMultiAxisTest(mCustomPlot);
+  setupLayoutTest(mCustomPlot);
+  //setupMultiAxisTest(mCustomPlot);
   
 }
 
@@ -373,18 +373,19 @@ void MainWindow::setupDaqPerformance(QCustomPlot *customPlot)
 
 void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
 {
+  
   QCPLayoutGrid *mainLayout = qobject_cast<QCPLayoutGrid*>(customPlot->plotLayout());
   delete mainLayout->takeAt(0); // remove initial axis rect
   // create 3x3 grid:
-  mainLayout->addElement(new QCPAxisRect(customPlot), 0, 0);
-  mainLayout->addElement(new QCPAxisRect(customPlot), 0, 1);
-  mainLayout->addElement(new QCPAxisRect(customPlot), 0, 2);
-  mainLayout->addElement(new QCPAxisRect(customPlot), 1, 0);
-  mainLayout->addElement(new QCPAxisRect(customPlot), 1, 1);
-  mainLayout->addElement(new QCPAxisRect(customPlot), 1, 2);
-  mainLayout->addElement(new QCPAxisRect(customPlot), 2, 0);
-  mainLayout->addElement(new QCPAxisRect(customPlot), 2, 1);
-  mainLayout->addElement(new QCPAxisRect(customPlot), 2, 2);
+  mainLayout->addElement(0, 0, new QCPAxisRect(customPlot));
+  mainLayout->addElement(0, 1, new QCPAxisRect(customPlot));
+  mainLayout->addElement(0, 2, new QCPAxisRect(customPlot));
+  mainLayout->addElement(1, 0, new QCPAxisRect(customPlot));
+  mainLayout->addElement(1, 1, new QCPAxisRect(customPlot));
+  mainLayout->addElement(1, 2, new QCPAxisRect(customPlot));
+  mainLayout->addElement(2, 0, new QCPAxisRect(customPlot));
+  mainLayout->addElement(2, 1, new QCPAxisRect(customPlot));
+  mainLayout->addElement(2, 2, new QCPAxisRect(customPlot));
   QList<QCPAxisRect*> rlist;
   for (int i=0; i<mainLayout->elementCount(); ++i)
   {
@@ -450,7 +451,7 @@ void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
   
   customPlot->replot();
   */
-  /*
+  
   QCPLayoutGrid *topLayout = dynamic_cast<QCPLayoutGrid*>(customPlot->plotLayout());
   
   QList<QCPAxisRect*> rects;
@@ -459,7 +460,7 @@ void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
   
   for (int i=0; i<rects.size(); ++i)
   {
-    topLayout->addElement(rects.at(i), 0, i+1);
+    topLayout->addElement(0, i+1, rects.at(i));
     rects.at(i)->addAxis(QCPAxis::atLeft);
     rects.at(i)->addAxis(QCPAxis::atRight);
     rects.at(i)->addAxis(QCPAxis::atBottom);
@@ -483,15 +484,14 @@ void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
   rects.at(4)->setMaximumSize(100, QWIDGETSIZE_MAX);
   
   QCPLayoutGrid *subLayout = new QCPLayoutGrid(customPlot);
-  topLayout->addElement(subLayout, 1, 3);
+  topLayout->addElement(1, 3, subLayout);
   QCPAxisRect *r0 = new QCPAxisRect(customPlot);
-  subLayout->addElement(r0, 0, 0);
+  subLayout->addElement(0, 0, r0);
   r0->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
   QCPAxisRect *r1 = new QCPAxisRect(customPlot);
-  subLayout->addElement(r1, 0, 1);
+  subLayout->addElement(0, 1, r1);
   r1->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
   r1->setMaximumSize(200, QWIDGETSIZE_MAX);
-  */
 }
 
 void MainWindow::setupMultiAxisTest(QCustomPlot *customPlot)
