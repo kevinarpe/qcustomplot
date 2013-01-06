@@ -959,8 +959,12 @@ void QCPAxis::setDateTimeFormat(const QString &format)
 */
 void QCPAxis::setNumberFormat(const QString &formatCode)
 {
+  if (formatCode.isEmpty())
+  {
+    qDebug() << Q_FUNC_INFO << "Passed formatCode is empty";
+    return;
+  }
   mLabelCache.clear();
-  if (formatCode.length() < 1) return;
   
   // interpret first char as number format char:
   QString allowedFormatChars = "eEfgG";
@@ -1354,34 +1358,39 @@ void QCPAxis::scaleRange(double factor, double center)
       if (QCPRange::validRange(newRange))
         mRange = newRange.sanitizedForLogScale();
     } else
-      qDebug() << Q_FUNC_INFO << "center of scaling operation doesn't lie in same logarithmic sign domain as range:" << center;
+      qDebug() << Q_FUNC_INFO << "Center of scaling operation doesn't lie in same logarithmic sign domain as range:" << center;
   }
   emit rangeChanged(mRange);
 }
 
 /*!
-  Sets the range of this axis to have a certain scale \a ratio to \a otherAxis. For example, if \a
-  ratio is 1, this axis is the \a yAxis and \a otherAxis is \a xAxis, graphs plotted with those
-  axes will appear in a 1:1 ratio, independent of the aspect ratio the axis rect has. This is an
-  operation that changes the range of this axis once, it doesn't fix the scale ratio indefinitely.
-  Consequently calling this function in the constructor won't have the desired effect, since the
-  widget's dimensions aren't defined yet, and a resizeEvent will follow.
+  Scales the range of this axis to have a certain scale \a ratio to \a otherAxis. The scaling will
+  be done around the center of the current axis range.
+
+  For example, if \a ratio is 1, this axis is the \a yAxis and \a otherAxis is \a xAxis, graphs
+  plotted with those axes will appear in a 1:1 aspect ratio, independent of the aspect ratio the
+  axis rect has.
+
+  This is an operation that changes the range of this axis once, it doesn't fix the scale ratio
+  indefinitely. Therefore, calling this function in the constructor of the QCustomPlot's parent
+  won't have the desired effect, since the widget dimensions aren't defined yet, and a resizeEvent
+  will follow.
 */
 void QCPAxis::setScaleRatio(const QCPAxis *otherAxis, double ratio)
 {
   int otherPixelSize, ownPixelSize;
   
   if (otherAxis->orientation() == Qt::Horizontal)
-    otherPixelSize = otherAxis->mAxisRect->width();
+    otherPixelSize = otherAxis->axisRect()->width();
   else
-    otherPixelSize = otherAxis->mAxisRect->height();
+    otherPixelSize = otherAxis->axisRect()->height();
   
   if (orientation() == Qt::Horizontal)
-    ownPixelSize = mAxisRect->width();
+    ownPixelSize = axisRect()->width();
   else
-    ownPixelSize = mAxisRect->height();
+    ownPixelSize = axisRect()->height();
   
-  double newRangeSize = ratio*otherAxis->mRange.size()*ownPixelSize/(double)otherPixelSize;
+  double newRangeSize = ratio*otherAxis->range().size()*ownPixelSize/(double)otherPixelSize;
   setRange(range().center(), newRangeSize, Qt::AlignCenter);
 }
 
@@ -1738,7 +1747,7 @@ int QCPAxis::calculateAutoSubTickCount(double tickStep) const
   if (fracPart < epsilon || 1.0-fracPart < epsilon)
   {
     if (1.0-fracPart < epsilon)
-      intPart++;
+      ++intPart;
     switch (intPart)
     {
       case 1: result = 4; break; // 1.0 -> 0.2 substep
@@ -1953,7 +1962,7 @@ void QCPAxis::draw(QCPPainter *painter)
   
   In order to later draw the axis label in a place that doesn't overlap with the tick labels, the
   largest tick label size is needed. This is acquired by passing a \a tickLabelsSize to all \ref
-  drawTickLabel calls during the process of drawing all tick labels of one axis. \a tickLabelSize
+  drawTickLabel calls during the process of drawing all tick labels of one axis. \a tickLabelsSize
   is only expanded, if the drawn label exceeds the value \a tickLabelsSize currently holds.
   
   The label is drawn with the font and pen that are currently set on the \a painter. To draw
@@ -2515,14 +2524,10 @@ int QCPAxis::calculateMargin()
     QSize tickLabelsSize(0, 0);
     if (mTickLabels)
     {
-      for (int i=lowTick; i <= highTick; ++i)
-      {
+      for (int i=lowTick; i<=highTick; ++i)
         getMaxTickLabelSize(mTickLabelFont, mTickVectorLabels.at(i), &tickLabelsSize); // don't use getTickLabelFont() because we don't want margin to possibly change on selection
-      }
-      if (orientation() == Qt::Horizontal)
-        margin += tickLabelsSize.height() + mTickLabelPadding;
-      else
-        margin += tickLabelsSize.width() + mTickLabelPadding;
+      margin += orientation() == Qt::Horizontal ? tickLabelsSize.height() : tickLabelsSize.width();
+      margin += mTickLabelPadding;
     }
     // calculate size of axis label (only height needed, because left/right labels are rotated by 90 degrees):
     if (!mLabel.isEmpty())
