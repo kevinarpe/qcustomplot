@@ -1,0 +1,16 @@
+*** Benchmark on 2013-01-08 00:17 ***
+Platform: Linux-3.5.0-21-generic-i686-athlon-with-LinuxMint-14-nadia, dermanu on manulinux
+Git Branch: dev
+Git Head: af9eb8d - Benchmark protocolling script
+Rounds: 20
+
+QCPAxis_TickLabels            1.50 +/- 0.01 ms
+QCPAxis_TickLabelsCached      0.60 +/- 0.00 ms
+QCPGraph_AddData            140.80 +/- 2.44 ms
+QCPGraph_ManyLines           30.85 +/- 0.36 ms
+QCPGraph_ManyPoints         168.60 +/- 1.32 ms
+QCPGraph_RemoveDataAfter     92.00 +/- 4.51 ms
+QCPGraph_RemoveDataBefore    35.10 +/- 0.30 ms
+QCPGraph_RemoveDataBetween   54.25 +/- 2.12 ms
+QCPGraph_Standard             2.50 +/- 0.00 ms
+
