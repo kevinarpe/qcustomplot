@@ -41,6 +41,7 @@
 #include <QVector2D>
 #include <QStack>
 #include <QCache>
+#include <QMargins>
 #include <qmath.h>
 #include <limits>
 
@@ -159,6 +160,45 @@ inline bool isInvalidData(double value)
 inline bool isInvalidData(double value1, double value2)
 {
   return isInvalidData(value1) || isInvalidData(value2);
+}
+
+/*! \internal
+  
+  Sets the specified \a side of \a margins to \a value
+  
+  \see getMarginValue
+*/
+inline void setMarginValue(QMargins &margins, QCP::MarginSide side, int value)
+{
+  switch (side)
+  {
+    case QCP::msLeft: margins.setLeft(value); break;
+    case QCP::msRight: margins.setRight(value); break;
+    case QCP::msTop: margins.setTop(value); break;
+    case QCP::msBottom: margins.setBottom(value); break;
+    case QCP::msAll: margins = QMargins(value, value, value, value); break;
+    default: break;
+  }
+}
+
+/*! \internal
+  
+  Returns the value of the specified \a side of \a margins. If \a side is \ref QCP::msNone or
+  \ref QCP::msAll, returns 0.
+  
+  \see setMarginValue
+*/
+inline int getMarginValue(const QMargins &margins, QCP::MarginSide side)
+{
+  switch (side)
+  {
+    case QCP::msLeft: return margins.left();
+    case QCP::msRight: return margins.right();
+    case QCP::msTop: return margins.top();
+    case QCP::msBottom: return margins.bottom();
+    default: break;
+  }
+  return 0;
 }
 
 } // end of namespace QCP
