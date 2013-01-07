@@ -277,71 +277,34 @@ void QCPAxisRect::drawBackground(QCPPainter *painter)
   }
 }
 
-void QCPAxisRect::updateAxisOffsets()
+void QCPAxisRect::updateAxesOffset(QCPAxis::AxisType type)
 {
-  QList<QCPAxis*> axesList;
-  if (mAutoMargins.testFlag(QCP::msLeft))
-  {
-    axesList = mAxes.value(QCPAxis::atLeft);
-    for (int i=1; i<axesList.size(); ++i)
-      axesList.at(i)->setOffset(axesList.at(i-1)->offset() + axesList.at(i-1)->calculateMargin() + axesList.at(i)->tickLengthIn());
-  }
-  if (mAutoMargins.testFlag(QCP::msRight))
-  {
-    axesList = mAxes.value(QCPAxis::atRight);
-    for (int i=1; i<axesList.size(); ++i)
-      axesList.at(i)->setOffset(axesList.at(i-1)->offset() + axesList.at(i-1)->calculateMargin() + axesList.at(i)->tickLengthIn());
-  }
-  if (mAutoMargins.testFlag(QCP::msTop))
-  {
-    axesList = mAxes.value(QCPAxis::atTop);
-    for (int i=1; i<axesList.size(); ++i)
-      axesList.at(i)->setOffset(axesList.at(i-1)->offset() + axesList.at(i-1)->calculateMargin() + axesList.at(i)->tickLengthIn());
-  }
-  if (mAutoMargins.testFlag(QCP::msBottom))
-  {
-    axesList = mAxes.value(QCPAxis::atBottom);
-    for (int i=1; i<axesList.size(); ++i)
-      axesList.at(i)->setOffset(axesList.at(i-1)->offset() + axesList.at(i-1)->calculateMargin() + axesList.at(i)->tickLengthIn());
-  }
+  const QList<QCPAxis*> axesList = mAxes.value(type);
+  for (int i=1; i<axesList.size(); ++i)
+    axesList.at(i)->setOffset(axesList.at(i-1)->offset() + axesList.at(i-1)->calculateMargin() + axesList.at(i)->tickLengthIn());
 }
 
-void QCPAxisRect::update()
+int QCPAxisRect::calculateAutoMargin(QCP::MarginSide side)
 {
-  updateAxisOffsets(); // call this before QCPLayoutElement::update(), because calculateAutoMargins() needs offsets for total margin.
-                       // But don't move call to calculateAutoMargins() because that is only called when automatic margin calculation is enabled
-  QCPLayoutElement::update();
-}
-
-QMargins QCPAxisRect::calculateAutoMargins() const
-{
-  QMargins result;
-  QList<QCPAxis*> axesList;
+  if (!mAutoMargins.testFlag(side))
+    qDebug() << Q_FUNC_INFO << "Called with side that isn't specified as auto margin";
   
-  // note: only need to look at the last (outer most) axis to determine the total margin
-  if (mAutoMargins.testFlag(QCP::msLeft))
-  {
-    axesList = mAxes.value(QCPAxis::atLeft);
-    if (axesList.size() > 0)
-      result.setLeft(axesList.last()->offset() + axesList.last()->calculateMargin());
-  }
-  if (mAutoMargins.testFlag(QCP::msRight))
-  {
-    axesList = mAxes.value(QCPAxis::atRight);
-    if (axesList.size() > 0)
-      result.setRight(axesList.last()->offset() + axesList.last()->calculateMargin());
-  }
-  if (mAutoMargins.testFlag(QCP::msTop))
-  {
-    axesList = mAxes.value(QCPAxis::atTop);
-    if (axesList.size() > 0)
-      result.setTop(axesList.last()->offset() + axesList.last()->calculateMargin());
-  }
-  if (mAutoMargins.testFlag(QCP::msBottom))
-  {
-    axesList = mAxes.value(QCPAxis::atBottom);
-    if (axesList.size() > 0)
-      result.setBottom(axesList.last()->offset() + axesList.last()->calculateMargin());
-  }
-  return result;
+  updateAxesOffset(QCPAxis::marginSideToAxisType(side));
+  
+  // note: only need to look at the last (outer most) axis to determine the total margin, due to updateAxisOffset call
+  const QList<QCPAxis*> axesList = mAxes.value(QCPAxis::marginSideToAxisType(side));
+  if (axesList.size() > 0)
+    return axesList.last()->offset() + axesList.last()->calculateMargin();
+  else
+    return 0;
 }
+
+
+
+
+
+
+
+
+
+

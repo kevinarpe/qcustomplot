@@ -2,7 +2,6 @@
 
 > layout system
  - Axis ending QCPLineEnding-based, make angled endings default for secondary axes
- - QCPMarginGroup to allow alignment of axis rects in layouts (as implicit or explicit class? Strong or weak refs in axes?)
  - add QCPLayoutSpacer (only has stretch factors and minimum/maximum width)
  - add QCPLayoutInset (maybe a QCPLayoutElement in back and front?) (maybe call it QCPLayoutOverlay?)
  - Create QCPLayoutElement subclass that represents a plot title. How to get it drawn? Items?

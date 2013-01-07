@@ -28,13 +28,38 @@
 #include "global.h"
 
 class QCPLayout;
+class QCPLayoutElement;
 class QCustomPlot;
+
+class QCP_LIB_DECL QCPMarginGroup : public QObject
+{
+  Q_OBJECT
+public:
+  QCPMarginGroup(QCustomPlot *parentPlot);
+  ~QCPMarginGroup();
+  
+  QList<QCPLayoutElement*> elements(QCP::MarginSide side) const { return mChildren.value(side); }
+  bool isEmpty() const;
+  void clear();
+  
+protected:
+  QCustomPlot *mParentPlot;
+  QHash<QCP::MarginSide, QList<QCPLayoutElement*> > mChildren;
+  
+  int commonMargin(QCP::MarginSide side) const;
+  void addChild(QCP::MarginSide side, QCPLayoutElement *element);
+  void removeChild(QCP::MarginSide side, QCPLayoutElement *element);
+  
+  friend class QCPLayoutElement;
+};
+
 
 class QCP_LIB_DECL QCPLayoutElement : public QObject
 {
   Q_OBJECT
 public:
   explicit QCPLayoutElement(QCustomPlot *parentPlot);
+  ~QCPLayoutElement();
   
   QCustomPlot *parentPlot() const { return mParentPlot; }
   QCPLayout *layout() const { return mParentLayout; }
@@ -45,6 +70,8 @@ public:
   QCP::MarginSides autoMargins() const { return mAutoMargins; }
   QSize minimumSize() const { return mMinimumSize; }
   QSize maximumSize() const { return mMaximumSize; }
+  QCPMarginGroup *marginGroup(QCP::MarginSide side) const { return mMarginGroups.value(side, (QCPMarginGroup*)0); }
+  QHash<QCP::MarginSide, QCPMarginGroup*> marginGroups() const { return mMarginGroups; }
   
   void setOuterRect(const QRect &rect);
   void setMargins(const QMargins &margins);
@@ -54,6 +81,7 @@ public:
   void setMinimumSize(int width, int height);
   void setMaximumSize(const QSize &size);
   void setMaximumSize(int width, int height);
+  void setMarginGroup(QCP::MarginSides sides, QCPMarginGroup *group);
   
   virtual void update();
   virtual QSize minimumSizeHint() const;
@@ -66,12 +94,15 @@ protected:
   QRect mRect, mOuterRect;
   QMargins mMargins, mMinimumMargins;
   QCP::MarginSides mAutoMargins;
-  virtual QMargins calculateAutoMargins() const;
+  QHash<QCP::MarginSide, QCPMarginGroup*> mMarginGroups;
+  
+  virtual int calculateAutoMargin(QCP::MarginSide side);
   
 private:
   Q_DISABLE_COPY(QCPLayoutElement)
   
   friend class QCPLayout;
+  friend class QCPMarginGroup;
 };
 
 

@@ -30,9 +30,10 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupIntegerTickStepCase(mCustomPlot);
   //setupTickLabelTest(mCustomPlot);
   //setupDaqPerformance(mCustomPlot);
-  setupLayoutTest(mCustomPlot);
+  //setupLayoutTest(mCustomPlot);
   //setupMultiAxisTest(mCustomPlot);
   //setupLayoutElementBugTest(mCustomPlot);
+  setupMarginGroupTest(mCustomPlot);
   
 }
 
@@ -512,6 +513,20 @@ void MainWindow::setupLayoutElementBugTest(QCustomPlot *customPlot)
   topLayout->addElement(0, 0, r);
 }
 
+void MainWindow::setupMarginGroupTest(QCustomPlot *customPlot)
+{
+  QCPLayoutGrid *topLayout = qobject_cast<QCPLayoutGrid*>(customPlot->plotLayout());
+  
+  QCPAxisRect *r = new QCPAxisRect(customPlot);
+  topLayout->addElement(1, 0, r);
+  r->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atBottom|QCPAxis::atTop);
+  r->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atBottom|QCPAxis::atTop);
+  
+  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
+  topLayout->element(0, 0)->setMarginGroup(QCP::msAll, group);
+  topLayout->element(1, 0)->setMarginGroup(QCP::msAll, group);
+}
+
 void MainWindow::presetInteractive(QCustomPlot *customPlot)
 {
   customPlot->setInteractions(QCustomPlot::iRangeDrag|
@@ -635,7 +650,7 @@ void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
 
 void MainWindow::setupTestbed(QCustomPlot *customPlot)
 {
-  
+  Q_UNUSED(customPlot)
 }
 
 void MainWindow::setupIntegerTickStepCase(QCustomPlot *customPlot)

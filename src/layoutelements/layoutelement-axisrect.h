@@ -86,9 +86,8 @@ protected:
   Qt::AspectRatioMode mBackgroundScaledMode;
   
   void drawBackground(QCPPainter *painter);
-  void updateAxisOffsets();
-  virtual void update();
-  virtual QMargins calculateAutoMargins() const;
+  void updateAxisOffset(QCPAxis::AxisType type);
+  virtual int calculateAutoMargin(QCP::MarginSide side);
   
   friend class QCustomPlot;
 };

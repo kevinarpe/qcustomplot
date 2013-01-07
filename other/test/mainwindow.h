@@ -30,6 +30,7 @@ public:
   void setupLayoutTest(QCustomPlot* customPlot);
   void setupMultiAxisTest(QCustomPlot* customPlot);
   void setupLayoutElementBugTest(QCustomPlot *customPlot);
+  void setupMarginGroupTest(QCustomPlot* customPlot);
   
   // presets:
   void presetInteractive(QCustomPlot *customPlot);

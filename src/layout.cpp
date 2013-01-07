@@ -25,6 +25,83 @@
 #include "layout.h"
 #include "core.h"
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////// QCPMarginGroup
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+QCPMarginGroup::QCPMarginGroup(QCustomPlot *parentPlot) :
+  QObject(parentPlot),
+  mParentPlot(parentPlot)
+{
+  mChildren.insert(QCP::msLeft, QList<QCPLayoutElement*>());
+  mChildren.insert(QCP::msRight, QList<QCPLayoutElement*>());
+  mChildren.insert(QCP::msTop, QList<QCPLayoutElement*>());
+  mChildren.insert(QCP::msBottom, QList<QCPLayoutElement*>());
+}
+
+QCPMarginGroup::~QCPMarginGroup()
+{
+  clear();
+}
+
+bool QCPMarginGroup::isEmpty() const
+{
+  QHashIterator<QCP::MarginSide, QList<QCPLayoutElement*> > it(mChildren);
+  while (it.hasNext())
+  {
+    it.next();
+    if (!it.value().isEmpty())
+      return false;
+  }
+  return true;
+}
+
+void QCPMarginGroup::clear()
+{
+  // make all children remove themselves from this margin group:
+  QHashIterator<QCP::MarginSide, QList<QCPLayoutElement*> > it(mChildren);
+  while (it.hasNext())
+  {
+    it.next();
+    const QList<QCPLayoutElement*> elements = it.value();
+    for (int i=elements.size()-1; i>=0; --i)
+      elements.at(i)->setMarginGroup(it.key(), 0); // removes itself from mChildren via removeChild
+  }
+}
+
+int QCPMarginGroup::commonMargin(QCP::MarginSide side) const
+{
+  // query all automatic margins of the layout elements in this margin group side and find maximum:
+  int result = 0;
+  const QList<QCPLayoutElement*> elements = mChildren.value(side);
+  for (int i=0; i<elements.size(); ++i)
+  {
+    if (!elements.at(i)->autoMargins().testFlag(side))
+      continue;
+    int m = elements.at(i)->calculateAutoMargin(side);
+    if (m > result)
+      result = m;
+  }
+  return result;
+}
+
+void QCPMarginGroup::addChild(QCP::MarginSide side, QCPLayoutElement *element)
+{
+  if (!mChildren[side].contains(element))
+    mChildren[side].append(element);
+  else
+    qDebug() << Q_FUNC_INFO << "element is already child of this margin group side" << reinterpret_cast<quintptr>(element);
+}
+
+void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element)
+{
+  if (!mChildren[side].removeOne(element))
+    qDebug() << Q_FUNC_INFO << "element is not child of this margin group side" << reinterpret_cast<quintptr>(element);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPLayoutElement
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,6 +118,11 @@ QCPLayoutElement::QCPLayoutElement(QCustomPlot *parentPlot) :
   mMinimumMargins(0, 0, 0, 0),
   mAutoMargins(QCP::msAll)
 {
+}
+
+QCPLayoutElement::~QCPLayoutElement()
+{
+  setMarginGroup(QCP::msAll, 0); // unregister at margin groups, if there are any
 }
 
 void QCPLayoutElement::setOuterRect(const QRect &rect)
@@ -99,20 +181,56 @@ void QCPLayoutElement::setMaximumSize(int width, int height)
   setMaximumSize(QSize(width, height));
 }
 
+void QCPLayoutElement::setMarginGroup(QCP::MarginSides sides, QCPMarginGroup *group)
+{
+  QVector<QCP::MarginSide> sideVector;
+  if (sides.testFlag(QCP::msLeft)) sideVector.append(QCP::msLeft);
+  if (sides.testFlag(QCP::msRight)) sideVector.append(QCP::msRight);
+  if (sides.testFlag(QCP::msTop)) sideVector.append(QCP::msTop);
+  if (sides.testFlag(QCP::msBottom)) sideVector.append(QCP::msBottom);
+  
+  for (int i=0; i<sideVector.size(); ++i)
+  {
+    QCP::MarginSide side = sideVector.at(i);
+    if (marginGroup(side) != group)
+    {
+      QCPMarginGroup *oldGroup = marginGroup(side);
+      if (oldGroup) // unregister at old group
+        oldGroup->removeChild(side, this);
+      
+      if (!group) // if setting to 0, remove hash entry. Else set hash entry to new group and register there
+      {
+        mMarginGroups.remove(side);
+      } else // setting to a new group
+      {
+        mMarginGroups[side] = group;
+        group->addChild(side, this);
+      }
+    }
+  }
+}
+
 void QCPLayoutElement::update()
 {
   if (mAutoMargins != QCP::msNone)
   {
-    QMargins autoMargins = calculateAutoMargins();
+    // set the margins of this layout element according to automatic margin calculation, either directly or via a margin group:
     QMargins newMargins = mMargins;
-    if (mAutoMargins.testFlag(QCP::msLeft))
-      newMargins.setLeft(qMax(mMinimumMargins.left(), autoMargins.left()));
-    if (mAutoMargins.testFlag(QCP::msRight))
-      newMargins.setRight(qMax(mMinimumMargins.right(), autoMargins.right()));
-    if (mAutoMargins.testFlag(QCP::msTop))
-      newMargins.setTop(qMax(mMinimumMargins.top(), autoMargins.top()));
-    if (mAutoMargins.testFlag(QCP::msBottom))
-      newMargins.setBottom(qMax(mMinimumMargins.bottom(), autoMargins.bottom()));
+    QVector<QCP::MarginSide> marginSides = QVector<QCP::MarginSide>() << QCP::msLeft << QCP::msRight << QCP::msTop << QCP::msBottom;
+    for (int i=0; i<marginSides.size(); ++i)
+    {
+      QCP::MarginSide side = marginSides.at(i);
+      if (mAutoMargins.testFlag(side)) // this side's margin shall be calculated automatically
+      {
+        if (mMarginGroups.contains(side)) 
+          QCP::setMarginValue(newMargins, side, mMarginGroups[side]->commonMargin(side)); // this side is part of a margin group, so get the margin value from that group
+        else 
+          QCP::setMarginValue(newMargins, side, calculateAutoMargin(side)); // this side is not part of a group, so calculate the value directly
+        // apply minimum margin restrictions:
+        if (QCP::getMarginValue(newMargins, side) < QCP::getMarginValue(mMinimumMargins, side))
+          QCP::setMarginValue(newMargins, side, QCP::getMarginValue(mMinimumMargins, side));
+      }
+    }
     setMargins(newMargins);
   }
 }
@@ -127,9 +245,9 @@ QSize QCPLayoutElement::maximumSizeHint() const
   return mMaximumSize;
 }
 
-QMargins QCPLayoutElement::calculateAutoMargins() const
+int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
 {
-  return mMargins;
+  return QCP::getMarginValue(mMargins, side);
 }
 
 
