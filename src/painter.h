@@ -27,16 +27,26 @@
 
 #include "global.h"
 
-/*
-class QCP_LIB_DECL QCPScatter
+class QCPPainter;
+
+class QCP_LIB_DECL QCPScatterPainter
 {
 public:
-  QCPScatter(QCP::ScatterStyle style)
-  ~QCPScatter();
-  
-  void scatter
+  QCPScatterPainter() {}
+  virtual ~QCPScatterPainter() {}
+  virtual void drawScatter(QCPPainter *painter, double x, double y, double size, QCP::ScatterStyle style);
+
+protected:
+  QPixmap mScatterPixmap;
 };
-*/
+
+class QCP_LIB_DECL QCPScatterPainter2 : public QCPScatterPainter
+{
+public:
+  QCPScatterPainter2() {}
+  virtual ~QCPScatterPainter2() {}
+  virtual void drawScatter(QCPPainter *painter, double x, double y, double size, QCP::ScatterStyle style);
+};
 
 class QCP_LIB_DECL QCPPainter : public QPainter
 {
@@ -80,6 +90,7 @@ public:
 
   // helpers:
   void fixScaledPen();
+  void prepareScatter();
   void drawScatter(double x, double y, double size, QCP::ScatterStyle style);
   
 protected:
@@ -87,6 +98,7 @@ protected:
   QPixmap mScatterPixmap;
   bool mIsAntialiasing;
   QStack<bool> mAntialiasingStack;
+  QCPScatterPainter *mScatterPainter;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPPainter::PainterModes)
 

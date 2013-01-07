@@ -47,8 +47,13 @@
 QCPPainter::QCPPainter() :
   QPainter(),
   mModes(pmDefault),
-  mIsAntialiasing(false)
+  mIsAntialiasing(false),
+  mScatterPainter(0)
 {
+  if (qrand() > 0.5)
+    mScatterPainter = new QCPScatterPainter();
+  else
+    mScatterPainter = new QCPScatterPainter2();
 }
 
 /*!
@@ -58,12 +63,19 @@ QCPPainter::QCPPainter() :
 QCPPainter::QCPPainter(QPaintDevice *device) :
   QPainter(device),
   mModes(pmDefault),
-  mIsAntialiasing(false)
+  mIsAntialiasing(false),
+  mScatterPainter(0)
 {
+  if (qrand() > 0.5)
+    mScatterPainter = new QCPScatterPainter();
+  else
+    mScatterPainter = new QCPScatterPainter2();
 }
 
 QCPPainter::~QCPPainter()
 {
+  delete mScatterPainter;
+  mScatterPainter = 0;
 }
 
 /*!
@@ -231,120 +243,251 @@ void QCPPainter::fixScaledPen()
 */
 void QCPPainter::drawScatter(double x, double y, double size, QCP::ScatterStyle style)
 {
+  mScatterPainter->drawScatter(this, x, y, size, style);
+}
+
+
+void QCPScatterPainter::drawScatter(QCPPainter *painter, double x, double y, double size, QCP::ScatterStyle style)
+{
+
   double w = size/2.0;
   switch (style)
   {
     case QCP::ssNone: break;
     case QCP::ssDot:
     {
-      drawPoint(QPointF(x, y));
+      painter->drawPoint(QPointF(x, y));
       break;
     }
     case QCP::ssCross:
     {
-      drawLine(QLineF(x-w, y-w, x+w, y+w));
-      drawLine(QLineF(x-w, y+w, x+w, y-w));
+      painter->drawLine(QLineF(x-w, y-w, x+w, y+w));
+      painter->drawLine(QLineF(x-w, y+w, x+w, y-w));
       break;
     }
     case QCP::ssPlus:
     {
-      drawLine(QLineF(x-w, y, x+w, y));
-      drawLine(QLineF(x, y+w, x, y-w));
+      painter->drawLine(QLineF(x-w, y, x+w, y));
+      painter->drawLine(QLineF(x, y+w, x, y-w));
       break;
     }
     case QCP::ssCircle:
     {
-      setBrush(Qt::NoBrush);
-      drawEllipse(QPointF(x,y), w, w);
+      painter->setBrush(Qt::NoBrush);
+      painter->drawEllipse(QPointF(x,y), w, w);
       break;
     }
     case QCP::ssDisc:
     {
-      setBrush(QBrush(pen().color()));
-      drawEllipse(QPointF(x,y), w, w);
+      painter->setBrush(QBrush(painter->pen().color()));
+      painter->drawEllipse(QPointF(x,y), w, w);
       break;
     }
     case QCP::ssSquare:
     {
-      setBrush(Qt::NoBrush);
-      drawRect(QRectF(x-w, y-w, size, size));
+      painter->setBrush(Qt::NoBrush);
+      painter->drawRect(QRectF(x-w, y-w, size, size));
       break;
     }
     case QCP::ssDiamond:
     {
-      setBrush(Qt::NoBrush);
-      drawLine(QLineF(x-w, y, x, y-w));
-      drawLine(QLineF(x, y-w, x+w, y));
-      drawLine(QLineF(x+w, y, x, y+w));
-      drawLine(QLineF(x, y+w, x-w, y));
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x-w, y, x, y-w));
+      painter->drawLine(QLineF(x, y-w, x+w, y));
+      painter->drawLine(QLineF(x+w, y, x, y+w));
+      painter->drawLine(QLineF(x, y+w, x-w, y));
       break;
     }
     case QCP::ssStar:
     {
-      drawLine(QLineF(x-w, y, x+w, y));
-      drawLine(QLineF(x, y+w, x, y-w));
-      drawLine(QLineF(x-w*0.707, y-w*0.707, x+w*0.707, y+w*0.707));
-      drawLine(QLineF(x-w*0.707, y+w*0.707, x+w*0.707, y-w*0.707));
+      painter->drawLine(QLineF(x-w, y, x+w, y));
+      painter->drawLine(QLineF(x, y+w, x, y-w));
+      painter->drawLine(QLineF(x-w*0.707, y-w*0.707, x+w*0.707, y+w*0.707));
+      painter->drawLine(QLineF(x-w*0.707, y+w*0.707, x+w*0.707, y-w*0.707));
       break;
     }
     case QCP::ssTriangle:
     {
-      drawLine(QLineF(x-w, y+0.755*w, x+w, y+0.755*w));
-      drawLine(QLineF(x+w, y+0.755*w, x, y-0.977*w));
-      drawLine(QLineF(x, y-0.977*w, x-w, y+0.755*w));
+      painter->drawLine(QLineF(x-w, y+0.755*w, x+w, y+0.755*w));
+      painter->drawLine(QLineF(x+w, y+0.755*w, x, y-0.977*w));
+      painter->drawLine(QLineF(x, y-0.977*w, x-w, y+0.755*w));
       break;
     }
     case QCP::ssTriangleInverted:
     {
-      drawLine(QLineF(x-w, y-0.755*w, x+w, y-0.755*w));
-      drawLine(QLineF(x+w, y-0.755*w, x, y+0.977*w));
-      drawLine(QLineF(x, y+0.977*w, x-w, y-0.755*w));
+      painter->drawLine(QLineF(x-w, y-0.755*w, x+w, y-0.755*w));
+      painter->drawLine(QLineF(x+w, y-0.755*w, x, y+0.977*w));
+      painter->drawLine(QLineF(x, y+0.977*w, x-w, y-0.755*w));
       break;
     }
     case QCP::ssCrossSquare:
     {
-      setBrush(Qt::NoBrush);
-      drawLine(QLineF(x-w, y-w, x+w*0.95, y+w*0.95));
-      drawLine(QLineF(x-w, y+w*0.95, x+w*0.95, y-w));
-      drawRect(QRectF(x-w,y-w,size,size));
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x-w, y-w, x+w*0.95, y+w*0.95));
+      painter->drawLine(QLineF(x-w, y+w*0.95, x+w*0.95, y-w));
+      painter->drawRect(QRectF(x-w,y-w,size,size));
       break;
     }
     case QCP::ssPlusSquare:
     {
-      setBrush(Qt::NoBrush);
-      drawLine(QLineF(x-w, y, x+w*0.95, y));
-      drawLine(QLineF(x, y+w, x, y-w));
-      drawRect(QRectF(x-w, y-w, size, size));
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x-w, y, x+w*0.95, y));
+      painter->drawLine(QLineF(x, y+w, x, y-w));
+      painter->drawRect(QRectF(x-w, y-w, size, size));
       break;
     }
     case QCP::ssCrossCircle:
     {
-      setBrush(Qt::NoBrush);
-      drawLine(QLineF(x-w*0.707, y-w*0.707, x+w*0.67, y+w*0.67));
-      drawLine(QLineF(x-w*0.707, y+w*0.67, x+w*0.67, y-w*0.707));
-      drawEllipse(QPointF(x,y), w, w);
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x-w*0.707, y-w*0.707, x+w*0.67, y+w*0.67));
+      painter->drawLine(QLineF(x-w*0.707, y+w*0.67, x+w*0.67, y-w*0.707));
+      painter->drawEllipse(QPointF(x,y), w, w);
       break;
     }
     case QCP::ssPlusCircle:
     {
-      setBrush(Qt::NoBrush);
-      drawLine(QLineF(x-w, y, x+w, y));
-      drawLine(QLineF(x, y+w, x, y-w));
-      drawEllipse(QPointF(x,y), w, w);
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x-w, y, x+w, y));
+      painter->drawLine(QLineF(x, y+w, x, y-w));
+      painter->drawEllipse(QPointF(x,y), w, w);
       break;
     }
     case QCP::ssPeace:
     {
-      setBrush(Qt::NoBrush);
-      drawLine(QLineF(x, y-w, x, y+w));
-      drawLine(QLineF(x, y, x-w*0.707, y+w*0.707));
-      drawLine(QLineF(x, y, x+w*0.707, y+w*0.707));
-      drawEllipse(QPointF(x,y), w, w);
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x, y-w, x, y+w));
+      painter->drawLine(QLineF(x, y, x-w*0.707, y+w*0.707));
+      painter->drawLine(QLineF(x, y, x+w*0.707, y+w*0.707));
+      painter->drawEllipse(QPointF(x,y), w, w);
       break;
     }
     case QCP::ssPixmap:
     {
-      drawPixmap(x-mScatterPixmap.width()*0.5, y-mScatterPixmap.height()*0.5, mScatterPixmap);
+      painter->drawPixmap(x-mScatterPixmap.width()*0.5, y-mScatterPixmap.height()*0.5, mScatterPixmap);
+      // if something in here is changed, adapt QCP::ssPixmap special case in drawLegendIcon(), too
+      break;
+    }
+  }
+}
+
+
+void QCPScatterPainter2::drawScatter(QCPPainter *painter, double x, double y, double size, QCP::ScatterStyle style)
+{
+
+  double w = size/2.0;
+  switch (style)
+  {
+    case QCP::ssNone: break;
+    case QCP::ssDot:
+    {
+      painter->drawPoint(QPointF(x, y));
+      break;
+    }
+    case QCP::ssCross:
+    {
+      painter->drawLine(QLineF(x-w, y-w, x+w, y+w));
+      painter->drawLine(QLineF(x-w, y+w, x+w, y-w));
+      break;
+    }
+    case QCP::ssPlus:
+    {
+      painter->drawLine(QLineF(x-w, y, x+w, y));
+      painter->drawLine(QLineF(x, y+w, x, y-w));
+      break;
+    }
+    case QCP::ssCircle:
+    {
+      painter->setBrush(Qt::NoBrush);
+      painter->drawEllipse(QPointF(x,y), w, w);
+      break;
+    }
+    case QCP::ssDisc:
+    {
+      painter->setBrush(QBrush(painter->pen().color()));
+      painter->drawEllipse(QPointF(x,y), w, w);
+      break;
+    }
+    case QCP::ssSquare:
+    {
+      painter->setBrush(Qt::NoBrush);
+      painter->drawRect(QRectF(x-w, y-w, size, size));
+      break;
+    }
+    case QCP::ssDiamond:
+    {
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x-w, y, x, y-w));
+      painter->drawLine(QLineF(x, y-w, x+w, y));
+      painter->drawLine(QLineF(x+w, y, x, y+w));
+      painter->drawLine(QLineF(x, y+w, x-w, y));
+      break;
+    }
+    case QCP::ssStar:
+    {
+      painter->drawLine(QLineF(x-w, y, x+w, y));
+      painter->drawLine(QLineF(x, y+w, x, y-w));
+      painter->drawLine(QLineF(x-w*0.707, y-w*0.707, x+w*0.707, y+w*0.707));
+      painter->drawLine(QLineF(x-w*0.704, y+w*0.707, x+w*0.707, y-w*0.707));
+      break;
+    }
+    case QCP::ssTriangle:
+    {
+      painter->drawLine(QLineF(x-w, y+0.755*w, x+w, y+0.755*w));
+      painter->drawLine(QLineF(x+w, y+0.755*w, x, y-0.977*w));
+      painter->drawLine(QLineF(x, y-0.977*w, x-w, y+0.755*w));
+      break;
+    }
+    case QCP::ssTriangleInverted:
+    {
+      painter->drawLine(QLineF(x-w, y-0.755*w, x+w, y-0.755*w));
+      painter->drawLine(QLineF(x+w, y-0.755*w, x, y+0.977*w));
+      painter->drawLine(QLineF(x, y+0.977*w, x-w, y-0.755*w));
+      break;
+    }
+    case QCP::ssCrossSquare:
+    {
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x-w, y-w, x+w*0.95, y+w*0.95));
+      painter->drawLine(QLineF(x-w, y+w*0.95, x+w*0.95, y-w));
+      painter->drawRect(QRectF(x-w,y-w,size,size));
+      break;
+    }
+    case QCP::ssPlusSquare:
+    {
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x-w, y, x+w*0.95, y));
+      painter->drawLine(QLineF(x, y+w, x, y-w));
+      painter->drawRect(QRectF(x-w, y-w, size, size));
+      break;
+    }
+    case QCP::ssCrossCircle:
+    {
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x-w*0.707, y-w*0.702, x+w*0.67, y+w*0.67));
+      painter->drawLine(QLineF(x-w*0.707, y+w*0.67, x+w*0.67, y-w*0.707));
+      painter->drawEllipse(QPointF(x,y), w, w);
+      break;
+    }
+    case QCP::ssPlusCircle:
+    {
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x-w, y, x+w, y));
+      painter->drawLine(QLineF(x, y+w, x, y-w));
+      painter->drawEllipse(QPointF(x,y), w, w);
+      break;
+    }
+    case QCP::ssPeace:
+    {
+      painter->setBrush(Qt::NoBrush);
+      painter->drawLine(QLineF(x, y-w, x, y+w));
+      painter->drawLine(QLineF(x, y, x-w*0.704, y+w*0.707));
+      painter->drawLine(QLineF(x, y, x+w*0.707, y+w*0.707));
+      painter->drawEllipse(QPointF(x,y), w, w);
+      break;
+    }
+    case QCP::ssPixmap:
+    {
+      painter->drawPixmap(x-mScatterPixmap.width()*0.5, y-mScatterPixmap.height()*0.5, mScatterPixmap);
       // if something in here is changed, adapt QCP::ssPixmap special case in drawLegendIcon(), too
       break;
     }

@@ -1,0 +1,51 @@
+*** Benchmark on 2013-01-07 21:44 ***
+Platform: Linux-3.5.0-21-generic-i686-with-LinuxMint-14-nadia, dermanu on manulinux2
+Git Branch: scatter
+Git Head: 4a2d37d - Benchmark of QCPGraph data manipulation (add/remove)
+Rounds: 20
+Comment: Original scatter system without subclass/virtual functions
+
+QCPAxis_TickLabels            1.19 +/- 0.04 ms
+QCPAxis_TickLabelsCached      0.34 +/- 0.01 ms
+QCPGraph_AddData            129.65 +/- 5.56 ms
+QCPGraph_ManyLines           21.00 +/- 0.89 ms
+QCPGraph_ManyPoints         113.75 +/- 3.92 ms
+QCPGraph_RemoveDataAfter     64.00 +/- 4.56 ms
+QCPGraph_RemoveDataBefore    29.15 +/- 0.96 ms
+QCPGraph_RemoveDataBetween   51.10 +/- 1.55 ms
+QCPGraph_Standard             1.59 +/- 0.12 ms
+
+*** Benchmark on 2013-01-07 21:56 ***
+Platform: Linux-3.5.0-21-generic-i686-with-LinuxMint-14-nadia, dermanu on manulinux2
+Git Branch: scatter
+Git Head: 4a2d37d - Benchmark of QCPGraph data manipulation (add/remove)
+Rounds: 20
+Comment: Using QCPScatterPainter baseclass to do painting
+
+QCPAxis_TickLabels            1.20 +/- 0.10 ms
+QCPAxis_TickLabelsCached      0.34 +/- 0.02 ms
+QCPGraph_AddData            126.90 +/- 3.77 ms
+QCPGraph_ManyLines           21.98 +/- 1.97 ms
+QCPGraph_ManyPoints         114.65 +/- 2.48 ms
+QCPGraph_RemoveDataAfter     63.65 +/- 4.29 ms
+QCPGraph_RemoveDataBefore    29.50 +/- 0.87 ms
+QCPGraph_RemoveDataBetween   53.50 +/- 7.49 ms
+QCPGraph_Standard             1.61 +/- 0.12 ms
+
+*** Benchmark on 2013-01-07 22:03 ***
+Platform: Linux-3.5.0-21-generic-i686-with-LinuxMint-14-nadia, dermanu on manulinux2
+Git Branch: scatter
+Git Head: 4a2d37d - Benchmark of QCPGraph data manipulation (add/remove)
+Rounds: 20
+Comment: Using QCPScatterPainter2 subclass virtual function to do painting
+
+QCPAxis_TickLabels            1.21 +/- 0.06 ms
+QCPAxis_TickLabelsCached      0.34 +/- 0.02 ms
+QCPGraph_AddData             89.30 +/- 5.81 ms
+QCPGraph_ManyLines           21.00 +/- 1.14 ms
+QCPGraph_ManyPoints         114.60 +/- 4.92 ms
+QCPGraph_RemoveDataAfter     65.20 +/- 8.89 ms
+QCPGraph_RemoveDataBefore    29.35 +/- 1.49 ms
+QCPGraph_RemoveDataBetween   73.05 +/- 21.48 ms
+QCPGraph_Standard             1.59 +/- 0.09 ms
+
