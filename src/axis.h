@@ -284,6 +284,8 @@ public:
   QList<QCPGraph*> graphs() const;
   QList<QCPAbstractItem*> items() const;
   
+  static AxisType marginSideToAxisType(QCP::MarginSide side);
+  
 public slots:
   // slot setters:
   void setRange(const QCPRange &range);

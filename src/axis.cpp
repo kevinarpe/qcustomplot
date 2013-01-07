@@ -31,6 +31,7 @@
 #include "item.h"
 #include "layoutelements/layoutelement-axisrect.h"
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPGrid
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1654,6 +1655,20 @@ QList<QCPAbstractItem*> QCPAxis::items() const
   return result;
 }
 
+QCPAxis::AxisType QCPAxis::marginSideToAxisType(QCP::MarginSide side)
+{
+  switch (side)
+  {
+    case QCP::msLeft: return atLeft;
+    case QCP::msRight: return atRight;
+    case QCP::msTop: return atTop;
+    case QCP::msBottom: return atBottom;
+    default: break;
+  }
+  qDebug() << Q_FUNC_INFO << "Invalid margin side passed:" << (int)side;
+  return atLeft;
+}
+
 /*! \internal
   
   This function is called before the grid and axis is drawn, in order to prepare the tick vector,
@@ -2653,5 +2668,4 @@ int QCPAxis::calculateMargin()
   mCachedMarginValid = true;
   return margin;
 }
-
 
