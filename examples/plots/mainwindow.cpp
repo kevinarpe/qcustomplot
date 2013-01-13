@@ -369,6 +369,9 @@ void MainWindow::setupScatterPixmapDemo(QCustomPlot *customPlot)
   customPlot->yAxis->setRange(0, 30);
   // setup legend position:
   customPlot->legend->setPositionStyle(QCPLegend::psTopLeft);
+  customPlot->legend->setFont(QFont(font().family(), 7));
+  customPlot->legend->setIconSize(50, 20);
+  customPlot->legend->setVisible(true);
 }
 
 void MainWindow::setupDateDemo(QCustomPlot *customPlot)
