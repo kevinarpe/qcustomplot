@@ -174,3 +174,82 @@ void TestQCPLayout::layoutGridLayout()
   // test minimum size hint on parent layout with spacing:
   QCOMPARE(mainLayout->minimumSizeHint(), QSize(100+15+50+15+50, 200+10+50+10+50));
 }
+
+void TestQCPLayout::marginGroup()
+{
+  mPlot->setGeometry(50, 50, 500, 500);
+  
+  // setup 2x2 grid layout with 4 axes on each axisrect:
+  QCPLayoutGrid *mainLayout = qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout());
+  mainLayout->addElement(0, 1, new QCPAxisRect(mPlot));
+  mainLayout->addElement(1, 0, new QCPAxisRect(mPlot));
+  mainLayout->addElement(1, 1, new QCPAxisRect(mPlot));
+  for (int i=1; i<4; ++i)
+    mPlot->axisRect(i)->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+  
+  QCPAxisRect *ar0 = mPlot->axisRect(0);
+  QCPAxisRect *ar2 = mPlot->axisRect(2);
+  
+  // remove axis tick labels so axisrect margin depends on simpler values for test:
+  for (int i=0; i<4; ++i)
+  {
+    QList<QCPAxis*> axes = mPlot->axisRect(i)->axes();
+    for (int k=0; k<axes.size(); ++k)
+      axes.at(k)->setTickLabels(false);
+  }
+  
+  // test margin propagation when both margins are auto margin and no minimum margins are set:
+  ar0->setMinimumMargins(QMargins(0, 0, 0, 0));
+  ar2->setMinimumMargins(QMargins(0, 0, 0, 0));
+  QCPMarginGroup *leftGroup = new QCPMarginGroup(mPlot);
+  QVERIFY(leftGroup->isEmpty());
+  
+  ar0->setMarginGroup(QCP::msLeft, leftGroup);
+  ar2->setMarginGroup(QCP::msLeft, leftGroup);
+  QCOMPARE(leftGroup->elements(QCP::msLeft).at(0), ar0);
+  QCOMPARE(leftGroup->elements(QCP::msLeft).at(1), ar2);
+  
+  ar0->axis(QCPAxis::atLeft)->setPadding(10);
+  mPlot->replot();
+  QCOMPARE(ar0->margins().left(), 10);
+  QCOMPARE(ar2->margins().left(), 10);
+  ar2->axis(QCPAxis::atLeft)->setPadding(11);
+  mPlot->replot();
+  QCOMPARE(ar0->margins().left(), 11);
+  QCOMPARE(ar2->margins().left(), 11);
+  
+  // test effect of minimum margin:
+  ar0->setMinimumMargins(QMargins(12, 0, 0, 0));
+  mPlot->replot();
+  QCOMPARE(ar0->margins().left(), 12);
+  QCOMPARE(ar2->margins().left(), 12);
+  
+  // disable auto margin on ar2:
+  ar2->setAutoMargins(QCP::msNone);
+  ar2->setMargins(QMargins(9, 0, 0, 0));
+  mPlot->replot();
+  QCOMPARE(ar0->margins().left(), 12);
+  QCOMPARE(ar2->margins().left(), 9);
+  // make sure it also doesn't affect ar0 now:
+  ar2->setMargins(QMargins(13, 0, 0, 0));
+  mPlot->replot();
+  QCOMPARE(ar0->margins().left(), 12);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

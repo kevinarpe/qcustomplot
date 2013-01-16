@@ -27,7 +27,7 @@
   Bugfixes:
     - Fixed compile error on ARM
     - Wrong legend icons were displayed if using pixmaps for scatters that are smaller than the legend icon rect
-    - Fixed small clipping inaccuracy for rotated tick labels (were hidden a few pixels too early before hitting the viewport border)
+    - Fixed clipping inaccuracy for rotated tick labels (were hidden a few pixels too early before hitting the viewport border)
     - Fixed bug that caused wrong clipping of axis ticks and subticks when the ticks were given manually by QCPAxis::setTickVector
     
   Other:

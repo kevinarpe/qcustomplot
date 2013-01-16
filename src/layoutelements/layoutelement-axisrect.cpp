@@ -87,7 +87,7 @@ QList<QCPAxis*> QCPAxisRect::axes(QCPAxis::AxisTypes types) const
   return result;
 }
 
-QList<QCPAxis *> QCPAxisRect::axes() const
+QList<QCPAxis*> QCPAxisRect::axes() const
 {
   QList<QCPAxis*> result;
   QHashIterator<QCPAxis::AxisType, QList<QCPAxis*> > it(mAxes);

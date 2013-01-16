@@ -10,6 +10,8 @@ private slots:
   
   void layoutGridElementManagement();
   void layoutGridLayout();
+  void marginGroup();
+  
   
 private:
   QCustomPlot *mPlot;
