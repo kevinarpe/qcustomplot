@@ -80,7 +80,7 @@ int QCPMarginGroup::commonMargin(QCP::MarginSide side) const
   {
     if (!elements.at(i)->autoMargins().testFlag(side))
       continue;
-    int m = elements.at(i)->calculateAutoMargin(side);
+    int m = qMax(elements.at(i)->calculateAutoMargin(side), QCP::getMarginValue(elements.at(i)->minimumMargins(), side));
     if (m > result)
       result = m;
   }
