@@ -136,16 +136,28 @@ void QCPLayoutElement::setOuterRect(const QRect &rect)
 
 void QCPLayoutElement::setMargins(const QMargins &margins)
 {
-  if (mMargins != margins)
-  {
-    mMargins = margins;
-    mRect = mOuterRect.adjusted(mMargins.left(), mMargins.top(), -mMargins.right(), -mMargins.bottom());
-  }
+  // don't check mMargins != margins here, because we use setMargins(mMargins) to enforce minimum margins e.g. in setMinimumMargins
+  mMargins = margins;
+  
+  if (mMargins.left() < mMinimumMargins.left())
+    mMargins.setLeft(mMinimumMargins.left());
+  if (mMargins.right() < mMinimumMargins.right())
+    mMargins.setRight(mMinimumMargins.right());
+  if (mMargins.top() < mMinimumMargins.top())
+    mMargins.setTop(mMinimumMargins.top());
+  if (mMargins.bottom() < mMinimumMargins.bottom())
+    mMargins.setBottom(mMinimumMargins.bottom());
+  
+  mRect = mOuterRect.adjusted(mMargins.left(), mMargins.top(), -mMargins.right(), -mMargins.bottom());
 }
 
 void QCPLayoutElement::setMinimumMargins(const QMargins &margins)
 {
-  mMinimumMargins = margins;
+  if (mMinimumMargins != margins)
+  {
+    mMinimumMargins = margins;
+    setMargins(mMargins); // this enforces minimum margins, in case they were set to larger values
+  }
 }
 
 void QCPLayoutElement::setAutoMargins(QCP::MarginSides sides)
