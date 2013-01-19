@@ -29,6 +29,7 @@
 #include "range.h"
 #include "layer.h"
 #include "layout.h"
+#include "lineending.h"
 
 class QCPPainter;
 class QCustomPlot;
@@ -216,6 +217,8 @@ public:
   QPen selectedBasePen() const { return mSelectedBasePen; }
   QPen selectedTickPen() const { return mSelectedTickPen; }
   QPen selectedSubTickPen() const { return mSelectedSubTickPen; }
+  QCPLineEnding lowerEnding() const { return mLowerEnding; }
+  QCPLineEnding upperEnding() const { return mUpperEnding; }
   
   // setters:
   void setScaleType(ScaleType type);
@@ -270,6 +273,8 @@ public:
   void setSelectedBasePen(const QPen &pen);
   void setSelectedTickPen(const QPen &pen);
   void setSelectedSubTickPen(const QPen &pen);
+  void setLowerEnding(const QCPLineEnding &ending);
+  void setUpperEnding(const QCPLineEnding &ending);
   
   // non-property methods:
   Qt::Orientation orientation() const { return mOrientation; }
@@ -318,6 +323,7 @@ protected:
   Qt::Orientation mOrientation;
   SelectableParts mSelectable, mSelected;
   QPen mBasePen, mSelectedBasePen;
+  QCPLineEnding mLowerEnding, mUpperEnding;
   // axis label:
   int mLabelPadding;
   QString mLabel;

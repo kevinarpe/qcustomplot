@@ -148,6 +148,31 @@ double QCPLineEnding::boundingDistance() const
   return 0;
 }
 
+double QCPLineEnding::realLength() const
+{
+  switch (mStyle)
+  {
+    case esNone:
+    case esLineArrow:
+    case esSkewedBar:
+    case esBar:
+    case esHalfBar:
+      return 0;
+      
+    case esFlatArrow:
+      return mLength;
+      
+    case esDisc:
+    case esSquare:
+    case esDiamond:
+      return mWidth*0.5;
+      
+    case esSpikeArrow:
+      return mLength*0.8;
+  }
+  return 0;
+}
+
 /*! \internal
   
   Draws the line ending with the specified \a painter at the position \a pos. The direction of the

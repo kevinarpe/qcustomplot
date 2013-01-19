@@ -72,6 +72,7 @@ public:
   
   // non-property methods:
   double boundingDistance() const;
+  double realLength() const;
   void draw(QCPPainter *painter, const QVector2D &pos, const QVector2D &dir) const;
   void draw(QCPPainter *painter, const QVector2D &pos, double angle) const;
   

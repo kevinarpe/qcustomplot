@@ -102,8 +102,13 @@ QList<QCPAxis*> QCPAxisRect::axes() const
 QCPAxis *QCPAxisRect::addAxis(QCPAxis::AxisType type)
 {
   QCPAxis *newAxis = new QCPAxis(this, type);
+  if (mAxes[type].size() > 0) // multiple axes on one side, add half-bar axis ending to additional axes with offset
+  {
+    bool invert = (type == QCPAxis::atRight) || (type == QCPAxis::atBottom);
+    newAxis->setLowerEnding(QCPLineEnding(QCPLineEnding::esHalfBar, 6, 10, !invert));
+    newAxis->setUpperEnding(QCPLineEnding(QCPLineEnding::esHalfBar, 6, 10, invert));
+  }
   mAxes[type].append(newAxis);
-  
   return newAxis;
 }
 

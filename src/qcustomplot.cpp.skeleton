@@ -30,11 +30,11 @@
 //amalgamation: add layer.cpp
 //amalgamation: add range.cpp
 //amalgamation: add layout.cpp
+//amalgamation: add lineending.cpp
 //amalgamation: add axis.cpp
 //amalgamation: add legend.cpp
 //amalgamation: add plottable.cpp
 //amalgamation: add item.cpp
-//amalgamation: add lineending.cpp
 //amalgamation: add core.cpp
 //amalgamation: add plottables/plottable-graph.cpp
 //amalgamation: add plottables/plottable-curve.cpp

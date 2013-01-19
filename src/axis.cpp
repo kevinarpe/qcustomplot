@@ -400,6 +400,8 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mSelected(spNone),
   mBasePen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
   mSelectedBasePen(QPen(Qt::blue, 2)),
+  mLowerEnding(QCPLineEnding::esNone),
+  mUpperEnding(QCPLineEnding::esNone),
   // axis label:
   mLabelPadding(0),
   mLabel(""),
@@ -1417,6 +1419,16 @@ void QCPAxis::setSelectedSubTickPen(const QPen &pen)
   mSelectedSubTickPen = pen;
 }
 
+void QCPAxis::setLowerEnding(const QCPLineEnding &ending)
+{
+  mLowerEnding = ending;
+}
+
+void QCPAxis::setUpperEnding(const QCPLineEnding &ending)
+{
+  mUpperEnding = ending;
+}
+
 /*!
   If the scale type (\ref setScaleType) is \ref stLinear, \a diff is added to the lower and upper
   bounds of the range. The range is simply moved by \a diff.
@@ -1939,11 +1951,15 @@ void QCPAxis::draw(QCPPainter *painter)
   double t; // helper variable, result of coordinate-to-pixel transforms
 
   // draw baseline:
+  QLineF baseLine;
   painter->setPen(getBasePen());
   if (orientation() == Qt::Horizontal)
-    painter->drawLine(QLineF(origin+QPointF(xCor, yCor), origin+QPointF(mAxisRect->width()+xCor, yCor)));
+    baseLine.setPoints(origin+QPointF(xCor, yCor), origin+QPointF(mAxisRect->width()+xCor, yCor));
   else
-    painter->drawLine(QLineF(origin+QPointF(xCor, yCor), origin+QPointF(xCor, -mAxisRect->height()+yCor)));
+    baseLine.setPoints(origin+QPointF(xCor, yCor), origin+QPointF(xCor, -mAxisRect->height()+yCor));
+  if (mRangeReversed)
+    baseLine = QLineF(baseLine.p2(), baseLine.p1()); // won't make a difference for line itself, but for line endings later
+  painter->drawLine(baseLine);
   
   // draw ticks:
   if (mTicks)
@@ -1991,6 +2007,17 @@ void QCPAxis::draw(QCPPainter *painter)
     }
   }
   margin += qMax(0, qMax(mTickLengthOut, mSubTickLengthOut));
+  
+  // draw axis base endings:
+  bool antialiasingBackup = painter->antialiasing();
+  painter->setAntialiasing(true); // always want endings to be antialiased, even if base and ticks themselves aren't
+  painter->setBrush(QBrush(basePen().color()));
+  QVector2D baseLineVector(baseLine.dx(), baseLine.dy());
+  if (mLowerEnding.style() != QCPLineEnding::esNone)
+    mLowerEnding.draw(painter, QVector2D(baseLine.p1())-baseLineVector.normalized()*mLowerEnding.realLength()*(mLowerEnding.inverted()?-1:1), -baseLineVector);
+  if (mUpperEnding.style() != QCPLineEnding::esNone)
+    mUpperEnding.draw(painter, QVector2D(baseLine.p2())+baseLineVector.normalized()*mUpperEnding.realLength()*(mUpperEnding.inverted()?-1:1), baseLineVector);
+  painter->setAntialiasing(antialiasingBackup);
   
   // tick labels:
   QSize tickLabelsSize(0, 0); // size of largest tick label, for offset calculation of axis label
