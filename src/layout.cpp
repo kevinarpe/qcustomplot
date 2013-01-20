@@ -287,6 +287,11 @@ void QCPLayout::update()
   }
 }
 
+void QCPLayout::simplify()
+{
+  qDebug() << Q_FUNC_INFO << "This layout does not support/need simplification";
+}
+
 bool QCPLayout::removeAt(int index)
 {
   if (QCPLayoutElement *el = takeAt(index))
