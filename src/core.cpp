@@ -435,9 +435,11 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   mPaintBuffer = QPixmap(size());
   
   // create initial layers:
+  mLayers.append(new QCPLayer(this, "background"));
   mLayers.append(new QCPLayer(this, "grid"));
   mLayers.append(new QCPLayer(this, "main"));
   mLayers.append(new QCPLayer(this, "axes"));
+  mLayers.append(new QCPLayer(this, "legend"));
   setCurrentLayer("main");
   
   // create initial layout, axis rect and axes:

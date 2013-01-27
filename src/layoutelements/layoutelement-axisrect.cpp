@@ -40,6 +40,7 @@
 QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot) :
   QCPLayerable(parentPlot, "background"),
   mBackgroundBrush(Qt::NoBrush),
+  mInsetLayout(new QCPLayoutInset(parentPlot))
 {
   setMinimumSize(50, 50);
   setMinimumMargins(QMargins(15, 15, 15, 15));
@@ -51,6 +52,9 @@ QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot) :
 
 QCPAxisRect::~QCPAxisRect()
 {
+  delete mInsetLayout;
+  mInsetLayout = 0;
+  
   QList<QCPAxis*> axesList = axes();
   for (int i=0; i<axesList.size(); ++i)
     removeAxis(axesList.at(i));

@@ -60,6 +60,7 @@ public:
   QCPAxis *addAxis(QCPAxis::AxisType type);
   QList<QCPAxis*> addAxes(QCPAxis::AxisTypes types);
   bool removeAxis(QCPAxis *axis);
+  QCPLayoutInset *insetLayout() const { return mInsetLayout; }
   
   QList<QCPAbstractPlottable*> plottables() const;
   QList<QCPGraph*> graphs() const;
@@ -88,6 +89,7 @@ protected:
   QPixmap mScaledBackgroundPixmap;
   bool mBackgroundScaled;
   Qt::AspectRatioMode mBackgroundScaledMode;
+  QCPLayoutInset *mInsetLayout;
   
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);

@@ -184,4 +184,40 @@ protected:
   void getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<int> *maxRowHeights) const;
 };
 
+
+class QCP_LIB_DECL QCPLayoutInset : public QCPLayout
+{
+  Q_OBJECT
+public:
+  enum InsetPlacement {ipFree, ipBorderAligned};
+  
+  explicit QCPLayoutInset(QCustomPlot *parentPlot);
+  
+  void addElement(QCPLayoutElement *element, Qt::Alignment alignment);
+  void addElement(QCPLayoutElement *element, const QRectF &rect);
+  
+  InsetPlacement insetPlacement(int index) const;
+  Qt::Alignment insetAlignment(int index) const;
+  QRectF insetRect(int index) const;
+  
+  void setInsetPlacement(int index, InsetPlacement placement);
+  void setInsetAlignment(int index, Qt::Alignment alignment);
+  void setInsetRect(int index, const QRectF &rect);
+  
+  virtual void updateLayout();
+  virtual int elementCount() const;
+  virtual QCPLayoutElement* elementAt(int index) const;
+  virtual QCPLayoutElement* takeAt(int index);
+  virtual bool take(QCPLayoutElement* element);
+  
+protected:
+  QList<QCPLayoutElement*> mElements;
+  QList<InsetPlacement> mInsetPlacement;
+  QList<Qt::Alignment> mInsetAlignment;
+  QList<QRectF> mInsetRect;
+  
+  void getMinimumRowColSizes(QVector<int> *minColWidths, QVector<int> *minRowHeights) const;
+  void getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<int> *maxRowHeights) const;
+};
+
 #endif // QCP_LAYOUT_H

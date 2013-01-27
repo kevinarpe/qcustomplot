@@ -33,8 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupLayoutTest(mCustomPlot);
   //setupMultiAxisTest(mCustomPlot);
   //setupLayoutElementBugTest(mCustomPlot);
-  setupMarginGroupTest(mCustomPlot);
-  
+  //setupMarginGroupTest(mCustomPlot);
+  setupInsetLayoutTest(mCustomPlot);
 }
 
 MainWindow::~MainWindow()
@@ -525,6 +525,19 @@ void MainWindow::setupMarginGroupTest(QCustomPlot *customPlot)
   QCPMarginGroup *group = new QCPMarginGroup(customPlot);
   topLayout->element(0, 0)->setMarginGroup(QCP::msAll, group);
   topLayout->element(1, 0)->setMarginGroup(QCP::msAll, group);
+}
+
+void MainWindow::setupInsetLayoutTest(QCustomPlot *customPlot)
+{
+  QCPAxisRect *insetAxRect = new QCPAxisRect(customPlot);
+  insetAxRect->setMinimumSize(300, 250);
+  customPlot->axisRect(0)->insetLayout()->addElement(insetAxRect, Qt::AlignRight|Qt::AlignTop);
+  insetAxRect->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atBottom|QCPAxis::atTop);
+  insetAxRect->axis(QCPAxis::atLeft, 0)->setVisible(true);
+  insetAxRect->axis(QCPAxis::atLeft, 0)->setTickLabels(true);
+  insetAxRect->axis(QCPAxis::atLeft, 0)->setRange(0, 20);
+  insetAxRect->setBackground(QBrush(QColor(240, 240, 240)));
+  
 }
 
 void MainWindow::presetInteractive(QCustomPlot *customPlot)

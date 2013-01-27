@@ -839,4 +839,176 @@ void QCPLayoutGrid::getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<in
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////// QCPLayoutInset
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+QCPLayoutInset::QCPLayoutInset(QCustomPlot *parentPlot) :
+  QCPLayout(parentPlot)
+{
+}
+
+
+QCPLayoutInset::InsetPlacement QCPLayoutInset::insetPlacement(int index) const
+{
+  if (elementAt(index))
+    return mInsetPlacement.at(index);
+  else
+  {
+    qDebug() << Q_FUNC_INFO << "Invalid element index:" << index;
+    return ipFree;
+  }
+}
+
+Qt::Alignment QCPLayoutInset::insetAlignment(int index) const
+{
+  if (elementAt(index))
+    return mInsetAlignment.at(index);
+  else
+  {
+    qDebug() << Q_FUNC_INFO << "Invalid element index:" << index;
+    return 0;
+  }
+}
+
+QRectF QCPLayoutInset::insetRect(int index) const
+{
+  if (elementAt(index))
+    return mInsetRect.at(index);
+  else
+  {
+    qDebug() << Q_FUNC_INFO << "Invalid element index:" << index;
+    return QRectF();
+  }
+}
+
+void QCPLayoutInset::setInsetPlacement(int index, QCPLayoutInset::InsetPlacement placement)
+{
+  if (elementAt(index))
+    mInsetPlacement[index] = placement;
+  else
+    qDebug() << Q_FUNC_INFO << "Invalid element index:" << index;
+}
+
+void QCPLayoutInset::setInsetAlignment(int index, Qt::Alignment alignment)
+{
+  if (elementAt(index))
+    mInsetAlignment[index] = alignment;
+  else
+    qDebug() << Q_FUNC_INFO << "Invalid element index:" << index;
+}
+
+void QCPLayoutInset::setInsetRect(int index, const QRectF &rect)
+{
+  if (elementAt(index))
+    mInsetRect[index] = rect;
+  else
+    qDebug() << Q_FUNC_INFO << "Invalid element index:" << index;
+}
+
+void QCPLayoutInset::updateLayout()
+{
+  for (int i=0; i<mElements.size(); ++i)
+  {
+    QRect insetRect;
+    if (mInsetPlacement.at(i) == ipFree)
+    {
+      insetRect = QRect(rect().x()+rect().width()*mInsetRect.at(i).x(),
+                        rect().y()+rect().height()*mInsetRect.at(i).y(),
+                        rect().width()*mInsetRect.at(i).width(),
+                        rect().height()*mInsetRect.at(i).height());
+    } else if (mInsetPlacement.at(i) == ipBorderAligned)
+    {
+      QSize sizeHint = mElements.at(i)->minimumSizeHint();
+      insetRect.setSize(sizeHint);
+      Qt::Alignment al = mInsetAlignment.at(i);
+      if (al.testFlag(Qt::AlignLeft)) insetRect.moveLeft(rect().x());
+      else if (al.testFlag(Qt::AlignRight)) insetRect.moveRight(rect().x()+rect().width());
+      else if (al.testFlag(Qt::AlignHCenter)) insetRect.moveLeft(rect().x()+rect().width()*0.5-sizeHint.width()*0.5);
+      if (al.testFlag(Qt::AlignTop)) insetRect.moveTop(rect().y());
+      else if (al.testFlag(Qt::AlignBottom)) insetRect.moveBottom(rect().y()+rect().height());
+      else if (al.testFlag(Qt::AlignVCenter)) insetRect.moveTop(rect().y()+rect().height()*0.5-sizeHint.height()*0.5);
+    }
+    mElements.at(i)->setOuterRect(insetRect);
+  }
+}
+
+int QCPLayoutInset::elementCount() const
+{
+  return mElements.size();
+}
+
+QCPLayoutElement *QCPLayoutInset::elementAt(int index) const
+{
+  if (index >= 0 && index < mElements.size())
+    return mElements.at(index);
+  else
+    return 0;
+}
+
+QCPLayoutElement *QCPLayoutInset::takeAt(int index)
+{
+  if (QCPLayoutElement *el = elementAt(index))
+  {
+    releaseElement(el);
+    mElements.removeAt(index);
+    mInsetPlacement.removeAt(index);
+    mInsetAlignment.removeAt(index);
+    mInsetRect.removeAt(index);
+    return el;
+  } else
+  {
+    qDebug() << Q_FUNC_INFO << "Attempt to take invalid index:" << index;
+    return 0;
+  }
+}
+
+bool QCPLayoutInset::take(QCPLayoutElement *element)
+{
+  if (element)
+  {
+    for (int i=0; i<elementCount(); ++i)
+    {
+      if (elementAt(i) == element)
+      {
+        takeAt(i);
+        return true;
+      }
+    }
+    qDebug() << Q_FUNC_INFO << "Element not in this layout, couldn't take";
+  } else
+    qDebug() << Q_FUNC_INFO << "Can't take null element";
+  return false;
+}
+
+
+void QCPLayoutInset::addElement(QCPLayoutElement *element, Qt::Alignment alignment)
+{
+  if (element)
+  {
+    if (element->layout()) // remove from old layout first
+      element->layout()->take(element);
+    mElements.append(element);
+    mInsetPlacement.append(ipBorderAligned);
+    mInsetAlignment.append(alignment);
+    mInsetRect.append(QRectF(0.6, 0.6, 0.4, 0.4));
+    adoptElement(element);
+  } else
+    qDebug() << Q_FUNC_INFO << "Can't add null element";
+}
+
+void QCPLayoutInset::addElement(QCPLayoutElement *element, const QRectF &rect)
+{
+  if (element)
+  {
+    if (element->layout()) // remove from old layout first
+      element->layout()->take(element);
+    mElements.append(element);
+    mInsetPlacement.append(ipFree);
+    mInsetAlignment.append(Qt::AlignRight|Qt::AlignTop);
+    mInsetRect.append(rect);
+    adoptElement(element);
+  } else
+    qDebug() << Q_FUNC_INFO << "Can't add null element";
+}
