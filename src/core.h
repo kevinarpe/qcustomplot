@@ -28,7 +28,7 @@
 #include "global.h"
 #include "range.h"
 #include "axis.h"
-#include "legend.h"
+#include "layoutelements/layoutelement-legend.h"
 
 class QCPPainter;
 class QCPLayer;

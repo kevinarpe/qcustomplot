@@ -28,7 +28,7 @@
 #include "core.h"
 #include "axis.h"
 #include "layoutelements/layoutelement-axisrect.h"
-#include "legend.h"
+#include "layoutelements/layoutelement-legend.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPAbstractPlottable

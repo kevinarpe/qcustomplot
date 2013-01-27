@@ -7,13 +7,16 @@
     - setMarginLeft/Right/Top/Bottom removed due to the axis rect changes (see QCPAxisRect::setMargins)
     - setAxisRect removed due to the axis rect changes
     - setAxisBackground(-Scaled/-ScaledMode) now moved to QCPAxisRect as setBackground(-Scaled/ScaledMode) (access via QCustomPlot::axisRects())
+    - QCPLegend now is a QCPLayoutElement
+    - QCPLegend::setMargin/setMarginLeft/Right/Top/Bottom removed (now inherits the capability from QCPLayoutElement::setMargins)
+    - QCPLegend::setMinimumSize removed (now inherits the capability from QCPLayoutElement::setMinimumSize)
 
   Added features:
+    - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).
     - classes QCPAxisRect, QCPLayout, QCPLayoutGrid, QCPLayoutElement
     - QCustomPlot::axisRects() returns all the axis rects in the QCustomPlot.
     - QCustomPlot::plotLayout() returns the top level layout (initially a QCPGridLayout with one QCPAxisRect inside)
     - QCustomPlot::pixmap renders the plot into a pixmap and returns it
-    - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).
       See plotting hint phCacheLabels which is set by default
     - When setting tick label rotation to +90 or -90 degrees on a vertical axis, the labels are now centered vertically on the tick height
       (This allows space saving vertical tick labels by having the text direction parallel to the axis)
@@ -22,16 +25,20 @@
     - Added QCPAxisRect::setMinimumMargins as replacement for hardcoded minimum axis margin (15 px) when auto margin is enabled
     - Added Flags type QCPAxis::AxisTypes (from QCPAxis::AxisType), used in QCPAxisRect interface
     - QCPAxis and QCPAxisRect now allow easy access to all plottables(), graphs() and items() that are associated with them
+    - QCPAxis now may have an offset to the axis rect (setOffset)
+    - Multiple axes per QCPAxisRect side are now supported (see QCPAxisRect::addAxis)
     - Automatic margin calculation can now be enabled/disabled on a per-side basis, see QCPAxisRect::setAutoMargins
+    - QCPAxisRect margins of multiple axis rects can be coupled via QCPMarginGroup
+    - Added new default layers "background" and "legend" (QCPAxisRect draws its background on the "background" layer, QCPLegend draws itself on the "legend" layer)
 
   Bugfixes:
     - Fixed compile error on ARM
     - Wrong legend icons were displayed if using pixmaps for scatters that are smaller than the legend icon rect
-    - Fixed clipping inaccuracy for rotated tick labels (were hidden a few pixels too early before hitting the viewport border)
+    - Fixed clipping inaccuracy for rotated tick labels (were hidden too early, because the non-rotated bounding box was used)
     - Fixed bug that caused wrong clipping of axis ticks and subticks when the ticks were given manually by QCPAxis::setTickVector
     
   Other:
-    - Improved documentation
+    - Opened up non-amalgamated project structure to public via git repository
 
 #### Version released on 09.06.12 ####
 

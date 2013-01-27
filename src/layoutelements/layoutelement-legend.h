@@ -22,11 +22,12 @@
 **             Date: 09.06.12                                             **
 ****************************************************************************/
 
-#ifndef QCP_LEGEND_H
-#define QCP_LEGEND_H
+#ifndef QCP_LAYOUTELEMENT_LEGEND_H
+#define QCP_LAYOUTELEMENT_LEGEND_H
 
-#include "global.h"
-#include "layer.h"
+#include "../global.h"
+#include "../layer.h"
+#include "../layout.h"
 
 class QCPPainter;
 class QCustomPlot;
@@ -106,7 +107,7 @@ protected:
 };
 
 
-class QCP_LIB_DECL QCPLegend : public QObject, public QCPLayerable // TODO: Change this to inherit from QCPLayoutElement instead of QObject directly
+class QCP_LIB_DECL QCPLegend : public QCPLayoutElement, public QCPLayerable
 {
   Q_OBJECT
 public:
@@ -147,15 +148,7 @@ public:
   QPoint position() const { return mPosition; }
   bool autoSize() const { return mAutoSize; }
   QSize size() const { return mSize; }
-  QSize minimumSize() const { return mMinimumSize; }
-  int paddingLeft() const { return mPaddingLeft; }
-  int paddingRight() const { return mPaddingRight; }
-  int paddingTop() const { return mPaddingTop; }
-  int paddingBottom() const { return mPaddingBottom; }
-  int marginLeft() const { return mMarginLeft; }
-  int marginRight() const { return mMarginRight; }
-  int marginTop() const { return mMarginTop; }
-  int marginBottom() const { return mMarginBottom; }
+  QMargins padding() const { return mPadding; }
   int itemSpacing() const { return mItemSpacing; }
   QSize iconSize() const { return mIconSize; }
   int iconTextPadding() const { return mIconTextPadding; }
@@ -178,18 +171,7 @@ public:
   void setAutoSize(bool on);
   void setSize(const QSize &size);
   void setSize(int width, int height);
-  void setMinimumSize(const QSize &size);
-  void setMinimumSize(int width, int height);
-  void setPaddingLeft(int padding);
-  void setPaddingRight(int padding);
-  void setPaddingTop(int padding);
-  void setPaddingBottom(int padding);
-  void setPadding(int left, int right, int top, int bottom);
-  void setMarginLeft(int margin);
-  void setMarginRight(int margin);
-  void setMarginTop(int margin);
-  void setMarginBottom(int margin);
-  void setMargin(int left, int right, int top, int bottom);
+  void setPadding(QMargins padding);
   void setItemSpacing(int spacing);
   void setIconSize(const QSize &size);
   void setIconSize(int width, int height);
@@ -229,11 +211,10 @@ protected:
   QFont mFont;
   QColor mTextColor;
   QPoint mPosition;
-  QSize mSize, mMinimumSize, mIconSize;
+  QSize mSize, mIconSize;
   PositionStyle mPositionStyle;
   bool mAutoSize;
-  int mPaddingLeft, mPaddingRight, mPaddingTop, mPaddingBottom;
-  int mMarginLeft, mMarginRight, mMarginTop, mMarginBottom;
+  QMargins mPadding;
   int mItemSpacing, mIconTextPadding;
   SelectableParts mSelected, mSelectable;
   QPen mSelectedBorderPen, mSelectedIconBorderPen;
@@ -265,4 +246,4 @@ private:
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPLegend::SelectableParts)
 
-#endif // QCP_LEGEND_H
+#endif // QCP_LAYOUTELEMENT_LEGEND_H

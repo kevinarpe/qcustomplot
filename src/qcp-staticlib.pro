@@ -31,7 +31,6 @@ painter.h \
 layer.h \
 range.h \
 axis.h \
-legend.h \
 plottable.h \
 item.h \
 lineending.h \
@@ -50,14 +49,14 @@ items/item-ellipse.h \
 items/item-pixmap.h \
 items/item-tracer.h \
 items/item-bracket.h \
-layoutelements/layoutelement-axisrect.h
+layoutelements/layoutelement-axisrect.h \
+    layoutelements/layoutelement-legend.h
 
 SOURCES += \
 painter.cpp \
 layer.cpp \
 range.cpp \
 axis.cpp \
-legend.cpp \
 plottable.cpp \
 item.cpp \
 lineending.cpp \
@@ -76,7 +75,8 @@ items/item-ellipse.cpp \
 items/item-pixmap.cpp \
 items/item-tracer.cpp \
 items/item-bracket.cpp \
-layoutelements/layoutelement-axisrect.cpp
+layoutelements/layoutelement-axisrect.cpp \
+    layoutelements/layoutelement-legend.cpp
 
 OTHER_FILES += \
     ../changenotes.txt \

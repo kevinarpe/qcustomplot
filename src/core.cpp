@@ -30,9 +30,9 @@
 #include "layer.h"
 #include "axis.h"
 #include "layoutelements/layoutelement-axisrect.h"
+#include "layoutelements/layoutelement-legend.h"
 #include "plottable.h"
 #include "plottables/plottable-graph.h"
-#include "legend.h"
 #include "item.h"
 
 /*! \mainpage %QCustomPlot Documentation

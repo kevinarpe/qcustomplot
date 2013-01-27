@@ -22,11 +22,11 @@
 **             Date: 09.06.12                                             **
 ****************************************************************************/
 
-#include "legend.h"
+#include "layoutelement-legend.h"
 
-#include "painter.h"
-#include "core.h"
-#include "plottable.h"
+#include "../painter.h"
+#include "../core.h"
+#include "../plottable.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPAbstractLegendItem
@@ -402,18 +402,14 @@ QSize QCPPlottableLegendItem::size(const QSize &targetSize) const
   setVisible).
 */
 QCPLegend::QCPLegend(QCustomPlot *parentPlot) :
-  QObject(parentPlot),
   QCPLayerable(parentPlot)
 {
   setAntialiased(false);
   setPositionStyle(psTopRight);
   setSize(100, 28);
-  setMinimumSize(100, 0);
   setIconSize(32, 18);
   setAutoSize(true);
   
-  setMargin(12, 12, 12, 12);
-  setPadding(8, 8, 3, 3);
   setItemSpacing(3);
   setIconTextPadding(7);
   
@@ -542,127 +538,13 @@ void QCPLegend::setSize(int width, int height)
 }
 
 /*!
-  Sets the minimum size of the legend when \ref setAutoSize is enabled.
-  
-  If text wrapping is enabled in the legend items (e.g. \ref QCPPlottableLegendItem::setTextWrap), this minimum \a size defines the width
-  at which the wrapping will occur. Note that the wrapping will happen only at word boundaries, so the actual size might
-  still be bigger than the \a size given here, but not smaller.
-  
-  If \ref setAutoSize is not enabled, the minimum \a size is ignored. Setting a smaller legend size with \ref setSize manually, is not prevented.
-  
-  \see setAutoSize, setSize, QCPPlottableLegendItem::setTextWrap
-*/
-void QCPLegend::setMinimumSize(const QSize &size)
-{
-  mMinimumSize = size;
-}
-
-/*! \overload
-*/
-void QCPLegend::setMinimumSize(int width, int height)
-{
-  mMinimumSize = QSize(width, height);
-}
-
-/*!
-  Sets the left padding of the legend. Padding is the space by what the legend box is made larger
-  than minimally needed for the content to fit. I.e. it's the space left blank on each side inside
-  the legend.
-*/
-void QCPLegend::setPaddingLeft(int padding)
-{
-  mPaddingLeft = padding;
-}
-
-/*!
-  Sets the right padding of the legend. Padding is the space by what the legend box is made larger
-  than minimally needed for the content to fit. I.e. it's the space left blank on each side inside
-  the legend.
-*/
-void QCPLegend::setPaddingRight(int padding)
-{
-  mPaddingRight = padding;
-}
-
-/*!
-  Sets the top padding of the legend. Padding is the space by what the legend box is made larger
-  than minimally needed for the content to fit. I.e. it's the space left blank on each side inside
-  the legend.
-*/
-void QCPLegend::setPaddingTop(int padding)
-{
-  mPaddingTop = padding;
-}
-
-/*!
-  Sets the bottom padding of the legend. Padding is the space by what the legend box is made larger
-  than minimally needed for the content to fit. I.e. it's the space left blank on each side inside
-  the legend.
-*/
-void QCPLegend::setPaddingBottom(int padding)
-{
-  mPaddingBottom = padding;
-}
-
-/*!
   Sets the padding of the legend. Padding is the space by what the legend box is made larger than
   minimally needed for the content to fit. I.e. it's the space left blank on each side inside the
   legend.
 */
-void QCPLegend::setPadding(int left, int right, int top, int bottom)
+void QCPLegend::setPadding(QMargins padding)
 {
-  mPaddingLeft = left;
-  mPaddingRight = right;
-  mPaddingTop = top;
-  mPaddingBottom = bottom;
-}
-
-/*!
-  Sets the left margin of the legend. Margins are the distances the legend will keep to the axis
-  rect, when \ref setPositionStyle is not \ref psManual.
-*/
-void QCPLegend::setMarginLeft(int margin)
-{
-  mMarginLeft = margin;
-}
-
-/*!
-  Sets the right margin of the legend. Margins are the distances the legend will keep to the axis
-  rect, when \ref setPositionStyle is not \ref psManual.
-*/
-void QCPLegend::setMarginRight(int margin)
-{
-  mMarginRight = margin;
-}
-
-/*!
-  Sets the top margin of the legend. Margins are the distances the legend will keep to the axis
-  rect, when \ref setPositionStyle is not \ref psManual.
-*/
-void QCPLegend::setMarginTop(int margin)
-{
-  mMarginTop = margin;
-}
-
-/*!
-  Sets the bottom margin of the legend. Margins are the distances the legend will keep to the axis
-  rect, when \ref setPositionStyle is not \ref psManual.
-*/
-void QCPLegend::setMarginBottom(int margin)
-{
-  mMarginBottom = margin;
-}
-
-/*!
-  Sets the margin of the legend. Margins are the distances the legend will keep to the axis rect,
-  when \ref setPositionStyle is not \ref psManual.
-*/
-void QCPLegend::setMargin(int left, int right, int top, int bottom)
-{
-  mMarginLeft = left;
-  mMarginRight = right;
-  mMarginTop = top;
-  mMarginBottom = bottom;
+  mPadding = padding;
 }
 
 /*!
@@ -1193,11 +1075,11 @@ void QCPLegend::draw(QCPPainter *painter)
   painter->setClipRect(QRect(mPosition, mSize).adjusted(1, 1, 0, 0));
   painter->setPen(QPen());
   painter->setBrush(Qt::NoBrush);
-  int currentTop = mPosition.y()+mPaddingTop;
+  int currentTop = mPosition.y()+mPadding.top();
   for (int i=0; i<mItems.size(); ++i)
   {
     QSize itemSize = mItems.at(i)->size(QSize(mSize.width(), 0));
-    QRect itemRect = QRect(QPoint(mPosition.x()+mPaddingLeft, currentTop), itemSize);
+    QRect itemRect = QRect(QPoint(mPosition.x()+mPadding.left(), currentTop), itemSize);
     mItemBoundingBoxes.insert(mItems.at(i), itemRect);
     painter->save();
     mItems.at(i)->applyAntialiasingHint(painter);
@@ -1215,14 +1097,14 @@ void QCPLegend::draw(QCPPainter *painter)
 */
 void QCPLegend::calculateAutoSize()
 {
-  int width = mMinimumSize.width()-mPaddingLeft-mPaddingRight; // start with minimum width and only expand from there
+  int width = mMinimumSize.width()-mPadding.left()-mPadding.right(); // start with minimum width and only expand from there
   int currentTop;
   bool repeat = true;
   int repeatCount = 0;
   while (repeat && repeatCount < 3) // repeat until we find self-consistent width (usually 2 runs)
   {
     repeat = false;
-    currentTop = mPaddingTop;
+    currentTop = mPadding.top();
     for (int i=0; i<mItems.size(); ++i)
     {
       QSize s = mItems.at(i)->size(QSize(width, 0));
@@ -1239,8 +1121,8 @@ void QCPLegend::calculateAutoSize()
   }
   if (repeat)
     qDebug() << Q_FUNC_INFO << "hit repeat limit for iterative width calculation";
-  currentTop += mPaddingBottom;
-  width += mPaddingLeft+mPaddingRight;
+  currentTop += mPadding.bottom();
+  width += mPadding.left()+mPadding.right();
   
   mSize.setWidth(width);
   if (currentTop > mMinimumSize.height())
