@@ -1,19 +1,18 @@
 ### axis refactoring (branch layoutsystem):
 
 > layout system
- - Axis ending QCPLineEnding-based, make angled endings default for secondary axes
- - add QCPLayoutSpacer (only has stretch factors and minimum/maximum width)
+ > fix legend according to new system
  - add QCPLayoutInset (maybe a QCPLayoutElement in back and front?) (maybe call it QCPLayoutOverlay?)
  - Create QCPLayoutElement subclass that represents a plot title. How to get it drawn? Items?
  - adapt QCustomPlot methods that were based on old axis system (handleAxisSelection and selectedAxes done)
  
 - provide way to get the QCPAxisRect a QPoint is on.
 
-- fix legend autoposition with new axis system. probably give legend an axisrect which it orients itself to. Or better: a QCPLayoutElement. This way
-  we can have legends outside axis rects systematically. In the wake of that: make legend auto positions based on Qt::Alignment.
 - add setPlotLayout? should destroy old layout
 - update all the documentation referencing QCustomPlot::setMargin, QCustomPlot::setAutoMargin, QCustomPlot::axisRect
 - check whether selection boxes of axes are properly positioned (also with rotated tick labels!)
 - remove delete legend from QCP dtor after legend integrated into layout system
 - make sure legend QCPLayoutElement passes the layout as parent of QCPLayerable (currently set to parentPlot)
+
+doc:
 - emphasize in documentation for QCPLayoutGrid::removeElement that only a call to simplify() will actually remove empty rows/columns

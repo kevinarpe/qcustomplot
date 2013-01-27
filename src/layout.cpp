@@ -106,9 +106,8 @@ void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element
 //////////////////// QCPLayoutElement
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-QCPLayoutElement::QCPLayoutElement(QCustomPlot *parentPlot) :
-  QObject(parentPlot), // parenthood is changed as soon as layout element gets inserted into a layout (except for top level layout)
-  mParentPlot(parentPlot),
+QCPLayoutElement::QCPLayoutElement() :
+  QObject(0), // parenthood is changed as soon as layout element gets inserted into a layout (except for top level layout)
   mParentLayout(0),
   mMinimumSize(0, 0),
   mMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX),
@@ -170,7 +169,8 @@ void QCPLayoutElement::setMinimumSize(const QSize &size)
   if (mMinimumSize != size)
   {
     mMinimumSize = size;
-    mParentPlot->updateGeometry();
+    if (mParentLayout)
+      mParentLayout->sizeConstraintsChanged();
   }
 }
 
@@ -184,7 +184,8 @@ void QCPLayoutElement::setMaximumSize(const QSize &size)
   if (mMaximumSize != size)
   {
     mMaximumSize = size;
-    mParentPlot->updateGeometry();
+    if (mParentLayout)
+      mParentLayout->sizeConstraintsChanged();
   }
 }
 
@@ -257,6 +258,11 @@ QSize QCPLayoutElement::maximumSizeHint() const
   return mMaximumSize;
 }
 
+QList<QCPLayoutElement*> QCPLayoutElement::elements() const
+{
+  return QList<QCPLayoutElement*>();
+}
+
 int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
 {
   return QCP::getMarginValue(mMargins, side);
@@ -268,7 +274,7 @@ int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 QCPLayout::QCPLayout(QCustomPlot *parentPlot) :
-  QCPLayoutElement(parentPlot)
+  mParentPlot(parentPlot)
 {
 }
 
@@ -285,6 +291,16 @@ void QCPLayout::update()
     if (QCPLayoutElement *el = elementAt(i))
       el->update();
   }
+}
+
+QList<QCPLayoutElement*> QCPLayout::elements() const
+{
+  int c = elementCount();
+  QList<QCPLayoutElement*> result;
+  result.reserve(c);
+  for (int i=0; i<c; ++i)
+    result.append(elementAt(i));
+  return result;
 }
 
 void QCPLayout::simplify()
@@ -318,11 +334,19 @@ void QCPLayout::clear()
     removeAt(i);
 }
 
+void QCPLayout::sizeConstraintsChanged() const
+{
+  if (mParentPlot)
+    mParentPlot->updateGeometry();
+  else
+    qDebug() << Q_FUNC_INFO << "Layout has no parent QCustomPlot";
+}
+
 void QCPLayout::updateLayout()
 {
 }
 
-void QCPLayout::adoptChild(QCPLayoutElement *el)
+void QCPLayout::adoptElement(QCPLayoutElement *el)
 {
   if (el)
   {
@@ -332,7 +356,7 @@ void QCPLayout::adoptChild(QCPLayoutElement *el)
     qDebug() << Q_FUNC_INFO << "Null element passed";
 }
 
-void QCPLayout::releaseChild(QCPLayoutElement *el)
+void QCPLayout::releaseElement(QCPLayoutElement *el)
 {
   if (el)
   {
@@ -505,7 +529,7 @@ bool QCPLayoutGrid::addElement(int row, int column, QCPLayoutElement *element)
         element->layout()->take(element);
       expandTo(row+1, column+1);
       mElements[row][column] = element;
-      adoptChild(element);
+      adoptElement(element);
       return true;
     } else
       qDebug() << Q_FUNC_INFO << "There is already an element in the specified row/column:" << row << column; 
@@ -654,7 +678,7 @@ QCPLayoutElement *QCPLayoutGrid::takeAt(int index)
 {
   if (QCPLayoutElement *el = elementAt(index))
   {
-    releaseChild(el);
+    releaseElement(el);
     mElements[index / columnCount()][index % columnCount()] = 0;
     return el;
   } else
@@ -676,9 +700,26 @@ bool QCPLayoutGrid::take(QCPLayoutElement *element)
         return true;
       }
     }
+    qDebug() << Q_FUNC_INFO << "Element not in this layout, couldn't take";
   } else
     qDebug() << Q_FUNC_INFO << "Can't take null element";
   return false;
+}
+
+QList<QCPLayoutElement*> QCPLayoutGrid::elements() const
+{
+  QList<QCPLayoutElement*> result;
+  int colC = columnCount();
+  int rowC = rowCount();
+  result.reserve(colC*rowC);
+  for (int row=0; row<rowC; ++row)
+  {
+    for (int col=0; col<colC; ++col)
+    {
+      result.append(mElements.at(row).at(col));
+    }
+  }
+  return result;
 }
 
 void QCPLayoutGrid::simplify()

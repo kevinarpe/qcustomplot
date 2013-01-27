@@ -36,19 +36,20 @@ class QCPAbstractPlottable;
 class QCPGraph;
 class QCPAbstractItem; 
 
-class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement
+class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement, public QCPLayerable
 {
   Q_OBJECT
 public:
   explicit QCPAxisRect(QCustomPlot *parentPlot);
   virtual ~QCPAxisRect();
   
-  QPixmap background() const { return mBackground; }
+  QPixmap background() const { return mBackgroundPixmap; }
   bool backgroundScaled() const { return mBackgroundScaled; }
   Qt::AspectRatioMode backgroundScaledMode() const { return mBackgroundScaledMode; }
 
   void setBackground(const QPixmap &pm);
   void setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode=Qt::KeepAspectRatioByExpanding);
+  void setBackground(const QBrush &brush);
   void setBackgroundScaled(bool scaled);
   void setBackgroundScaledMode(Qt::AspectRatioMode mode);
   
@@ -77,14 +78,19 @@ public:
   QPoint bottomLeft() const { return mRect.bottomLeft(); }
   QPoint bottomRight() const { return mRect.bottomRight(); }
   QPoint center() const { return mRect.center(); }
+  
+  virtual void update();
 
 protected:
   QHash<QCPAxis::AxisType, QList<QCPAxis*> > mAxes;
-  QPixmap mBackground;
-  QPixmap mScaledBackground;
+  QBrush mBackgroundBrush;
+  QPixmap mBackgroundPixmap;
+  QPixmap mScaledBackgroundPixmap;
   bool mBackgroundScaled;
   Qt::AspectRatioMode mBackgroundScaledMode;
   
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
+  virtual void draw(QCPPainter *painter);
   void drawBackground(QCPPainter *painter);
   void updateAxesOffset(QCPAxis::AxisType type);
   virtual int calculateAutoMargin(QCP::MarginSide side);

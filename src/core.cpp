@@ -1730,20 +1730,19 @@ QCPAxisRect *QCustomPlot::axisRect(int index) const
 QList<QCPAxisRect*> QCustomPlot::axisRects() const
 {
   QList<QCPAxisRect*> result;
-  QStack<QCPLayout*> layoutStack;
+  QStack<QCPLayoutElement*> elementStack;
   if (mPlotLayout)
-    layoutStack.push(mPlotLayout);
+    elementStack.push(mPlotLayout);
   
-  while (!layoutStack.isEmpty())
+  while (!elementStack.isEmpty())
   {
-    QCPLayout *layout = layoutStack.pop();
-    for (int i=0; i<layout->elementCount(); ++i)
+    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements();
+    for (int i=0; i<subElements.size(); ++i)
     {
-      QCPLayoutElement *element = layout->elementAt(i);
-      if (QCPAxisRect *r = qobject_cast<QCPAxisRect*>(element))
-        result.append(r);
-      else if (QCPLayout *l = qobject_cast<QCPLayout*>(element))
-        layoutStack.push(l);
+      QCPLayoutElement *element = subElements.at(i);
+      elementStack.push(element);
+      if (QCPAxisRect *ar = qobject_cast<QCPAxisRect*>(element))
+        result.append(ar);
     }
   }
   
@@ -2660,6 +2659,7 @@ void QCustomPlot::draw(QCPPainter *painter)
   } else
     mTitleBoundingBox = QRect();
   
+  /*
   QList<QCPAxisRect*> axisRectList = axisRects();
   for (int i=0; i<axisRectList.size(); ++i)
   {
@@ -2668,17 +2668,20 @@ void QCustomPlot::draw(QCPPainter *painter)
     for (int k=0; k<axes.size(); ++k)
       axes.at(k)->setupTickVectors();
   }
+  */
   
-  // recalculate layout:
+  // recalculate layout (this also updates tick vectors on axes via QCPAxisRect::update):
   mPlotLayout->update();
   
   // position legend:
   legend->reArrange();
   
+  /*
   // draw axis backgrounds:
   for (int i=0; i<axisRectList.size(); ++i)
     axisRectList.at(i)->drawBackground(painter);
-  
+  */
+    
   // draw all layered objects (grid, axes, plottables, items, legend,...):
   for (int layerIndex=0; layerIndex < mLayers.size(); ++layerIndex)
   {

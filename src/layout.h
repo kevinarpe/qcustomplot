@@ -58,10 +58,9 @@ class QCP_LIB_DECL QCPLayoutElement : public QObject
 {
   Q_OBJECT
 public:
-  explicit QCPLayoutElement(QCustomPlot *parentPlot);
+  explicit QCPLayoutElement();
   ~QCPLayoutElement();
   
-  QCustomPlot *parentPlot() const { return mParentPlot; }
   QCPLayout *layout() const { return mParentLayout; }
   QRect rect() const { return mRect; }
   QRect outerRect() const { return mOuterRect; }
@@ -86,9 +85,9 @@ public:
   virtual void update();
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;
+  virtual QList<QCPLayoutElement*> elements() const;
   
 protected:
-  QCustomPlot *mParentPlot;
   QCPLayout *mParentLayout;
   QSize mMinimumSize, mMaximumSize;
   QRect mRect, mOuterRect;
@@ -118,21 +117,24 @@ public:
   virtual QCPLayoutElement* elementAt(int index) const = 0;
   virtual QCPLayoutElement* takeAt(int index) = 0;
   virtual bool take(QCPLayoutElement* element) = 0;
+  virtual QList<QCPLayoutElement*> elements() const;
   virtual void simplify();
   bool removeAt(int index);
   bool remove(QCPLayoutElement* element);
   void clear();
   
+  void sizeConstraintsChanged() const;
+  
 protected:
   virtual void updateLayout();
-  void adoptChild(QCPLayoutElement *el);
-  void releaseChild(QCPLayoutElement *el);
+  void adoptElement(QCPLayoutElement *el);
+  void releaseElement(QCPLayoutElement *el);
   // layout helpers for subclasses:
   QVector<int> getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const;
   
 private:
   Q_DISABLE_COPY(QCPLayout)
-  
+  QCustomPlot *mParentPlot;
 };
 
 
@@ -166,6 +168,7 @@ public:
   virtual QCPLayoutElement* elementAt(int index) const;
   virtual QCPLayoutElement* takeAt(int index);
   virtual bool take(QCPLayoutElement* element);
+  virtual QList<QCPLayoutElement*> elements() const;
   virtual void simplify();
   
   virtual QSize minimumSizeHint() const;

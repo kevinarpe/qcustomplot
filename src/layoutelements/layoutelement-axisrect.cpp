@@ -38,7 +38,8 @@
 
 
 QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot) :
-  QCPLayoutElement(parentPlot)
+  QCPLayerable(parentPlot, "background"),
+  mBackgroundBrush(Qt::NoBrush),
 {
   setMinimumSize(50, 50);
   setMinimumMargins(QMargins(15, 15, 15, 15));
@@ -196,6 +197,34 @@ QList<QCPAbstractItem *> QCPAxisRect::items() const
   return result;
 }
 
+void QCPAxisRect::update()
+{
+  // update axis tick vectors:
+  QHashIterator<QCPAxis::AxisType, QList<QCPAxis*> > it(mAxes);
+  while (it.hasNext())
+  {
+    it.next();
+    for (int i=0; i<it.value().size(); ++i)
+      it.value().at(i)->setupTickVectors();
+  }
+  
+  QCPLayoutElement::update();
+  
+  // pass update call on to inset layout (doesn't happen automatically, because QCPAxisRect doesn't derive from QCPLayout):
+  mInsetLayout->setOuterRect(rect());
+  mInsetLayout->update();
+}
+
+void QCPAxisRect::applyDefaultAntialiasingHint(QCPPainter *painter) const
+{
+  painter->setAntialiasing(false);
+}
+
+void QCPAxisRect::draw(QCPPainter *painter)
+{
+  drawBackground(painter);
+}
+
 /*!
   Sets \a pm as the axis background pixmap. The axis background pixmap will be drawn inside the
   axis rect, before anything else (e.g. the axes themselves, grids, graphs, etc.) is drawn. If the
@@ -208,8 +237,13 @@ QList<QCPAbstractItem *> QCPAxisRect::items() const
 */
 void QCPAxisRect::setBackground(const QPixmap &pm)
 {
-  mBackground = pm;
-  mScaledBackground = QPixmap();
+  mBackgroundPixmap = pm;
+  mScaledBackgroundPixmap = QPixmap();
+}
+
+void QCPAxisRect::setBackground(const QBrush &brush)
+{
+  mBackgroundBrush = brush;
 }
 
 /*! \overload
@@ -221,8 +255,8 @@ void QCPAxisRect::setBackground(const QPixmap &pm)
 */
 void QCPAxisRect::setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode)
 {
-  mBackground = pm;
-  mScaledBackground = QPixmap();
+  mBackgroundPixmap = pm;
+  mScaledBackgroundPixmap = QPixmap();
   mBackgroundScaled = scaled;
   mBackgroundScaledMode = mode;
 }
@@ -253,31 +287,43 @@ void QCPAxisRect::setBackgroundScaledMode(Qt::AspectRatioMode mode)
 }
 
 /*! \internal
-
-  If an axis background is provided via \ref setBackground, this function first buffers the scaled
-  version depending on \ref setBackgroundScaled and \ref setBackgroundScaledMode and then draws it
-  inside the current axisRect with the provided \a painter. The scaled version is buffered in
-  mScaledBackground to prevent the need for rescaling at every redraw. It is only updated, when the
-  axis rect has changed in a way that requires a rescale of the background pixmap (this is
-  dependant on the \ref setBackgroundScaledMode), or when a differend axis backgroud was set.
   
-  \see drawBackground, setBackground, setBackgroundScaled, setBackgroundScaledMode
+  Draws the background of this axis rect. It may consist of a background fill (a QBrush) and a
+  pixmap.
+  
+  If a brush was given via \ref setBackground, this function first draws an according filling
+  inside the axis rect with the provided \a painter.
+  
+  Then, if a pixmap was provided via \ref setBackground, this function buffers the scaled version
+  depending on \ref setBackgroundScaled and \ref setBackgroundScaledMode and then draws it inside
+  the axisRect with the provided \a painter. The scaled version is buffered in
+  mScaledBackgroundPixmap to prevent expensive rescaling at every redraw. It is only updated, when
+  the axis rect has changed in a way that requires a rescale of the background pixmap (this is
+  dependant on the \ref setBackgroundScaledMode), or when a differend axis backgroud pixmap was
+  set.
+  
+  \see setBackground, setBackgroundScaled, setBackgroundScaledMode
 */
 void QCPAxisRect::drawBackground(QCPPainter *painter)
 {
-  if (!mBackground.isNull())
+  // draw background fill:
+  if (mBackgroundBrush != Qt::NoBrush)
+    painter->fillRect(mRect, mBackgroundBrush);
+  
+  // draw background pixmap (on top of fill, if brush specified):
+  if (!mBackgroundPixmap.isNull())
   {
     if (mBackgroundScaled)
     {
       // check whether mScaledBackground needs to be updated:
-      QSize scaledSize(mBackground.size());
+      QSize scaledSize(mBackgroundPixmap.size());
       scaledSize.scale(mRect.size(), mBackgroundScaledMode);
-      if (mScaledBackground.size() != scaledSize)
-        mScaledBackground = mBackground.scaled(mRect.size(), mBackgroundScaledMode, Qt::SmoothTransformation);
-      painter->drawPixmap(mRect.topLeft(), mScaledBackground, QRect(0, 0, mRect.width(), mRect.height()) & mScaledBackground.rect());
+      if (mScaledBackgroundPixmap.size() != scaledSize)
+        mScaledBackgroundPixmap = mBackgroundPixmap.scaled(mRect.size(), mBackgroundScaledMode, Qt::SmoothTransformation);
+      painter->drawPixmap(mRect.topLeft(), mScaledBackgroundPixmap, QRect(0, 0, mRect.width(), mRect.height()) & mScaledBackgroundPixmap.rect());
     } else
     {
-      painter->drawPixmap(mRect.topLeft(), mBackground, QRect(0, 0, mRect.width(), mRect.height()));
+      painter->drawPixmap(mRect.topLeft(), mBackgroundPixmap, QRect(0, 0, mRect.width(), mRect.height()));
     }
   }
 }
