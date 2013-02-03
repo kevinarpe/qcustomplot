@@ -443,7 +443,8 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   setCurrentLayer("main");
   
   // create initial layout, axis rect and axes:
-  mPlotLayout = new QCPLayoutGrid(this);
+  mPlotLayout = new QCPLayoutGrid;
+  mPlotLayout->setParent(this);
   QCPAxisRect *defaultAxisRect = new QCPAxisRect(this);
   defaultAxisRect->setBackgroundScaled(true);
   defaultAxisRect->setBackgroundScaledMode(Qt::KeepAspectRatioByExpanding);

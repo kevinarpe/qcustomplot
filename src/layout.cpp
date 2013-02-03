@@ -273,8 +273,7 @@ int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
 //////////////////// QCPLayout
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-QCPLayout::QCPLayout(QCustomPlot *parentPlot) :
-  mParentPlot(parentPlot)
+QCPLayout::QCPLayout()
 {
 }
 
@@ -336,10 +335,10 @@ void QCPLayout::clear()
 
 void QCPLayout::sizeConstraintsChanged() const
 {
-  if (mParentPlot)
-    mParentPlot->updateGeometry();
+  if (QWidget *w = qobject_cast<QWidget*>(parent()))
+    w->updateGeometry();
   else
-    qDebug() << Q_FUNC_INFO << "Layout has no parent QCustomPlot";
+    qDebug() << Q_FUNC_INFO << "Layout has no parent QWidget";
 }
 
 void QCPLayout::updateLayout()
@@ -361,7 +360,7 @@ void QCPLayout::releaseElement(QCPLayoutElement *el)
   if (el)
   {
     el->mParentLayout = 0;
-    el->setParent(mParentPlot);
+    el->setParent(0);
   } else
     qDebug() << Q_FUNC_INFO << "Null element passed";
 }
@@ -485,8 +484,7 @@ QVector<int> QCPLayout::getSectionSizes(QVector<int> maxSizes, QVector<int> minS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-QCPLayoutGrid::QCPLayoutGrid(QCustomPlot *parentPlot) :
-  QCPLayout(parentPlot),
+QCPLayoutGrid::QCPLayoutGrid() :
   mColumnSpacing(5),
   mRowSpacing(5)
 {
@@ -844,8 +842,7 @@ void QCPLayoutGrid::getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<in
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-QCPLayoutInset::QCPLayoutInset(QCustomPlot *parentPlot) :
-  QCPLayout(parentPlot)
+QCPLayoutInset::QCPLayoutInset()
 {
 }
 

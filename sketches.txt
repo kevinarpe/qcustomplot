@@ -4,15 +4,17 @@
  > fix legend according to new system
  - add QCPLayoutInset (maybe a QCPLayoutElement in back and front?) (maybe call it QCPLayoutOverlay?)
  - Create QCPLayoutElement subclass that represents a plot title. How to get it drawn? Items?
+ - Create QCPLayoutElement/QCPLayerable subclass that represents a plot title.
  - adapt QCustomPlot methods that were based on old axis system (handleAxisSelection and selectedAxes done)
- 
+ - possibly give every QCPLayoutElement a selectTest function (and then remove QCPLegend::selectTestLegend and probably adapt legend item selection mechanism) 
+
 - provide way to get the QCPAxisRect a QPoint is on.
 
-- add setPlotLayout? should destroy old layout
+- add setPlotLayout? should destroy old layout, make sure to manually setParent(parentCustomPlot) on the new top-level layout (so updateGeometry gets called)
+  if added, write in its documentation that for top level layouts the parent is the customPlot and why.
 - update all the documentation referencing QCustomPlot::setMargin, QCustomPlot::setAutoMargin, QCustomPlot::axisRect
 - check whether selection boxes of axes are properly positioned (also with rotated tick labels!)
 - remove delete legend from QCP dtor after legend integrated into layout system
-- make sure legend QCPLayoutElement passes the layout as parent of QCPLayerable (currently set to parentPlot)
 
 doc:
 - emphasize in documentation for QCPLayoutGrid::removeElement that only a call to simplify() will actually remove empty rows/columns

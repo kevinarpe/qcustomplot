@@ -109,7 +109,7 @@ class QCP_LIB_DECL QCPLayout : public QCPLayoutElement
 {
   Q_OBJECT
 public:
-  explicit QCPLayout(QCustomPlot *parentPlot);
+  explicit QCPLayout();
   
   virtual void update();
   
@@ -134,7 +134,6 @@ protected:
   
 private:
   Q_DISABLE_COPY(QCPLayout)
-  QCustomPlot *mParentPlot;
 };
 
 
@@ -142,7 +141,7 @@ class QCP_LIB_DECL QCPLayoutGrid : public QCPLayout
 {
   Q_OBJECT
 public:
-  explicit QCPLayoutGrid(QCustomPlot *parentPlot);
+  explicit QCPLayoutGrid();
   
   int rowCount() const;
   int columnCount() const;
@@ -191,7 +190,7 @@ class QCP_LIB_DECL QCPLayoutInset : public QCPLayout
 public:
   enum InsetPlacement {ipFree, ipBorderAligned};
   
-  explicit QCPLayoutInset(QCustomPlot *parentPlot);
+  explicit QCPLayoutInset();
   
   void addElement(QCPLayoutElement *element, Qt::Alignment alignment);
   void addElement(QCPLayoutElement *element, const QRectF &rect);

@@ -40,7 +40,7 @@
 QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot) :
   QCPLayerable(parentPlot, "background"),
   mBackgroundBrush(Qt::NoBrush),
-  mInsetLayout(new QCPLayoutInset(parentPlot))
+  mInsetLayout(new QCPLayoutInset)
 {
   setMinimumSize(50, 50);
   setMinimumMargins(QMargins(15, 15, 15, 15));
