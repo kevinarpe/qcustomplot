@@ -2,8 +2,8 @@
 
 > layout system
  > fix legend according to new system
- - add QCPLayoutInset (maybe a QCPLayoutElement in back and front?) (maybe call it QCPLayoutOverlay?)
- - Create QCPLayoutElement subclass that represents a plot title. How to get it drawn? Items?
+   - modify item interface (basically all non-property methods) to do their jobs via QCPLayoutGrid mechanisms. Maybe get rid of some of them when they duplicate functionality.
+   - adapt addToLegend()/removeFromLegend() functions in plottables (check both for abstract and leaf classes)
  - Create QCPLayoutElement/QCPLayerable subclass that represents a plot title.
  - adapt QCustomPlot methods that were based on old axis system (handleAxisSelection and selectedAxes done)
  - possibly give every QCPLayoutElement a selectTest function (and then remove QCPLegend::selectTestLegend and probably adapt legend item selection mechanism) 

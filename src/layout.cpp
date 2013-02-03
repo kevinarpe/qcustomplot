@@ -909,12 +909,22 @@ void QCPLayoutInset::updateLayout()
   for (int i=0; i<mElements.size(); ++i)
   {
     QRect insetRect;
+    QSize minSize = mElements.at(i)->minimumSizeHint();
+    QSize maxSize = mElements.at(i)->maximumSizeHint();
     if (mInsetPlacement.at(i) == ipFree)
     {
       insetRect = QRect(rect().x()+rect().width()*mInsetRect.at(i).x(),
                         rect().y()+rect().height()*mInsetRect.at(i).y(),
                         rect().width()*mInsetRect.at(i).width(),
                         rect().height()*mInsetRect.at(i).height());
+      if (insetRect.size().width() < minSize.width())
+        insetRect.setWidth(minSize.width());
+      if (insetRect.size().height() < minSize.height())
+        insetRect.setHeight(minSize.height());
+      if (insetRect.size().width() > maxSize.width())
+        insetRect.setWidth(maxSize.width());
+      if (insetRect.size().height() > maxSize.height())
+        insetRect.setHeight(maxSize.height());
     } else if (mInsetPlacement.at(i) == ipBorderAligned)
     {
       QSize sizeHint = mElements.at(i)->minimumSizeHint();
