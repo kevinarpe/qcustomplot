@@ -356,7 +356,7 @@ void QCPStatisticalBox::draw(QCPPainter *painter)
 }
 
 /* inherits documentation from base class */
-void QCPStatisticalBox::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
+void QCPStatisticalBox::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
   // draw filled rect:
   applyDefaultAntialiasingHint(painter);

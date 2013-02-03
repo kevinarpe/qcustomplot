@@ -106,7 +106,7 @@ protected:
   LineStyle mLineStyle;
   
   virtual void draw(QCPPainter *painter);
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
   // drawing helpers:
   virtual void drawScatterPlot(QCPPainter *painter, const QVector<QPointF> *pointData) const;
   

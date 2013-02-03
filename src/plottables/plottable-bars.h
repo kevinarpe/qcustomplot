@@ -91,7 +91,7 @@ protected:
   QWeakPointer<QCPBars> mBarBelow, mBarAbove;
   
   virtual void draw(QCPPainter *painter);
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
   
   QPolygonF getBarPolygon(double key, double value) const;
   double getBaseValue(double key, bool positive) const;

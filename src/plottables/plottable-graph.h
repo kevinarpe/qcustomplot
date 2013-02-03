@@ -148,7 +148,7 @@ protected:
   QWeakPointer<QCPGraph> mChannelFillGraph;
 
   virtual void draw(QCPPainter *painter);
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
 
   // functions to generate plot data points in pixel coordinates:
   void getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;

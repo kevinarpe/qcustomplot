@@ -418,7 +418,7 @@ void QCPBars::draw(QCPPainter *painter)
 }
 
 /* inherits documentation from base class */
-void QCPBars::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
+void QCPBars::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
   // draw filled rect:
   applyDefaultAntialiasingHint(painter);

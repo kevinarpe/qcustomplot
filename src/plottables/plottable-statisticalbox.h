@@ -87,7 +87,7 @@ protected:
   QCP::ScatterStyle mOutlierStyle;
   
   virtual void draw(QCPPainter *painter);
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
   
   virtual void drawQuartileBox(QCPPainter *painter, QRectF *quartileBox=0) const;
   virtual void drawMedian(QCPPainter *painter) const;

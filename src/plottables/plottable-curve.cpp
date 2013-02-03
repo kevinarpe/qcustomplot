@@ -433,7 +433,7 @@ void QCPCurve::draw(QCPPainter *painter)
 }
 
 /* inherits documentation from base class */
-void QCPCurve::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
+void QCPCurve::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
   // draw fill:
   if (mBrush.style() != Qt::NoBrush)
@@ -456,7 +456,7 @@ void QCPCurve::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
     if (mScatterStyle == QCP::ssPixmap)
     {
       if (mScatterPixmap.size().width() > rect.width() || mScatterPixmap.size().height() > rect.height()) // scale scatter pixmap if it's too large to fit in legend icon rect
-        painter->setScatterPixmap(mScatterPixmap.scaled(rect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        painter->setScatterPixmap(mScatterPixmap.scaled(rect.size().toSize(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
       else
         painter->setScatterPixmap(mScatterPixmap);
     }

@@ -8,6 +8,7 @@
     - setAxisRect removed due to the axis rect changes
     - setAxisBackground(-Scaled/-ScaledMode) now moved to QCPAxisRect as setBackground(-Scaled/ScaledMode) (access via QCustomPlot::axisRects())
     - QCPLegend now is a QCPLayoutElement
+    - QCPAbstractPlottable::drawLegendIcon parameter "rect" changed from QRect to QRectF
     - QCPLegend::setMargin/setMarginLeft/Right/Top/Bottom removed (now inherits the capability from QCPLayoutElement::setMargins)
     - QCPLegend::setMinimumSize removed (now inherits the capability from QCPLayoutElement::setMinimumSize)
 

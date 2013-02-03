@@ -95,7 +95,7 @@ protected:
   
   virtual QRect clipRect() const;
   virtual void draw(QCPPainter *painter) = 0;
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const = 0;
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const = 0;
   virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const = 0;
   virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const = 0;
   
