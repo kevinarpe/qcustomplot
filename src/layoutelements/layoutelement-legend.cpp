@@ -89,7 +89,6 @@
   cause the item to be added to \a parent, so \ref QCPLegend::addItem must be called separately.
 */
 QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) : 
-  QObject(parent),
   mParentLegend(parent),
   mAntialiased(false),
   mFont(parent->font()),
@@ -236,22 +235,8 @@ void QCPAbstractLegendItem::applyAntialiasingHint(QCPPainter *painter) const
 */
 QCPPlottableLegendItem::QCPPlottableLegendItem(QCPLegend *parent, QCPAbstractPlottable *plottable) :
   QCPAbstractLegendItem(parent),
-  mPlottable(plottable),
-  mTextWrap(false)
+  mPlottable(plottable)
 {
-}
-
-/*!
-  Sets whether the text of the legend item is wrapped at word boundaries to fit the with of the
-  legend.
-  
-  To prevent the legend autoSize feature (QCPLegend::setAutoSize) from compressing the text too
-  strong by wrapping it very often, set an appropriate minimum width with
-  QCPLegend::setMinimumSize.
-*/
-void QCPPlottableLegendItem::setTextWrap(bool wrap)
-{
-  mTextWrap = wrap;
 }
 
 /*! \internal
@@ -286,46 +271,20 @@ QFont QCPPlottableLegendItem::getFont() const
 
 /*! \internal
   
-  Draws the item with \a painter into \a rect.
-
-  The width of the passed rect is used as text wrapping width, when \ref setTextWrap is enabled.
-  The height is ignored. The rect is not used as a clipping rect (overpainting is not prevented
-  inside this function), so you should set an appropriate clipping rect on the painter before
-  calling this function. Ideally, the width of the rect should be the result of a preceding call to
-  \ref size.
+  Draws the item with \a painter. The size and position of the drawn legend item is defined by the
+  parent layout (typically a \ref QCPLegend) and the \ref minimumSizeHint and \ref maximumSizeHint
+  of this legend item.
 */
-void QCPPlottableLegendItem::draw(QCPPainter *painter, const QRect &rect) const
+void QCPPlottableLegendItem::draw(QCPPainter *painter) const
 {
   if (!mPlottable) return;
   painter->setFont(getFont());
   painter->setPen(QPen(getTextColor()));
-  int iconTextPadding = mParentLegend->iconTextPadding();
-  QSize iconSize = mParentLegend->iconSize();
-  QRect textRect;
-  QRect iconRect(rect.topLeft(), iconSize);
-  if (mTextWrap)
-  {
-    // take width from rect since our text should wrap there (only icon must fit at least):
-    textRect = painter->fontMetrics().boundingRect(0, 0, rect.width()-iconTextPadding-iconSize.width(), rect.height(), Qt::TextDontClip | Qt::TextWordWrap, mPlottable->name());
-    if (textRect.height() < iconSize.height()) // text smaller than icon, center text vertically in icon height
-    {
-      painter->drawText(rect.x()+iconSize.width()+iconTextPadding, rect.y(), rect.width()-iconTextPadding-iconSize.width(), iconSize.height(), Qt::TextDontClip | Qt::TextWordWrap, mPlottable->name());
-    } else // text bigger than icon, position top of text with top of icon
-    {
-      painter->drawText(rect.x()+iconSize.width()+iconTextPadding, rect.y(), rect.width()-iconTextPadding-iconSize.width(), textRect.height(), Qt::TextDontClip | Qt::TextWordWrap, mPlottable->name());
-    }
-  } else
-  {
-    // text can't wrap (except with explicit newlines), center at current item size (icon size)
-    textRect = painter->fontMetrics().boundingRect(0, 0, 0, rect.height(), Qt::TextDontClip, mPlottable->name());
-    if (textRect.height() < iconSize.height()) // text smaller than icon, center text vertically in icon height
-    {
-      painter->drawText(rect.x()+iconSize.width()+iconTextPadding, rect.y(), rect.width(), iconSize.height(), Qt::TextDontClip, mPlottable->name());
-    } else // text bigger than icon, position top of text with top of icon
-    {
-      painter->drawText(rect.x()+iconSize.width()+iconTextPadding, rect.y(), rect.width(), textRect.height(), Qt::TextDontClip, mPlottable->name());
-    }
-  }
+  QSizeF iconSize = mParentLegend->iconSize();
+  QRectF textRect = painter->fontMetrics().boundingRect(0, 0, 0, iconSize.height(), Qt::TextDontClip, mPlottable->name());
+  QRectF iconRect(mRect.topLeft(), iconSize);
+  int textHeight = qMax(textRect.height(), iconSize.height());  // if text has smaller height than icon, center text vertically in icon height, else align tops
+  painter->drawText(mRect.x()+iconSize.width()+mParentLegend->iconTextPadding(), mRect.y(), textRect.width(), textHeight, Qt::TextDontClip, mPlottable->name());
   // draw icon:
   painter->save();
   painter->setClipRect(iconRect, Qt::IntersectClip);
@@ -342,32 +301,17 @@ void QCPPlottableLegendItem::draw(QCPPainter *painter, const QRect &rect) const
 
 /*! \internal
   
-  Calculates and returns the size of this item. If \ref setTextWrap is enabled, the width of \a
-  targetSize will be used as the text wrapping width. This does not guarantee, that the width of
-  the returned QSize is the same as the width of \a targetSize, since wrapping occurs only at word
-  boundaries. So a single word that extends beyond the width of \a targetSize, will stretch the
-  returned QSize accordingly.
-  
-  The height of \a targetSize is ignored. The height of the returned QSize is either the height
-  of the icon or the height of the text bounding box, whichever is larger.
+  Calculates and returns the size of this item. This includes the icon, the text and the padding in
+  between.
 */
-QSize QCPPlottableLegendItem::size(const QSize &targetSize) const
+QSize QCPPlottableLegendItem::minimumSizeHint() const
 {
   if (!mPlottable) return QSize();
   QSize result(0, 0);
   QRect textRect;
   QFontMetrics fontMetrics(getFont());
-  int iconTextPadding = mParentLegend->iconTextPadding();
   QSize iconSize = mParentLegend->iconSize();
-  if (mTextWrap)
-  {
-    // take width from targetSize since our text can wrap (Only icon must fit at least):
-    textRect = fontMetrics.boundingRect(0, 0, targetSize.width()-iconTextPadding-iconSize.width(), iconSize.height(), Qt::TextDontClip | Qt::TextWordWrap, mPlottable->name());
-  } else
-  {
-    // text can't wrap (except with explicit newlines), center at current item size (icon size)
-    textRect = fontMetrics.boundingRect(0, 0, 0, iconSize.height(), Qt::TextDontClip, mPlottable->name());
-  }
+  textRect = fontMetrics.boundingRect(0, 0, 0, iconSize.height(), Qt::TextDontClip, mPlottable->name());
   result.setWidth(iconSize.width() + mParentLegend->iconTextPadding() + textRect.width());
   result.setHeight(qMax(textRect.height(), iconSize.height()));
   return result;
@@ -405,7 +349,6 @@ QCPLegend::QCPLegend(QCustomPlot *parentPlot) :
   QCPLayerable(parentPlot)
 {
   setAntialiased(false);
-  setPositionStyle(psTopRight);
   setSize(100, 28);
   setIconSize(32, 18);
   setAutoSize(true);
@@ -479,27 +422,6 @@ void QCPLegend::setTextColor(const QColor &color)
   mTextColor = color;
   for (int i=0; i<mItems.size(); ++i)
     mItems.at(i)->setTextColor(color);
-}
-
-/*!
-  Sets the position style of the legend. If the \a legendPositionStyle is not \ref psManual, the
-  position is found automatically depending on the specific \a legendPositionStyle and the
-  legend margins. If \a legendPositionStyle is \ref psManual, the exact pixel position of the
-  legend must be specified via \ref setPosition. Margins have no effect in that case.
-  \see setMargin
-*/
-void QCPLegend::setPositionStyle(PositionStyle legendPositionStyle)
-{
-  mPositionStyle = legendPositionStyle;
-}
-
-/*!
-  Sets the exact pixel Position of the legend inside the QCustomPlot widget, if \ref
-  setPositionStyle is set to \ref psManual. Margins have no effect in that case.
-*/
-void QCPLegend::setPosition(const QPoint &pixelPosition)
-{
-  mPosition = pixelPosition;
 }
 
 /*!
@@ -849,27 +771,13 @@ QList<QCPAbstractLegendItem *> QCPLegend::selectedItems() const
 }
 
 /*!
-  If \ref setAutoSize is true, the size needed to fit all legend contents is calculated and applied.
-  Finally, the automatic positioning of the legend is performed, depending on the \ref
-  setPositionStyle setting.
-*/
-void  QCPLegend::reArrange()
-{
-  if (mAutoSize)
-  {
-    calculateAutoSize();
-  }
-  calculateAutoPosition();
-}
-
-/*!
   Returns whether the point \a pos in pixels hits the legend rect.
   
   \see selectTestItem
 */
 bool QCPLegend::selectTestLegend(const QPointF &pos) const
 {
-  return QRect(mPosition, mSize).contains(pos.toPoint());
+  return mRect.contains(pos.toPoint());
 }
 
 /*!
@@ -1070,94 +978,17 @@ void QCPLegend::draw(QCPPainter *painter)
   painter->setBrush(getBrush());
   painter->setPen(getBorderPen());
   // draw background rect:
-  painter->drawRect(QRect(mPosition, mSize));
+  painter->drawRect(mRect);
   // draw legend items:
-  painter->setClipRect(QRect(mPosition, mSize).adjusted(1, 1, 0, 0));
   painter->setPen(QPen());
   painter->setBrush(Qt::NoBrush);
-  int currentTop = mPosition.y()+mPadding.top();
   for (int i=0; i<mItems.size(); ++i)
   {
-    QSize itemSize = mItems.at(i)->size(QSize(mSize.width(), 0));
-    QRect itemRect = QRect(QPoint(mPosition.x()+mPadding.left(), currentTop), itemSize);
-    mItemBoundingBoxes.insert(mItems.at(i), itemRect);
+    mItemBoundingBoxes.insert(mItems.at(i), mItems.at(i)->rect());
     painter->save();
+    painter->setClipRect(mItems.at(i)->rect());
     mItems.at(i)->applyAntialiasingHint(painter);
-    mItems.at(i)->draw(painter, itemRect);
+    mItems.at(i)->draw(painter);
     painter->restore();
-    currentTop += itemSize.height()+mItemSpacing;
   }
-}
-
-/*! \internal 
-  
-  Goes through similar steps as \ref draw and calculates the width and height needed to
-  fit all items and padding in the legend. The new calculated size is then applied to the mSize of
-  this legend.
-*/
-void QCPLegend::calculateAutoSize()
-{
-  int width = mMinimumSize.width()-mPadding.left()-mPadding.right(); // start with minimum width and only expand from there
-  int currentTop;
-  bool repeat = true;
-  int repeatCount = 0;
-  while (repeat && repeatCount < 3) // repeat until we find self-consistent width (usually 2 runs)
-  {
-    repeat = false;
-    currentTop = mPadding.top();
-    for (int i=0; i<mItems.size(); ++i)
-    {
-      QSize s = mItems.at(i)->size(QSize(width, 0));
-      currentTop += s.height();
-      if (i < mItems.size()-1) // vertical spacer for all but last item
-        currentTop += mItemSpacing;
-      if (width < s.width())
-      {
-        width = s.width();
-        repeat = true; // changed width, so need a new run with new width to let other items adapt their height to that new width
-      }
-    }
-    repeatCount++;
-  }
-  if (repeat)
-    qDebug() << Q_FUNC_INFO << "hit repeat limit for iterative width calculation";
-  currentTop += mPadding.bottom();
-  width += mPadding.left()+mPadding.right();
-  
-  mSize.setWidth(width);
-  if (currentTop > mMinimumSize.height())
-    mSize.setHeight(currentTop);
-  else
-    mSize.setHeight(mMinimumSize.height());
-}
-
-/*! \internal
-  
-  Sets the position dependant on the \ref setPositionStyle setting and the margins.
-*/
-void QCPLegend::calculateAutoPosition()
-{
-  // DBG
-  /*
-  switch (mPositionStyle)
-  {
-    case psTopLeft:
-      mPosition = mParentPlot->mAxisRect->topLeft() + QPoint(mMarginLeft, mMarginTop); break;
-    case psTop:
-      mPosition = mParentPlot->mAxisRect->topLeft() + QPoint(mParentPlot->mAxisRect->width()/2.0-mSize.width()/2.0, mMarginTop); break;
-    case psTopRight:
-      mPosition = mParentPlot->mAxisRect->topRight() + QPoint(-mMarginRight-mSize.width(), mMarginTop); break;
-    case psRight:
-      mPosition = mParentPlot->mAxisRect->topRight() + QPoint(-mMarginRight-mSize.width(), mParentPlot->mAxisRect->height()/2.0-mSize.height()/2.0); break;
-    case psBottomRight:
-      mPosition = mParentPlot->mAxisRect->bottomRight() + QPoint(-mMarginRight-mSize.width(), -mMarginBottom-mSize.height()); break;
-    case psBottom:
-      mPosition = mParentPlot->mAxisRect->bottomLeft() + QPoint(mParentPlot->mAxisRect->width()/2.0-mSize.width()/2.0, -mMarginBottom-mSize.height()); break;
-    case psBottomLeft:
-      mPosition = mParentPlot->mAxisRect->bottomLeft() + QPoint(mMarginLeft, -mMarginBottom-mSize.height()); break;
-    case psLeft:
-      mPosition = mParentPlot->mAxisRect->topLeft() + QPoint(mMarginLeft, mParentPlot->mAxisRect->height()/2.0-mSize.height()/2.0); break;
-    case psManual: break;
-  }
-  */
 }

@@ -4,6 +4,7 @@
  > fix legend according to new system
    - modify item interface (basically all non-property methods) to do their jobs via QCPLayoutGrid mechanisms. Maybe get rid of some of them when they duplicate functionality.
    - adapt addToLegend()/removeFromLegend() functions in plottables (check both for abstract and leaf classes)
+   - sizeConstraintsChanged propagation for insetLayout (or generally, sublayouts of non-QCPLayout layout elements). Just don't propagate by checking parent for QWidget* inheritance?
  - Create QCPLayoutElement/QCPLayerable subclass that represents a plot title.
  - adapt QCustomPlot methods that were based on old axis system (handleAxisSelection and selectedAxes done)
  - possibly give every QCPLayoutElement a selectTest function (and then remove QCPLegend::selectTestLegend and probably adapt legend item selection mechanism) 

@@ -34,7 +34,7 @@ class QCustomPlot;
 class QCPAbstractPlottable;
 class QCPLegend;
 
-class QCP_LIB_DECL QCPAbstractLegendItem : public QObject
+class QCP_LIB_DECL QCPAbstractLegendItem : public QCPLayoutElement
 {
   Q_OBJECT
 public:
@@ -70,8 +70,7 @@ protected:
   QColor mSelectedTextColor;
   bool mSelectable, mSelected;
   
-  virtual void draw(QCPPainter *painter, const QRect &rect) const = 0;
-  virtual QSize size(const QSize &targetSize) const = 0;
+  virtual void draw(QCPPainter *painter) const = 0;
   void applyAntialiasingHint(QCPPainter *painter) const;
   
 private:
@@ -89,43 +88,23 @@ public:
   
   // getters:
   QCPAbstractPlottable *plottable() { return mPlottable; }
-  bool textWrap() const { return mTextWrap; }
-  
-  // setters:
-  void setTextWrap(bool wrap);
   
 protected:
   QCPAbstractPlottable *mPlottable;
-  bool mTextWrap;
   
   QPen getIconBorderPen() const;
   QColor getTextColor() const;
   QFont getFont() const;
 
-  virtual void draw(QCPPainter *painter, const QRect &rect) const;
-  virtual QSize size(const QSize &targetSize) const;
+  virtual void draw(QCPPainter *painter) const;
+  virtual QSize minimumSizeHint() const;
 };
 
 
-class QCP_LIB_DECL QCPLegend : public QCPLayoutElement, public QCPLayerable
+class QCP_LIB_DECL QCPLegend : public QCPLayoutGrid, public QCPLayerable
 {
   Q_OBJECT
 public:
-  /*!
-    Defines where the legend is positioned inside the QCustomPlot axis rect.
-  */
-  enum PositionStyle { psManual       ///< Position is not changed automatically. Set manually via \ref setPosition
-                      ,psTopLeft      ///< Legend is positioned in the top left corner of the axis rect with distance to the border corresponding to the currently set top and left margins
-                      ,psTop          ///< Legend is horizontally centered at the top of the axis rect with distance to the border corresponding to the currently set top margin
-                      ,psTopRight     ///< Legend is positioned in the top right corner of the axis rect with distance to the border corresponding to the currently set top and right margins
-                      ,psRight        ///< Legend is vertically centered at the right of the axis rect with distance to the border corresponding to the currently set right margin
-                      ,psBottomRight  ///< Legend is positioned in the bottom right corner of the axis rect with distance to the border corresponding to the currently set bottom and right margins
-                      ,psBottom       ///< Legend is horizontally centered at the bottom of the axis rect with distance to the border corresponding to the currently set bottom margin
-                      ,psBottomLeft   ///< Legend is positioned in the bottom left corner of the axis rect with distance to the border corresponding to the currently set bottom and left margins
-                      ,psLeft         ///< Legend is vertically centered at the left of the axis rect with distance to the border corresponding to the currently set left margin
-                     };
-  Q_ENUMS(PositionStyle)
-  
   /*!
     Defines the selectable parts of a legend
   */
@@ -144,8 +123,6 @@ public:
   QBrush brush() const { return mBrush; }
   QFont font() const { return mFont; }
   QColor textColor() const { return mTextColor; }
-  PositionStyle positionStyle() const { return mPositionStyle; }
-  QPoint position() const { return mPosition; }
   bool autoSize() const { return mAutoSize; }
   QSize size() const { return mSize; }
   QMargins padding() const { return mPadding; }
@@ -166,8 +143,6 @@ public:
   void setBrush(const QBrush &brush);
   void setFont(const QFont &font);
   void setTextColor(const QColor &color);
-  void setPositionStyle(PositionStyle legendPositionStyle);
-  void setPosition(const QPoint &pixelPosition);
   void setAutoSize(bool on);
   void setSize(const QSize &size);
   void setSize(int width, int height);
@@ -196,7 +171,6 @@ public:
   bool removeItem(QCPAbstractLegendItem *item);
   void clearItems();
   QList<QCPAbstractLegendItem*> selectedItems() const;
-  void reArrange();
   
   bool selectTestLegend(const QPointF &pos) const;
   QCPAbstractLegendItem *selectTestItem(const QPoint pos) const;
@@ -210,9 +184,7 @@ protected:
   QBrush mBrush;
   QFont mFont;
   QColor mTextColor;
-  QPoint mPosition;
   QSize mSize, mIconSize;
-  PositionStyle mPositionStyle;
   bool mAutoSize;
   QMargins mPadding;
   int mItemSpacing, mIconTextPadding;
@@ -231,8 +203,6 @@ protected:
   // introduced methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
-  virtual void calculateAutoSize();
-  virtual void calculateAutoPosition();
   
   // drawing helpers:
   QPen getBorderPen() const;

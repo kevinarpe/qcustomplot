@@ -457,6 +457,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   legend = new QCPLegend(this);
   legend->setVisible(false);
   legend->setLayer("axes");
+  defaultAxisRect->insetLayout()->addElement(legend, Qt::AlignRight|Qt::AlignTop);
   xAxis->setGrid(true);
   yAxis->setGrid(true);
   xAxis2->setGrid(false);
@@ -2675,9 +2676,6 @@ void QCustomPlot::draw(QCPPainter *painter)
   
   // recalculate layout (this also updates tick vectors on axes via QCPAxisRect::update):
   mPlotLayout->update();
-  
-  // position legend:
-  legend->reArrange();
   
   /*
   // draw axis backgrounds:

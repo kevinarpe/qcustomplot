@@ -34,7 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupMultiAxisTest(mCustomPlot);
   //setupLayoutElementBugTest(mCustomPlot);
   //setupMarginGroupTest(mCustomPlot);
-  setupInsetLayoutTest(mCustomPlot);
+  //setupInsetLayoutTest(mCustomPlot);
+  setupLegendTest(mCustomPlot);
 }
 
 MainWindow::~MainWindow()
@@ -485,7 +486,7 @@ void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
   rects.at(3)->setMaximumSize(150, QWIDGETSIZE_MAX);
   rects.at(4)->setMaximumSize(100, QWIDGETSIZE_MAX);
   
-  QCPLayoutGrid *subLayout = new QCPLayoutGrid(customPlot);
+  QCPLayoutGrid *subLayout = new QCPLayoutGrid;
   topLayout->addElement(1, 3, subLayout);
   QCPAxisRect *r0 = new QCPAxisRect(customPlot);
   subLayout->addElement(0, 0, r0);
@@ -539,6 +540,13 @@ void MainWindow::setupInsetLayoutTest(QCustomPlot *customPlot)
   insetAxRect->setBackground(QBrush(QColor(240, 240, 240)));
   
 }
+
+void MainWindow::setupLegendTest(QCustomPlot *customPlot)
+{
+  customPlot->legend->setVisible(true);
+  customPlot->legend->setMinimumSize(300, 150);
+}
+
 
 void MainWindow::presetInteractive(QCustomPlot *customPlot)
 {

@@ -32,6 +32,7 @@ public:
   void setupLayoutElementBugTest(QCustomPlot *customPlot);
   void setupMarginGroupTest(QCustomPlot* customPlot);
   void setupInsetLayoutTest(QCustomPlot* customPlot);
+  void setupLegendTest(QCustomPlot *customPlot);
   
   // presets:
   void presetInteractive(QCustomPlot *customPlot);

@@ -9,8 +9,10 @@
     - setAxisBackground(-Scaled/-ScaledMode) now moved to QCPAxisRect as setBackground(-Scaled/ScaledMode) (access via QCustomPlot::axisRects())
     - QCPLegend now is a QCPLayoutElement
     - QCPAbstractPlottable::drawLegendIcon parameter "rect" changed from QRect to QRectF
-    - QCPLegend::setMargin/setMarginLeft/Right/Top/Bottom removed (now inherits the capability from QCPLayoutElement::setMargins)
-    - QCPLegend::setMinimumSize removed (now inherits the capability from QCPLayoutElement::setMinimumSize)
+    - QCPAbstractLegendItem::draw second parameter removed (position/size now handled via QCPLayoutElement base class)
+    - removed QCPLegend::setMargin/setMarginLeft/Right/Top/Bottom (now inherits the capability from QCPLayoutElement::setMargins)
+    - removed QCPLegend::setMinimumSize (now inherits the capability from QCPLayoutElement::setMinimumSize)
+    - removed enum QCPLegend::PositionStyle, QCPLegend::positionStyle/setPositionStyle/position/setPosition (replaced by capabilities of QCPLayoutInset)
 
   Added features:
     - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).
