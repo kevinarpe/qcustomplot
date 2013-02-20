@@ -2164,9 +2164,9 @@ void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
   // for legend:
   if (receivers(SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*))) > 0)
   {
-    if (legend->selectTestLegend(event->pos()))
+    if (legend->selectTest(event->pos()))
     {
-      emit legendDoubleClick(legend, legend->selectTestItem(event->pos()), event);
+      emit legendDoubleClick(legend, legend->itemAtPos(event->pos()), event);
       foundHit = true;
     }
   }
@@ -2364,9 +2364,9 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
     // for legend:
     if (receivers(SIGNAL(legendClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*))) > 0)
     {
-      if (legend->selectTestLegend(event->pos()))
+      if (legend->selectTest(event->pos()))
       {
-        emit legendClick(legend, legend->selectTestItem(event->pos()), event);
+        emit legendClick(legend, legend->itemAtPos(event->pos()), event);
         foundHit = true;
       }
     }

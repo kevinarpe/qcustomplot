@@ -98,6 +98,7 @@ QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) :
   mSelectable(true),
   mSelected(false)
 {
+  setMargins(QMargins(10, 2, 10, 2));
 }
 
 /*!
@@ -164,8 +165,7 @@ void QCPAbstractLegendItem::setSelectable(bool selectable)
 }
 
 /*!
-  Sets whether this specific legend item is selected. The selection state of the parent QCPLegend
-  is updated correspondingly.
+  Sets whether this specific legend item is selected.
   
   It is possible to set the selection state of this item by calling this function directly, even if
   setSelectable is set to false.
@@ -178,7 +178,6 @@ void QCPAbstractLegendItem::setSelected(bool selected)
   {
     mSelected = selected;
     emit selectionChanged(mSelected);
-    mParentLegend->updateSelectionState();
   }
 }
 
@@ -312,8 +311,8 @@ QSize QCPPlottableLegendItem::minimumSizeHint() const
   QFontMetrics fontMetrics(getFont());
   QSize iconSize = mParentLegend->iconSize();
   textRect = fontMetrics.boundingRect(0, 0, 0, iconSize.height(), Qt::TextDontClip, mPlottable->name());
-  result.setWidth(iconSize.width() + mParentLegend->iconTextPadding() + textRect.width());
-  result.setHeight(qMax(textRect.height(), iconSize.height()));
+  result.setWidth(iconSize.width() + mParentLegend->iconTextPadding() + textRect.width() + mMargins.left() + mMargins.right());
+  result.setHeight(qMax(textRect.height(), iconSize.height()) + mMargins.top() + mMargins.bottom());
   return result;
 }
 
@@ -348,12 +347,14 @@ QSize QCPPlottableLegendItem::minimumSizeHint() const
 QCPLegend::QCPLegend(QCustomPlot *parentPlot) :
   QCPLayerable(parentPlot)
 {
+  setRowSpacing(0);
+  setColumnSpacing(10);
+  
   setAntialiased(false);
   setSize(100, 28);
   setIconSize(32, 18);
   setAutoSize(true);
   
-  setItemSpacing(3);
   setIconTextPadding(7);
   
   setSelectable(spLegendBox | spItems);
@@ -374,6 +375,24 @@ QCPLegend::QCPLegend(QCustomPlot *parentPlot) :
 QCPLegend::~QCPLegend()
 {
   clearItems();
+}
+
+QCPLegend::SelectableParts QCPLegend::selected() const
+{
+  // check whether any legend elements selected, if yes, add spItems to return value
+  bool hasSelectedItems = false;
+  for (int i=0; i<itemCount(); ++i)
+  {
+    if (item(i) && item(i)->selected())
+    {
+      hasSelectedItems = true;
+      break;
+    }
+  }
+  if (hasSelectedItems)
+    return mSelected | spItems;
+  else
+    return mSelected & ~spItems;
 }
 
 /*!
@@ -404,8 +423,8 @@ void QCPLegend::setBrush(const QBrush &brush)
 void QCPLegend::setFont(const QFont &font)
 {
   mFont = font;
-  for (int i=0; i<mItems.size(); ++i)
-    mItems.at(i)->setFont(mFont);
+  for (int i=0; i<itemCount(); ++i)
+    item(i)->setFont(mFont);
 }
 
 /*!
@@ -420,8 +439,8 @@ void QCPLegend::setFont(const QFont &font)
 void QCPLegend::setTextColor(const QColor &color)
 {
   mTextColor = color;
-  for (int i=0; i<mItems.size(); ++i)
-    mItems.at(i)->setTextColor(color);
+  for (int i=0; i<itemCount(); ++i)
+   item(i)->setTextColor(color);
 }
 
 /*!
@@ -467,16 +486,6 @@ void QCPLegend::setSize(int width, int height)
 void QCPLegend::setPadding(QMargins padding)
 {
   mPadding = padding;
-}
-
-/*!
-  Sets the vertical space between two legend items in the legend.
-  
-  \see setIconTextPadding, setPadding
-*/
-void QCPLegend::setItemSpacing(int spacing)
-{
-  mItemSpacing = spacing;
 }
 
 /*!
@@ -557,19 +566,23 @@ void QCPLegend::setSelectable(const SelectableParts &selectable)
 */
 void QCPLegend::setSelected(const SelectableParts &selected)
 {
-  if (mSelected != selected)
+  SelectableParts newSelected = selected;
+  mSelected = this->selected(); // update mSelected in case item selection changed
+
+  if (mSelected != newSelected)
   {
-    if (!selected.testFlag(spItems) && mSelected.testFlag(spItems)) // some items are selected, but new selection state doesn't contain spItems, so deselect them
+    if (!mSelected.testFlag(spItems) && newSelected.testFlag(spItems)) // attemt to set spItems flag (can't do that)
     {
-      for (int i=0; i<mItems.size(); ++i)
-        mItems.at(i)->setSelected(false);
-      mSelected = selected;
-      // not necessary to emit selectionChanged here because this will have happened for the last setSelected(false) on mItems already, via updateSelectionState()
-    } else
-    {
-      mSelected = selected;
-      emit selectionChanged(mSelected);
+      qDebug() << Q_FUNC_INFO << "spItems flag can not be set, it can only be unset manually";
+      newSelected &= ~spItems;
     }
+    if (mSelected.testFlag(spItems) && !newSelected.testFlag(spItems)) // spItems flag was unset, so clear item selection
+    {
+      for (int i=0; i<itemCount(); ++i)
+        item(i)->setSelected(false);
+    }
+    mSelected = newSelected;
+    emit selectionChanged(mSelected);
   }
 }
 
@@ -615,8 +628,8 @@ void QCPLegend::setSelectedBrush(const QBrush &brush)
 void QCPLegend::setSelectedFont(const QFont &font)
 {
   mSelectedFont = font;
-  for (int i=0; i<mItems.size(); ++i)
-    mItems.at(i)->setSelectedFont(font);
+  for (int i=0; i<itemCount(); ++i)
+    item(i)->setSelectedFont(font);
 }
 
 /*!
@@ -629,8 +642,8 @@ void QCPLegend::setSelectedFont(const QFont &font)
 void QCPLegend::setSelectedTextColor(const QColor &color)
 {
   mSelectedTextColor = color;
-  for (int i=0; i<mItems.size(); ++i)
-    mItems.at(i)->setSelectedTextColor(color);
+  for (int i=0; i<itemCount(); ++i)
+    item(i)->setSelectedTextColor(color);
 }
 
 /*!
@@ -640,10 +653,7 @@ void QCPLegend::setSelectedTextColor(const QColor &color)
 */
 QCPAbstractLegendItem *QCPLegend::item(int index) const
 {
-  if (index >= 0 && index < mItems.size())
-    return mItems[index];
-  else
-    return 0;
+  return qobject_cast<QCPAbstractLegendItem*>(elementAt(index));
 }
 
 /*!
@@ -654,9 +664,9 @@ QCPAbstractLegendItem *QCPLegend::item(int index) const
 */
 QCPPlottableLegendItem *QCPLegend::itemWithPlottable(const QCPAbstractPlottable *plottable) const
 {
-  for (int i=0; i<mItems.size(); ++i)
+  for (int i=0; i<itemCount(); ++i)
   {
-    if (QCPPlottableLegendItem *pli = qobject_cast<QCPPlottableLegendItem*>(mItems.at(i)))
+    if (QCPPlottableLegendItem *pli = qobject_cast<QCPPlottableLegendItem*>(item(i)))
     {
       if (pli->plottable() == plottable)
         return pli;
@@ -671,15 +681,20 @@ QCPPlottableLegendItem *QCPLegend::itemWithPlottable(const QCPAbstractPlottable 
 */
 int QCPLegend::itemCount() const
 {
-  return mItems.size();
+  return elementCount();
 }
 
 /*!
-  Returns whether the legend contains \a item.
+  Returns whether the legend contains \a itm.
 */
 bool QCPLegend::hasItem(QCPAbstractLegendItem *item) const
 {
-  return mItems.contains(item);
+  for (int i=0; i<itemCount(); ++i)
+  {
+    if (item == this->item(i))
+        return true;
+  }
+  return false;
 }
 
 /*!
@@ -702,10 +717,9 @@ bool QCPLegend::hasItemWithPlottable(const QCPAbstractPlottable *plottable) cons
 */
 bool QCPLegend::addItem(QCPAbstractLegendItem *item)
 {
-  if (!mItems.contains(item))
+  if (!hasItem(item))
   {
-    mItems.append(item);
-    return true;
+    return addElement(rowCount(), 0, item);
   } else
     return false;
 }
@@ -719,12 +733,11 @@ bool QCPLegend::addItem(QCPAbstractLegendItem *item)
 */
 bool QCPLegend::removeItem(int index)
 {
-  if (index >= 0 && index < mItems.size())
+  if (QCPAbstractLegendItem *ali = item(index))
   {
-    mItemBoundingBoxes.remove(mItems.at(index));
-    delete mItems.at(index);
-    mItems.removeAt(index);
-    return true;
+    bool success = remove(ali);
+    simplify();
+    return success;
   } else
     return false;
 }
@@ -739,7 +752,9 @@ bool QCPLegend::removeItem(int index)
 */
 bool QCPLegend::removeItem(QCPAbstractLegendItem *item)
 {
-  return removeItem(mItems.indexOf(item));
+  bool success = remove(item);
+  simplify();
+  return success;
 }
 
 /*!
@@ -747,11 +762,9 @@ bool QCPLegend::removeItem(QCPAbstractLegendItem *item)
 */
 void QCPLegend::clearItems()
 {
-  qDeleteAll(mItems);
-  mItems.clear();
-  mItemBoundingBoxes.clear();
+  for (int i=itemCount()-1; i>=0; --i)
+    removeItem(i);
 }
-
 
 /*!
   Returns the legend items that are currently selected. If no items are selected,
@@ -762,22 +775,15 @@ void QCPLegend::clearItems()
 QList<QCPAbstractLegendItem *> QCPLegend::selectedItems() const
 {
   QList<QCPAbstractLegendItem*> result;
-  for (int i=0; i<mItems.size(); ++i)
+  for (int i=0; i<itemCount(); ++i)
   {
-    if (mItems.at(i)->selected())
-      result.append(mItems.at(i));
+    if (QCPAbstractLegendItem *ali = item(i))
+    {
+      if (ali->selected())
+        result.append(ali);
+    }
   }
   return result;
-}
-
-/*!
-  Returns whether the point \a pos in pixels hits the legend rect.
-  
-  \see selectTestItem
-*/
-bool QCPLegend::selectTestLegend(const QPointF &pos) const
-{
-  return mRect.contains(pos.toPoint());
 }
 
 /*!
@@ -786,52 +792,17 @@ bool QCPLegend::selectTestLegend(const QPointF &pos) const
   
   \see selectTestLegend
 */
-QCPAbstractLegendItem *QCPLegend::selectTestItem(const QPoint pos) const
+QCPAbstractLegendItem *QCPLegend::itemAtPos(const QPointF &pos) const
 {
-  QMap<QCPAbstractLegendItem*, QRect>::const_iterator it;
-  for (it = mItemBoundingBoxes.constBegin(); it != mItemBoundingBoxes.constEnd(); ++it)
+  for (int i=0; i<elementCount(); ++i)
   {
-    if (it.value().contains(pos) && mItems.contains(it.key()))
-      return it.key();
-  }
-  return 0;
-}
-
-/*! \internal
-  
-  Updates the spItems part of the selection state of this legend by going through all child items
-  and checking their selected state.
-  
-  If no items are selected and the current selected state contains spItems, it is removed and the
-  \ref selectionChanged signal is emitted. If at least one item is selected and the current selection
-  state does not contain spItems, it is added and the signal is emitted, too.
-  
-  This function is called in the QCPAbstractLegendItem::setSelected functions to propagate their
-  change to the parent legend.
-*/
-void QCPLegend::updateSelectionState()
-{
-  bool hasSelections = false;
-  for (int i=0; i<mItems.size(); ++i)
-  {
-    if (mItems.at(i)->selected())
+    if (QCPAbstractLegendItem *ali = item(i))
     {
-      hasSelections = true;
-      break;
+      if (ali->selectTest(pos))
+        return ali;
     }
   }
-  
-  // in the following we don't use setSelected because it would cause unnecessary
-  // logic looping through items if spItems isn't set in the new state. (look at setSelected and you'll understand)
-  if (hasSelections && !mSelected.testFlag(spItems))
-  {
-    mSelected |= spItems;
-    emit selectionChanged(mSelected);
-  } else if (!hasSelections && mSelected.testFlag(spItems))
-  {
-    mSelected &= ~spItems;
-    emit selectionChanged(mSelected);
-  }
+  return 0;
 }
 
 /*! \internal
@@ -852,9 +823,9 @@ bool QCPLegend::handleLegendSelection(QMouseEvent *event, bool additiveSelection
   modified = false;
   bool selectionFound = false;
   
-  if (event && selectTestLegend(event->pos())) // clicked inside legend somewhere
+  if (event && selectTest(event->pos())) // clicked inside legend somewhere
   {
-    QCPAbstractLegendItem *ali = selectTestItem(event->pos());
+    QCPAbstractLegendItem *ali = itemAtPos(event->pos());
     if (selectable().testFlag(QCPLegend::spItems) && ali && ali->selectable()) // items shall be selectable and item ali was clicked 
     {
       selectionFound = true;
@@ -982,13 +953,12 @@ void QCPLegend::draw(QCPPainter *painter)
   // draw legend items:
   painter->setPen(QPen());
   painter->setBrush(Qt::NoBrush);
-  for (int i=0; i<mItems.size(); ++i)
+  for (int i=0; i<itemCount(); ++i)
   {
-    mItemBoundingBoxes.insert(mItems.at(i), mItems.at(i)->rect());
     painter->save();
-    painter->setClipRect(mItems.at(i)->rect());
-    mItems.at(i)->applyAntialiasingHint(painter);
-    mItems.at(i)->draw(painter);
+    painter->setClipRect(item(i)->outerRect());
+    item(i)->applyAntialiasingHint(painter);
+    item(i)->draw(painter);
     painter->restore();
   }
 }

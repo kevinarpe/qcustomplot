@@ -126,12 +126,11 @@ public:
   bool autoSize() const { return mAutoSize; }
   QSize size() const { return mSize; }
   QMargins padding() const { return mPadding; }
-  int itemSpacing() const { return mItemSpacing; }
   QSize iconSize() const { return mIconSize; }
   int iconTextPadding() const { return mIconTextPadding; }
   QPen iconBorderPen() const { return mIconBorderPen; }
   SelectableParts selectable() const { return mSelectable; }
-  SelectableParts selected() const { return mSelected; }
+  SelectableParts selected() const;
   QPen selectedBorderPen() const { return mSelectedBorderPen; }
   QPen selectedIconBorderPen() const { return mSelectedIconBorderPen; }
   QBrush selectedBrush() const { return mSelectedBrush; }
@@ -147,7 +146,6 @@ public:
   void setSize(const QSize &size);
   void setSize(int width, int height);
   void setPadding(QMargins padding);
-  void setItemSpacing(int spacing);
   void setIconSize(const QSize &size);
   void setIconSize(int width, int height);
   void setIconTextPadding(int padding);
@@ -172,8 +170,7 @@ public:
   void clearItems();
   QList<QCPAbstractLegendItem*> selectedItems() const;
   
-  bool selectTestLegend(const QPointF &pos) const;
-  QCPAbstractLegendItem *selectTestItem(const QPoint pos) const;
+  QCPAbstractLegendItem *itemAtPos(const QPointF &pos) const;
   
 signals:
   void selectionChanged(QCPLegend::SelectableParts selection);
@@ -187,18 +184,13 @@ protected:
   QSize mSize, mIconSize;
   bool mAutoSize;
   QMargins mPadding;
-  int mItemSpacing, mIconTextPadding;
+  int mIconTextPadding;
   SelectableParts mSelected, mSelectable;
   QPen mSelectedBorderPen, mSelectedIconBorderPen;
   QBrush mSelectedBrush;
   QFont mSelectedFont;
   QColor mSelectedTextColor;
   
-  // internal or not explicitly exposed properties:
-  QList<QCPAbstractLegendItem*> mItems;
-  QMap<QCPAbstractLegendItem*, QRect> mItemBoundingBoxes;
-  
-  virtual void updateSelectionState();
   virtual bool handleLegendSelection(QMouseEvent *event, bool additiveSelection, bool &modified);
   // introduced methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;

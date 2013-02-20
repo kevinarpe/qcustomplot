@@ -13,6 +13,7 @@
     - removed QCPLegend::setMargin/setMarginLeft/Right/Top/Bottom (now inherits the capability from QCPLayoutElement::setMargins)
     - removed QCPLegend::setMinimumSize (now inherits the capability from QCPLayoutElement::setMinimumSize)
     - removed enum QCPLegend::PositionStyle, QCPLegend::positionStyle/setPositionStyle/position/setPosition (replaced by capabilities of QCPLayoutInset)
+    - QCPLegend transformed to work with new layout system (almost everything changed)
 
   Added features:
     - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).

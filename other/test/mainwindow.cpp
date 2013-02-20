@@ -544,7 +544,10 @@ void MainWindow::setupInsetLayoutTest(QCustomPlot *customPlot)
 void MainWindow::setupLegendTest(QCustomPlot *customPlot)
 {
   customPlot->legend->setVisible(true);
-  customPlot->legend->setMinimumSize(300, 150);
+  //customPlot->legend->setMinimumSize(300, 150);
+  
+  customPlot->addGraph()->setName("first graph");
+  customPlot->addGraph()->setName("second longer graph");
 }
 
 
