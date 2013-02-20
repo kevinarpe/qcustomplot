@@ -268,6 +268,10 @@ int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
   return QCP::getMarginValue(mMargins, side);
 }
 
+bool QCPLayoutElement::selectTest(const QPointF &pos) const
+{
+  return QRectF(mOuterRect).contains(pos);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPLayout
@@ -337,8 +341,11 @@ void QCPLayout::sizeConstraintsChanged() const
 {
   if (QWidget *w = qobject_cast<QWidget*>(parent()))
     w->updateGeometry();
-  else
-    qDebug() << Q_FUNC_INFO << "Layout has no parent QWidget";
+  else if (QCPLayout *l = qobject_cast<QCPLayout*>(parent()))
+    l->sizeConstraintsChanged();
+// don't warn here because it's normal situation for QCPLayoutInset in QCPAxisRect:
+//  else
+//    qDebug() << Q_FUNC_INFO << "Layout has no parent QWidget or QCPLayout";
 }
 
 void QCPLayout::updateLayout()
