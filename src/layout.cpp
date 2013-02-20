@@ -109,7 +109,7 @@ void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element
 QCPLayoutElement::QCPLayoutElement() :
   QObject(0), // parenthood is changed as soon as layout element gets inserted into a layout (except for top level layout)
   mParentLayout(0),
-  mMinimumSize(0, 0),
+  mMinimumSize(),
   mMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX),
   mRect(0, 0, 0, 0),
   mOuterRect(0, 0, 0, 0),
@@ -909,8 +909,8 @@ void QCPLayoutInset::updateLayout()
   for (int i=0; i<mElements.size(); ++i)
   {
     QRect insetRect;
-    QSize minSize = mElements.at(i)->minimumSizeHint();
-    QSize maxSize = mElements.at(i)->maximumSizeHint();
+    QSize minSize = mElements.at(i)->minimumSize().isValid() ? mElements.at(i)->minimumSize() : mElements.at(i)->minimumSizeHint();
+    QSize maxSize = mElements.at(i)->maximumSize().isValid() ? mElements.at(i)->maximumSize() : mElements.at(i)->maximumSizeHint();
     if (mInsetPlacement.at(i) == ipFree)
     {
       insetRect = QRect(rect().x()+rect().width()*mInsetRect.at(i).x(),
@@ -927,15 +927,14 @@ void QCPLayoutInset::updateLayout()
         insetRect.setHeight(maxSize.height());
     } else if (mInsetPlacement.at(i) == ipBorderAligned)
     {
-      QSize sizeHint = mElements.at(i)->minimumSizeHint();
-      insetRect.setSize(sizeHint);
+      insetRect.setSize(minSize);
       Qt::Alignment al = mInsetAlignment.at(i);
       if (al.testFlag(Qt::AlignLeft)) insetRect.moveLeft(rect().x());
       else if (al.testFlag(Qt::AlignRight)) insetRect.moveRight(rect().x()+rect().width());
-      else if (al.testFlag(Qt::AlignHCenter)) insetRect.moveLeft(rect().x()+rect().width()*0.5-sizeHint.width()*0.5);
+      else if (al.testFlag(Qt::AlignHCenter)) insetRect.moveLeft(rect().x()+rect().width()*0.5-minSize.width()*0.5);
       if (al.testFlag(Qt::AlignTop)) insetRect.moveTop(rect().y());
       else if (al.testFlag(Qt::AlignBottom)) insetRect.moveBottom(rect().y()+rect().height());
-      else if (al.testFlag(Qt::AlignVCenter)) insetRect.moveTop(rect().y()+rect().height()*0.5-sizeHint.height()*0.5);
+      else if (al.testFlag(Qt::AlignVCenter)) insetRect.moveTop(rect().y()+rect().height()*0.5-minSize.height()*0.5);
     }
     mElements.at(i)->setOuterRect(insetRect);
   }
