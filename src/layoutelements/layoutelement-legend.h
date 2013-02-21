@@ -108,9 +108,9 @@ public:
   /*!
     Defines the selectable parts of a legend
   */
-  enum SelectablePart { spNone       = 0      ///< None
-                       ,spLegendBox  = 0x001  ///< The legend box (frame)
-                       ,spItems      = 0x002  ///< Legend items individually (see \ref selectedItems)
+  enum SelectablePart { spNone       = 0x000  ///< <tt>0x000</tt> None
+                       ,spLegendBox  = 0x001  ///< <tt>0x001</tt> The legend box (frame)
+                       ,spItems      = 0x002  ///< <tt>0x002</tt> Legend items individually (see \ref selectedItems)
                       };
   Q_ENUMS(SelectablePart)
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)
@@ -123,9 +123,6 @@ public:
   QBrush brush() const { return mBrush; }
   QFont font() const { return mFont; }
   QColor textColor() const { return mTextColor; }
-  bool autoSize() const { return mAutoSize; }
-  QSize size() const { return mSize; }
-  QMargins padding() const { return mPadding; }
   QSize iconSize() const { return mIconSize; }
   int iconTextPadding() const { return mIconTextPadding; }
   QPen iconBorderPen() const { return mIconBorderPen; }
@@ -142,10 +139,6 @@ public:
   void setBrush(const QBrush &brush);
   void setFont(const QFont &font);
   void setTextColor(const QColor &color);
-  void setAutoSize(bool on);
-  void setSize(const QSize &size);
-  void setSize(int width, int height);
-  void setPadding(QMargins padding);
   void setIconSize(const QSize &size);
   void setIconSize(int width, int height);
   void setIconTextPadding(int padding);
@@ -181,9 +174,7 @@ protected:
   QBrush mBrush;
   QFont mFont;
   QColor mTextColor;
-  QSize mSize, mIconSize;
-  bool mAutoSize;
-  QMargins mPadding;
+  QSize mIconSize;
   int mIconTextPadding;
   SelectableParts mSelected, mSelectable;
   QPen mSelectedBorderPen, mSelectedIconBorderPen;

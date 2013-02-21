@@ -98,7 +98,7 @@ QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) :
   mSelectable(true),
   mSelected(false)
 {
-  setMargins(QMargins(10, 2, 10, 2));
+  setMargins(QMargins(8, 2, 8, 2));
 }
 
 /*!
@@ -349,11 +349,9 @@ QCPLegend::QCPLegend(QCustomPlot *parentPlot) :
 {
   setRowSpacing(0);
   setColumnSpacing(10);
-  
+  setMargins(QMargins(2, 3, 2, 2));
   setAntialiased(false);
-  setSize(100, 28);
   setIconSize(32, 18);
-  setAutoSize(true);
   
   setIconTextPadding(7);
   
@@ -424,7 +422,10 @@ void QCPLegend::setFont(const QFont &font)
 {
   mFont = font;
   for (int i=0; i<itemCount(); ++i)
-    item(i)->setFont(mFont);
+  {
+    if (item(i))
+      item(i)->setFont(mFont);
+  }
 }
 
 /*!
@@ -440,52 +441,10 @@ void QCPLegend::setTextColor(const QColor &color)
 {
   mTextColor = color;
   for (int i=0; i<itemCount(); ++i)
-   item(i)->setTextColor(color);
-}
-
-/*!
-  Sets whether the size of the legend should be calculated automatically to fit all the content
-  (plus padding), or whether the size must be specified manually with \ref setSize.
-  
-  If the autoSize mechanism is enabled, the legend will have the smallest possible size to still
-  display all its content. For items with text wrapping (QCPPlottableLegendItem::setTextWrap) this
-  means, they would become very compressed, i.e. wrapped at every word. To prevent this, set a
-  reasonable \ref setMinimumSize width.
-*/
-void QCPLegend::setAutoSize(bool on)
-{
-  mAutoSize = on;
-}
-
-/*!
-  Sets the size of the legend. Setting the size manually with this function only has an effect, if
-  \ref setAutoSize is set to false.
-  
-  If you want to control the minimum size (or the text-wrapping width) while still leaving the
-  autoSize mechanism enabled, consider using \ref setMinimumSize.
-  
-  \see setAutoSize, setMinimumSize
-*/
-void QCPLegend::setSize(const QSize &size)
-{
-  mSize = size;
-}
-
-/*! \overload
-*/
-void QCPLegend::setSize(int width, int height)
-{
-  mSize = QSize(width, height);
-}
-
-/*!
-  Sets the padding of the legend. Padding is the space by what the legend box is made larger than
-  minimally needed for the content to fit. I.e. it's the space left blank on each side inside the
-  legend.
-*/
-void QCPLegend::setPadding(QMargins padding)
-{
-  mPadding = padding;
+  {
+    if (item(i))
+      item(i)->setTextColor(color);
+  }
 }
 
 /*!
@@ -571,7 +530,7 @@ void QCPLegend::setSelected(const SelectableParts &selected)
 
   if (mSelected != newSelected)
   {
-    if (!mSelected.testFlag(spItems) && newSelected.testFlag(spItems)) // attemt to set spItems flag (can't do that)
+    if (!mSelected.testFlag(spItems) && newSelected.testFlag(spItems)) // attempt to set spItems flag (can't do that)
     {
       qDebug() << Q_FUNC_INFO << "spItems flag can not be set, it can only be unset manually";
       newSelected &= ~spItems;
@@ -579,7 +538,10 @@ void QCPLegend::setSelected(const SelectableParts &selected)
     if (mSelected.testFlag(spItems) && !newSelected.testFlag(spItems)) // spItems flag was unset, so clear item selection
     {
       for (int i=0; i<itemCount(); ++i)
-        item(i)->setSelected(false);
+      {
+        if (item(i))
+          item(i)->setSelected(false);
+      }
     }
     mSelected = newSelected;
     emit selectionChanged(mSelected);
@@ -629,7 +591,10 @@ void QCPLegend::setSelectedFont(const QFont &font)
 {
   mSelectedFont = font;
   for (int i=0; i<itemCount(); ++i)
-    item(i)->setSelectedFont(font);
+  {
+    if (item(i))
+      item(i)->setSelectedFont(font);
+  }
 }
 
 /*!
@@ -643,7 +608,10 @@ void QCPLegend::setSelectedTextColor(const QColor &color)
 {
   mSelectedTextColor = color;
   for (int i=0; i<itemCount(); ++i)
-    item(i)->setSelectedTextColor(color);
+  {
+    if (item(i))
+      item(i)->setSelectedTextColor(color);
+  }
 }
 
 /*!
@@ -843,7 +811,7 @@ bool QCPLegend::handleLegendSelection(QMouseEvent *event, bool additiveSelection
       {
         for (int i=0; i<itemCount(); ++i)
         {
-          if (item(i) != ali && item(i)->selected() && item(i)->selectable())
+          if (item(i) && (item(i) != ali && item(i)->selected() && item(i)->selectable()))
           {
             modified = true;
             item(i)->setSelected(false);
@@ -857,7 +825,7 @@ bool QCPLegend::handleLegendSelection(QMouseEvent *event, bool additiveSelection
       {
         for (int i=0; i<itemCount(); ++i)
         {
-          if (item(i)->selectable())
+          if (item(i) && item(i)->selectable())
             item(i)->setSelected(false);
         }
         modified = true;
@@ -881,7 +849,7 @@ bool QCPLegend::handleLegendSelection(QMouseEvent *event, bool additiveSelection
     {
       for (int i=0; i<itemCount(); ++i)
       {
-        if (item(i)->selected() && item(i)->selectable())
+        if (item(i) && item(i)->selected() && item(i)->selectable())
         {
           item(i)->setSelected(false);
           modified = true;
@@ -949,16 +917,19 @@ void QCPLegend::draw(QCPPainter *painter)
   painter->setBrush(getBrush());
   painter->setPen(getBorderPen());
   // draw background rect:
-  painter->drawRect(mRect);
+  painter->drawRect(mOuterRect);
   // draw legend items:
   painter->setPen(QPen());
   painter->setBrush(Qt::NoBrush);
   for (int i=0; i<itemCount(); ++i)
   {
-    painter->save();
-    painter->setClipRect(item(i)->outerRect());
-    item(i)->applyAntialiasingHint(painter);
-    item(i)->draw(painter);
-    painter->restore();
+    if (item(i))
+    {
+      painter->save();
+      painter->setClipRect(item(i)->outerRect());
+      item(i)->applyAntialiasingHint(painter);
+      item(i)->draw(painter);
+      painter->restore();
+    }
   }
 }

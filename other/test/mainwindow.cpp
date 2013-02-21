@@ -548,6 +548,13 @@ void MainWindow::setupLegendTest(QCustomPlot *customPlot)
   
   customPlot->addGraph()->setName("first graph");
   customPlot->addGraph()->setName("second longer graph");
+  customPlot->addGraph()->setName("some stupid text\nthat has a line break\nand some more text");
+  customPlot->addGraph()->setName("yadayada");
+  //customPlot->legend->addElement(0, 1, customPlot->legend->element(3, 0));
+  //customPlot->legend->addElement(1, 1, customPlot->legend->element(2, 0));
+  customPlot->addGraph()->setName("yadayaasdda");
+  customPlot->graph(3)->removeFromLegend();
+  customPlot->graph(3)->addToLegend();
 }
 
 

@@ -2,9 +2,6 @@
 
 > layout system
  > fix legend according to new system
-   - modify item interface (basically all non-property methods) to do their jobs via QCPLayoutGrid mechanisms. Maybe get rid of some of them when they duplicate functionality.
-   - adapt addToLegend()/removeFromLegend() functions in plottables (check both for abstract and leaf classes)
-   - sizeConstraintsChanged propagation for insetLayout (or generally, sublayouts of non-QCPLayout layout elements). Just don't propagate by checking parent for QWidget* inheritance?
  - Create QCPLayoutElement/QCPLayerable subclass that represents a plot title.
  - adapt QCustomPlot methods that were based on old axis system (handleAxisSelection and selectedAxes done)
  - possibly give every QCPLayoutElement a selectTest function (and then remove QCPLegend::selectTestLegend and probably adapt legend item selection mechanism) 
@@ -16,6 +13,11 @@
 - update all the documentation referencing QCustomPlot::setMargin, QCustomPlot::setAutoMargin, QCustomPlot::axisRect
 - check whether selection boxes of axes are properly positioned (also with rotated tick labels!)
 - remove delete legend from QCP dtor after legend integrated into layout system
+
+- minimum sizes of layout element is ignored in favor of minimumSizeHint differently for inset layout and for grid layout. Inset ignores if size is invalid, grid always
+  uses it as upper bound of minimum size. (Did it like that because grid sometimes wants to control x/y independently, e.g. restrict x by setting high minimum width but
+  leaving y free by setting it to 0.)
+  That's inconsistent internally and in comparison with how Qt does it.
 
 doc:
 - emphasize in documentation for QCPLayoutGrid::removeElement that only a call to simplify() will actually remove empty rows/columns

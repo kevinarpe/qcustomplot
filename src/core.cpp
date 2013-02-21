@@ -458,6 +458,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   legend->setVisible(false);
   legend->setLayer("axes");
   defaultAxisRect->insetLayout()->addElement(legend, Qt::AlignRight|Qt::AlignTop);
+  defaultAxisRect->insetLayout()->setMargins(QMargins(12, 12, 12, 12));
   xAxis->setGrid(true);
   yAxis->setGrid(true);
   xAxis2->setGrid(false);
