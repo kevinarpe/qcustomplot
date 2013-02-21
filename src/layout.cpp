@@ -780,8 +780,8 @@ QSize QCPLayoutGrid::minimumSizeHint() const
     result.rwidth() += minColWidths.at(i);
   for (int i=0; i<minRowHeights.size(); ++i)
     result.rheight() += minRowHeights.at(i);
-  result.rwidth() += (columnCount()-1) * mColumnSpacing;
-  result.rheight() += (rowCount()-1) * mRowSpacing;
+  result.rwidth() += (columnCount()-1) * mColumnSpacing + mMargins.left() + mMargins.right();
+  result.rheight() += (rowCount()-1) * mRowSpacing + mMargins.top() + mMargins.bottom();
   return result;
 }
 
@@ -795,7 +795,8 @@ QSize QCPLayoutGrid::maximumSizeHint() const
     result.setWidth(qMin(result.width()+maxColWidths.at(i), QWIDGETSIZE_MAX));
   for (int i=0; i<maxRowHeights.size(); ++i)
     result.setHeight(qMin(result.height()+maxRowHeights.at(i), QWIDGETSIZE_MAX));
-  
+  result.rwidth() += (columnCount()-1) * mColumnSpacing + mMargins.left() + mMargins.right();
+  result.rheight() += (rowCount()-1) * mRowSpacing + mMargins.top() + mMargins.bottom();
   return result;
 }
 
@@ -852,7 +853,6 @@ void QCPLayoutGrid::getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<in
 QCPLayoutInset::QCPLayoutInset()
 {
 }
-
 
 QCPLayoutInset::InsetPlacement QCPLayoutInset::insetPlacement(int index) const
 {
