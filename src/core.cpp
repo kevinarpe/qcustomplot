@@ -1744,10 +1744,12 @@ QList<QCPAxisRect*> QCustomPlot::axisRects() const
     QList<QCPLayoutElement*> subElements = elementStack.pop()->elements();
     for (int i=0; i<subElements.size(); ++i)
     {
-      QCPLayoutElement *element = subElements.at(i);
-      elementStack.push(element);
-      if (QCPAxisRect *ar = qobject_cast<QCPAxisRect*>(element))
-        result.append(ar);
+      if (QCPLayoutElement *element = subElements.at(i))
+      {
+        elementStack.push(element);
+        if (QCPAxisRect *ar = qobject_cast<QCPAxisRect*>(element))
+          result.append(ar);
+      }
     }
   }
   
