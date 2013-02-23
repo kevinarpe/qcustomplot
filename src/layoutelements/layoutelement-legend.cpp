@@ -274,7 +274,7 @@ QFont QCPPlottableLegendItem::getFont() const
   parent layout (typically a \ref QCPLegend) and the \ref minimumSizeHint and \ref maximumSizeHint
   of this legend item.
 */
-void QCPPlottableLegendItem::draw(QCPPainter *painter) const
+void QCPPlottableLegendItem::draw(QCPPainter *painter)
 {
   if (!mPlottable) return;
   painter->setFont(getFont());

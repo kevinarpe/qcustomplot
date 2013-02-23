@@ -38,7 +38,7 @@ class QCP_LIB_DECL QCPAbstractLegendItem : public QCPLayoutElement
 {
   Q_OBJECT
 public:
-  QCPAbstractLegendItem(QCPLegend *parent);
+  explicit QCPAbstractLegendItem(QCPLegend *parent);
   
   // getters:
   bool antialiased() const { return mAntialiased; }
@@ -70,7 +70,7 @@ protected:
   QColor mSelectedTextColor;
   bool mSelectable, mSelected;
   
-  virtual void draw(QCPPainter *painter) const = 0;
+  virtual void draw(QCPPainter *painter) = 0;
   void applyAntialiasingHint(QCPPainter *painter) const;
   
 private:
@@ -96,7 +96,7 @@ protected:
   QColor getTextColor() const;
   QFont getFont() const;
 
-  virtual void draw(QCPPainter *painter) const;
+  virtual void draw(QCPPainter *painter);
   virtual QSize minimumSizeHint() const;
 };
 
