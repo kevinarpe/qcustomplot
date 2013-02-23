@@ -136,26 +136,19 @@ void QCPLayoutElement::setOuterRect(const QRect &rect)
 void QCPLayoutElement::setMargins(const QMargins &margins)
 {
   // don't check mMargins != margins here, because we use setMargins(mMargins) to enforce minimum margins e.g. in setMinimumMargins
-  mMargins = margins;
-  
-  if (mMargins.left() < mMinimumMargins.left())
-    mMargins.setLeft(mMinimumMargins.left());
-  if (mMargins.right() < mMinimumMargins.right())
-    mMargins.setRight(mMinimumMargins.right());
-  if (mMargins.top() < mMinimumMargins.top())
-    mMargins.setTop(mMinimumMargins.top());
-  if (mMargins.bottom() < mMinimumMargins.bottom())
-    mMargins.setBottom(mMinimumMargins.bottom());
-  
-  mRect = mOuterRect.adjusted(mMargins.left(), mMargins.top(), -mMargins.right(), -mMargins.bottom());
+  if (mMargins != margins)
+  {
+    mMargins = margins;
+    mRect = mOuterRect.adjusted(mMargins.left(), mMargins.top(), -mMargins.right(), -mMargins.bottom());
+  }
 }
 
+// doc: only has effect on auto margins
 void QCPLayoutElement::setMinimumMargins(const QMargins &margins)
 {
   if (mMinimumMargins != margins)
   {
     mMinimumMargins = margins;
-    setMargins(mMargins); // this enforces minimum margins, in case they were set to larger values
   }
 }
 
@@ -994,7 +987,6 @@ bool QCPLayoutInset::take(QCPLayoutElement *element)
     qDebug() << Q_FUNC_INFO << "Can't take null element";
   return false;
 }
-
 
 void QCPLayoutInset::addElement(QCPLayoutElement *element, Qt::Alignment alignment)
 {
