@@ -73,34 +73,6 @@ enum MarginSide { msNone     = 0x00 ///< <tt>0x00</tt> no margin
 Q_DECLARE_FLAGS(MarginSides, MarginSide)
 
 /*!
-  Defines the symbol used for scatter points.
-  
-  On plottables/items that draw scatters, the sizes of these visualizations (with exception of \ref
-  QCP::ssDot and \ref QCP::ssPixmap) can be controlled with a \a setScatterSize function. Scatters
-  are in general drawn with the main pen set on the plottable/item.
-  
-  \see QCPGraph::setScatterStyle, QCPStatisticalBox::setOutlierStyle
-*/
-enum ScatterStyle { ssNone       ///< \enumimage{ssNone.png} no scatter symbols are drawn (e.g. in QCPGraph, data only represented with lines)
-                    ,ssDot       ///< \enumimage{ssDot.png} a single pixel (use \ref ssDisc if you want a round shape with a certain radius)
-                    ,ssCross     ///< \enumimage{ssCross.png} a cross
-                    ,ssPlus      ///< \enumimage{ssPlus.png} a plus
-                    ,ssCircle    ///< \enumimage{ssCircle.png} a circle which is not filled
-                    ,ssDisc      ///< \enumimage{ssDisc.png} a circle which is filled with the color of the pen (not the brush!)
-                    ,ssSquare    ///< \enumimage{ssSquare.png} a square which is not filled
-                    ,ssDiamond   ///< \enumimage{ssDiamond.png} a diamond which is not filled
-                    ,ssStar      ///< \enumimage{ssStar.png} a star with eight arms, i.e. a combination of cross and plus
-                    ,ssTriangle  ///< \enumimage{ssTriangle.png} an equilateral triangle which is not filled, standing on baseline
-                    ,ssTriangleInverted ///< \enumimage{ssTriangleInverted.png} an equilateral triangle which is not filled, standing on corner
-                    ,ssCrossSquare      ///< \enumimage{ssCrossSquare.png} a square which is not filled, with a cross inside
-                    ,ssPlusSquare       ///< \enumimage{ssPlusSquare.png} a square which is not filled, with a plus inside
-                    ,ssCrossCircle      ///< \enumimage{ssCrossCircle.png} a circle which is not filled, with a cross inside
-                    ,ssPlusCircle       ///< \enumimage{ssPlusCircle.png} a circle which is not filled, with a plus inside
-                    ,ssPeace     ///< \enumimage{ssPeace.png} a circle which is not filled, with one vertical and two downward diagonal lines
-                    ,ssPixmap    ///< \enumimage{ssPixmap.png} a custom pixmap specified by setScatterPixmap, centered on the data point coordinates
-                  };
-
-/*!
   Defines what elements of a plot can be forcibly drawn antialiased/not antialiased. If an
   element is neither forcibly drawn antialiased nor forcibly drawn not antialiased, it is up to
   the respective element how it is drawn. Typically it provides a \a setAntialiased function for

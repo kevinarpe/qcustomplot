@@ -28,6 +28,7 @@
 #include "../global.h"
 #include "../range.h"
 #include "../plottable.h"
+#include "../painter.h"
 
 class QCPPainter;
 class QCPAxis;
@@ -51,9 +52,7 @@ public:
   QPen whiskerPen() const { return mWhiskerPen; }
   QPen whiskerBarPen() const { return mWhiskerBarPen; }
   QPen medianPen() const { return mMedianPen; }
-  double outlierSize() const { return mOutlierSize; }
-  QPen outlierPen() const { return mOutlierPen; }
-  QCP::ScatterStyle outlierStyle() const { return mOutlierStyle; }
+  QCPScatterStyle outlierStyle() const { return mOutlierStyle; }
 
   // setters:
   void setKey(double key);
@@ -69,9 +68,7 @@ public:
   void setWhiskerPen(const QPen &pen);
   void setWhiskerBarPen(const QPen &pen);
   void setMedianPen(const QPen &pen);
-  void setOutlierSize(double pixels);
-  void setOutlierPen(const QPen &pen);
-  void setOutlierStyle(QCP::ScatterStyle style);
+  void setOutlierStyle(const QCPScatterStyle &style);
   
   // non-property methods:
   virtual void clearData();
@@ -82,9 +79,8 @@ protected:
   double mKey, mMinimum, mLowerQuartile, mMedian, mUpperQuartile, mMaximum;
   double mWidth;
   double mWhiskerWidth;
-  double mOutlierSize;
-  QPen mWhiskerPen, mWhiskerBarPen, mOutlierPen, mMedianPen;
-  QCP::ScatterStyle mOutlierStyle;
+  QPen mWhiskerPen, mWhiskerBarPen, mMedianPen;
+  QCPScatterStyle mOutlierStyle;
   
   virtual void draw(QCPPainter *painter);
   virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;

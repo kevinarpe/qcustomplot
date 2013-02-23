@@ -24,7 +24,6 @@
 
 #include "plottable-curve.h"
 
-#include "../painter.h"
 #include "../core.h"
 #include "../axis.h"
 
@@ -115,8 +114,7 @@ QCPCurve::QCPCurve(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   mSelectedPen.setColor(QColor(80, 80, 255)); // lighter than Qt::blue of mPen
   mSelectedBrush = mBrush;
   
-  setScatterSize(6);
-  setScatterStyle(QCP::ssNone);
+  setScatterStyle(QCPScatterStyle());
   setLineStyle(lsLine);
 }
 
@@ -187,36 +185,13 @@ void QCPCurve::setData(const QVector<double> &key, const QVector<double> &value)
 }
 
 /*! 
-  Sets the visual appearance of single data points in the plot. If set to \ref QCP::ssNone, no scatter points
+  Sets the visual appearance of single data points in the plot. If set to \ref QCPScatterStyle::ssNone, no scatter points
   are drawn (e.g. for line-only-plots with appropriate line style).
-  \see ScatterStyle, setLineStyle
+  \see QCPScatterStyle, setLineStyle
 */
-void QCPCurve::setScatterStyle(QCP::ScatterStyle style)
+void QCPCurve::setScatterStyle(const QCPScatterStyle &style)
 {
   mScatterStyle = style;
-}
-
-/*! 
-  This defines how big (in pixels) single scatters are drawn, if scatter style (\ref
-  setScatterStyle) isn't \ref QCP::ssNone, \ref QCP::ssDot or \ref QCP::ssPixmap. Floating point values are
-  allowed for fine grained control over optical appearance with antialiased painting.
-  
-  \see ScatterStyle
-*/
-void QCPCurve::setScatterSize(double size)
-{
-  mScatterSize = size;
-}
-
-/*! 
-  If the scatter style (\ref setScatterStyle) is set to ssPixmap, this function defines the QPixmap
-  that will be drawn centered on the data point coordinate.
-  
-  \see ScatterStyle
-*/
-void QCPCurve::setScatterPixmap(const QPixmap &pixmap)
-{
-  mScatterPixmap = pixmap;
 }
 
 /*!
@@ -424,7 +399,7 @@ void QCPCurve::draw(QCPPainter *painter)
   }
   
   // draw scatters:
-  if (mScatterStyle != QCP::ssNone)
+  if (!mScatterStyle.isNone())
     drawScatterPlot(painter, lineData);
   
   // free allocated line data:
@@ -448,18 +423,21 @@ void QCPCurve::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
     painter->drawLine(QLineF(rect.left(), rect.top()+rect.height()/2.0, rect.right()+5, rect.top()+rect.height()/2.0)); // +5 on x2 else last segment is missing from dashed/dotted pens
   }
   // draw scatter symbol:
-  if (mScatterStyle != QCP::ssNone)
+  if (!mScatterStyle.isNone())
   {
     applyScattersAntialiasingHint(painter);
-    painter->setPen(mPen);
-    if (mScatterStyle == QCP::ssPixmap)
+    // TODO: draw shrinked scatter pixmap if necessary
+    /*
+    if (mScatterStyle.shape() == QCPScatterStyle::ssPixmap)
     {
-      if (mScatterPixmap.size().width() > rect.width() || mScatterPixmap.size().height() > rect.height()) // scale scatter pixmap if it's too large to fit in legend icon rect
-        painter->setScatterPixmap(mScatterPixmap.scaled(rect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+      if (mScatterStyle.pixmap().size().width() > rect.width() || mScatterStyle.pixmap().size().height() > rect.height()) // scale scatter pixmap if it's too large to fit in legend icon rect
+        painter->setScatterPixmap(mScatterStyle.pixmap().scaled(rect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
       else
         painter->setScatterPixmap(mScatterPixmap);
     }
-    painter->drawScatter(QRectF(rect).center().x(), QRectF(rect).center().y(), mScatterSize, mScatterStyle);
+    */
+    mScatterStyle.applyTo(painter, mPen);
+    mScatterStyle.drawShape(painter, QRectF(rect).center());
   }
 }
 
@@ -472,11 +450,9 @@ void QCPCurve::drawScatterPlot(QCPPainter *painter, const QVector<QPointF> *poin
 {
   // draw scatter point symbols:
   applyScattersAntialiasingHint(painter);
-  painter->setPen(mainPen());
-  painter->setBrush(mainBrush());
-  painter->setScatterPixmap(mScatterPixmap);
+  mScatterStyle.applyTo(painter, mPen);
   for (int i=0; i<pointData->size(); ++i)
-    painter->drawScatter(pointData->at(i).x(), pointData->at(i).y(), mScatterSize, mScatterStyle);
+    mScatterStyle.drawShape(painter,  pointData->at(i));
 }
 
 /*! \internal
@@ -645,7 +621,7 @@ double QCPCurve::pointDistance(const QPointF &pixelPoint) const
 */
 QPointF QCPCurve::outsideCoordsToPixels(double key, double value, int region, QRect axisRect) const
 {
-  int margin = qCeil(qMax(mScatterSize, (double)mPen.widthF())) + 2;
+  int margin = qCeil(qMax(mScatterStyle.size(), (double)mPen.widthF())) + 2;
   QPointF result = coordsToPixels(key, value);
   switch (region)
   {

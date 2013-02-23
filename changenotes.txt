@@ -7,6 +7,9 @@
     - setMarginLeft/Right/Top/Bottom removed due to the axis rect changes (see QCPAxisRect::setMargins)
     - setAxisRect removed due to the axis rect changes
     - setAxisBackground(-Scaled/-ScaledMode) now moved to QCPAxisRect as setBackground(-Scaled/ScaledMode) (access via QCustomPlot::axisRects())
+    - QCPScatterStyle takes over everything related to handling scatters in all plottables
+    - removed setScatterPen/Size on QCPGraph and QCPCurve, removed setOutlierPen/Size on QCPStatisticalBox (now handled via QCPScatterStyle)
+    - modified setScatterStyle on QCPGraph and QCPCurve, and setOutlierStyle on QCPStatisticalBox, to take QCPScatterStyle
 
   Added features:
     - classes QCPAxisRect, QCPLayout, QCPLayoutGrid, QCPLayoutElement
@@ -22,6 +25,8 @@
     - Added QCPAxisRect::setMinimumMargins as replacement for hardcoded minimum axis margin (15 px) when auto margin is enabled
     - Added Flags type QCPAxis::AxisTypes (from QCPAxis::AxisType), used in QCPAxisRect interface
     - QCPAxis and QCPAxisRect now allow easy access to all plottables(), graphs() and items() that are associated with them
+    - Custom scatter style via QCP::ssCustom and respective setCustomScatter functions that take a QPainterPath
+    - Filled scatters via setScatterBrush (in analogy to setScatterPen)
 
   Bugfixes:
     - Fixed compile error on ARM

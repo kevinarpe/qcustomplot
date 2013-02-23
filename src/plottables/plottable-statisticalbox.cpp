@@ -24,7 +24,6 @@
 
 #include "plottable-statisticalbox.h"
 
-#include "../painter.h"
 #include "../core.h"
 #include "../axis.h"
 
@@ -102,8 +101,7 @@ QCPStatisticalBox::QCPStatisticalBox(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   mUpperQuartile(0),
   mMaximum(0)
 {
-  setOutlierStyle(QCP::ssCircle);
-  setOutlierSize(5);
+  setOutlierStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, 6));
   setWhiskerWidth(0.2);
   setWidth(0.5);
   
@@ -112,7 +110,6 @@ QCPStatisticalBox::QCPStatisticalBox(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   setMedianPen(QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
   setWhiskerPen(QPen(Qt::black, 0, Qt::DashLine, Qt::FlatCap));
   setWhiskerBarPen(QPen(Qt::black));
-  setOutlierPen(QPen(Qt::blue));
   setBrush(Qt::NoBrush);
   setSelectedBrush(Qt::NoBrush);
 }
@@ -266,31 +263,11 @@ void QCPStatisticalBox::setMedianPen(const QPen &pen)
 }
 
 /*!
-  Sets the pixel size of the scatter symbols that represent the outlier data points.
-  
-  \see setOutlierPen, setOutliers
-*/
-void QCPStatisticalBox::setOutlierSize(double pixels)
-{
-  mOutlierSize = pixels;
-}
-
-/*!
-  Sets the pen used to draw the outlier data points.
-  
-  \see setOutlierSize, setOutliers
-*/
-void QCPStatisticalBox::setOutlierPen(const QPen &pen)
-{
-  mOutlierPen = pen;
-}
-
-/*!
   Sets the scatter style of the outlier data points.
   
   \see setOutlierSize, setOutlierPen, setOutliers
 */
-void QCPStatisticalBox::setOutlierStyle(QCP::ScatterStyle style)
+void QCPStatisticalBox::setOutlierStyle(const QCPScatterStyle &style)
 {
   mOutlierStyle = style;
 }
@@ -427,13 +404,9 @@ void QCPStatisticalBox::drawWhiskers(QCPPainter *painter) const
 void QCPStatisticalBox::drawOutliers(QCPPainter *painter) const
 {
   applyScattersAntialiasingHint(painter);
-  painter->setPen(mOutlierPen);
-  painter->setBrush(Qt::NoBrush);
+  mOutlierStyle.applyTo(painter, mPen);
   for (int i=0; i<mOutliers.size(); ++i)
-  {
-    QPointF dataPoint = coordsToPixels(mKey, mOutliers.at(i));
-    painter->drawScatter(dataPoint.x(), dataPoint.y(), mOutlierSize, mOutlierStyle);
-  }
+    mOutlierStyle.drawShape(painter, coordsToPixels(mKey, mOutliers.at(i)));
 }
 
 /* inherits documentation from base class */

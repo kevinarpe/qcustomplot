@@ -28,6 +28,7 @@
 #include "../global.h"
 #include "../range.h"
 #include "../plottable.h"
+#include "../painter.h"
 
 class QCPPainter;
 class QCPAxis;
@@ -89,9 +90,7 @@ public:
   // getters:
   const QCPDataMap *data() const { return mData; }
   LineStyle lineStyle() const { return mLineStyle; }
-  QCP::ScatterStyle scatterStyle() const { return mScatterStyle; }
-  double scatterSize() const { return mScatterSize; }
-  const QPixmap scatterPixmap() const { return mScatterPixmap; }
+  QCPScatterStyle scatterStyle() const { return mScatterStyle; }
   ErrorType errorType() const { return mErrorType; }
   QPen errorPen() const { return mErrorPen; }
   double errorBarSize() const { return mErrorBarSize; }
@@ -108,9 +107,7 @@ public:
   void setDataBothError(const QVector<double> &key, const QVector<double> &value, const QVector<double> &keyError, const QVector<double> &valueError);
   void setDataBothError(const QVector<double> &key, const QVector<double> &value, const QVector<double> &keyErrorMinus, const QVector<double> &keyErrorPlus, const QVector<double> &valueErrorMinus, const QVector<double> &valueErrorPlus);
   void setLineStyle(LineStyle ls);
-  void setScatterStyle(QCP::ScatterStyle ss);
-  void setScatterSize(double size);
-  void setScatterPixmap(const QPixmap &pixmap);
+  void setScatterStyle(const QCPScatterStyle &style);
   void setErrorType(ErrorType errorType);
   void setErrorPen(const QPen &pen);
   void setErrorBarSize(double size);
@@ -139,9 +136,7 @@ protected:
   QCPDataMap *mData;
   QPen mErrorPen;
   LineStyle mLineStyle;
-  QCP::ScatterStyle mScatterStyle;
-  double mScatterSize;
-  QPixmap mScatterPixmap;
+  QCPScatterStyle mScatterStyle;
   ErrorType mErrorType;
   double mErrorBarSize;
   bool mErrorBarSkipSymbol;

@@ -29,24 +29,79 @@
 
 class QCPPainter;
 
-class QCP_LIB_DECL QCPScatterPainter
+class QCP_LIB_DECL QCPScatterStyle
 {
 public:
-  QCPScatterPainter() {}
-  virtual ~QCPScatterPainter() {}
-  virtual void drawScatter(QCPPainter *painter, double x, double y, double size, QCP::ScatterStyle style);
+  /*!
+    Defines the shape used for scatter points.
+
+    On plottables/items that draw scatters, the sizes of these visualizations (with exception of
+    \ref sDot and \ref sPixmap) can be controlled with the \a setSize function. Scatters are drawn
+    with the pen and brush specified with \ref setPen and \ref setBrush.
+
+    \see QCPGraph::setScatterStyle, QCPStatisticalBox::setOutlierStyle
+  */
+  enum ScatterShape { ssNone       ///< \enumimage{ssNone.png} no scatter symbols are drawn (e.g. in QCPGraph, data only represented with lines)
+                      ,ssDot       ///< \enumimage{ssDot.png} a single pixel (use \ref ssDisc or \ref ssCircle if you want a round shape with a certain radius)
+                      ,ssCross     ///< \enumimage{ssCross.png} a cross
+                      ,ssPlus      ///< \enumimage{ssPlus.png} a plus
+                      ,ssCircle    ///< \enumimage{ssCircle.png} a circle
+                      ,ssDisc      ///< \enumimage{ssDisc.png} a circle which is filled with the pen (not the brush as ssCircle)
+                      ,ssSquare    ///< \enumimage{ssSquare.png} a square
+                      ,ssDiamond   ///< \enumimage{ssDiamond.png} a diamond
+                      ,ssStar      ///< \enumimage{ssStar.png} a star with eight arms, i.e. a combination of cross and plus
+                      ,ssTriangle  ///< \enumimage{ssTriangle.png} an equilateral triangle which is not filled, standing on baseline
+                      ,ssTriangleInverted ///< \enumimage{ssTriangleInverted.png} an equilateral triangle which is not filled, standing on corner
+                      ,ssCrossSquare      ///< \enumimage{ssCrossSquare.png} a square which is not filled, with a cross inside
+                      ,ssPlusSquare       ///< \enumimage{ssPlusSquare.png} a square which is not filled, with a plus inside
+                      ,ssCrossCircle      ///< \enumimage{ssCrossCircle.png} a circle which is not filled, with a cross inside
+                      ,ssPlusCircle       ///< \enumimage{ssPlusCircle.png} a circle which is not filled, with a plus inside
+                      ,ssPeace     ///< \enumimage{ssPeace.png} a circle which is not filled, with one vertical and two downward diagonal lines
+                      ,ssPixmap    ///< \enumimage{ssPixmap.png} a custom pixmap specified by setScatterPixmap, centered on the data point coordinates
+                      ,ssCustom    ///< \enumimage{ssCustom.png} custom painter operations are performed per scatter (As QPainterPath, see \ref setCustomPath)
+                    };
+
+  QCPScatterStyle();
+  QCPScatterStyle(ScatterShape shape, double size=6);
+  QCPScatterStyle(ScatterShape shape, const QColor &color, double size);
+  QCPScatterStyle(ScatterShape shape, const QColor &color, const QColor &fill, double size);
+  QCPScatterStyle(ScatterShape shape, const QPen &pen, const QBrush &brush, double size);
+  QCPScatterStyle(const QPixmap &pixmap);
+  QCPScatterStyle(const QPainterPath &customPath, const QPen &pen, const QBrush &brush=Qt::NoBrush, double size=6);
+
+  // getters:
+  double size() const { return mSize; }
+  ScatterShape shape() const { return mShape; }
+  QPen pen() const { return mPen; }
+  QBrush brush() const { return mBrush; }
+  QPixmap pixmap() const { return mPixmap; }
+  QPainterPath customPath() const { return mCustomPath; }
+
+  // setters:
+  void setSize(double size);
+  void setShape(ScatterShape shape);
+  void setPen(const QPen &pen);
+  void setBrush(const QBrush &brush);
+  void setPixmap(const QPixmap &pixmap);
+  void setCustomPath(const QPainterPath &customPath);
+
+  // non-property methods:
+  bool isNone() const { return mShape == ssNone; }
+  bool isPenDefined() const { return mPenDefined; }
+  void applyTo(QCPPainter *painter, const QPen &defaultPen) const;
+  void drawShape(QCPPainter *painter, QPointF pos) const;
+  void drawShape(QCPPainter *painter, double x, double y) const;
 
 protected:
-  QPixmap mScatterPixmap;
+  bool mPenDefined;
+  double mSize;
+  ScatterShape mShape;
+  QPen mPen;
+  QBrush mBrush;
+  QPixmap mPixmap;
+  QPainterPath mCustomPath;
 };
 
-class QCP_LIB_DECL QCPScatterPainter2 : public QCPScatterPainter
-{
-public:
-  QCPScatterPainter2() {}
-  virtual ~QCPScatterPainter2() {}
-  virtual void drawScatter(QCPPainter *painter, double x, double y, double size, QCP::ScatterStyle style);
-};
 
 class QCP_LIB_DECL QCPPainter : public QPainter
 {
@@ -69,16 +124,14 @@ public:
   ~QCPPainter();
   
   // getters:
-  QPixmap scatterPixmap() const { return mScatterPixmap; }
   bool antialiasing() const { return testRenderHint(QPainter::Antialiasing); }
   PainterModes modes() const { return mModes; }
-  
+
   // setters:
-  void setScatterPixmap(const QPixmap pm);
   void setAntialiasing(bool enabled);
   void setMode(PainterMode mode, bool enabled=true);
   void setModes(PainterModes modes);
- 
+
   // methods hiding non-virtual base class functions (QPainter bug workarounds):
   void setPen(const QPen &pen);
   void setPen(const QColor &color);
@@ -90,15 +143,11 @@ public:
 
   // helpers:
   void fixScaledPen();
-  void prepareScatter();
-  void drawScatter(double x, double y, double size, QCP::ScatterStyle style);
   
 protected:
   PainterModes mModes;
-  QPixmap mScatterPixmap;
   bool mIsAntialiasing;
   QStack<bool> mAntialiasingStack;
-  QCPScatterPainter *mScatterPainter;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPPainter::PainterModes)
 
