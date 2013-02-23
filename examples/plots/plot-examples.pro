@@ -13,7 +13,5 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h \
          ../../qcustomplot.h
 
-LIBS += ../../../../libs/timer/src/Timer.o
-
 FORMS    += mainwindow.ui
 

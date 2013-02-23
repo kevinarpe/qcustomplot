@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(400, 250, 542, 390);
   
-  setupDemo(0);
+  setupDemo(8);
   //setupPlayground(ui->customPlot);
   // 0:  setupQuadraticDemo(ui->customPlot);
   // 1:  setupSimpleDemo(ui->customPlot);
@@ -194,8 +194,7 @@ void MainWindow::setupSincScatterDemo(QCustomPlot *customPlot)
   customPlot->addGraph();
   customPlot->graph(3)->setPen(QPen(Qt::blue));
   customPlot->graph(3)->setLineStyle(QCPGraph::lsNone);
-  customPlot->graph(3)->setScatterStyle(QCP::ssCross);
-  customPlot->graph(3)->setScatterSize(4);
+  customPlot->graph(3)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, 4));
   customPlot->graph(3)->setErrorType(QCPGraph::etValue);
   customPlot->graph(3)->setErrorPen(QPen(QColor(180,180,180)));
   customPlot->graph(3)->setName("Measurement");
@@ -254,21 +253,20 @@ void MainWindow::setupScatterStyleDemo(QCustomPlot *customPlot)
                << "ssCrossSquare" << "ssPlusSquare" << "ssCrossCircle"
                << "ssPlusCircle" << "ssPeace";
   // add graphs with different scatter styles:
-  for (int i=QCP::ssCross; i<=QCP::ssPeace; ++i)
+  for (int i=QCPScatterStyle::ssCross; i<=QCPScatterStyle::ssPeace; ++i)
   {
     customPlot->addGraph();
     pen.setColor(QColor(sin(i*0.3)*100+100, sin(i*0.6+0.7)*100+100, sin(i*0.4+0.6)*100+100));
     customPlot->graph()->setPen(pen);
-    customPlot->graph()->setName(scatterNames.at(i-QCP::ssCross));
+    customPlot->graph()->setName(scatterNames.at(i-QCPScatterStyle::ssCross));
     customPlot->graph()->setLineStyle(QCPGraph::lsLine);
-    customPlot->graph()->setScatterStyle((QCP::ScatterStyle)i);
-    customPlot->graph()->setScatterSize(10);
+    customPlot->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)i, 10));
     // generate data:
     QVector<double> x(10), y(10);
     for (int j=0; j<10; ++j)
     {
       x[j] = j/10.0 * 4*3.14 + 0.01;
-      y[j] = 7*sin(x[j])/x[j] + (i-QCP::ssCross)*5;
+      y[j] = 7*sin(x[j])/x[j] + (i-QCPScatterStyle::ssCross)*5;
     }
     customPlot->graph()->setData(x, y);
     customPlot->graph()->rescaleAxes(true);
@@ -302,8 +300,7 @@ void MainWindow::setupLineStyleDemo(QCustomPlot *customPlot)
     customPlot->graph()->setPen(pen);
     customPlot->graph()->setName(lineNames.at(i-QCPGraph::lsNone));
     customPlot->graph()->setLineStyle((QCPGraph::LineStyle)i);
-    customPlot->graph()->setScatterStyle(QCP::ssCircle);
-    customPlot->graph()->setScatterSize(5);
+    customPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
     // generate data:
     QVector<double> x(15), y(15);
     for (int j=0; j<15; ++j)
@@ -338,8 +335,7 @@ void MainWindow::setupScatterPixmapDemo(QCustomPlot *customPlot)
   pen.setWidthF(2.5);
   customPlot->graph()->setPen(pen);
   customPlot->graph()->setBrush(QBrush(QColor(255,200,20,70)));
-  customPlot->graph()->setScatterStyle(QCP::ssPixmap);
-  customPlot->graph()->setScatterPixmap(QPixmap("./sun.png"));
+  customPlot->graph()->setScatterStyle(QCPScatterStyle(QPixmap("./sun.png")));
   // set graph name, will show up in legend next to icon:
   customPlot->graph()->setName("Data from Photovoltaic\nenergy barometer 2011");
   // set data:
@@ -498,8 +494,7 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
   customPlot->graph(0)->setPen(QPen(QColor(255, 100, 0)));
   customPlot->graph(0)->setBrush(QBrush(QPixmap("./dali.png"))); // fill with texture of specified png-image
   customPlot->graph(0)->setLineStyle(QCPGraph::lsLine);
-  customPlot->graph(0)->setScatterStyle(QCP::ssDisc);
-  customPlot->graph(0)->setScatterSize(5);
+  customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
   customPlot->graph(0)->setName("Left maxwell function");
   
   // setup for graph 1: key axis bottom, value axis left (those are the default axes)
@@ -508,7 +503,7 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
   customPlot->graph(1)->setPen(QPen(Qt::red));
   customPlot->graph(1)->setBrush(QBrush(QPixmap("./dali.png"))); // same fill as we used for graph 0
   customPlot->graph(1)->setLineStyle(QCPGraph::lsStepCenter);
-  customPlot->graph(1)->setScatterStyle(QCP::ssCircle);
+  customPlot->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
   customPlot->graph(1)->setErrorType(QCPGraph::etValue);
   customPlot->graph(1)->setName("Bottom maxwell function");
   
@@ -533,8 +528,7 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
   customPlot->addGraph(customPlot->yAxis2, customPlot->xAxis2);
   customPlot->graph(4)->setPen(QColor(50, 50, 50, 255));
   customPlot->graph(4)->setLineStyle(QCPGraph::lsNone);
-  customPlot->graph(4)->setScatterStyle(QCP::ssPlus);
-  customPlot->graph(4)->setScatterSize(4);
+  customPlot->graph(4)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 4));
   customPlot->graph(4)->setName("Some random data around\na quadratic function");
   
   // generate data, just playing with numbers, not much to learn here:
@@ -707,11 +701,11 @@ void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot)
   customPlot->addGraph(); // blue dot
   customPlot->graph(2)->setPen(QPen(Qt::blue));
   customPlot->graph(2)->setLineStyle(QCPGraph::lsNone);
-  customPlot->graph(2)->setScatterStyle(QCP::ssDisc);
+  customPlot->graph(2)->setScatterStyle(QCPScatterStyle::ssDisc);
   customPlot->addGraph(); // red dot
   customPlot->graph(3)->setPen(QPen(Qt::red)); 
   customPlot->graph(3)->setLineStyle(QCPGraph::lsNone);
-  customPlot->graph(3)->setScatterStyle(QCP::ssDisc);
+  customPlot->graph(3)->setScatterStyle(QCPScatterStyle::ssDisc);
   
   customPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
   customPlot->xAxis->setDateTimeFormat("hh:mm:ss");
