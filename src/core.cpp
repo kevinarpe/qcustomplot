@@ -448,7 +448,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   QCPAxisRect *defaultAxisRect = new QCPAxisRect(this);
   defaultAxisRect->setBackgroundScaled(true);
   defaultAxisRect->setBackgroundScaledMode(Qt::KeepAspectRatioByExpanding);
-  qobject_cast<QCPLayoutGrid*>(mPlotLayout)->addElement(0, 0, defaultAxisRect);
+  mPlotLayout->addElement(0, 0, defaultAxisRect);
   yAxis = defaultAxisRect->addAxis(QCPAxis::atLeft);
   yAxis2 = defaultAxisRect->addAxis(QCPAxis::atRight);
   xAxis2 = defaultAxisRect->addAxis(QCPAxis::atTop);
@@ -471,12 +471,6 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   
   setNoAntialiasingOnDrag(false);
   setAutoAddPlottableToLegend(true);
-  setTitleFont(QFont(font().family(), 14, QFont::Bold));
-  setTitleColor(Qt::black);
-  setSelectedTitleFont(QFont(font().family(), 14, QFont::Bold));
-  setSelectedTitleColor(Qt::blue);
-  setTitleSelected(false);
-  setTitle("");
   setColor(Qt::white);
   
 #ifdef Q_WS_WIN
@@ -493,7 +487,6 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   setRangeZoomFactor(0.85);
   setSelectionTolerance(8);
   
-  setAutoMargin(true);
   replot();
 }
 
@@ -544,48 +537,6 @@ QCPAxis *QCustomPlot::rangeZoomAxis(Qt::Orientation orientation)
 double QCustomPlot::rangeZoomFactor(Qt::Orientation orientation)
 {
   return (orientation == Qt::Horizontal ? mRangeZoomFactorHorz : mRangeZoomFactorVert);
-}
-
-/*!
-  Sets the plot title which will be drawn centered at the top of the widget.
-  The title position is not dependant on the actual position of the axes. However, if
-  \ref setAutoMargin is set to true, the top margin will be adjusted appropriately,
-  so the top axis labels/tick labels will not overlap with the title.
-  
-  \see setTitleFont, setTitleColor
-*/
-void QCustomPlot::setTitle(const QString &title)
-{
-  mTitle = title;
-}
-
-/*!
-  Sets the font of the plot title
-  \see setTitleColor, setTitle
-*/
-void QCustomPlot::setTitleFont(const QFont &font)
-{
-  mTitleFont = font;
-}
-
-/*!
-  Sets the text color of the plot title
-  \see setTitleFont, setTitle
-*/
-void QCustomPlot::setTitleColor(const QColor &color)
-{
-  mTitleColor = color;
-}
-
-/*!
-  Sets whether the margins are calculated automatically depeding on the sizes
-  of the tick labels, axis labels, paddings etc.
-  If disabled, the margins must be set manually with the \a setMargin functions.
-  \see setMargin, QCPAxis::setLabelPadding, QCPAxis::setTickLabelPadding
-*/
-void QCustomPlot::setAutoMargin(bool enabled)
-{
-  mAutoMargin = enabled;
 }
 
 /*!
@@ -892,36 +843,6 @@ void QCustomPlot::setInteraction(const QCustomPlot::Interaction &interaction, bo
 void QCustomPlot::setSelectionTolerance(int pixels)
 {
   mSelectionTolerance = pixels;
-}
-
-/*!
-  This \a font is used to draw the title, when it is selected.
-  
-  \see setTitleSelected, setTitleFont
-*/
-void QCustomPlot::setSelectedTitleFont(const QFont &font)
-{
-  mSelectedTitleFont = font;
-}
-
-/*!
-  This \a color is used to draw the title, when it is selected.
-  
-  \see setTitleSelected, setTitleColor
-*/
-void QCustomPlot::setSelectedTitleColor(const QColor &color)
-{
-  mSelectedTitleColor = color;
-}
-
-/*!
-  Sets whether the plot title is selected.
-  
-  \see setInteractions, setSelectedTitleFont, setSelectedTitleColor, setTitle
-*/
-void QCustomPlot::setTitleSelected(bool selected)
-{
-  mTitleSelected = selected;
 }
 
 /*!
@@ -1785,15 +1706,34 @@ QList<QCPAxis*> QCustomPlot::selectedAxes() const
 */
 QList<QCPLegend*> QCustomPlot::selectedLegends() const
 {
-  /* for now, we only have the one legend. Maybe later, there will be a mechanism to have more. */
   QList<QCPLegend*> result;
-  if (legend->selected() != QCPLegend::spNone)
-    result.append(legend);
+  
+  QStack<QCPLayoutElement*> elementStack;
+  if (mPlotLayout)
+    elementStack.push(mPlotLayout);
+  
+  while (!elementStack.isEmpty())
+  {
+    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements();
+    for (int i=0; i<subElements.size(); ++i)
+    {
+      if (QCPLayoutElement *element = subElements.at(i))
+      {
+        elementStack.push(element);
+        if (QCPLegend *leg = qobject_cast<QCPLegend*>(element))
+        {
+          if (leg->selected() != QCPLegend::spNone)
+            result.append(leg);
+        }
+      }
+    }
+  }
+  
   return result;
 }
 
 /*!
-  Deselects everything in the QCustomPlot (plottables, items, axes, legend and title).
+  Deselects plottables, items, axes and legends of the QCustomPlot.
   
   Since calling this function is not a user interaction, this does not emit the \ref
   selectionChangedByUser signal. The individual selectionChanged signals are emitted though, if the
@@ -1818,11 +1758,10 @@ void QCustomPlot::deselectAll()
   for (int i=0; i<selAxes.size(); ++i)
     selAxes.at(i)->setSelected(QCPAxis::spNone);
   
-  // deselect legend (and legend items):
-  legend->setSelected(QCPLegend::spNone);
-  
-  // deselect title:
-  setTitleSelected(false);
+  // deselect legends (and their legend items):
+  QList<QCPLegend*> selLegends = selectedLegends();
+  for (int i=0; i<selLegends.size(); ++i)
+    selLegends.at(i)->setSelected(QCPLegend::spNone);
 }
 
 /*!
@@ -2206,15 +2145,6 @@ void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
       }
     }
   }
-  // for title:
-  if (!foundHit && receivers(SIGNAL(titleDoubleClick(QMouseEvent*))) > 0)
-  {
-    if (selectTestTitle(event->pos()))
-    {
-      emit titleDoubleClick(event);
-      foundHit = true;
-    }
-  }
 }
 
 /*! \internal
@@ -2335,7 +2265,7 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
   if ((mDragStart-event->pos()).manhattanLength() < 5) // was a click
   {
     // Mouse selection interaction:
-    if ((mInteractions & (iSelectPlottables|iSelectItems|iSelectAxes|iSelectLegend|iSelectTitle)) > 0 
+    if ((mInteractions & (iSelectPlottables|iSelectItems|iSelectAxes|iSelectLegend)) > 0 
         && event->button() == Qt::LeftButton)
     {
       bool selectionFound = false;
@@ -2353,10 +2283,7 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
       // Mouse selection of axes:
       if (mInteractions.testFlag(iSelectAxes))
         selectionFound |= handleAxisSelection((!selectionFound || additiveSelection) ? event : 0, additiveSelection, emitChangedSignal);
-      // Mouse selection of title:
-      if (mInteractions.testFlag(iSelectTitle))
-        selectionFound |= handleTitleSelection((!selectionFound || additiveSelection) ? event : 0, additiveSelection, emitChangedSignal);
-      
+
       if (emitChangedSignal)
         emit selectionChangedByUser();
       doReplot = true;
@@ -2404,15 +2331,6 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
           emit axisClick(axes.at(i), part, event);
           break;
         }
-      }
-    }
-    // for title:
-    if (!foundHit && receivers(SIGNAL(titleClick(QMouseEvent*))) > 0)
-    {
-      if (selectTestTitle(event->pos()))
-      {
-        emit titleClick(event);
-        foundHit = true;
       }
     }
   } // was a click end
@@ -2618,65 +2536,12 @@ bool QCustomPlot::handleAxisSelection(QMouseEvent *event, bool additiveSelection
 
 /*! \internal
   
-  Handles a mouse \a event for the title selection interaction. Returns true, when the title was
-  hit by the mouse event. The output variable \a modified is set to true when the selection state
-  of the title has changed.
-  
-  When \a additiveSelecton is true, any new selections become selected in addition to the recent
-  selections. The recent selections are not cleared. Further, clicking on one object multiple times
-  in additive selection mode, toggles the selection of that object on and off.
-  
-  To indicate that the title shall be deselected, pass 0 as \a event.
-*/
-bool QCustomPlot::handleTitleSelection(QMouseEvent *event, bool additiveSelection, bool &modified)
-{
-  bool selectionFound = false;
-  if (event && selectTestTitle(event->pos())) // hit, select title
-  {
-    selectionFound = true;
-    if (!titleSelected() || additiveSelection)
-    {
-      setTitleSelected(!titleSelected());
-      modified = true;
-    }
-  } else // no hit or event == 0, deselect title
-  {
-    if (titleSelected() && !additiveSelection)
-    {
-      setTitleSelected(false);
-      modified = true;
-    }
-  }
-  return selectionFound;
-}
-
-/*! \internal
-  
   This is the main draw function which first generates the tick vectors of all axes,
   calculates and applies appropriate margins if autoMargin is true and finally draws
   all elements with the passed \a painter. (axis background, title, subgrid, grid, axes, plottables)
 */
 void QCustomPlot::draw(QCPPainter *painter)
 {
-  // calculate title bounding box:
-  if (!mTitle.isEmpty())
-  {
-    painter->setFont(titleSelected() ? mSelectedTitleFont : mTitleFont);
-    mTitleBoundingBox = painter->fontMetrics().boundingRect(viewport(), Qt::TextDontClip | Qt::AlignHCenter, mTitle);
-  } else
-    mTitleBoundingBox = QRect();
-  
-  /*
-  QList<QCPAxisRect*> axisRectList = axisRects();
-  for (int i=0; i<axisRectList.size(); ++i)
-  {
-    // prepare values of ticks and tick strings on axes:
-    QList<QCPAxis*> axes = axisRectList.at(i)->axes();
-    for (int k=0; k<axes.size(); ++k)
-      axes.at(k)->setupTickVectors();
-  }
-  */
-  
   // recalculate layout (this also updates tick vectors on axes via QCPAxisRect::update):
   mPlotLayout->update();
   
@@ -2703,14 +2568,6 @@ void QCustomPlot::draw(QCPPainter *painter)
       }
     }
   }
-  
-  // draw title:
-  if (!mTitle.isEmpty())
-  {
-    painter->setFont(titleSelected() ? mSelectedTitleFont : mTitleFont);
-    painter->setPen(QPen(titleSelected() ? mSelectedTitleColor : mTitleColor));
-    painter->drawText(mTitleBoundingBox, Qt::TextDontClip | Qt::AlignHCenter, mTitle);
-  }
 }
 
 void QCustomPlot::axisRemoved(QCPAxis *axis)
@@ -2725,15 +2582,6 @@ void QCustomPlot::axisRemoved(QCPAxis *axis)
     yAxis2 = 0;
   
   // Note: No need to take care of range drag axes and range zoom axes, because they are stored in smart pointers
-}
-
-/*! \internal
-  
-  Returns whether the point \a pos in pixels hits the plot title.
-*/
-bool QCustomPlot::selectTestTitle(const QPointF &pos) const
-{
-  return mTitleBoundingBox.contains(pos.toPoint());
 }
 
 /*!

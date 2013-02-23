@@ -49,5 +49,6 @@
 #include "items/item-bracket.h"
 #include "layoutelements/layoutelement-axisrect.h"
 #include "layoutelements/layoutelement-legend.h"
+#include "layoutelements/layoutelement-plottitle.h"
 
 #endif // QCP_H

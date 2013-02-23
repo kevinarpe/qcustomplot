@@ -1,9 +1,11 @@
 ### axis refactoring (branch layoutsystem):
 
 > layout system
- > fix legend according to new system
- - Create QCPLayoutElement/QCPLayerable subclass that represents a plot title.
- - adapt QCustomPlot methods that were based on old axis system (handleAxisSelection and selectedAxes done)
+ > Create QCPLayoutElement/QCPLayerable subclass that represents a plot title.
+   - remove old title interface
+   - Find good way to insert elements in grid layout.
+   - Probably make top layout automatically cast to QCPLayoutGrid? Saves annoying cast everywhere
+ - adapt QCustomPlot methods that were based on old axis system (handleAxisSelection and selectedAxes done), e.g. virtual event reimplementations
  - possibly give every QCPLayoutElement a selectTest function (and then remove QCPLegend::selectTestLegend and probably adapt legend item selection mechanism) 
 
 - provide way to get the QCPAxisRect a QPoint is on.

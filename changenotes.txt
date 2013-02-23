@@ -4,7 +4,7 @@
     - QCustomPlot::axisRect() changed meaning due to the extensive changes to how axes and axis rects are handled
       it now returns a pointer to a QCPAxisRect and takes an integer index as parameter.
     - QCPAxis constructor changed to now take QCPAxisRect* as parent
-    - setMarginLeft/Right/Top/Bottom removed due to the axis rect changes (see QCPAxisRect::setMargins)
+    - setAutoMargin, setMarginLeft/Right/Top/Bottom removed due to the axis rect changes (see QCPAxisRect::setMargins/setAutoMargins)
     - setAxisRect removed due to the axis rect changes
     - setAxisBackground(-Scaled/-ScaledMode) now moved to QCPAxisRect as setBackground(-Scaled/ScaledMode) (access via QCustomPlot::axisRects())
     - QCPLegend now is a QCPLayoutElement
@@ -14,6 +14,8 @@
     - removed QCPLegend::setMinimumSize (now inherits the capability from QCPLayoutElement::setMinimumSize)
     - removed enum QCPLegend::PositionStyle, QCPLegend::positionStyle/setPositionStyle/position/setPosition (replaced by capabilities of QCPLayoutInset)
     - QCPLegend transformed to work with new layout system (almost everything changed)
+    - removed entire title interface: QCustomPlot::setTitle/setTitleFont/setTitleColor/setTitleSelected/setTitleSelectedFont/setTitleSelectedColor and
+      the QCustomPlot::iSelectTitle interaction flag (all functionality is now given by the layout element "QCPPlotTitle" which can be added to the plot layout)
 
   Added features:
     - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).
@@ -33,7 +35,7 @@
     - Multiple axes per QCPAxisRect side are now supported (see QCPAxisRect::addAxis)
     - Automatic margin calculation can now be enabled/disabled on a per-side basis, see QCPAxisRect::setAutoMargins
     - QCPAxisRect margins of multiple axis rects can be coupled via QCPMarginGroup
-    - Added new default layers "background" and "legend" (QCPAxisRect draws its background on the "background" layer, QCPLegend draws itself on the "legend" layer)
+    - Added new default layers "background" and "legend" (QCPAxisRect draws its background on the "background" layer, QCPLegend is on the "legend" layer by default)
 
   Bugfixes:
     - Fixed compile error on ARM

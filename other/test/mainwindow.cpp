@@ -545,6 +545,7 @@ void MainWindow::setupLegendTest(QCustomPlot *customPlot)
 {
   customPlot->legend->setVisible(true);
   //customPlot->legend->setMinimumSize(300, 150);
+  customPlot->axisRect()->setMinimumMargins(QMargins(15, 0, 15, 15));
   
   customPlot->addGraph()->setName("first graph");
   customPlot->addGraph()->setName("second longer graph");
@@ -555,6 +556,13 @@ void MainWindow::setupLegendTest(QCustomPlot *customPlot)
   customPlot->addGraph()->setName("yadayaasdda");
   customPlot->graph(3)->removeFromLegend();
   customPlot->graph(3)->addToLegend();
+  
+  QCPLayoutGrid *grid = customPlot->plotLayout();
+  grid->addElement(1, 0, grid->element(0, 0));
+  
+  QCPPlotTitle *title = new QCPPlotTitle(customPlot);
+  title->setText("This is a Plot Title");
+  grid->addElement(0, 0, title);
 }
 
 
@@ -566,7 +574,6 @@ void MainWindow::presetInteractive(QCustomPlot *customPlot)
                               QCustomPlot::iSelectItems|
                               QCustomPlot::iSelectLegend|
                               QCustomPlot::iSelectPlottables|
-                              QCustomPlot::iSelectTitle|
                               QCustomPlot::iMultiSelect);
   customPlot->setRangeDrag(Qt::Horizontal|Qt::Vertical);
   customPlot->setRangeZoom(Qt::Horizontal|Qt::Vertical);

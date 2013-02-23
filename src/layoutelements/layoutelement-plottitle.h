@@ -22,33 +22,63 @@
 **             Date: 09.06.12                                             **
 ****************************************************************************/
 
-#include "qcustomplot.h"
+#ifndef QCP_LAYOUTELEMENT_PLOTTITLE_H
+#define QCP_LAYOUTELEMENT_PLOTTITLE_H
 
-//amalgamation: place implementation includes
+#include "../global.h"
+#include "../layer.h"
+#include "../layout.h"
 
-//amalgamation: add painter.cpp
-//amalgamation: add layer.cpp
-//amalgamation: add range.cpp
-//amalgamation: add layout.cpp
-//amalgamation: add lineending.cpp
-//amalgamation: add axis.cpp
-//amalgamation: add plottable.cpp
-//amalgamation: add item.cpp
-//amalgamation: add core.cpp
-//amalgamation: add plottables/plottable-graph.cpp
-//amalgamation: add plottables/plottable-curve.cpp
-//amalgamation: add plottables/plottable-bars.cpp
-//amalgamation: add plottables/plottable-statisticalbox.cpp
-//amalgamation: add items/item-straightline.cpp
-//amalgamation: add items/item-line.cpp
-//amalgamation: add items/item-curve.cpp
-//amalgamation: add items/item-rect.cpp
-//amalgamation: add items/item-text.cpp
-//amalgamation: add items/item-ellipse.cpp
-//amalgamation: add items/item-pixmap.cpp
-//amalgamation: add items/item-tracer.cpp
-//amalgamation: add items/item-bracket.cpp
-//amalgamation: add layoutelements/layoutelement-axisrect.cpp
-//amalgamation: add layoutelements/layoutelement-legend.cpp
-//amalgamation: add layoutelements/layoutelement-plottitle.cpp
+class QCPPainter;
+class QCustomPlot;
 
+class QCP_LIB_DECL QCPPlotTitle : public QCPLayoutElement, public QCPLayerable
+{
+  Q_OBJECT
+public:
+  explicit QCPPlotTitle(QCustomPlot *parentPlot);
+  
+  // getters:
+  QString text() const { return mText; }
+  QFont font() const { return mFont; }
+  QColor textColor() const { return mTextColor; }
+  QFont selectedFont() const { return mSelectedFont; }
+  QColor selectedTextColor() const { return mSelectedTextColor; }
+  bool selectable() const { return mSelectable; }
+  bool selected() const { return mSelected; }
+  
+  // setters:
+  void setText(const QString &text);
+  void setFont(const QFont &font);
+  void setTextColor(const QColor &color);
+  void setSelectedFont(const QFont &font);
+  void setSelectedTextColor(const QColor &color);
+  void setSelectable(bool selectable);
+  void setSelected(bool selected);
+  
+signals:
+  void selectionChanged(bool selected);
+  
+protected:
+  QString mText;
+  QFont mFont;
+  QColor mTextColor;
+  QFont mSelectedFont;
+  QColor mSelectedTextColor;
+  bool mSelectable, mSelected;
+  
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
+  virtual void draw(QCPPainter *painter);
+  virtual QSize minimumSizeHint() const;
+  virtual QSize maximumSizeHint() const;
+  
+  QFont mainFont() const;
+  QColor mainTextColor() const;
+  
+private:
+  Q_DISABLE_COPY(QCPPlotTitle)
+};
+
+
+
+#endif // QCP_LAYOUTELEMENT_PLOTTITLE_H

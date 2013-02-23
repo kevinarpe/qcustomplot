@@ -40,8 +40,6 @@ class QCP_LIB_DECL QCustomPlot : public QWidget
 {
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
-  Q_PROPERTY(QString title READ title WRITE setTitle)
-  Q_PROPERTY(int autoMargin READ autoMargin WRITE setAutoMargin)
   Q_PROPERTY(QColor color READ color WRITE setColor)
   Q_PROPERTY(Qt::Orientations rangeDrag READ rangeDrag WRITE setRangeDrag)
   Q_PROPERTY(Qt::Orientations rangeZoom READ rangeZoom WRITE setRangeZoom)
@@ -56,11 +54,10 @@ public:
   enum Interaction { iRangeDrag         = 0x001 ///< <tt>0x001</tt> Axis ranges are draggable (see \ref setRangeDrag, \ref setRangeDragAxes)
                      ,iRangeZoom        = 0x002 ///< <tt>0x002</tt> Axis ranges are zoomable with the mouse wheel (see \ref setRangeZoom, \ref setRangeZoomAxes)
                      ,iMultiSelect      = 0x004 ///< <tt>0x004</tt> The user can select multiple objects by holding the modifier set by \ref setMultiSelectModifier while clicking
-                     ,iSelectTitle      = 0x008 ///< <tt>0x008</tt> The plot title is selectable
-                     ,iSelectPlottables = 0x010 ///< <tt>0x010</tt> Plottables are selectable
-                     ,iSelectAxes       = 0x020 ///< <tt>0x020</tt> Axes are selectable (or parts of them, see QCPAxis::setSelectable)
-                     ,iSelectLegend     = 0x040 ///< <tt>0x040</tt> Legends are selectable (or their child items, see QCPLegend::setSelectable)
-                     ,iSelectItems      = 0x080 ///< <tt>0x080</tt> Items are selectable (Rectangles, Arrows, Textitems, etc. see \ref QCPAbstractItem)
+                     ,iSelectPlottables = 0x008 ///< <tt>0x008</tt> Plottables are selectable
+                     ,iSelectAxes       = 0x010 ///< <tt>0x010</tt> Axes are selectable (or parts of them, see QCPAxis::setSelectable)
+                     ,iSelectLegend     = 0x020 ///< <tt>0x020</tt> Legends are selectable (or their child items, see QCPLegend::setSelectable)
+                     ,iSelectItems      = 0x040 ///< <tt>0x040</tt> Items are selectable (Rectangles, Arrows, Textitems, etc. see \ref QCPAbstractItem)
                    };
   Q_ENUMS(Interaction)
   Q_DECLARE_FLAGS(Interactions, Interaction)
@@ -78,12 +75,8 @@ public:
   virtual ~QCustomPlot();
   
   // getters:
-  QString title() const { return mTitle; }
-  QFont titleFont() const { return mTitleFont; }
-  QColor titleColor() const { return mTitleColor; }
   QRect viewport() const { return mViewport; }
-  QCPLayout *plotLayout() const { return mPlotLayout; }
-  bool autoMargin() const { return mAutoMargin; }
+  QCPLayoutGrid *plotLayout() const { return mPlotLayout; }
   QColor color() const { return mColor; }
   Qt::Orientations rangeDrag() const { return mRangeDrag; }
   Qt::Orientations rangeZoom() const { return mRangeZoom; }
@@ -95,19 +88,12 @@ public:
   bool autoAddPlottableToLegend() const { return mAutoAddPlottableToLegend; }
   const Interactions interactions() const { return mInteractions; }
   int selectionTolerance() const { return mSelectionTolerance; }
-  QFont selectedTitleFont() const { return mSelectedTitleFont; }
-  QColor selectedTitleColor() const { return mSelectedTitleColor; }
-  bool titleSelected() const { return mTitleSelected; }
   bool noAntialiasingOnDrag() const { return mNoAntialiasingOnDrag; }
   QCP::PlottingHints plottingHints() const { return mPlottingHints; }
   Qt::KeyboardModifier multiSelectModifier() const { return mMultiSelectModifier; }
 
   // setters:
-  void setTitle(const QString &title);
-  void setTitleFont(const QFont &font);
-  void setTitleColor(const QColor &color);
   void setViewport(const QRect &rect);
-  void setAutoMargin(bool enabled);
   void setColor(const QColor &color);
   void setRangeDrag(Qt::Orientations orientations);
   void setRangeZoom(Qt::Orientations orientations);
@@ -123,9 +109,6 @@ public:
   void setInteractions(const Interactions &interactions);
   void setInteraction(const Interaction &interaction, bool enabled=true);
   void setSelectionTolerance(int pixels);
-  void setSelectedTitleFont(const QFont &font);
-  void setSelectedTitleColor(const QColor &color);
-  void setTitleSelected(bool selected);
   void setNoAntialiasingOnDrag(bool enabled);
   void setPlottingHints(const QCP::PlottingHints &hints);
   void setPlottingHint(QCP::PlottingHint hint, bool enabled=true);
@@ -223,14 +206,10 @@ signals:
   void afterReplot();
   
 protected:
-  QString mTitle;
-  QFont mTitleFont, mSelectedTitleFont;
-  QColor mTitleColor, mSelectedTitleColor;
   QRect mViewport;
-  int mMarginLeft, mMarginRight, mMarginTop, mMarginBottom;
-  bool mAutoMargin, mAutoAddPlottableToLegend;
+  bool mAutoAddPlottableToLegend;
   QColor mColor;
-  QCPLayout *mPlotLayout;
+  QCPLayoutGrid *mPlotLayout;
   QList<QCPAbstractPlottable*> mPlottables;
   QList<QCPGraph*> mGraphs; // extra list of items also in mPlottables that are of type QCPGraph
   QList<QCPAbstractItem*> mItems;
@@ -242,8 +221,6 @@ protected:
   QCP::AntialiasedElements mAntialiasedElements, mNotAntialiasedElements;
   Interactions mInteractions;
   int mSelectionTolerance;
-  bool mTitleSelected;
-  QRect mTitleBoundingBox;
   bool mNoAntialiasingOnDrag;
   // not explicitly exposed properties:
   QPixmap mPaintBuffer;
@@ -270,14 +247,11 @@ protected:
   virtual bool handlePlottableSelection(QMouseEvent *event, bool additiveSelection, bool &modified);  
   virtual bool handleItemSelection(QMouseEvent *event, bool additiveSelection, bool &modified);  
   virtual bool handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified);
-  virtual bool handleTitleSelection(QMouseEvent *event, bool additiveSelection, bool &modified);
   
   // introduced methods:
   virtual void draw(QCPPainter *painter);
   virtual void axisRemoved(QCPAxis *axis);
   
-  // helpers:
-  bool selectTestTitle(const QPointF &pos) const;
   friend class QCPLegend;
   friend class QCPAxis;
   friend class QCPLayer;
