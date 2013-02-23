@@ -81,6 +81,7 @@ public:
   QPoint center() const { return mRect.center(); }
   
   virtual void update();
+  virtual QList<QCPLayoutElement*> elements() const;
 
 protected:
   QHash<QCPAxis::AxisType, QList<QCPAxis*> > mAxes;

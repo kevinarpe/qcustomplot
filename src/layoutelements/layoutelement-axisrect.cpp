@@ -219,6 +219,14 @@ void QCPAxisRect::update()
   mInsetLayout->update();
 }
 
+QList<QCPLayoutElement*> QCPAxisRect::elements() const
+{
+  if (mInsetLayout)
+    return mInsetLayout->elements();
+  else
+    return QList<QCPLayoutElement*>();
+}
+
 void QCPAxisRect::applyDefaultAntialiasingHint(QCPPainter *painter) const
 {
   painter->setAntialiasing(false);
