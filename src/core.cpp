@@ -1818,41 +1818,43 @@ void QCustomPlot::replot()
 */
 void QCustomPlot::setupFullAxesBox()
 {
-  xAxis2->setVisible(true);
-  yAxis2->setVisible(true);
+  if (xAxis2)
+  {
+    xAxis2->setVisible(true);
+    xAxis2->setTickLabels(false);
+    if (xAxis)
+    {
+      xAxis2->setAutoSubTicks(xAxis->autoSubTicks());
+      xAxis2->setAutoTickCount(xAxis->autoTickCount());
+      xAxis2->setAutoTickStep(xAxis->autoTickStep());
+      xAxis2->setScaleType(xAxis->scaleType());
+      xAxis2->setScaleLogBase(xAxis->scaleLogBase());
+      xAxis2->setTicks(xAxis->ticks());
+      xAxis2->setSubTickCount(xAxis->subTickCount());
+      xAxis2->setTickStep(xAxis->tickStep());
+      xAxis2->setRange(xAxis->range());
+      xAxis2->setRangeReversed(xAxis->rangeReversed());
+    }
+  }
   
-  xAxis2->setTickLabels(false);
-  yAxis2->setTickLabels(false);
-  
-  xAxis2->setAutoSubTicks(xAxis->autoSubTicks());
-  yAxis2->setAutoSubTicks(yAxis->autoSubTicks());
-  
-  xAxis2->setAutoTickCount(xAxis->autoTickCount());
-  yAxis2->setAutoTickCount(yAxis->autoTickCount());
-  
-  xAxis2->setAutoTickStep(xAxis->autoTickStep());
-  yAxis2->setAutoTickStep(yAxis->autoTickStep());
-  
-  xAxis2->setScaleType(xAxis->scaleType());
-  yAxis2->setScaleType(yAxis->scaleType());
-  
-  xAxis2->setScaleLogBase(xAxis->scaleLogBase());
-  yAxis2->setScaleLogBase(yAxis->scaleLogBase());
-  
-  xAxis2->setTicks(xAxis->ticks());
-  yAxis2->setTicks(yAxis->ticks());
-  
-  xAxis2->setSubTickCount(xAxis->subTickCount());
-  yAxis2->setSubTickCount(yAxis->subTickCount());
-  
-  xAxis2->setTickStep(xAxis->tickStep());
-  yAxis2->setTickStep(yAxis->tickStep());
-  
-  xAxis2->setRange(xAxis->range());
-  yAxis2->setRange(yAxis->range());
-  
-  xAxis2->setRangeReversed(xAxis->rangeReversed());
-  yAxis2->setRangeReversed(yAxis->rangeReversed());
+  if (yAxis2)
+  {
+    yAxis2->setVisible(true);
+    yAxis2->setTickLabels(false);
+    if (yAxis)
+    {
+      yAxis2->setAutoSubTicks(yAxis->autoSubTicks());
+      yAxis2->setAutoTickCount(yAxis->autoTickCount());
+      yAxis2->setAutoTickStep(yAxis->autoTickStep());
+      yAxis2->setScaleType(yAxis->scaleType());
+      yAxis2->setScaleLogBase(yAxis->scaleLogBase());
+      yAxis2->setTicks(yAxis->ticks());
+      yAxis2->setSubTickCount(yAxis->subTickCount());
+      yAxis2->setTickStep(yAxis->tickStep());
+      yAxis2->setRange(yAxis->range());
+      yAxis2->setRangeReversed(yAxis->rangeReversed());
+    }
+  }
 }
 
 /*!
