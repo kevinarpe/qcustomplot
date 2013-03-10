@@ -35,9 +35,9 @@ QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot) :
   QCPLayerable(parentPlot, "axes"),
   mFont(QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.5, QFont::Bold)),
   mTextColor(Qt::black),
-  mSelectedFont(QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.5, QFont::Bold)),
+  mSelectedFont(QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.6, QFont::Bold)),
   mSelectedTextColor(Qt::blue),
-  mSelectable(true),
+  mSelectable(false),
   mSelected(false)
 {
   setMargins(QMargins(5, 5, 5, 0));
@@ -91,7 +91,7 @@ void QCPPlotTitle::draw(QCPPainter *painter)
 {
   painter->setFont(mainFont());
   painter->setPen(QPen(mainTextColor()));
-  painter->drawText(mRect, Qt::AlignCenter, mText);
+  painter->drawText(mRect, Qt::AlignCenter, mText, &mTextBoundingRect);
 }
 
 QSize QCPPlotTitle::minimumSizeHint() const
@@ -110,6 +110,33 @@ QSize QCPPlotTitle::maximumSizeHint() const
   result.rheight() += mMargins.top() + mMargins.bottom();
   result.setWidth(QWIDGETSIZE_MAX);
   return result;
+}
+
+void QCPPlotTitle::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+{
+  Q_UNUSED(event)
+  Q_UNUSED(additive)
+  Q_UNUSED(details)
+  if (mSelectable)
+    setSelected(true);
+}
+
+void QCPPlotTitle::deselectEvent()
+{
+  if (mSelectable)
+    setSelected(false);
+}
+
+double QCPPlotTitle::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
+{
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
+    return -1;
+  
+  if (mTextBoundingRect.contains(pos.toPoint()))
+    return mParentPlot->selectionTolerance()*0.99;
+  else
+    return -1;
 }
 
 QFont QCPPlotTitle::mainFont() const

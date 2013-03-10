@@ -96,7 +96,7 @@ public:
   void removeData(double fromt, double tot);
   void removeData(double t);
   virtual void clearData();
-  virtual double selectTest(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
   QCPCurveDataMap *mData;

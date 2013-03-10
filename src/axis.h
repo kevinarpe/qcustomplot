@@ -208,8 +208,8 @@ public:
   int labelPadding() const { return mLabelPadding; }
   int padding() const { return mPadding; }
   int offset() const { return mOffset; }
-  SelectableParts selected() const { return mSelected; }
-  SelectableParts selectable() const { return mSelectable; }
+  SelectableParts selectedParts() const { return mSelectedParts; }
+  SelectableParts selectableParts() const { return mSelectableParts; }
   QFont selectedTickLabelFont() const { return mSelectedTickLabelFont; }
   QFont selectedLabelFont() const { return mSelectedLabelFont; }
   QColor selectedTickLabelColor() const { return mSelectedTickLabelColor; }
@@ -283,7 +283,8 @@ public:
   void setScaleRatio(const QCPAxis *otherAxis, double ratio=1.0);
   double pixelToCoord(double value) const;
   double coordToPixel(double value) const;
-  SelectablePart selectTest(const QPointF &pos) const;
+  SelectablePart getPartAt(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   QList<QCPAbstractPlottable*> plottables() const;
   QList<QCPGraph*> graphs() const;
@@ -294,13 +295,13 @@ public:
 public slots:
   // slot setters:
   void setRange(const QCPRange &range);
-  void setSelectable(const QCPAxis::SelectableParts &selectable);
-  void setSelected(const QCPAxis::SelectableParts &selected);
+  void setSelectableParts(const QCPAxis::SelectableParts &selectableParts);
+  void setSelectedParts(const QCPAxis::SelectableParts &selectedParts);
   
 signals:
   void ticksRequest();
   void rangeChanged(const QCPRange &newRange);
-  void selectionChanged(QCPAxis::SelectableParts selection);
+  void selectionChanged(const QCPAxis::SelectableParts &parts);
 
 protected:
   struct CachedLabel
@@ -321,7 +322,7 @@ protected:
   QCPAxisRect *mAxisRect;
   int mOffset, mPadding;
   Qt::Orientation mOrientation;
-  SelectableParts mSelectable, mSelected;
+  SelectableParts mSelectableParts, mSelectedParts;
   QPen mBasePen, mSelectedBasePen;
   QCPLineEnding mLowerEnding, mUpperEnding;
   // axis label:
@@ -372,7 +373,6 @@ protected:
   virtual void generateAutoTicks();
   virtual int calculateAutoSubTickCount(double tickStep) const;
   virtual int calculateMargin();
-  virtual bool handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified);
   
   // drawing:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
@@ -384,6 +384,10 @@ protected:
   virtual TickLabelData getTickLabelData(const QFont &font, const QString &text) const;
   virtual QPointF getTickLabelDrawOffset(const TickLabelData &labelData) const;
   virtual void getMaxTickLabelSize(const QFont &font, const QString &text, QSize *tickLabelsSize) const;
+  
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
+  virtual void deselectEvent();
   
   // basic non virtual helpers:
   void visibleTickBounds(int &lowIndex, int &highIndex) const;
@@ -408,5 +412,6 @@ private:
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::SelectableParts)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::AxisTypes)
+Q_DECLARE_METATYPE(QCPAxis::SelectablePart)
 
 #endif // QCP_AXIS_H

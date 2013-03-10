@@ -34,14 +34,13 @@ class QCustomPlot;
 class QCPAbstractPlottable;
 class QCPLegend;
 
-class QCP_LIB_DECL QCPAbstractLegendItem : public QCPLayoutElement
+class QCP_LIB_DECL QCPAbstractLegendItem : public QCPLayoutElement, public QCPLayerable
 {
   Q_OBJECT
 public:
   explicit QCPAbstractLegendItem(QCPLegend *parent);
   
   // getters:
-  bool antialiased() const { return mAntialiased; }
   QFont font() const { return mFont; }
   QColor textColor() const { return mTextColor; }
   QFont selectedFont() const { return mSelectedFont; }
@@ -50,7 +49,6 @@ public:
   bool selected() const { return mSelected; }
   
   // setters:
-  void setAntialiased(bool enabled);
   void setFont(const QFont &font);
   void setTextColor(const QColor &color);
   void setSelectedFont(const QFont &font);
@@ -58,20 +56,27 @@ public:
   void setSelectable(bool selectable);
   void setSelected(bool selected);
   
+  // non-property methods:
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  
 signals:
   void selectionChanged(bool selected);
   
 protected:
   QCPLegend *mParentLegend;
-  bool mAntialiased;
   QFont mFont;
   QColor mTextColor;
   QFont mSelectedFont;
   QColor mSelectedTextColor;
   bool mSelectable, mSelected;
   
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
+  virtual QRect clipRect() const;
   virtual void draw(QCPPainter *painter) = 0;
-  void applyAntialiasingHint(QCPPainter *painter) const;
+  
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
+  virtual void deselectEvent();
   
 private:
   Q_DISABLE_COPY(QCPAbstractLegendItem)
@@ -126,8 +131,8 @@ public:
   QSize iconSize() const { return mIconSize; }
   int iconTextPadding() const { return mIconTextPadding; }
   QPen iconBorderPen() const { return mIconBorderPen; }
-  SelectableParts selectable() const { return mSelectable; }
-  SelectableParts selected() const;
+  SelectableParts selectableParts() const { return mSelectableParts; }
+  SelectableParts selectedParts() const;
   QPen selectedBorderPen() const { return mSelectedBorderPen; }
   QPen selectedIconBorderPen() const { return mSelectedIconBorderPen; }
   QBrush selectedBrush() const { return mSelectedBrush; }
@@ -143,8 +148,8 @@ public:
   void setIconSize(int width, int height);
   void setIconTextPadding(int padding);
   void setIconBorderPen(const QPen &pen);
-  void setSelectable(const SelectableParts &selectable);
-  void setSelected(const SelectableParts &selected);
+  void setSelectableParts(const SelectableParts &selectableParts);
+  void setSelectedParts(const SelectableParts &selectedParts);
   void setSelectedBorderPen(const QPen &pen);
   void setSelectedIconBorderPen(const QPen &pen);
   void setSelectedBrush(const QBrush &brush);
@@ -176,16 +181,19 @@ protected:
   QColor mTextColor;
   QSize mIconSize;
   int mIconTextPadding;
-  SelectableParts mSelected, mSelectable;
+  SelectableParts mSelectedParts, mSelectableParts;
   QPen mSelectedBorderPen, mSelectedIconBorderPen;
   QBrush mSelectedBrush;
   QFont mSelectedFont;
   QColor mSelectedTextColor;
   
-  virtual bool handleLegendSelection(QMouseEvent *event, bool additiveSelection, bool &modified);
-  // introduced methods:
+  // reimplemented functions from QCPLayerable:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
+  virtual void deselectEvent();
   
   // drawing helpers:
   QPen getBorderPen() const;
@@ -198,5 +206,6 @@ private:
   friend class QCPAbstractLegendItem;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPLegend::SelectableParts)
+Q_DECLARE_METATYPE(QCPLegend::SelectablePart)
 
 #endif // QCP_LAYOUTELEMENT_LEGEND_H

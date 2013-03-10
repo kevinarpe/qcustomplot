@@ -134,19 +134,22 @@ public:
   void setSelected(bool selected);
   
   // non-property methods:
-  virtual double selectTest(const QPointF &pos) const = 0;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const = 0;
   QList<QCPItemPosition*> positions() const { return mPositions; }
   QList<QCPItemAnchor*> anchors() const { return mAnchors; }
   QCPItemPosition *position(const QString &name) const;
   QCPItemAnchor *anchor(const QString &name) const;
   bool hasAnchor(const QString &name) const;
   
+signals:
+  void selectionChanged(bool selected);
+  
 protected:
   bool mClipToAxisRect;
   QWeakPointer<QCPAxisRect> mClipAxisRect;
-  bool mSelectable, mSelected;
   QList<QCPItemPosition*> mPositions;
   QList<QCPItemAnchor*> mAnchors;
+  bool mSelectable, mSelected;
   
   virtual QRect clipRect() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
@@ -161,8 +164,9 @@ protected:
   QCPItemPosition *createPosition(const QString &name);
   QCPItemAnchor *createAnchor(const QString &name, int anchorId);
   
-signals:
-  void selectionChanged(bool selected);
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
+  virtual void deselectEvent();
   
 private:
   Q_DISABLE_COPY(QCPAbstractItem)

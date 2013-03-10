@@ -396,8 +396,8 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mOffset(0),
   mPadding(5),
   mOrientation((type == atBottom || type == atTop) ? Qt::Horizontal : Qt::Vertical),
-  mSelectable(spAxis | spTickLabels | spAxisLabel),
-  mSelected(spNone),
+  mSelectableParts(spAxis | spTickLabels | spAxisLabel),
+  mSelectedParts(spNone),
   mBasePen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
   mSelectedBasePen(QPen(Qt::blue, 2)),
   mLowerEnding(QCPLineEnding::esNone),
@@ -569,9 +569,9 @@ void QCPAxis::setRange(const QCPRange &range)
   
   \see SelectablePart, setSelected
 */
-void QCPAxis::setSelectable(const SelectableParts &selectable)
+void QCPAxis::setSelectableParts(const SelectableParts &selectable)
 {
-  mSelectable = selectable;
+  mSelectableParts = selectable;
 }
 
 /*!
@@ -590,14 +590,14 @@ void QCPAxis::setSelectable(const SelectableParts &selectable)
   \see SelectablePart, setSelectable, selectTest, setSelectedBasePen, setSelectedTickPen, setSelectedSubTickPen,
   setSelectedTickLabelFont, setSelectedLabelFont, setSelectedTickLabelColor, setSelectedLabelColor
 */
-void QCPAxis::setSelected(const SelectableParts &selected)
+void QCPAxis::setSelectedParts(const SelectableParts &selected)
 {
-  if (mSelected != selected)
+  if (mSelectedParts != selected)
   {
-    if (mSelected.testFlag(spTickLabels) != selected.testFlag(spTickLabels))
+    if (mSelectedParts.testFlag(spTickLabels) != selected.testFlag(spTickLabels))
       mLabelCache.clear();
-    mSelected = selected;
-    emit selectionChanged(mSelected);
+    mSelectedParts = selected;
+    emit selectionChanged(mSelectedParts);
   }
 }
 
@@ -1612,7 +1612,7 @@ double QCPAxis::coordToPixel(double value) const
   
   \see setSelected, setSelectable, QCustomPlot::setInteractions
 */
-QCPAxis::SelectablePart QCPAxis::selectTest(const QPointF &pos) const
+QCPAxis::SelectablePart QCPAxis::getPartAt(const QPointF &pos) const
 {
   if (!mVisible)
     return spNone;
@@ -1625,6 +1625,17 @@ QCPAxis::SelectablePart QCPAxis::selectTest(const QPointF &pos) const
     return spAxisLabel;
   else
     return spNone;
+}
+
+double QCPAxis::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
+{
+  SelectablePart part = getPartAt(pos);
+  if ((onlySelectable && !mSelectableParts.testFlag(part)) || part == spNone)
+    return -1;
+  
+  if (details)
+    details->setValue(part);
+  return mParentPlot->selectionTolerance()*0.99;
 }
 
 QList<QCPAbstractPlottable*> QCPAxis::plottables() const
@@ -2421,63 +2432,17 @@ void QCPAxis::getMaxTickLabelSize(const QFont &font, const QString &text,  QSize
     tickLabelsSize->setHeight(finalSize.height());
 }
 
-/*! \internal
-  
-  Handles the selection \a event and returns true when the selection event hit any parts of the
-  axis. If the selection state of any parts of the axis was changed, the output parameter \a
-  modified is set to true.
-  
-  When \a additiveSelecton is true, any new selections become selected in addition to the recent
-  selections. The recent selections are not cleared. Further, clicking on one object multiple times
-  in additive selection mode, toggles the selection of that object on and off.
-  
-  To indicate that an event deselects the axis (i.e. the parts that are deselectable by the user,
-  see \ref setSelectable), pass 0 as \a event.
-*/
-bool QCPAxis::handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified)
+void QCPAxis::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
 {
-  bool selectionFound = false;
-  if (event)
-  {
-    SelectablePart selectedAxisPart = selectTest(event->pos());
-    if (selectedAxisPart == spNone || !selectable().testFlag(selectedAxisPart))
-    {
-      // deselect parts that are changeable (selectable):
-      SelectableParts newState = selected() & ~selectable();
-      if (newState != selected() && !additiveSelection)
-      {
-        modified = true;
-        setSelected(newState);
-      }
-    } else
-    {
-      selectionFound = true;
-      if (additiveSelection)
-      {
-        // additive selection, so toggle selected part:
-        setSelected(selected() ^ selectedAxisPart);
-        modified = true;
-      } else
-      {
-        // not additive selection, so select part and deselect all others that are changeable (selectable):
-        SelectableParts newState = (selected() & ~selectable()) | selectedAxisPart;
-        if (newState != selected())
-        {
-          modified = true;
-          setSelected(newState);
-        }
-      }
-    }
-  } else // event == 0, so deselect all changeable parts
-  {
-    SelectableParts newState = selected() & ~selectable();
-    if (newState != selected())
-    {
-      modified = true;
-      setSelected(newState);
-    }
-  }
-  return selectionFound;
+  Q_UNUSED(event)
+  SelectablePart part = details.value<SelectablePart>();
+  if (mSelectableParts.testFlag(part))
+    setSelectedParts(additive ? mSelectedParts|part : part);
+}
+
+void QCPAxis::deselectEvent()
+{
+  setSelectedParts(mSelectedParts & ~mSelectableParts);
 }
 
 /*! \internal
@@ -2578,7 +2543,7 @@ double QCPAxis::basePow(double value) const
 */
 QPen QCPAxis::getBasePen() const
 {
-  return mSelected.testFlag(spAxis) ? mSelectedBasePen : mBasePen;
+  return mSelectedParts.testFlag(spAxis) ? mSelectedBasePen : mBasePen;
 }
 
 /*! \internal
@@ -2588,7 +2553,7 @@ QPen QCPAxis::getBasePen() const
 */
 QPen QCPAxis::getTickPen() const
 {
-  return mSelected.testFlag(spAxis) ? mSelectedTickPen : mTickPen;
+  return mSelectedParts.testFlag(spAxis) ? mSelectedTickPen : mTickPen;
 }
 
 /*! \internal
@@ -2598,7 +2563,7 @@ QPen QCPAxis::getTickPen() const
 */
 QPen QCPAxis::getSubTickPen() const
 {
-  return mSelected.testFlag(spAxis) ? mSelectedSubTickPen : mSubTickPen;
+  return mSelectedParts.testFlag(spAxis) ? mSelectedSubTickPen : mSubTickPen;
 }
 
 /*! \internal
@@ -2608,7 +2573,7 @@ QPen QCPAxis::getSubTickPen() const
 */
 QFont QCPAxis::getTickLabelFont() const
 {
-  return mSelected.testFlag(spTickLabels) ? mSelectedTickLabelFont : mTickLabelFont;
+  return mSelectedParts.testFlag(spTickLabels) ? mSelectedTickLabelFont : mTickLabelFont;
 }
 
 /*! \internal
@@ -2618,7 +2583,7 @@ QFont QCPAxis::getTickLabelFont() const
 */
 QFont QCPAxis::getLabelFont() const
 {
-  return mSelected.testFlag(spAxisLabel) ? mSelectedLabelFont : mLabelFont;
+  return mSelectedParts.testFlag(spAxisLabel) ? mSelectedLabelFont : mLabelFont;
 }
 
 /*! \internal
@@ -2628,7 +2593,7 @@ QFont QCPAxis::getLabelFont() const
 */
 QColor QCPAxis::getTickLabelColor() const
 {
-  return mSelected.testFlag(spTickLabels) ? mSelectedTickLabelColor : mTickLabelColor;
+  return mSelectedParts.testFlag(spTickLabels) ? mSelectedTickLabelColor : mTickLabelColor;
 }
 
 /*! \internal
@@ -2638,7 +2603,7 @@ QColor QCPAxis::getTickLabelColor() const
 */
 QColor QCPAxis::getLabelColor() const
 {
-  return mSelected.testFlag(spAxisLabel) ? mSelectedLabelColor : mLabelColor;
+  return mSelectedParts.testFlag(spAxisLabel) ? mSelectedLabelColor : mLabelColor;
 }
 
 /*! \internal

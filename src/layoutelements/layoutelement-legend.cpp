@@ -89,8 +89,8 @@
   cause the item to be added to \a parent, so \ref QCPLegend::addItem must be called separately.
 */
 QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) : 
+  QCPLayerable(parent->parentPlot(), "legend"),
   mParentLegend(parent),
-  mAntialiased(false),
   mFont(parent->font()),
   mTextColor(parent->textColor()),
   mSelectedFont(parent->selectedFont()),
@@ -99,17 +99,6 @@ QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) :
   mSelected(false)
 {
   setMargins(QMargins(8, 2, 8, 2));
-}
-
-/*!
-  Sets whether this legend item is drawn antialiased or not.
-  
-  Note that this setting may be overridden by \ref QCustomPlot::setAntialiasedElements and \ref
-  QCustomPlot::setNotAntialiasedElements.
-*/
-void QCPAbstractLegendItem::setAntialiased(bool enabled)
-{
-  mAntialiased = enabled;
 }
 
 /*!
@@ -181,22 +170,42 @@ void QCPAbstractLegendItem::setSelected(bool selected)
   }
 }
 
-/*! \internal
-
-  Sets the QPainter::Antialiasing render hint on the provided \a painter, depending on the \ref
-  setAntialiased state of this legend item as well as the overrides \ref
-  QCustomPlot::setAntialiasedElements and \ref QCustomPlot::setNotAntialiasedElements.
-*/
-void QCPAbstractLegendItem::applyAntialiasingHint(QCPPainter *painter) const
+double QCPAbstractLegendItem::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (mParentLegend->mParentPlot->notAntialiasedElements().testFlag(QCP::aeLegendItems))
-    painter->setAntialiasing(false);
-  else if (mParentLegend->mParentPlot->antialiasedElements().testFlag(QCP::aeLegendItems))
-    painter->setAntialiasing(true);
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
+    return -1;
+  
+  if (mRect.contains(pos.toPoint()))
+    return mParentPlot->selectionTolerance()*0.99;
   else
-    painter->setAntialiasing(mAntialiased);
+    return -1;
 }
 
+void QCPAbstractLegendItem::applyDefaultAntialiasingHint(QCPPainter *painter) const
+{
+  applyAntialiasingHint(painter, mAntialiased, QCP::aeLegendItems);
+}
+
+QRect QCPAbstractLegendItem::clipRect() const
+{
+  return mOuterRect;
+}
+
+void QCPAbstractLegendItem::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+{
+  Q_UNUSED(event)
+  Q_UNUSED(additive)
+  Q_UNUSED(details)
+  if (mSelectable)
+    setSelected(true);
+}
+
+void QCPAbstractLegendItem::deselectEvent()
+{
+  if (mSelectable)
+    setSelected(false);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPPlottableLegendItem
@@ -355,8 +364,8 @@ QCPLegend::QCPLegend(QCustomPlot *parentPlot) :
   
   setIconTextPadding(7);
   
-  setSelectable(spLegendBox | spItems);
-  setSelected(spNone);
+  setSelectableParts(spLegendBox | spItems);
+  setSelectedParts(spNone);
   
   setBorderPen(QPen(Qt::black));
   setSelectedBorderPen(QPen(Qt::blue, 2));
@@ -375,7 +384,7 @@ QCPLegend::~QCPLegend()
   clearItems();
 }
 
-QCPLegend::SelectableParts QCPLegend::selected() const
+QCPLegend::SelectableParts QCPLegend::selectedParts() const
 {
   // check whether any legend elements selected, if yes, add spItems to return value
   bool hasSelectedItems = false;
@@ -388,9 +397,9 @@ QCPLegend::SelectableParts QCPLegend::selected() const
     }
   }
   if (hasSelectedItems)
-    return mSelected | spItems;
+    return mSelectedParts | spItems;
   else
-    return mSelected & ~spItems;
+    return mSelectedParts & ~spItems;
 }
 
 /*!
@@ -497,9 +506,9 @@ void QCPLegend::setIconBorderPen(const QPen &pen)
   
   \see SelectablePart, setSelected
 */
-void QCPLegend::setSelectable(const SelectableParts &selectable)
+void QCPLegend::setSelectableParts(const SelectableParts &selectable)
 {
-  mSelectable = selectable;
+  mSelectableParts = selectable;
 }
 
 /*!
@@ -523,19 +532,19 @@ void QCPLegend::setSelectable(const SelectableParts &selectable)
   \see SelectablePart, setSelectable, selectTest, setSelectedBorderPen, setSelectedIconBorderPen, setSelectedBrush,
   setSelectedFont
 */
-void QCPLegend::setSelected(const SelectableParts &selected)
+void QCPLegend::setSelectedParts(const SelectableParts &selected)
 {
   SelectableParts newSelected = selected;
-  mSelected = this->selected(); // update mSelected in case item selection changed
+  mSelectedParts = this->selectedParts(); // update mSelectedParts in case item selection changed
 
-  if (mSelected != newSelected)
+  if (mSelectedParts != newSelected)
   {
-    if (!mSelected.testFlag(spItems) && newSelected.testFlag(spItems)) // attempt to set spItems flag (can't do that)
+    if (!mSelectedParts.testFlag(spItems) && newSelected.testFlag(spItems)) // attempt to set spItems flag (can't do that)
     {
       qDebug() << Q_FUNC_INFO << "spItems flag can not be set, it can only be unset manually";
       newSelected &= ~spItems;
     }
-    if (mSelected.testFlag(spItems) && !newSelected.testFlag(spItems)) // spItems flag was unset, so clear item selection
+    if (mSelectedParts.testFlag(spItems) && !newSelected.testFlag(spItems)) // spItems flag was unset, so clear item selection
     {
       for (int i=0; i<itemCount(); ++i)
       {
@@ -543,8 +552,8 @@ void QCPLegend::setSelected(const SelectableParts &selected)
           item(i)->setSelected(false);
       }
     }
-    mSelected = newSelected;
-    emit selectionChanged(mSelected);
+    mSelectedParts = newSelected;
+    emit selectionChanged(mSelectedParts);
   }
 }
 
@@ -766,109 +775,11 @@ QCPAbstractLegendItem *QCPLegend::itemAtPos(const QPointF &pos) const
   {
     if (QCPAbstractLegendItem *ali = item(i))
     {
-      if (ali->selectTest(pos))
+      if (ali->hitTest(pos))
         return ali;
     }
   }
   return 0;
-}
-
-/*! \internal
-  
-  Handles the selection \a event and returns true when the selection event hit any parts of the
-  legend. If the selection state of any parts of the legend was changed, the output parameter \a
-  modified is set to true.
-  
-  When \a additiveSelecton is true, any new selections become selected in addition to the recent
-  selections. The recent selections are not cleared. Further, clicking on one object multiple times
-  in additive selection mode, toggles the selection of that object on and off.
-  
-  To indicate that an event deselects the legend (i.e. the parts that are deselectable by the user,
-  see \ref setSelectable), pass 0 as \a event.
-*/
-bool QCPLegend::handleLegendSelection(QMouseEvent *event, bool additiveSelection, bool &modified)
-{
-  modified = false;
-  bool selectionFound = false;
-  
-  if (event && selectTest(event->pos())) // clicked inside legend somewhere
-  {
-    QCPAbstractLegendItem *ali = itemAtPos(event->pos());
-    if (selectable().testFlag(QCPLegend::spItems) && ali && ali->selectable()) // items shall be selectable and item ali was clicked 
-    {
-      selectionFound = true;
-      // deselect legend box:
-      if (!additiveSelection && selected().testFlag(QCPLegend::spLegendBox) && selectable().testFlag(QCPLegend::spLegendBox))
-        setSelected(selected() & ~QCPLegend::spLegendBox);
-      // first select clicked item:
-      if (!ali->selected() || additiveSelection) // if additive selection, we toggle selection on and off per click
-      {
-        modified = true;
-        ali->setSelected(!ali->selected());
-      }
-      // finally, deselect all other items (if we had deselected all first, the selectionChanged signal of QCPLegend might have been emitted twice):
-      if (!additiveSelection)
-      {
-        for (int i=0; i<itemCount(); ++i)
-        {
-          if (item(i) && (item(i) != ali && item(i)->selected() && item(i)->selectable()))
-          {
-            modified = true;
-            item(i)->setSelected(false);
-          }
-        }
-      }
-    } else // no specific item clicked or items not selectable
-    {
-      // if items actually were selectable, this means none were clicked, deselect them:
-      if (selectable().testFlag(QCPLegend::spItems) && selected().testFlag(QCPLegend::spItems) && !additiveSelection)
-      {
-        for (int i=0; i<itemCount(); ++i)
-        {
-          if (item(i) && item(i)->selectable())
-            item(i)->setSelected(false);
-        }
-        modified = true;
-      }
-      // if legend box is selectable, select it:
-      if (selectable().testFlag(QCPLegend::spLegendBox))
-      {
-        if (!selected().testFlag(QCPLegend::spLegendBox) || additiveSelection)
-        {
-          selectionFound = true;
-          setSelected(selected() ^ QCPLegend::spLegendBox); // xor because we always toggle
-          modified = true;
-        }
-      }
-    }
-  } else if (selected() != QCPLegend::spNone && selectable() != QCPLegend::spNone && !additiveSelection) // legend not clicked, deselect it if selectable allows that (and all child items)
-  {
-    // only deselect parts that are allowed to be changed by user according to selectable()
-    // deselect child items (and automatically removes spItems from selected state of legend, if last item gets deselected):
-    if (selectable().testFlag(spItems)) 
-    {
-      for (int i=0; i<itemCount(); ++i)
-      {
-        if (item(i) && item(i)->selected() && item(i)->selectable())
-        {
-          item(i)->setSelected(false);
-          modified = true;
-        }
-      }
-    }
-    // only deselect parts that are allowed to be changed (are selectable). Don't forcibly remove
-    // spItems, because some selected items might not be selectable, i.e. allowed to be deselected
-    // by user interaction. If that's not the case, spItems will have been removed from selected()
-    // state in previous loop by individual setSelected(false) calls on the items anyway.
-    QCPLegend::SelectableParts newState = selected() & ~(selectable()&~spItems);
-    if (newState != selected())
-    {
-      setSelected(newState);
-      modified = true;
-    }
-  }
-  
-  return selectionFound;
 }
 
 /*! \internal
@@ -895,7 +806,7 @@ void QCPLegend::applyDefaultAntialiasingHint(QCPPainter *painter) const
 */
 QPen QCPLegend::getBorderPen() const
 {
-  return mSelected.testFlag(spLegendBox) ? mSelectedBorderPen : mBorderPen;
+  return mSelectedParts.testFlag(spLegendBox) ? mSelectedBorderPen : mBorderPen;
 }
 
 /*! \internal
@@ -905,31 +816,45 @@ QPen QCPLegend::getBorderPen() const
 */
 QBrush QCPLegend::getBrush() const
 {
-  return mSelected.testFlag(spLegendBox) ? mSelectedBrush : mBrush;
+  return mSelectedParts.testFlag(spLegendBox) ? mSelectedBrush : mBrush;
 }
 
 /*! \internal
   
-  Draws the legend with the provided \a painter.
+  Draws the legend box with the provided \a painter. The individual legend items are layerables
+  themselves, thus are drawn independently.
 */
 void QCPLegend::draw(QCPPainter *painter)
 {
+  // draw background rect:
   painter->setBrush(getBrush());
   painter->setPen(getBorderPen());
-  // draw background rect:
   painter->drawRect(mOuterRect);
-  // draw legend items:
-  painter->setPen(QPen());
-  painter->setBrush(Qt::NoBrush);
-  for (int i=0; i<itemCount(); ++i)
+}
+
+double QCPLegend::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
+{
+  if (onlySelectable && !mSelectableParts.testFlag(spLegendBox))
+    return -1;
+  
+  if (mOuterRect.contains(pos.toPoint()) && !mRect.contains(pos.toPoint())) // if pos is on legend rect but not in inner area where legend items are
   {
-    if (item(i))
-    {
-      painter->save();
-      painter->setClipRect(item(i)->outerRect());
-      item(i)->applyAntialiasingHint(painter);
-      item(i)->draw(painter);
-      painter->restore();
-    }
+    if (details) details->setValue(spLegendBox);
+    return mParentPlot->selectionTolerance()*0.99;
   }
+  return -1;
+}
+
+void QCPLegend::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+{
+  Q_UNUSED(event)
+  Q_UNUSED(additive)
+  if (details.value<SelectablePart>() == spLegendBox && mSelectableParts.testFlag(spLegendBox))
+    setSelectedParts(mSelectedParts | spLegendBox);
+}
+
+void QCPLegend::deselectEvent()
+{
+  if (mSelectableParts.testFlag(spLegendBox))
+    setSelectedParts(selectedParts() & ~spLegendBox);
 }

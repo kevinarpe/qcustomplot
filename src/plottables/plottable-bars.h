@@ -83,7 +83,7 @@ public:
   void removeData(double fromKey, double toKey);
   void removeData(double key);
   virtual void clearData();
-  virtual double selectTest(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
   QCPBarDataMap *mData;

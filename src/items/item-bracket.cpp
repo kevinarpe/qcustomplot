@@ -123,9 +123,10 @@ void QCPItemBracket::setStyle(QCPItemBracket::BracketStyle style)
 }
 
 /* inherits documentation from base class */
-double QCPItemBracket::selectTest(const QPointF &pos) const
+double QCPItemBracket::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (!mVisible)
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
     return -1;
   
   QVector2D leftVec(left->pixelPoint());

@@ -216,13 +216,14 @@ void QCPItemText::setPadding(const QMargins &padding)
 }
 
 /* inherits documentation from base class */
-double QCPItemText::selectTest(const QPointF &pos) const
+double QCPItemText::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (!mVisible)
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
     return -1;
   
   // The rect may be rotated, so we transform the actual clicked pos to the rotated
-  // coordinate system, wo we can use the normal rectSelectTest function for non-rotated rects:
+  // coordinate system, so we can use the normal rectSelectTest function for non-rotated rects:
   QPointF positionPixels(position->pixelPoint());
   QTransform inputTransform;
   inputTransform.translate(positionPixels.x(), positionPixels.y());

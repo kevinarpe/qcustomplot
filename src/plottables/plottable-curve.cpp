@@ -365,9 +365,10 @@ void QCPCurve::clearData()
 }
 
 /* inherits documentation from base class */
-double QCPCurve::selectTest(const QPointF &pos) const
+double QCPCurve::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (mData->isEmpty() || !mVisible)
+  Q_UNUSED(details)
+  if ((onlySelectable && !mSelectable) || mData->isEmpty())
     return -1;
   
   return pointDistance(pos);

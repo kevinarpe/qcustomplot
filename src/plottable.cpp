@@ -214,8 +214,8 @@ QCPAbstractPlottable::QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis)
   mSelectedBrush(Qt::NoBrush),
   mKeyAxis(keyAxis),
   mValueAxis(valueAxis),
-  mSelected(false),
-  mSelectable(true)
+  mSelectable(true),
+  mSelected(false)
 {
   if (keyAxis->parentPlot() != valueAxis->parentPlot())
     qDebug() << Q_FUNC_INFO << "Parent plot of keyAxis is not the same as that of valueAxis.";
@@ -374,7 +374,7 @@ void QCPAbstractPlottable::setSelectable(bool selectable)
   
   emits the \ref selectionChanged signal when \a selected is different from the previous selection state.
   
-  \see selectTest
+  \see setSelectable, selectTest
 */
 void QCPAbstractPlottable::setSelected(bool selected)
 {
@@ -702,4 +702,19 @@ double QCPAbstractPlottable::distSqrToLine(const QPointF &start, const QPointF &
       return ((a + mu*v)-p).lengthSquared();
   } else
     return (a-p).lengthSquared();
+}
+
+void QCPAbstractPlottable::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+{
+  Q_UNUSED(event)
+  Q_UNUSED(additive)
+  Q_UNUSED(details)
+  if (mSelectable)
+    setSelected(true);
+}
+
+void QCPAbstractPlottable::deselectEvent()
+{
+  if (mSelectable)
+    setSelected(false);
 }

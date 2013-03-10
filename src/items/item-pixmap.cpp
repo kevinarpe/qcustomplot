@@ -113,9 +113,10 @@ void QCPItemPixmap::setSelectedPen(const QPen &pen)
 }
 
 /* inherits documentation from base class */
-double QCPItemPixmap::selectTest(const QPointF &pos) const
+double QCPItemPixmap::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (!mVisible)
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
     return -1;
   
   return rectSelectTest(getFinalRect(), pos, true);

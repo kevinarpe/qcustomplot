@@ -1090,7 +1090,7 @@ QCPAbstractPlottable *QCustomPlot::plottableAt(const QPointF &pos, bool onlySele
       continue;
     if ((currentPlottable->keyAxis()->axisRect()->rect() & currentPlottable->valueAxis()->axisRect()->rect()).contains(pos.toPoint())) // only consider clicks inside the rect that is spanned by the plottable's key/value axes
     {
-      double currentDistance = currentPlottable->selectTest(pos);
+      double currentDistance = currentPlottable->selectTest(pos, false);
       if (currentDistance >= 0 && currentDistance < resultDistance)
       {
         resultPlottable = currentPlottable;
@@ -1413,7 +1413,7 @@ QCPAbstractItem *QCustomPlot::itemAt(const QPointF &pos, bool onlySelectable) co
       continue;
     if (!currentItem->clipToAxisRect() || currentItem->clipRect().contains(pos.toPoint())) // only consider clicks inside axis cliprect of the item if actually clipped to it
     {
-      double currentDistance = currentItem->selectTest(pos);
+      double currentDistance = currentItem->selectTest(pos, false);
       if (currentDistance >= 0 && currentDistance < resultDistance)
       {
         resultItem = currentItem;
@@ -1695,7 +1695,7 @@ QList<QCPAxis*> QCustomPlot::selectedAxes() const
   
   for (int i=0; i<allAxes.size(); ++i)
   {
-    if (allAxes.at(i)->selected() != QCPAxis::spNone)
+    if (allAxes.at(i)->selectedParts() != QCPAxis::spNone)
       result.append(allAxes.at(i));
   }
   
@@ -1726,7 +1726,7 @@ QList<QCPLegend*> QCustomPlot::selectedLegends() const
         elementStack.push(element);
         if (QCPLegend *leg = qobject_cast<QCPLegend*>(element))
         {
-          if (leg->selected() != QCPLegend::spNone)
+          if (leg->selectedParts() != QCPLegend::spNone)
             result.append(leg);
         }
       }
@@ -1747,25 +1747,12 @@ QList<QCPLegend*> QCustomPlot::selectedLegends() const
 */
 void QCustomPlot::deselectAll()
 {
-  // deselect plottables:
-  QList<QCPAbstractPlottable*> selPlottables = selectedPlottables();
-  for (int i=0; i<selPlottables.size(); ++i)
-    selPlottables.at(i)->setSelected(false);
-  
-  // deselect items:
-  QList<QCPAbstractItem*> selItems = selectedItems();
-  for (int i=0; i<selItems.size(); ++i)
-    selItems.at(i)->setSelected(false);
-  
-  // deselect axes:
-  QList<QCPAxis*> selAxes = selectedAxes();
-  for (int i=0; i<selAxes.size(); ++i)
-    selAxes.at(i)->setSelected(QCPAxis::spNone);
-  
-  // deselect legends (and their legend items):
-  QList<QCPLegend*> selLegends = selectedLegends();
-  for (int i=0; i<selLegends.size(); ++i)
-    selLegends.at(i)->setSelected(QCPLegend::spNone);
+  for (int i=0; i<mLayers.size(); ++i)
+  {
+    QList<QCPLayerable*> layerables = mLayers.at(i)->children();
+    for (int k=0; k<layerables.size(); ++k)
+      layerables.at(k)->deselectEvent();
+  }
 }
 
 /*!
@@ -2112,7 +2099,7 @@ void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
   // for legend:
   if (receivers(SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*))) > 0)
   {
-    if (legend->selectTest(event->pos()))
+    if (legend->hitTest(event->pos()))
     {
       emit legendDoubleClick(legend, legend->itemAtPos(event->pos()), event);
       foundHit = true;
@@ -2142,7 +2129,7 @@ void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
     QVector<QCPAxis*> axes = QVector<QCPAxis*>() << xAxis << yAxis << xAxis2 << yAxis2;
     for (int i=0; i<axes.size(); ++i)
     {
-      QCPAxis::SelectablePart part = axes.at(i)->selectTest(event->pos());
+      QCPAxis::SelectablePart part = axes.at(i)->getPartAt(event->pos());
       if (part != QCPAxis::spNone)
       {
         foundHit = true;
@@ -2270,6 +2257,40 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
   // determine whether it was a drag or click operation:
   if ((mDragStart-event->pos()).manhattanLength() < 5) // was a click
   {
+    bool additive = event->modifiers().testFlag(mMultiSelectModifier);
+    QList<QCPLayerable*> layerables;
+    for (int i=0; i<layerCount(); ++i)
+      layerables << layer(i)->children();
+    
+    // select highest most layerable that succeeds select test (TODO):
+    // todo: make nested loop over layers and layer children. Within one layer, the distance decides. between layers, the topmost layered object gets selected
+    QCPLayerable *newSelection = 0;
+    for (int i=layerables.size()-1; i>=0; --i)
+    {
+      if (!layerables.at(i)->visible())
+        continue;
+      QVariant details; // selectTest will store selection details in here which we then pass on to selectEvent if selection succeeds
+      double dist = layerables.at(i)->selectTest(event->pos(), true, &details);
+      if (dist >= 0 && dist < selectionTolerance())
+      {
+        layerables.at(i)->selectEvent(event, additive, details);
+        newSelection = layerables.at(i);
+        break;
+      }
+    }
+    // deselect all others if not additive selection:
+    if (!additive)
+    {
+      for (int i=0; i<layerables.size(); ++i)
+      {
+        if (layerables.at(i) != newSelection)
+          layerables.at(i)->deselectEvent();
+      }
+    }
+    doReplot = true;
+    
+    
+    /*
     // Mouse selection interaction:
     if ((mInteractions & (iSelectPlottables|iSelectItems|iSelectAxes|iSelectLegend)) > 0 
         && event->button() == Qt::LeftButton)
@@ -2300,7 +2321,7 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
     // for legend:
     if (receivers(SIGNAL(legendClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*))) > 0)
     {
-      if (legend->selectTest(event->pos()))
+      if (legend->hitTest(event->pos()))
       {
         emit legendClick(legend, legend->itemAtPos(event->pos()), event);
         foundHit = true;
@@ -2330,7 +2351,7 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
       QVector<QCPAxis*> axes = QVector<QCPAxis*>() << xAxis << yAxis << xAxis2 << yAxis2;
       for (int i=0; i<axes.size(); ++i)
       {
-        QCPAxis::SelectablePart part = axes.at(i)->selectTest(event->pos());
+        QCPAxis::SelectablePart part = axes.at(i)->selectTestParts(event->pos());
         if (part != QCPAxis::spNone)
         {
           foundHit = true;
@@ -2339,8 +2360,8 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
         }
       }
     }
+  */
   } // was a click end
-  
   if (doReplot)
     replot();
   
@@ -2391,153 +2412,6 @@ void QCustomPlot::wheelEvent(QWheelEvent *event)
   }
   
   QWidget::wheelEvent(event);
-}
-
-/*! \internal
-  
-  Handles a mouse \a event for the plottable selection interaction. Returns true, when a selectable
-  plottable was hit by the mouse event. The output variable \a modified is set to true when the
-  selection state of a plottable has changed.
-  
-  When \a additiveSelecton is true, any new selections become selected in addition to the recent
-  selections. The recent selections are not cleared. Further, clicking on one object multiple times
-  in additive selection mode, toggles the selection of that object on and off.
-  
-  To indicate that all plottables that are selectable shall be deselected, pass 0 as \a event.
-  
-  Unlike for axis and legend selection, this function can't be exported to the respective class
-  itself (i.e. QCPAbstractPlottable). The function needs to know the distance of the mouse event to
-  all plottables in the plot, in order to choose the plottable with the smallest distance. This
-  wouldn't work if it were local to a single plottable.
-*/
-bool QCustomPlot::handlePlottableSelection(QMouseEvent *event, bool additiveSelection, bool &modified)
-{
-  // Note: This code is basically identical to handleItemSelection, only for plottables
-  
-  bool selectionFound = false;
-  if (event)
-  {
-    QCPAbstractPlottable *plottableSelection = plottableAt(event->pos(), true);
-    // handle selection of found plottable:
-    if (plottableSelection)
-    {
-      selectionFound = true;
-      if (!plottableSelection->selected() || additiveSelection)
-      {
-        plottableSelection->setSelected(!plottableSelection->selected());
-        modified = true;
-      }
-    }
-    // deselect all others (if plottableSelection is 0, all plottables are deselected):
-    if (!additiveSelection)
-    {
-      for (int i=0; i<mPlottables.size(); ++i)
-      {
-        if (mPlottables.at(i) != plottableSelection && mPlottables.at(i)->selected() && mPlottables.at(i)->selectable())
-        {
-          mPlottables.at(i)->setSelected(false);
-          modified = true;
-        }
-      }
-    }
-  } else // event == 0, so deselect selectable plottables
-  {
-    for (int i=0; i<mPlottables.size(); ++i)
-    {
-      if (mPlottables.at(i)->selected() && mPlottables.at(i)->selectable())
-      {
-        mPlottables.at(i)->setSelected(false);
-        modified = true;
-      }
-    }
-  }
-  return selectionFound;
-}
-
-/*! \internal
-  
-  Handles a mouse \a event for the item selection interaction. Returns true, when a selectable
-  item was hit by the mouse event. The output variable \a modified is set to true when the
-  selection state of an item has changed.
-  
-  When \a additiveSelecton is true, any new selections become selected in addition to the recent
-  selections. The recent selections are not cleared. Further, clicking on one object multiple times
-  in additive selection mode, toggles the selection of that object on and off.
-  
-  To indicate that all items that are selectable shall be deselected, pass 0 as \a event.
-  
-  Unlike for axis and legend selection, this function can't be exported to the respective class
-  itself (i.e. QCPAbstractItem). The function needs to know the distance of the mouse event to
-  all items in the plot, in order to choose the item with the smallest distance. This
-  wouldn't work if it were local to a single item.
-*/
-bool QCustomPlot::handleItemSelection(QMouseEvent *event, bool additiveSelection, bool &modified)
-{
-  // Note: This code is basically identical to handlePlottableSelection, only for items
-  
-  bool selectionFound = false;
-  if (event)
-  {
-    QCPAbstractItem *itemSelection = itemAt(event->pos(), true);
-    // handle selection of found plottable:
-    if (itemSelection)
-    {
-      selectionFound = true;
-      if (!itemSelection->selected() || additiveSelection)
-      {
-        itemSelection->setSelected(!itemSelection->selected());
-        modified = true;
-      }
-    }
-    // deselect all others (if itemSelection is 0, all items are deselected):
-    if (!additiveSelection)
-    {
-      for (int i=0; i<mItems.size(); ++i)
-      {
-        if (mItems.at(i) != itemSelection && mItems.at(i)->selected() && mItems.at(i)->selectable())
-        {
-          mItems.at(i)->setSelected(false);
-          modified = true;
-        }
-      }
-    }
-  } else // event == 0, so deselect selectable items
-  {
-    for (int i=0; i<mItems.size(); ++i)
-    {
-      if (mItems.at(i)->selected() && mItems.at(i)->selectable())
-      {
-        mItems.at(i)->setSelected(false);
-        modified = true;
-      }
-    }
-  }
-  return selectionFound;
-}
-
-/*! \internal
-  
-  Handles a mouse \a event for the axis selection interaction. Returns true, when a selectable axis
-  part was hit by the mouse event. The output variable \a modified is set to true when the
-  selection state of an axis has changed.
-  
-  When \a additiveSelecton is true, any new selections become selected in addition to the recent
-  selections. The recent selections are not cleared. Further, clicking on one object multiple times
-  in additive selection mode, toggles the selection of that object on and off.
-  
-  To indicate that all axes shall be deselected, pass 0 as \a event.
-*/
-bool QCustomPlot::handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified)
-{
-  QList<QCPAxis*> allAxes;
-  QList<QCPAxisRect*> rects = axisRects();
-  for (int i=0; i<rects.size(); ++i)
-    allAxes << rects.at(i)->axes();
-  
-  bool selectionFound = false;
-  for (int i=0; i<allAxes.size(); ++i)
-    selectionFound |= allAxes.at(i)->handleAxisSelection((!selectionFound || additiveSelection) ? event : 0, additiveSelection, modified);
-  return selectionFound;
 }
 
 /*! \internal

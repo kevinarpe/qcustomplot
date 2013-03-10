@@ -109,9 +109,10 @@ void QCPItemLine::setTail(const QCPLineEnding &tail)
 }
 
 /* inherits documentation from base class */
-double QCPItemLine::selectTest(const QPointF &pos) const
+double QCPItemLine::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (!mVisible)
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
     return -1;
   
   return qSqrt(distSqrToLine(start->pixelPoint(), end->pixelPoint(), pos));

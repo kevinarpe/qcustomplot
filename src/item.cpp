@@ -818,7 +818,7 @@ void QCPAbstractItem::setSelectable(bool selectable)
   
   emits the \ref selectionChanged signal when \a selected is different from the previous selection state.
   
-  \see selectTest
+  \see setSelectable, selectTest
 */
 void QCPAbstractItem::setSelected(bool selected)
 {
@@ -1072,3 +1072,19 @@ QCPItemAnchor *QCPAbstractItem::createAnchor(const QString &name, int anchorId)
   mAnchors.append(newAnchor);
   return newAnchor;
 }
+
+void QCPAbstractItem::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+{
+  Q_UNUSED(event)
+  Q_UNUSED(additive)
+  Q_UNUSED(details)
+  if (mSelectable)
+    setSelected(true);
+}
+
+void QCPAbstractItem::deselectEvent()
+{
+  if (mSelectable)
+    setSelected(false);
+}
+

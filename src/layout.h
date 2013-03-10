@@ -96,11 +96,12 @@ protected:
   QHash<QCP::MarginSide, QCPMarginGroup*> mMarginGroups;
   
   virtual int calculateAutoMargin(QCP::MarginSide side);
-  bool selectTest(const QPointF &pos) const;
-  
+  virtual bool hitTest(const QPointF &pos) const;
+
 private:
   Q_DISABLE_COPY(QCPLayoutElement)
   
+  friend class QCustomPlot;
   friend class QCPLayout;
   friend class QCPMarginGroup;
 };

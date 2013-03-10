@@ -261,7 +261,7 @@ int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
   return QCP::getMarginValue(mMargins, side);
 }
 
-bool QCPLayoutElement::selectTest(const QPointF &pos) const
+bool QCPLayoutElement::hitTest(const QPointF &pos) const
 {
   return QRectF(mOuterRect).contains(pos);
 }

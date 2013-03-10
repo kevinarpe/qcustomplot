@@ -71,7 +71,7 @@ public:
   void rescaleKeyAxis(bool onlyEnlarge=false) const;
   void rescaleValueAxis(bool onlyEnlarge=false) const;
   virtual void clearData() = 0;
-  virtual double selectTest(const QPointF &pos) const = 0;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const = 0;
   virtual bool addToLegend();
   virtual bool removeFromLegend() const;
   
@@ -91,7 +91,7 @@ protected:
   QPen mPen, mSelectedPen;
   QBrush mBrush, mSelectedBrush;
   QWeakPointer<QCPAxis> mKeyAxis, mValueAxis;
-  bool mSelected, mSelectable;
+  bool mSelectable, mSelected;
   
   virtual QRect clipRect() const;
   virtual void draw(QCPPainter *painter) = 0;
@@ -113,6 +113,10 @@ protected:
   
   // selection test helpers:
   double distSqrToLine(const QPointF &start, const QPointF &end, const QPointF &point) const;
+  
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
+  virtual void deselectEvent();
 
 private:
   Q_DISABLE_COPY(QCPAbstractPlottable)

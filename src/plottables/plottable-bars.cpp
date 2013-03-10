@@ -364,8 +364,12 @@ void QCPBars::clearData()
 }
 
 /* inherits documentation from base class */
-double QCPBars::selectTest(const QPointF &pos) const
+double QCPBars::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
+    return -1;
+  
   QCPBarDataMap::ConstIterator it;
   double posKey, posValue;
   pixelsToCoords(pos, posKey, posValue);

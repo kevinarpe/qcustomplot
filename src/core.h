@@ -244,11 +244,6 @@ protected:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
   
-  // event helpers:
-  virtual bool handlePlottableSelection(QMouseEvent *event, bool additiveSelection, bool &modified);  
-  virtual bool handleItemSelection(QMouseEvent *event, bool additiveSelection, bool &modified);  
-  virtual bool handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified);
-  
   // introduced methods:
   virtual void draw(QCPPainter *painter);
   virtual void axisRemoved(QCPAxis *axis);

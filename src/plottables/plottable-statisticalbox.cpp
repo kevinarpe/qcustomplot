@@ -308,8 +308,11 @@ void QCPStatisticalBox::clearData()
 }
 
 /* inherits documentation from base class */
-double QCPStatisticalBox::selectTest(const QPointF &pos) const
+double QCPStatisticalBox::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
+    return -1;
   if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
   
   double posKey, posValue;

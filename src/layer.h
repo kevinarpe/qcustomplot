@@ -78,7 +78,10 @@ public:
   bool setLayer(const QString &layerName);
   void setAntialiased(bool enabled);
   
+  // non-property methods:
   bool isAbove(QCPLayerable *other) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  
 protected:
   bool mVisible;
   QCustomPlot *mParentPlot;
@@ -87,11 +90,15 @@ protected:
   
   // non-property methods:
   bool moveToLayer(QCPLayer *layer, bool prepend);
-  
   void applyAntialiasingHint(QCPPainter *painter, bool localAntialiased, QCP::AntialiasedElement overrideElement) const;
-  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const = 0;
+  
+  // introduced virtual functions:
   virtual QRect clipRect() const;
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const = 0;
   virtual void draw(QCPPainter *painter) = 0;
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
+  virtual void deselectEvent();
   
 private:
   Q_DISABLE_COPY(QCPLayerable)

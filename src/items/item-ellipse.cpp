@@ -113,8 +113,12 @@ void QCPItemEllipse::setSelectedBrush(const QBrush &brush)
 }
 
 /* inherits documentation from base class */
-double QCPItemEllipse::selectTest(const QPointF &pos) const
+double QCPItemEllipse::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
+    return -1;
+  
   double result = -1;
   QPointF p1 = topLeft->pixelPoint();
   QPointF p2 = bottomRight->pixelPoint();

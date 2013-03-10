@@ -56,6 +56,8 @@ public:
   void setSelectable(bool selectable);
   void setSelected(bool selected);
   
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  
 signals:
   void selectionChanged(bool selected);
   
@@ -65,12 +67,16 @@ protected:
   QColor mTextColor;
   QFont mSelectedFont;
   QColor mSelectedTextColor;
+  QRect mTextBoundingRect;
   bool mSelectable, mSelected;
   
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;
+  
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
+  virtual void deselectEvent();
   
   QFont mainFont() const;
   QColor mainTextColor() const;
