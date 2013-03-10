@@ -35,6 +35,7 @@ class QCPLayer;
 class QCPAbstractPlottable;
 class QCPAbstractItem;
 class QCPGraph;
+class QCPPlotTitle;
 
 class QCP_LIB_DECL QCustomPlot : public QWidget
 {
@@ -198,8 +199,8 @@ signals:
   void axisDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part, QMouseEvent *event);
   void legendClick(QCPLegend *legend, QCPAbstractLegendItem *item, QMouseEvent *event);
   void legendDoubleClick(QCPLegend *legend,  QCPAbstractLegendItem *item, QMouseEvent *event);
-  void titleClick(QMouseEvent *event);
-  void titleDoubleClick(QMouseEvent *event);
+  void titleClick(QMouseEvent *event, QCPPlotTitle *title);
+  void titleDoubleClick(QMouseEvent *event, QCPPlotTitle *title);
   
   void selectionChangedByUser();
   void beforeReplot();
@@ -249,7 +250,8 @@ protected:
   virtual void axisRemoved(QCPAxis *axis);
   
   // helpers:
-  void updateLayerIndices();
+  void updateLayerIndices() const;
+  QCPLayerable *layerableAt(const QPointF &pos, bool onlySelectable, QVariant *selectionDetails=0) const;
   
   friend class QCPLegend;
   friend class QCPAxis;

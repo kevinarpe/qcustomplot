@@ -165,8 +165,8 @@ protected:
   QCPItemAnchor *createAnchor(const QString &name, int anchorId);
   
   // events:
-  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
-  virtual void deselectEvent();
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
   
 private:
   Q_DISABLE_COPY(QCPAbstractItem)

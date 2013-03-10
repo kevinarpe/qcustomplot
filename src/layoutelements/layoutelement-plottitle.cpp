@@ -112,19 +112,28 @@ QSize QCPPlotTitle::maximumSizeHint() const
   return result;
 }
 
-void QCPPlotTitle::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+void QCPPlotTitle::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
-  Q_UNUSED(additive)
   Q_UNUSED(details)
   if (mSelectable)
-    setSelected(true);
+  {
+    bool selBefore = mSelected;
+    setSelected(additive ? !mSelected : true);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
 }
 
-void QCPPlotTitle::deselectEvent()
+void QCPPlotTitle::deselectEvent(bool *selectionStateChanged)
 {
   if (mSelectable)
+  {
+    bool selBefore = mSelected;
     setSelected(false);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
 }
 
 double QCPPlotTitle::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const

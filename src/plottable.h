@@ -115,8 +115,8 @@ protected:
   double distSqrToLine(const QPointF &start, const QPointF &end, const QPointF &point) const;
   
   // events:
-  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
-  virtual void deselectEvent();
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
 
 private:
   Q_DISABLE_COPY(QCPAbstractPlottable)

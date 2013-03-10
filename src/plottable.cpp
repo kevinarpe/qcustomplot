@@ -704,17 +704,26 @@ double QCPAbstractPlottable::distSqrToLine(const QPointF &start, const QPointF &
     return (a-p).lengthSquared();
 }
 
-void QCPAbstractPlottable::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+void QCPAbstractPlottable::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
-  Q_UNUSED(additive)
   Q_UNUSED(details)
   if (mSelectable)
-    setSelected(true);
+  {
+    bool selBefore = mSelected;
+    setSelected(additive ? !mSelected : true);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
 }
 
-void QCPAbstractPlottable::deselectEvent()
+void QCPAbstractPlottable::deselectEvent(bool *selectionStateChanged)
 {
   if (mSelectable)
+  {
+    bool selBefore = mSelected;
     setSelected(false);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
 }

@@ -173,7 +173,7 @@ void QCPAbstractLegendItem::setSelected(bool selected)
 double QCPAbstractLegendItem::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   Q_UNUSED(details)
-  if (onlySelectable && !mSelectable)
+  if (onlySelectable && (!mSelectable || !mParentLegend->selectableParts().testFlag(QCPLegend::spItems)))
     return -1;
   
   if (mRect.contains(pos.toPoint()))
@@ -192,19 +192,28 @@ QRect QCPAbstractLegendItem::clipRect() const
   return mOuterRect;
 }
 
-void QCPAbstractLegendItem::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+void QCPAbstractLegendItem::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
-  Q_UNUSED(additive)
   Q_UNUSED(details)
-  if (mSelectable)
-    setSelected(true);
+  if (mSelectable && mParentLegend->selectableParts().testFlag(QCPLegend::spItems))
+  {
+    bool selBefore = mSelected;
+    setSelected(additive ? !mSelected : true);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
 }
 
-void QCPAbstractLegendItem::deselectEvent()
+void QCPAbstractLegendItem::deselectEvent(bool *selectionStateChanged)
 {
-  if (mSelectable)
+  if (mSelectable && mParentLegend->selectableParts().testFlag(QCPLegend::spItems))
+  {
+    bool selBefore = mSelected;
     setSelected(false);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -845,16 +854,25 @@ double QCPLegend::selectTest(const QPointF &pos, bool onlySelectable, QVariant *
   return -1;
 }
 
-void QCPLegend::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+void QCPLegend::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
-  Q_UNUSED(additive)
   if (details.value<SelectablePart>() == spLegendBox && mSelectableParts.testFlag(spLegendBox))
-    setSelectedParts(mSelectedParts | spLegendBox);
+  {
+    SelectableParts selBefore = mSelectedParts;
+    setSelectedParts(additive ? mSelectedParts^spLegendBox : mSelectedParts|spLegendBox); // no need to unset spItems in !additive case, because they will be deselected by QCustomPlot (they're normal QCPLayerables with own deselectEvent)
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelectedParts != selBefore;
+  }
 }
 
-void QCPLegend::deselectEvent()
+void QCPLegend::deselectEvent(bool *selectionStateChanged)
 {
   if (mSelectableParts.testFlag(spLegendBox))
+  {
+    SelectableParts selBefore = mSelectedParts;
     setSelectedParts(selectedParts() & ~spLegendBox);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelectedParts != selBefore;
+  }
 }

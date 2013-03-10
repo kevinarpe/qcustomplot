@@ -31,6 +31,7 @@
 #include "axis.h"
 #include "layoutelements/layoutelement-axisrect.h"
 #include "layoutelements/layoutelement-legend.h"
+#include "layoutelements/layoutelement-plottitle.h"
 #include "plottable.h"
 #include "plottables/plottable-graph.h"
 #include "item.h"
@@ -1737,7 +1738,8 @@ QList<QCPLegend*> QCustomPlot::selectedLegends() const
 }
 
 /*!
-  Deselects plottables, items, axes and legends of the QCustomPlot.
+  Deselects plottables, items, axes and legends of the QCustomPlot. You may pass a list of
+  QCPLayerables as \a exceptions whose selection state will not be modified.
   
   Since calling this function is not a user interaction, this does not emit the \ref
   selectionChangedByUser signal. The individual selectionChanged signals are emitted though, if the
@@ -1751,7 +1753,7 @@ void QCustomPlot::deselectAll()
   {
     QList<QCPLayerable*> layerables = mLayers.at(i)->children();
     for (int k=0; k<layerables.size(); ++k)
-      layerables.at(k)->deselectEvent();
+      layerables.at(k)->deselectEvent(0);
   }
 }
 
@@ -2094,50 +2096,24 @@ void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
 {
   emit mouseDoubleClick(event);
   
+  QVariant details;
+  QCPLayerable *clickedLayerable = layerableAt(event->pos(), false, &details);
+  
   // emit specialized object double click signals:
-  bool foundHit = false;
-  // for legend:
-  if (receivers(SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*))) > 0)
-  {
-    if (legend->hitTest(event->pos()))
-    {
-      emit legendDoubleClick(legend, legend->itemAtPos(event->pos()), event);
-      foundHit = true;
-    }
-  }
-  // for plottables:
-  if (!foundHit && receivers(SIGNAL(plottableDoubleClick(QCPAbstractPlottable*,QMouseEvent*))) > 0)
-  {
-    if (QCPAbstractPlottable *ap = plottableAt(event->pos(), false))
-    {
-      emit plottableDoubleClick(ap, event);
-      foundHit = true;
-    }
-  }
-  // for items:
-  if (!foundHit && receivers(SIGNAL(itemDoubleClick(QCPAbstractItem*,QMouseEvent*))) > 0)
-  {
-    if (QCPAbstractItem *ai = itemAt(event->pos(), false))
-    {
-      emit itemDoubleClick(ai, event);
-      foundHit = true;
-    }
-  }
-  // for axes:
-  if (!foundHit && receivers(SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*))) > 0)
-  {
-    QVector<QCPAxis*> axes = QVector<QCPAxis*>() << xAxis << yAxis << xAxis2 << yAxis2;
-    for (int i=0; i<axes.size(); ++i)
-    {
-      QCPAxis::SelectablePart part = axes.at(i)->getPartAt(event->pos());
-      if (part != QCPAxis::spNone)
-      {
-        foundHit = true;
-        emit axisDoubleClick(axes.at(i), part, event);
-        break;
-      }
-    }
-  }
+  if (QCPAbstractPlottable *ap = dynamic_cast<QCPAbstractPlottable*>(clickedLayerable))
+    emit plottableDoubleClick(ap, event);
+  else if (QCPAxis *ax = dynamic_cast<QCPAxis*>(clickedLayerable))
+    emit axisDoubleClick(ax, details.value<QCPAxis::SelectablePart>(), event);
+  else if (QCPAbstractItem *ai = dynamic_cast<QCPAbstractItem*>(clickedLayerable))
+    emit itemDoubleClick(ai, event);
+  else if (QCPLegend *lg = dynamic_cast<QCPLegend*>(clickedLayerable))
+    emit legendDoubleClick(lg, 0, event);
+  else if (QCPAbstractLegendItem *li = dynamic_cast<QCPAbstractLegendItem*>(clickedLayerable))
+    emit legendDoubleClick(li->parentLegend(), li, event);
+  else if (QCPPlotTitle *pt = dynamic_cast<QCPPlotTitle*>(clickedLayerable))
+    emit titleDoubleClick(event, pt);
+  
+  QWidget::mouseDoubleClickEvent(event);
 }
 
 /*! \internal
@@ -2254,114 +2230,62 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
     doReplot = true;
   }
   
-  // determine whether it was a drag or click operation:
-  if ((mDragStart-event->pos()).manhattanLength() < 5) // was a click
+  if ((mDragStart-event->pos()).manhattanLength() < 5) // determine whether it was a click operation
   {
-    bool additive = event->modifiers().testFlag(mMultiSelectModifier);
-    QList<QCPLayerable*> layerables;
-    for (int i=0; i<layerCount(); ++i)
-      layerables << layer(i)->children();
-    
-    // select highest most layerable that succeeds select test (TODO):
-    // todo: make nested loop over layers and layer children. Within one layer, the distance decides. between layers, the topmost layered object gets selected
-    QCPLayerable *newSelection = 0;
-    for (int i=layerables.size()-1; i>=0; --i)
+    if (event->button() == Qt::LeftButton)
     {
-      if (!layerables.at(i)->visible())
-        continue;
-      QVariant details; // selectTest will store selection details in here which we then pass on to selectEvent if selection succeeds
-      double dist = layerables.at(i)->selectTest(event->pos(), true, &details);
-      if (dist >= 0 && dist < selectionTolerance())
+      // handle selection mechanism:
+      // TODO: mInteractions filter
+      QVariant details;
+      QCPLayerable *clickedLayerable = layerableAt(event->pos(), true, &details);
+      bool selectionStateChanged = false;
+      bool additive = event->modifiers().testFlag(mMultiSelectModifier);
+      if (clickedLayerable)
       {
-        layerables.at(i)->selectEvent(event, additive, details);
-        newSelection = layerables.at(i);
-        break;
+        // a layerable was actually clicked, call its selectEvent:
+        bool selChanged = false;
+        clickedLayerable->selectEvent(event, additive, details, &selChanged);
+        selectionStateChanged |= selChanged;
       }
-    }
-    // deselect all others if not additive selection:
-    if (!additive)
-    {
-      for (int i=0; i<layerables.size(); ++i)
+      // deselect all other layerables if not additive selection:
+      if (!additive)
       {
-        if (layerables.at(i) != newSelection)
-          layerables.at(i)->deselectEvent();
+        for (int i=0; i<mLayers.size(); ++i)
+        {
+          QList<QCPLayerable*> layerables = mLayers.at(i)->children();
+          for (int k=0; k<layerables.size(); ++k)
+          {
+            if (layerables.at(k) != clickedLayerable)
+            {
+              bool selChanged = false;
+              layerables.at(k)->deselectEvent(&selChanged);
+              selectionStateChanged |= selChanged;
+            }
+          }
+        }
       }
-    }
-    doReplot = true;
-    
-    
-    /*
-    // Mouse selection interaction:
-    if ((mInteractions & (iSelectPlottables|iSelectItems|iSelectAxes|iSelectLegend)) > 0 
-        && event->button() == Qt::LeftButton)
-    {
-      bool selectionFound = false;
-      bool emitChangedSignal = false;
-      bool additiveSelection = mInteractions.testFlag(iMultiSelect) && event->modifiers().testFlag(mMultiSelectModifier);
-      // Mouse selection of legend:
-      if (mInteractions.testFlag(iSelectLegend))
-        selectionFound |= legend->handleLegendSelection(event, additiveSelection, emitChangedSignal);
-      // Mouse selection of plottables:
-      if (mInteractions.testFlag(iSelectPlottables))
-        selectionFound |= handlePlottableSelection((!selectionFound || additiveSelection) ? event : 0, additiveSelection, emitChangedSignal);
-      // Mouse selection of items:
-      if (mInteractions.testFlag(iSelectItems))
-        selectionFound |= handleItemSelection((!selectionFound || additiveSelection) ? event : 0, additiveSelection, emitChangedSignal);
-      // Mouse selection of axes:
-      if (mInteractions.testFlag(iSelectAxes))
-        selectionFound |= handleAxisSelection((!selectionFound || additiveSelection) ? event : 0, additiveSelection, emitChangedSignal);
-
-      if (emitChangedSignal)
-        emit selectionChangedByUser();
       doReplot = true;
+      if (selectionStateChanged)
+        emit selectionChangedByUser();
     }
     
     // emit specialized object click signals:
-    bool foundHit = false;
-    // for legend:
-    if (receivers(SIGNAL(legendClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*))) > 0)
-    {
-      if (legend->hitTest(event->pos()))
-      {
-        emit legendClick(legend, legend->itemAtPos(event->pos()), event);
-        foundHit = true;
-      }
-    }
-    // for plottables:
-    if (!foundHit && receivers(SIGNAL(plottableClick(QCPAbstractPlottable*,QMouseEvent*))) > 0)
-    {
-      if (QCPAbstractPlottable *ap = plottableAt(event->pos(), false))
-      {
-        emit plottableClick(ap, event);
-        foundHit = true;
-      }
-    }
-    // for items:
-    if (!foundHit && receivers(SIGNAL(itemClick(QCPAbstractItem*,QMouseEvent*))) > 0)
-    {
-      if (QCPAbstractItem *ai = itemAt(event->pos(), false))
-      {
-        emit itemClick(ai, event);
-        foundHit = true;
-      }
-    }
-    // for axes:
-    if (!foundHit && receivers(SIGNAL(axisClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*))) > 0)
-    {
-      QVector<QCPAxis*> axes = QVector<QCPAxis*>() << xAxis << yAxis << xAxis2 << yAxis2;
-      for (int i=0; i<axes.size(); ++i)
-      {
-        QCPAxis::SelectablePart part = axes.at(i)->selectTestParts(event->pos());
-        if (part != QCPAxis::spNone)
-        {
-          foundHit = true;
-          emit axisClick(axes.at(i), part, event);
-          break;
-        }
-      }
-    }
-  */
-  } // was a click end
+    QVariant details;
+    QCPLayerable *clickedLayerable = layerableAt(event->pos(), false, &details); // for these signals, selectability is ignored, that's why we call this again with onlySelectable set to false
+    if (QCPAbstractPlottable *ap = dynamic_cast<QCPAbstractPlottable*>(clickedLayerable))
+      emit plottableClick(ap, event);
+    else if (QCPAxis *ax = dynamic_cast<QCPAxis*>(clickedLayerable))
+      emit axisClick(ax, details.value<QCPAxis::SelectablePart>(), event);
+    else if (QCPAbstractItem *ai = dynamic_cast<QCPAbstractItem*>(clickedLayerable))
+      emit itemClick(ai, event);
+    else if (QCPLegend *lg = dynamic_cast<QCPLegend*>(clickedLayerable))
+      emit legendClick(lg, 0, event);
+    else if (QCPAbstractLegendItem *li = dynamic_cast<QCPAbstractLegendItem*>(clickedLayerable))
+      emit legendClick(li->parentLegend(), li, event);
+    else if (QCPPlotTitle *pt = dynamic_cast<QCPPlotTitle*>(clickedLayerable))
+      emit titleClick(event, pt);
+  }
+  
   if (doReplot)
     replot();
   
@@ -2464,10 +2388,36 @@ void QCustomPlot::axisRemoved(QCPAxis *axis)
   // Note: No need to take care of range drag axes and range zoom axes, because they are stored in smart pointers
 }
 
-void QCustomPlot::updateLayerIndices()
+void QCustomPlot::updateLayerIndices() const
 {
   for (int i=0; i<mLayers.size(); ++i)
     mLayers.at(i)->mIndex = i;
+}
+
+QCPLayerable *QCustomPlot::layerableAt(const QPointF &pos, bool onlySelectable, QVariant *selectionDetails) const
+{
+  for (int layerIndex=mLayers.size()-1; layerIndex>=0; --layerIndex)
+  {
+    const QList<QCPLayerable*> layerables = mLayers.at(layerIndex)->children();
+    double minimumDistance = selectionTolerance()*1.1;
+    QCPLayerable *minimumDistanceLayerable = 0;
+    for (int i=layerables.size()-1; i>=0; --i)
+    {
+      if (!layerables.at(i)->visible())
+        continue;
+      QVariant details;
+      double dist = layerables.at(i)->selectTest(pos, onlySelectable, &details);
+      if (dist >= 0 && dist < minimumDistance)
+      {
+        minimumDistance = dist;
+        minimumDistanceLayerable = layerables.at(i);
+        if (selectionDetails) *selectionDetails = details;
+      }
+    }
+    if (minimumDistance < selectionTolerance())
+      return minimumDistanceLayerable;
+  }
+  return 0;
 }
 
 /*!

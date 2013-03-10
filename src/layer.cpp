@@ -407,13 +407,15 @@ QRect QCPLayerable::clipRect() const
     return QRect();
 }
 
-void QCPLayerable::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+void QCPLayerable::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
   Q_UNUSED(additive)
   Q_UNUSED(details)
+  Q_UNUSED(selectionStateChanged)
 }
 
-void QCPLayerable::deselectEvent()
+void QCPLayerable::deselectEvent(bool *selectionStateChanged)
 {
+  Q_UNUSED(selectionStateChanged)
 }

@@ -97,8 +97,8 @@ protected:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const = 0;
   virtual void draw(QCPPainter *painter) = 0;
   // events:
-  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
-  virtual void deselectEvent();
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
   
 private:
   Q_DISABLE_COPY(QCPLayerable)

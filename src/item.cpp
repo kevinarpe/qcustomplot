@@ -1073,18 +1073,27 @@ QCPItemAnchor *QCPAbstractItem::createAnchor(const QString &name, int anchorId)
   return newAnchor;
 }
 
-void QCPAbstractItem::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+void QCPAbstractItem::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
-  Q_UNUSED(additive)
   Q_UNUSED(details)
   if (mSelectable)
-    setSelected(true);
+  {
+    bool selBefore = mSelected;
+    setSelected(additive ? !mSelected : true);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
 }
 
-void QCPAbstractItem::deselectEvent()
+void QCPAbstractItem::deselectEvent(bool *selectionStateChanged)
 {
   if (mSelectable)
+  {
+    bool selBefore = mSelected;
     setSelected(false);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
 }
 

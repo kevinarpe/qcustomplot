@@ -386,8 +386,8 @@ protected:
   virtual void getMaxTickLabelSize(const QFont &font, const QString &text, QSize *tickLabelsSize) const;
   
   // events:
-  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
-  virtual void deselectEvent();
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
   
   // basic non virtual helpers:
   void visibleTickBounds(int &lowIndex, int &highIndex) const;

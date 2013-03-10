@@ -2432,17 +2432,25 @@ void QCPAxis::getMaxTickLabelSize(const QFont &font, const QString &text,  QSize
     tickLabelsSize->setHeight(finalSize.height());
 }
 
-void QCPAxis::selectEvent(QMouseEvent *event, bool additive, const QVariant &details)
+void QCPAxis::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
   SelectablePart part = details.value<SelectablePart>();
   if (mSelectableParts.testFlag(part))
-    setSelectedParts(additive ? mSelectedParts|part : part);
+  {
+    SelectableParts selBefore = mSelectedParts;
+    setSelectedParts(additive ? mSelectedParts^part : part);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelectedParts != selBefore;
+  }
 }
 
-void QCPAxis::deselectEvent()
+void QCPAxis::deselectEvent(bool *selectionStateChanged)
 {
+  SelectableParts selBefore = mSelectedParts;
   setSelectedParts(mSelectedParts & ~mSelectableParts);
+  if (selectionStateChanged)
+    *selectionStateChanged = mSelectedParts != selBefore;
 }
 
 /*! \internal

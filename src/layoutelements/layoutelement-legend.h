@@ -41,6 +41,7 @@ public:
   explicit QCPAbstractLegendItem(QCPLegend *parent);
   
   // getters:
+  QCPLegend *parentLegend() const { return mParentLegend; }
   QFont font() const { return mFont; }
   QColor textColor() const { return mTextColor; }
   QFont selectedFont() const { return mSelectedFont; }
@@ -75,8 +76,8 @@ protected:
   virtual void draw(QCPPainter *painter) = 0;
   
   // events:
-  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
-  virtual void deselectEvent();
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
   
 private:
   Q_DISABLE_COPY(QCPAbstractLegendItem)
@@ -192,8 +193,8 @@ protected:
   virtual void draw(QCPPainter *painter);
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   // events:
-  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details);
-  virtual void deselectEvent();
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
   
   // drawing helpers:
   QPen getBorderPen() const;
