@@ -41,13 +41,14 @@ public:
   // getters:
   QCustomPlot *parentPlot() const { return mParentPlot; }
   QString name() const { return mName; }
-  int index() const;
+  int index() const { return mIndex; }
   QList<QCPLayerable*> children() const { return mChildren; }
   
 protected:
   QCustomPlot *mParentPlot;
   QString mName;
   QList<QCPLayerable*> mChildren;
+  int mIndex;
   
   void addChild(QCPLayerable *layerable, bool prepend);
   void removeChild(QCPLayerable *layerable);
@@ -55,6 +56,7 @@ protected:
 private:
   Q_DISABLE_COPY(QCPLayer)
   
+  friend class QCustomPlot;
   friend class QCPLayerable;
 };
 
@@ -76,6 +78,7 @@ public:
   bool setLayer(const QString &layerName);
   void setAntialiased(bool enabled);
   
+  bool isAbove(QCPLayerable *other) const;
 protected:
   bool mVisible;
   QCustomPlot *mParentPlot;

@@ -82,6 +82,14 @@
   i.e. layerables with higher indices are drawn above layerables with lower indices.
 */
 
+/*! \fn int QCPLayer::index() const
+  
+  Returns the index this layer has in the QCustomPlot. The index is the integer number by which this layer can be
+  accessed via QCustomPlot::layer.
+  
+  Layers with greater indices will be drawn above layers with smaller indices.
+*/
+
 /* end documentation of inline functions */
 
 /*!
@@ -95,7 +103,8 @@
 QCPLayer::QCPLayer(QCustomPlot *parentPlot, const QString &layerName) :
   QObject(parentPlot),
   mParentPlot(parentPlot),
-  mName(layerName)
+  mName(layerName),
+  mIndex(-1) // will be set to a proper value by the QCustomPlot layer creation function
 {
   // Note: no need to make sure layerName is unique, because layer
   // management is done with QCustomPlot functions.
@@ -113,17 +122,6 @@ QCPLayer::~QCPLayer()
   
   if (mParentPlot->currentLayer() == this)
     qDebug() << Q_FUNC_INFO << "The parent plot's mCurrentLayer will be a dangling pointer. Should have been set to a valid layer or 0 beforehand.";
-}
-
-/*!
-  Returns the index this layer has in the QCustomPlot. The index is the integer number by which this layer can be
-  accessed via QCustomPlot::layer.
-  
-  Layers with greater indices will be drawn above layers with smaller indices.
-*/
-int QCPLayer::index() const
-{
-  return mParentPlot->mLayers.indexOf(const_cast<QCPLayer*>(this));
 }
 
 /*! \internal
@@ -308,6 +306,38 @@ bool QCPLayerable::setLayer(const QString &layerName)
 void QCPLayerable::setAntialiased(bool enabled)
 {
   mAntialiased = enabled;
+}
+
+bool QCPLayerable::isAbove(QCPLayerable *other) const
+{
+  if (other->parentPlot() != mParentPlot)
+  {
+    qDebug() << Q_FUNC_INFO << "Other layerable is not in same QCustomPlot as this";
+    return false;
+  }
+  
+  if (layer() == other->layer())
+  {
+    const QList<QCPLayerable*> layerables = mLayer->children();
+    for (int i=layerables.size()-1; i>=0; --i)
+    {
+      if (layerables.at(i) == this)
+        return true;
+      if (layerables.at(i) == other)
+        return false;
+    }
+    qDebug() << Q_FUNC_INFO << "Neither this nor other layerable found in layer. Layering mechanism out of sync.";
+    return false;
+  } else
+    return layer()->index() > other->layer()->index();
+}
+
+double QCPLayerable::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
+{
+  Q_UNUSED(pos)
+  Q_UNUSED(onlySelectable)
+  Q_UNUSED(details)
+  return -1.0;
 }
 
 /*! \internal

@@ -243,6 +243,7 @@ protected:
   virtual void mouseMoveEvent(QMouseEvent *event);
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
+  
   // event helpers:
   virtual bool handlePlottableSelection(QMouseEvent *event, bool additiveSelection, bool &modified);  
   virtual bool handleItemSelection(QMouseEvent *event, bool additiveSelection, bool &modified);  
@@ -251,6 +252,9 @@ protected:
   // introduced methods:
   virtual void draw(QCPPainter *painter);
   virtual void axisRemoved(QCPAxis *axis);
+  
+  // helpers:
+  void updateLayerIndices();
   
   friend class QCPLegend;
   friend class QCPAxis;

@@ -440,6 +440,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   mLayers.append(new QCPLayer(this, "main"));
   mLayers.append(new QCPLayer(this, "axes"));
   mLayers.append(new QCPLayer(this, "legend"));
+  updateLayerIndices();
   setCurrentLayer("main");
   
   // create initial layout, axis rect and axes:
@@ -1556,6 +1557,7 @@ bool QCustomPlot::addLayer(const QString &name, QCPLayer *otherLayer, QCustomPlo
     
   QCPLayer *newLayer = new QCPLayer(this, name);
   mLayers.insert(otherLayer->index() + (insertMode==limAbove ? 1:0), newLayer);
+  updateLayerIndices();
   return true;
 }
 
@@ -1606,6 +1608,7 @@ bool QCustomPlot::removeLayer(QCPLayer *layer)
   // remove layer:
   delete layer;
   mLayers.removeOne(layer);
+  updateLayerIndices();
   return true;
 }
 
@@ -1632,6 +1635,7 @@ bool QCustomPlot::moveLayer(QCPLayer *layer, QCPLayer *otherLayer, QCustomPlot::
   }
   
   mLayers.move(layer->index(), otherLayer->index() + (insertMode==limAbove ? 1:0));
+  updateLayerIndices();
   return true;
 }
 
@@ -2584,6 +2588,12 @@ void QCustomPlot::axisRemoved(QCPAxis *axis)
     yAxis2 = 0;
   
   // Note: No need to take care of range drag axes and range zoom axes, because they are stored in smart pointers
+}
+
+void QCustomPlot::updateLayerIndices()
+{
+  for (int i=0; i<mLayers.size(); ++i)
+    mLayers.at(i)->mIndex = i;
 }
 
 /*!
