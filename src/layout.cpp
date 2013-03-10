@@ -631,6 +631,35 @@ void QCPLayoutGrid::expandTo(int rows, int columns)
     mColumnStretchFactors.append(1);
 }
 
+void QCPLayoutGrid::insertRow(int newIndex)
+{
+  if (newIndex < 0)
+    newIndex = 0;
+  if (newIndex > rowCount())
+    newIndex = rowCount();
+  
+  mRowStretchFactors.insert(newIndex, 1);
+  QList<QCPLayoutElement*> newRow;
+  for (int col=0; col<columnCount(); ++col)
+    newRow.append((QCPLayoutElement*)0);
+  mElements.insert(newIndex, newRow);
+}
+
+void QCPLayoutGrid::insertColumn(int newIndex)
+{
+  if (rowCount() == 0)
+    insertRow(0);
+  
+  if (newIndex < 0)
+    newIndex = 0;
+  if (newIndex > columnCount())
+    newIndex = columnCount();
+  
+  mColumnStretchFactors.insert(newIndex, 1);
+  for (int row=0; row<rowCount(); ++row)
+    mElements[row].insert(newIndex, (QCPLayoutElement*)0);
+}
+
 void QCPLayoutGrid::updateLayout()
 {
   QVector<int> minColWidths, minRowHeights, maxColWidths, maxRowHeights;

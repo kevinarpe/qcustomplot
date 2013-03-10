@@ -163,6 +163,8 @@ public:
   bool addElement(int row, int column, QCPLayoutElement *element);
   bool hasElement(int row, int column);
   void expandTo(int rows, int columns);
+  void insertRow(int newIndex);
+  void insertColumn(int newIndex);
   
   virtual void updateLayout();
   virtual int elementCount() const;
