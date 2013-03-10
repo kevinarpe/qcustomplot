@@ -1481,14 +1481,22 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
 void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper, int &count) const
 {
   if (!mKeyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
+  if (mData->isEmpty())
+  {
+    lower = mData->constEnd();
+    upper = mData->constEnd();
+    count = 0;
+    return;
+  }
   
   // get visible data range as QMap iterators
   QCPDataMap::const_iterator lbound = mData->lowerBound(mKeyAxis.data()->range().lower);
-  QCPDataMap::const_iterator ubound = mData->upperBound(mKeyAxis.data()->range().upper)-1;
+  QCPDataMap::const_iterator ubound = mData->upperBound(mKeyAxis.data()->range().upper);
   bool lowoutlier = lbound != mData->constBegin(); // indicates whether there exist points below axis range
-  bool highoutlier = ubound+1 != mData->constEnd(); // indicates whether there exist points above axis range
-  lower = (lowoutlier ? lbound-1 : lbound); // data pointrange that will be actually drawn
-  upper = (highoutlier ? ubound+1 : ubound); // data pointrange that will be actually drawn
+  bool highoutlier = ubound != mData->constEnd(); // indicates whether there exist points above axis range
+  
+  lower = (lowoutlier ? lbound-1 : lbound); // data point range that will be actually drawn
+  upper = (highoutlier ? ubound : ubound-1); // data point range that will be actually drawn
   
   // count number of points in range lower to upper (including them), so we can allocate array for them in draw functions:
   QCPDataMap::const_iterator it = lower;
