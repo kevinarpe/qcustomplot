@@ -1,14 +1,17 @@
 ### axis refactoring (branch layoutsystem):
 
 > layout system
- > Create QCPLayoutElement/QCPLayerable subclass that represents a plot title.
-   - remove old title interface
-   - Find good way to insert elements in grid layout.
-   - Probably make top layout automatically cast to QCPLayoutGrid? Saves annoying cast everywhere
- - adapt QCustomPlot methods that were based on old axis system (handleAxisSelection and selectedAxes done), e.g. virtual event reimplementations
- - possibly give every QCPLayoutElement a selectTest function (and then remove QCPLegend::selectTestLegend and probably adapt legend item selection mechanism) 
+ - review/refactor mouseDoubleClickEvent
+ - make additive selection alternate selected state (this must happen in selectEvent for every object individually)
+ - emit click signals in mouseReleaseEvent
+ - find way to make mInteractions filter work again (possibly let QCPLayerable return which Interactions they belong to?)
 
-- provide way to get the QCPAxisRect a QPoint is on.
+- provide way to get the QCPAxisRect a QPoint is on (via QCPLayoutElement::hitTest).
+- move QCustomPlot::setupFullAxesBox to QCPAxisRect
+
+- add rangeDragAxes/rangeZoomAxes to each QCPAxisRect and remove it from QCustomPlot
+- make range zoom/drag happen only to the QCPAxisRect that it's on, for that we might need to forward mouse events to QCPLayoutElements or
+  find the axis rect the mouse is on in the mousePressEvent/wheelEvent and save that rect for future move/releaseEvent calls
 
 - add setPlotLayout? should destroy old layout, make sure to manually setParent(parentCustomPlot) on the new top-level layout (so updateGeometry gets called)
   if added, write in its documentation that for top level layouts the parent is the customPlot and why.
@@ -20,6 +23,10 @@
   uses it as upper bound of minimum size. (Did it like that because grid sometimes wants to control x/y independently, e.g. restrict x by setting high minimum width but
   leaving y free by setting it to 0.)
   That's inconsistent internally and in comparison with how Qt does it.
+- write test for QCPLayoutGrid::insertRow/Column
+
+- make uniform header commenting scheme for class definitions ("non-property methods", "introduced virtual functions", ...)
 
 doc:
 - emphasize in documentation for QCPLayoutGrid::removeElement that only a call to simplify() will actually remove empty rows/columns
+- document selectionChanged signal of QCPLayerable

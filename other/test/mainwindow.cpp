@@ -545,7 +545,8 @@ void MainWindow::setupLegendTest(QCustomPlot *customPlot)
 {
   customPlot->legend->setVisible(true);
   //customPlot->legend->setMinimumSize(300, 150);
-  customPlot->axisRect()->setMinimumMargins(QMargins(15, 0, 15, 15));
+  //customPlot->axisRect()->setMinimumMargins(QMargins(15, 0, 15, 15));
+  customPlot->axisRect()->setMinimumMargins(QMargins(100, 100, 100, 100));
   
   customPlot->addGraph()->setName("first graph");
   customPlot->addGraph()->setName("second longer graph");
@@ -562,7 +563,10 @@ void MainWindow::setupLegendTest(QCustomPlot *customPlot)
   
   QCPPlotTitle *title = new QCPPlotTitle(customPlot);
   title->setText("This is a Plot Title");
+  title->setSelectable(true);
   grid->addElement(0, 0, title);
+  
+  customPlot->graph(0)->addData(QVector<double>() << 1 << 2, QVector<double>() << 1 << 1.2);
 }
 
 
@@ -643,7 +647,7 @@ void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
       QRgb *p = reinterpret_cast<QRgb*>(colorMap.scanLine(y));
       for (int x=0; x<colorMap.width(); ++x)
       {
-        double dist = item->selectTest(QPointF(x+offsetx, y+offsety));
+        double dist = item->selectTest(QPointF(x+offsetx, y+offsety), false);
         if (dist >= 0)
         {
           int r = qRed(p[x]);
@@ -667,7 +671,7 @@ void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
       QRgb *p = reinterpret_cast<QRgb*>(colorMap.scanLine(y));
       for (int x=0; x<colorMap.width(); ++x)
       {
-        double dist = plottable->selectTest(QPointF(x+offsetx, y+offsety));
+        double dist = plottable->selectTest(QPointF(x+offsetx, y+offsety), false);
         if (dist >= 0)
         {
           int r = qRed(p[x]);
