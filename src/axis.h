@@ -373,6 +373,7 @@ protected:
   virtual void generateAutoTicks();
   virtual int calculateAutoSubTickCount(double tickStep) const;
   virtual int calculateMargin();
+  virtual QCP::Interaction selectionCategory() const;
   
   // drawing:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;

@@ -510,6 +510,11 @@ QRect QCPAbstractPlottable::clipRect() const
     return QRect();
 }
 
+QCP::Interaction QCPAbstractPlottable::selectionCategory() const
+{
+  return QCP::iSelectPlottables;
+}
+
 /*! \internal
   
   Convenience function for transforming a key/value pair to pixels on the QCustomPlot surface,

@@ -1,8 +1,5 @@
 ### axis refactoring (branch layoutsystem):
 
-> layout system
- - find way to make mInteractions filter work again (possibly let QCPLayerable return which Interactions they belong to?)
-
 - provide way to get the QCPAxisRect a QPoint is on (via QCPLayoutElement::hitTest).
 - move QCustomPlot::setupFullAxesBox to QCPAxisRect
 

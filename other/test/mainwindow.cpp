@@ -546,7 +546,6 @@ void MainWindow::setupLegendTest(QCustomPlot *customPlot)
   customPlot->legend->setVisible(true);
   //customPlot->legend->setMinimumSize(300, 150);
   //customPlot->axisRect()->setMinimumMargins(QMargins(15, 0, 15, 15));
-  customPlot->axisRect()->setMinimumMargins(QMargins(100, 100, 100, 100));
   
   customPlot->addGraph()->setName("first graph");
   customPlot->addGraph()->setName("second longer graph");
@@ -572,13 +571,14 @@ void MainWindow::setupLegendTest(QCustomPlot *customPlot)
 
 void MainWindow::presetInteractive(QCustomPlot *customPlot)
 {
-  customPlot->setInteractions(QCustomPlot::iRangeDrag|
-                              QCustomPlot::iRangeZoom|
-                              QCustomPlot::iSelectAxes|
-                              QCustomPlot::iSelectItems|
-                              QCustomPlot::iSelectLegend|
-                              QCustomPlot::iSelectPlottables|
-                              QCustomPlot::iMultiSelect);
+  customPlot->setInteractions(QCP::iRangeDrag|
+                              QCP::iRangeZoom|
+                              QCP::iSelectAxes|
+                              QCP::iSelectItems|
+                              QCP::iSelectLegend|
+                              QCP::iSelectPlottables|
+                              QCP::iSelectOther|
+                              QCP::iMultiSelect);
   customPlot->setRangeDrag(Qt::Horizontal|Qt::Vertical);
   customPlot->setRangeZoom(Qt::Horizontal|Qt::Vertical);
 }

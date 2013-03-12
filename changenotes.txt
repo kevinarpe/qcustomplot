@@ -18,6 +18,7 @@
       the QCustomPlot::iSelectTitle interaction flag (all functionality is now given by the layout element "QCPPlotTitle" which can be added to the plot layout)
     - selectTest functions now take two additional parameters: bool onlySelectable and QVariant *details=0
     - selectTest functions now ignores visibility of objects and (if parameter onlySelectable is true) does not anymore ignore selectability of the object
+    - moved QCustomPlot::Interaction/Interactions to QCP namespace as QCP::Interaction/Interactions
 
   Added features:
     - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).

@@ -2669,3 +2669,8 @@ int QCPAxis::calculateMargin()
   return margin;
 }
 
+QCP::Interaction QCPAxis::selectionCategory() const
+{
+  return QCP::iSelectAxes;
+}
+

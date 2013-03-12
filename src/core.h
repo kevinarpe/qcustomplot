@@ -47,22 +47,6 @@ class QCP_LIB_DECL QCustomPlot : public QWidget
   /// \endcond
 public:
   /*!
-    Defines the mouse interactions possible with QCustomPlot
-    
-    \c Interactions is a flag of or-combined elements of this enum type.
-    \see setInteractions, setInteraction
-  */
-  enum Interaction { iRangeDrag         = 0x001 ///< <tt>0x001</tt> Axis ranges are draggable (see \ref setRangeDrag, \ref setRangeDragAxes)
-                     ,iRangeZoom        = 0x002 ///< <tt>0x002</tt> Axis ranges are zoomable with the mouse wheel (see \ref setRangeZoom, \ref setRangeZoomAxes)
-                     ,iMultiSelect      = 0x004 ///< <tt>0x004</tt> The user can select multiple objects by holding the modifier set by \ref setMultiSelectModifier while clicking
-                     ,iSelectPlottables = 0x008 ///< <tt>0x008</tt> Plottables are selectable
-                     ,iSelectAxes       = 0x010 ///< <tt>0x010</tt> Axes are selectable (or parts of them, see QCPAxis::setSelectable)
-                     ,iSelectLegend     = 0x020 ///< <tt>0x020</tt> Legends are selectable (or their child items, see QCPLegend::setSelectable)
-                     ,iSelectItems      = 0x040 ///< <tt>0x040</tt> Items are selectable (Rectangles, Arrows, Textitems, etc. see \ref QCPAbstractItem)
-                   };
-  Q_ENUMS(Interaction)
-  Q_DECLARE_FLAGS(Interactions, Interaction)
-  /*!
     Defines how a layer should be inserted relative to a specified other layer.
 
     \see addLayer, moveLayer
@@ -87,7 +71,7 @@ public:
   QCP::AntialiasedElements antialiasedElements() const { return mAntialiasedElements; }
   QCP::AntialiasedElements notAntialiasedElements() const { return mNotAntialiasedElements; }
   bool autoAddPlottableToLegend() const { return mAutoAddPlottableToLegend; }
-  const Interactions interactions() const { return mInteractions; }
+  const QCP::Interactions interactions() const { return mInteractions; }
   int selectionTolerance() const { return mSelectionTolerance; }
   bool noAntialiasingOnDrag() const { return mNoAntialiasingOnDrag; }
   QCP::PlottingHints plottingHints() const { return mPlottingHints; }
@@ -107,8 +91,8 @@ public:
   void setNotAntialiasedElements(const QCP::AntialiasedElements &notAntialiasedElements);
   void setNotAntialiasedElement(QCP::AntialiasedElement notAntialiasedElement, bool enabled=true);
   void setAutoAddPlottableToLegend(bool on);
-  void setInteractions(const Interactions &interactions);
-  void setInteraction(const Interaction &interaction, bool enabled=true);
+  void setInteractions(const QCP::Interactions &interactions);
+  void setInteraction(const QCP::Interaction &interaction, bool enabled=true);
   void setSelectionTolerance(int pixels);
   void setNoAntialiasingOnDrag(bool enabled);
   void setPlottingHints(const QCP::PlottingHints &hints);
@@ -220,7 +204,7 @@ protected:
   double mRangeZoomFactorHorz, mRangeZoomFactorVert;
   bool mDragging;
   QCP::AntialiasedElements mAntialiasedElements, mNotAntialiasedElements;
-  Interactions mInteractions;
+  QCP::Interactions mInteractions;
   int mSelectionTolerance;
   bool mNoAntialiasingOnDrag;
   // not explicitly exposed properties:
@@ -258,6 +242,5 @@ protected:
   friend class QCPLayer;
   friend class QCPAxisRect;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QCustomPlot::Interactions)
 
 #endif // QCP_CORE_H

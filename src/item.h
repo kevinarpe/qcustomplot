@@ -151,6 +151,7 @@ protected:
   QList<QCPItemAnchor*> mAnchors;
   bool mSelectable, mSelected;
   
+  virtual QCP::Interaction selectionCategory() const;
   virtual QRect clipRect() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter) = 0;

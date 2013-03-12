@@ -480,7 +480,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
 #endif
   setAntialiasedElements(QCP::aeNone);
   setNotAntialiasedElements(QCP::aeNone);
-  setInteractions(iRangeDrag|iRangeZoom);
+  setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
   setMultiSelectModifier(Qt::ControlModifier);
   setRangeDragAxes(xAxis, yAxis);
   setRangeZoomAxes(xAxis, yAxis);
@@ -809,7 +809,7 @@ void QCustomPlot::setAutoAddPlottableToLegend(bool on)
   
   \see setInteraction, setSelectionTolerance
 */
-void QCustomPlot::setInteractions(const Interactions &interactions)
+void QCustomPlot::setInteractions(const QCP::Interactions &interactions)
 {
   mInteractions = interactions;
 }
@@ -821,7 +821,7 @@ void QCustomPlot::setInteractions(const Interactions &interactions)
   
   \see setInteractions
 */
-void QCustomPlot::setInteraction(const QCustomPlot::Interaction &interaction, bool enabled)
+void QCustomPlot::setInteraction(const QCP::Interaction &interaction, bool enabled)
 {
   if (!enabled && mInteractions.testFlag(interaction))
     mInteractions &= ~interaction;
@@ -2141,7 +2141,7 @@ void QCustomPlot::mousePressEvent(QMouseEvent *event)
       mNotAADragBackup = notAntialiasedElements();
     }
     // Mouse range dragging interaction:
-    if (mInteractions.testFlag(iRangeDrag))
+    if (mInteractions.testFlag(QCP::iRangeDrag))
     {
       if (mRangeDragHorzAxis)
         mDragStartHorzRange = mRangeDragHorzAxis.data()->range();
@@ -2165,7 +2165,7 @@ void QCustomPlot::mouseMoveEvent(QMouseEvent *event)
   emit mouseMove(event);
 
   // Mouse range dragging interaction:
-  if (mInteractions.testFlag(iRangeDrag))
+  if (mInteractions.testFlag(QCP::iRangeDrag))
   {
     if (mDragging)
     {
@@ -2235,12 +2235,11 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton)
     {
       // handle selection mechanism:
-      // TODO: mInteractions filter
       QVariant details;
       QCPLayerable *clickedLayerable = layerableAt(event->pos(), true, &details);
       bool selectionStateChanged = false;
-      bool additive = event->modifiers().testFlag(mMultiSelectModifier);
-      if (clickedLayerable)
+      bool additive = mInteractions.testFlag(QCP::iMultiSelect) && event->modifiers().testFlag(mMultiSelectModifier);
+      if (clickedLayerable && mInteractions.testFlag(clickedLayerable->selectionCategory()))
       {
         // a layerable was actually clicked, call its selectEvent:
         bool selChanged = false;
@@ -2255,7 +2254,7 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
           QList<QCPLayerable*> layerables = mLayers.at(i)->children();
           for (int k=0; k<layerables.size(); ++k)
           {
-            if (layerables.at(k) != clickedLayerable)
+            if (layerables.at(k) != clickedLayerable && mInteractions.testFlag(layerables.at(k)->selectionCategory()))
             {
               bool selChanged = false;
               layerables.at(k)->deselectEvent(&selChanged);
@@ -2313,7 +2312,7 @@ void QCustomPlot::wheelEvent(QWheelEvent *event)
   emit mouseWheel(event);
   
   // Mouse range zooming interaction:
-  if (mInteractions.testFlag(iRangeZoom))
+  if (mInteractions.testFlag(QCP::iRangeZoom))
   {
     if (mRangeZoom != 0)
     {

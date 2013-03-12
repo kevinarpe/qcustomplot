@@ -140,6 +140,23 @@ enum PlottingHint { phNone            = 0x000 ///< <tt>0x000</tt> No hints are s
                   };
 Q_DECLARE_FLAGS(PlottingHints, PlottingHint)
 
+/*!
+  Defines the mouse interactions possible with QCustomPlot
+  
+  \c Interactions is a flag of or-combined elements of this enum type.
+  \see QCustomPlot::setInteractions
+*/
+enum Interaction { iRangeDrag         = 0x001 ///< <tt>0x001</tt> Axis ranges are draggable (see \ref setRangeDrag, \ref setRangeDragAxes)
+                   ,iRangeZoom        = 0x002 ///< <tt>0x002</tt> Axis ranges are zoomable with the mouse wheel (see \ref setRangeZoom, \ref setRangeZoomAxes)
+                   ,iMultiSelect      = 0x004 ///< <tt>0x004</tt> The user can select multiple objects by holding the modifier set by \ref setMultiSelectModifier while clicking
+                   ,iSelectPlottables = 0x008 ///< <tt>0x008</tt> Plottables are selectable
+                   ,iSelectAxes       = 0x010 ///< <tt>0x010</tt> Axes are selectable (or parts of them, see QCPAxis::setSelectable)
+                   ,iSelectLegend     = 0x020 ///< <tt>0x020</tt> Legends are selectable (or their child items, see QCPLegend::setSelectable)
+                   ,iSelectItems      = 0x040 ///< <tt>0x040</tt> Items are selectable (Rectangles, Arrows, Textitems, etc. see \ref QCPAbstractItem)
+                   ,iSelectOther      = 0x080 ///< <tt>0x080</tt> All other objects are selectable (e.g. your own derived layerables, the plot title,...)
+                 };
+Q_DECLARE_FLAGS(Interactions, Interaction)
+
 /*! \internal
   Returns whether the specified \a value is considered an invalid data value for plottables (i.e. is \e nan or \e +/-inf). This
   function is used to check data validity upon replots, when the compiler flag \c
@@ -206,5 +223,6 @@ inline int getMarginValue(const QMargins &margins, QCP::MarginSide side)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::AntialiasedElements)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::PlottingHints)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::MarginSides)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::Interactions)
 
 #endif // QCP_GLOBAL_H

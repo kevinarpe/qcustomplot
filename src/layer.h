@@ -93,6 +93,7 @@ protected:
   void applyAntialiasingHint(QCPPainter *painter, bool localAntialiased, QCP::AntialiasedElement overrideElement) const;
   
   // introduced virtual functions:
+  virtual QCP::Interaction selectionCategory() const;
   virtual QRect clipRect() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const = 0;
   virtual void draw(QCPPainter *painter) = 0;

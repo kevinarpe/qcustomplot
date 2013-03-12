@@ -71,6 +71,7 @@ protected:
   QColor mSelectedTextColor;
   bool mSelectable, mSelected;
   
+  virtual QCP::Interaction selectionCategory() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual QRect clipRect() const;
   virtual void draw(QCPPainter *painter) = 0;
@@ -169,8 +170,6 @@ public:
   void clearItems();
   QList<QCPAbstractLegendItem*> selectedItems() const;
   
-  QCPAbstractLegendItem *itemAtPos(const QPointF &pos) const;
-  
 signals:
   void selectionChanged(QCPLegend::SelectableParts selection);
   
@@ -189,6 +188,7 @@ protected:
   QColor mSelectedTextColor;
   
   // reimplemented functions from QCPLayerable:
+  virtual QCP::Interaction selectionCategory() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;

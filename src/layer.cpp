@@ -391,6 +391,11 @@ void QCPLayerable::applyAntialiasingHint(QCPPainter *painter, bool localAntialia
     painter->setAntialiasing(localAntialiased);
 }
 
+QCP::Interaction QCPLayerable::selectionCategory() const
+{
+  return QCP::iSelectOther;
+}
+
 /*! \internal
   
   Returns the clipping rectangle of this layerable object. By default, this is the viewport of the parent QCustomPlot.

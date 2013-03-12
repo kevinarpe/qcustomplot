@@ -550,7 +550,7 @@ void QCPLegend::setSelectedParts(const SelectableParts &selected)
   {
     if (!mSelectedParts.testFlag(spItems) && newSelected.testFlag(spItems)) // attempt to set spItems flag (can't do that)
     {
-      qDebug() << Q_FUNC_INFO << "spItems flag can not be set, it can only be unset manually";
+      qDebug() << Q_FUNC_INFO << "spItems flag can not be set, it can only be unset with this function";
       newSelected &= ~spItems;
     }
     if (mSelectedParts.testFlag(spItems) && !newSelected.testFlag(spItems)) // spItems flag was unset, so clear item selection
@@ -772,25 +772,6 @@ QList<QCPAbstractLegendItem *> QCPLegend::selectedItems() const
   return result;
 }
 
-/*!
-  When the point \a pos in pixels hits a legend item, the item is returned. If no item is hit, 0 is
-  returned.
-  
-  \see selectTestLegend
-*/
-QCPAbstractLegendItem *QCPLegend::itemAtPos(const QPointF &pos) const
-{
-  for (int i=0; i<elementCount(); ++i)
-  {
-    if (QCPAbstractLegendItem *ali = item(i))
-    {
-      if (ali->hitTest(pos))
-        return ali;
-    }
-  }
-  return 0;
-}
-
 /*! \internal
 
   A convenience function to easily set the QPainter::Antialiased hint on the provided \a painter
@@ -846,7 +827,7 @@ double QCPLegend::selectTest(const QPointF &pos, bool onlySelectable, QVariant *
   if (onlySelectable && !mSelectableParts.testFlag(spLegendBox))
     return -1;
   
-  if (mOuterRect.contains(pos.toPoint()) && !mRect.contains(pos.toPoint())) // if pos is on legend rect but not in inner area where legend items are
+  if (mOuterRect.contains(pos.toPoint()))
   {
     if (details) details->setValue(spLegendBox);
     return mParentPlot->selectionTolerance()*0.99;
@@ -857,6 +838,7 @@ double QCPLegend::selectTest(const QPointF &pos, bool onlySelectable, QVariant *
 void QCPLegend::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
+  mSelectedParts = selectedParts(); // in case item selection has changed
   if (details.value<SelectablePart>() == spLegendBox && mSelectableParts.testFlag(spLegendBox))
   {
     SelectableParts selBefore = mSelectedParts;
@@ -868,6 +850,7 @@ void QCPLegend::selectEvent(QMouseEvent *event, bool additive, const QVariant &d
 
 void QCPLegend::deselectEvent(bool *selectionStateChanged)
 {
+  mSelectedParts = selectedParts(); // in case item selection has changed
   if (mSelectableParts.testFlag(spLegendBox))
   {
     SelectableParts selBefore = mSelectedParts;
@@ -875,4 +858,16 @@ void QCPLegend::deselectEvent(bool *selectionStateChanged)
     if (selectionStateChanged)
       *selectionStateChanged = mSelectedParts != selBefore;
   }
+}
+
+
+QCP::Interaction QCPLegend::selectionCategory() const
+{
+  return QCP::iSelectLegend;
+}
+
+
+QCP::Interaction QCPAbstractLegendItem::selectionCategory() const
+{
+  return QCP::iSelectLegend;
 }

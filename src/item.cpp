@@ -1097,3 +1097,7 @@ void QCPAbstractItem::deselectEvent(bool *selectionStateChanged)
   }
 }
 
+QCP::Interaction QCPAbstractItem::selectionCategory() const
+{
+  return QCP::iSelectItems;
+}
