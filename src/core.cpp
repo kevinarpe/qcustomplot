@@ -1682,6 +1682,30 @@ QList<QCPAxisRect*> QCustomPlot::axisRects() const
   return result;
 }
 
+QCPAxisRect *QCustomPlot::axisRectAt(const QPointF &pos) const
+{
+  QCPLayoutElement *current = mPlotLayout;
+  QCPAxisRect *result = 0;
+  bool searchSubElements = true;
+  while (searchSubElements)
+  {
+    searchSubElements = false;
+    const QList<QCPLayoutElement*> elements = current->elements();
+    for (int i=0; i<elements.size(); ++i)
+    {
+      if (elements.at(i)->hitTest(pos))
+      {
+        current = elements.at(i);
+        searchSubElements = true;
+        if (QCPAxisRect *ar = qobject_cast<QCPAxisRect*>(current))
+          result = ar;
+        break;
+      }
+    }
+  }
+  return result;
+}
+
 /*!
   Returns the axes that currently have selected parts, i.e. whose selection is not \ref QCPAxis::spNone.
   

@@ -33,6 +33,7 @@ public:
   void setupMarginGroupTest(QCustomPlot* customPlot);
   void setupInsetLayoutTest(QCustomPlot* customPlot);
   void setupLegendTest(QCustomPlot *customPlot);
+  void setupMultiAxisRectInteractions(QCustomPlot *customPlot);
   
   // presets:
   void presetInteractive(QCustomPlot *customPlot);
@@ -52,7 +53,7 @@ public slots:
   void selectTestColorMapRefresh();
   void mouseMoveRotateTickLabels(QMouseEvent *event);
   void tickLabelTestTimerSlot();
-  
+  void setupMultiAxisRectInteractionsMouseMove(QMouseEvent *event);
   void daqPerformanceDataSlot();
   void daqPerformanceReplotSlot();
   

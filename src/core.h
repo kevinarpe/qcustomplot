@@ -149,6 +149,7 @@ public:
   int axisRectCount() const;
   QCPAxisRect* axisRect(int index=0) const;
   QList<QCPAxisRect*> axisRects() const;
+  QCPAxisRect* axisRectAt(const QPointF &pos) const;
   
   QList<QCPAxis*> selectedAxes() const;
   QList<QCPLegend*> selectedLegends() const;

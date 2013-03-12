@@ -35,7 +35,9 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupLayoutElementBugTest(mCustomPlot);
   //setupMarginGroupTest(mCustomPlot);
   //setupInsetLayoutTest(mCustomPlot);
-  setupLegendTest(mCustomPlot);
+  //setupLegendTest(mCustomPlot);
+  setupMultiAxisRectInteractions(mCustomPlot);
+  
 }
 
 MainWindow::~MainWindow()
@@ -568,6 +570,26 @@ void MainWindow::setupLegendTest(QCustomPlot *customPlot)
   customPlot->graph(0)->addData(QVector<double>() << 1 << 2, QVector<double>() << 1 << 1.2);
 }
 
+void MainWindow::setupMultiAxisRectInteractions(QCustomPlot *customPlot)
+{
+  QCPAxisRect *r1 = new QCPAxisRect(customPlot);
+  r1->addAxes(QCPAxis::atLeft|QCPAxis::atBottom);
+  customPlot->plotLayout()->addElement(1, 0, r1);
+  QCPAxisRect *r2 = new QCPAxisRect(customPlot);
+  r2->addAxes(QCPAxis::atLeft|QCPAxis::atBottom);
+  customPlot->plotLayout()->addElement(0, 1, r2);
+  QCPAxisRect *r3 = new QCPAxisRect(customPlot);
+  r3->addAxes(QCPAxis::atLeft|QCPAxis::atBottom);
+  customPlot->plotLayout()->addElement(1, 1, r3);
+  
+  QCPAxisRect *inset = new QCPAxisRect(customPlot);
+  inset->addAxes(QCPAxis::atLeft|QCPAxis::atBottom|QCPAxis::atRight|QCPAxis::atTop);
+  inset->setMinimumSize(170, 120);
+  r3->insetLayout()->addElement(inset, Qt::AlignRight|Qt::AlignTop);
+  
+  connect(mCustomPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(setupMultiAxisRectInteractionsMouseMove(QMouseEvent*)));
+}
+
 
 void MainWindow::presetInteractive(QCustomPlot *customPlot)
 {
@@ -727,6 +749,19 @@ void MainWindow::tickLabelTestTimerSlot()
 {
   mCustomPlot->setPlottingHint(QCP::phCacheLabels, !mCustomPlot->plottingHints().testFlag(QCP::phCacheLabels));
   ui->statusBar->showMessage(mCustomPlot->plottingHints().testFlag(QCP::phCacheLabels) ? "Cached" : "Not Cached");
+  mCustomPlot->replot();
+}
+
+void MainWindow::setupMultiAxisRectInteractionsMouseMove(QMouseEvent *event)
+{
+  QCPAxisRect *ar = mCustomPlot->axisRectAt(event->posF());
+  if (ar)
+    ar->setBackground(QColor(230, 230, 230));
+  for (int i=0; i<mCustomPlot->axisRectCount(); ++i)
+  {
+    if (mCustomPlot->axisRect(i) != ar)
+      mCustomPlot->axisRect(i)->setBackground(Qt::NoBrush);
+  }
   mCustomPlot->replot();
 }
 
