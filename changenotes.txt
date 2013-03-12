@@ -19,6 +19,7 @@
     - selectTest functions now take two additional parameters: bool onlySelectable and QVariant *details=0
     - selectTest functions now ignores visibility of objects and (if parameter onlySelectable is true) does not anymore ignore selectability of the object
     - moved QCustomPlot::Interaction/Interactions to QCP namespace as QCP::Interaction/Interactions
+    - moved QCustomPlot::setupFullAxesBox() to QCPAxisRect::setupFullAxesBox. Now also accepts parameter to decide whether to connect opposite axis ranges
 
   Added features:
     - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).

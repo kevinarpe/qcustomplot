@@ -150,6 +150,89 @@ bool QCPAxisRect::removeAxis(QCPAxis *axis)
   return false;
 }
 
+/*!
+  Convenience function to create an axis on each side, if non-existent, and assign the top and
+  right axes the following properties from the bottom/left axes:
+  
+  \li range (\ref QCPAxis::setRange)
+  \li range reversed (\ref QCPAxis::setRangeReversed)
+  \li scale type (\ref QCPAxis::setScaleType)
+  \li scale log base  (\ref QCPAxis::setScaleLogBase)
+  \li ticks (\ref QCPAxis::setTicks)
+  \li auto (major) tick count (\ref QCPAxis::setAutoTickCount)
+  \li sub tick count (\ref QCPAxis::setSubTickCount)
+  \li auto sub ticks (\ref QCPAxis::setAutoSubTicks)
+  \li tick step (\ref QCPAxis::setTickStep)
+  \li auto tick step (\ref QCPAxis::setAutoTickStep)
+  
+  Tick labels (\ref QCPAxis::setTickLabels) however, is always set to false.
+
+  If \a connectRanges is true, this function additionally connects the rangeChanged signals of the
+  bottom and left axes to the \ref QCPAxis::setRange slots of the top and right axes in order to
+  synchronize the ranges permanently.
+*/
+void QCPAxisRect::setupFullAxesBox(bool connectRanges)
+{
+  QCPAxis *xAxis, *yAxis, *xAxis2, *yAxis2;
+  if (axisCount(QCPAxis::atBottom) == 0)
+    xAxis = addAxis(QCPAxis::atBottom);
+  else
+    xAxis = axis(QCPAxis::atBottom);
+  
+  if (axisCount(QCPAxis::atLeft) == 0)
+    yAxis = addAxis(QCPAxis::atLeft);
+  else
+    yAxis = axis(QCPAxis::atLeft);
+  
+  if (axisCount(QCPAxis::atTop) == 0)
+    xAxis2 = addAxis(QCPAxis::atTop);
+  else
+    xAxis2 = axis(QCPAxis::atTop);
+  
+  if (axisCount(QCPAxis::atRight) == 0)
+    yAxis2 = addAxis(QCPAxis::atRight);
+  else
+    yAxis2 = axis(QCPAxis::atRight);
+  
+  xAxis2->setVisible(true);
+  xAxis2->setTickLabels(false);
+  if (xAxis)
+  {
+    xAxis2->setAutoSubTicks(xAxis->autoSubTicks());
+    xAxis2->setAutoTickCount(xAxis->autoTickCount());
+    xAxis2->setAutoTickStep(xAxis->autoTickStep());
+    xAxis2->setScaleType(xAxis->scaleType());
+    xAxis2->setScaleLogBase(xAxis->scaleLogBase());
+    xAxis2->setTicks(xAxis->ticks());
+    xAxis2->setSubTickCount(xAxis->subTickCount());
+    xAxis2->setTickStep(xAxis->tickStep());
+    xAxis2->setRange(xAxis->range());
+    xAxis2->setRangeReversed(xAxis->rangeReversed());
+  }
+  
+  yAxis2->setVisible(true);
+  yAxis2->setTickLabels(false);
+  if (yAxis)
+  {
+    yAxis2->setAutoSubTicks(yAxis->autoSubTicks());
+    yAxis2->setAutoTickCount(yAxis->autoTickCount());
+    yAxis2->setAutoTickStep(yAxis->autoTickStep());
+    yAxis2->setScaleType(yAxis->scaleType());
+    yAxis2->setScaleLogBase(yAxis->scaleLogBase());
+    yAxis2->setTicks(yAxis->ticks());
+    yAxis2->setSubTickCount(yAxis->subTickCount());
+    yAxis2->setTickStep(yAxis->tickStep());
+    yAxis2->setRange(yAxis->range());
+    yAxis2->setRangeReversed(yAxis->rangeReversed());
+  }
+  
+  if (connectRanges)
+  {
+    connect(xAxis, SIGNAL(rangeChanged(QCPRange)), xAxis2, SLOT(setRange(QCPRange)));
+    connect(yAxis, SIGNAL(rangeChanged(QCPRange)), yAxis2, SLOT(setRange(QCPRange)));
+  }
+}
+
 QList<QCPAbstractPlottable*> QCPAxisRect::plottables() const
 {
   // Note: don't append all QCPAxis::plottables() into a list, because we might get duplicate entries

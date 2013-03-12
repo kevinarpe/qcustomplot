@@ -1,8 +1,5 @@
 ### axis refactoring (branch layoutsystem):
 
-- provide way to get the QCPAxisRect a QPoint is on (via QCPLayoutElement::hitTest).
-- move QCustomPlot::setupFullAxesBox to QCPAxisRect
-
 - add rangeDragAxes/rangeZoomAxes to each QCPAxisRect and remove it from QCustomPlot
 - make range zoom/drag happen only to the QCPAxisRect that it's on, for that we might need to forward mouse events to QCPLayoutElements or
   find the axis rect the mouse is on in the mousePressEvent/wheelEvent and save that rect for future move/releaseEvent calls

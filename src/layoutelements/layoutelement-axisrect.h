@@ -62,6 +62,7 @@ public:
   bool removeAxis(QCPAxis *axis);
   QCPLayoutInset *insetLayout() const { return mInsetLayout; }
   
+  void setupFullAxesBox(bool connectRanges=false);
   QList<QCPAbstractPlottable*> plottables() const;
   QList<QCPGraph*> graphs() const;
   QList<QCPAbstractItem*> items() const;

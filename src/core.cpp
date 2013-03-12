@@ -1814,67 +1814,6 @@ void QCustomPlot::replot()
 }
 
 /*!
-  Convenience function to make the top and right axes visible and assign them the following
-  properties from their corresponding bottom/left axes:
-  
-  \li range (\ref QCPAxis::setRange)
-  \li range reversed (\ref QCPAxis::setRangeReversed)
-  \li scale type (\ref QCPAxis::setScaleType)
-  \li scale log base  (\ref QCPAxis::setScaleLogBase)
-  \li ticks (\ref QCPAxis::setTicks)
-  \li auto (major) tick count (\ref QCPAxis::setAutoTickCount)
-  \li sub tick count (\ref QCPAxis::setSubTickCount)
-  \li auto sub ticks (\ref QCPAxis::setAutoSubTicks)
-  \li tick step (\ref QCPAxis::setTickStep)
-  \li auto tick step (\ref QCPAxis::setAutoTickStep)
-  
-  Tick labels (\ref QCPAxis::setTickLabels) however, is always set to false.
-
-  This function does \a not connect the rangeChanged signals of the bottom and left axes to the \ref
-  QCPAxis::setRange slots of the top and right axes in order to synchronize the ranges permanently.
-*/
-void QCustomPlot::setupFullAxesBox()
-{
-  if (xAxis2)
-  {
-    xAxis2->setVisible(true);
-    xAxis2->setTickLabels(false);
-    if (xAxis)
-    {
-      xAxis2->setAutoSubTicks(xAxis->autoSubTicks());
-      xAxis2->setAutoTickCount(xAxis->autoTickCount());
-      xAxis2->setAutoTickStep(xAxis->autoTickStep());
-      xAxis2->setScaleType(xAxis->scaleType());
-      xAxis2->setScaleLogBase(xAxis->scaleLogBase());
-      xAxis2->setTicks(xAxis->ticks());
-      xAxis2->setSubTickCount(xAxis->subTickCount());
-      xAxis2->setTickStep(xAxis->tickStep());
-      xAxis2->setRange(xAxis->range());
-      xAxis2->setRangeReversed(xAxis->rangeReversed());
-    }
-  }
-  
-  if (yAxis2)
-  {
-    yAxis2->setVisible(true);
-    yAxis2->setTickLabels(false);
-    if (yAxis)
-    {
-      yAxis2->setAutoSubTicks(yAxis->autoSubTicks());
-      yAxis2->setAutoTickCount(yAxis->autoTickCount());
-      yAxis2->setAutoTickStep(yAxis->autoTickStep());
-      yAxis2->setScaleType(yAxis->scaleType());
-      yAxis2->setScaleLogBase(yAxis->scaleLogBase());
-      yAxis2->setTicks(yAxis->ticks());
-      yAxis2->setSubTickCount(yAxis->subTickCount());
-      yAxis2->setTickStep(yAxis->tickStep());
-      yAxis2->setRange(yAxis->range());
-      yAxis2->setRangeReversed(yAxis->rangeReversed());
-    }
-  }
-}
-
-/*!
   Rescales the axes such that all plottables (e.g. graphs) in the plot are fully visible.
   It does this by calling \ref QCPAbstractPlottable::rescaleAxes on all plottables.
   

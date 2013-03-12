@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
   QHBoxLayout *layout = new QHBoxLayout();
   ui->centralWidget->setLayout(layout);
   layout->insertWidget(0, mCustomPlot);
-  mCustomPlot->setupFullAxesBox();
+  mCustomPlot->axisRect()->setupFullAxesBox(true);
   
   /*
   QVector<double> ticks = QVector<double>() << 1 << 2 << 4 << 8 << 16 << 32;
@@ -352,7 +352,7 @@ void MainWindow::setupDateTest(QCustomPlot *customPlot)
 
 void MainWindow::setupTickLabelTest(QCustomPlot *customPlot)
 {
-  customPlot->setupFullAxesBox();
+  customPlot->axisRect()->setupFullAxesBox();
   customPlot->xAxis2->setTickLabels(true);
   customPlot->yAxis2->setTickLabels(true);
   connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->xAxis2, SLOT(setRange(QCPRange)));
