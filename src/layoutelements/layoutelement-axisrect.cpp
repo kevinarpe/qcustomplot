@@ -37,10 +37,17 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot) :
+QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot, bool setupDefaultAxes) :
   QCPLayerable(parentPlot, "background"),
   mBackgroundBrush(Qt::NoBrush),
-  mInsetLayout(new QCPLayoutInset)
+  mBackgroundScaled(true),
+  mBackgroundScaledMode(Qt::KeepAspectRatioByExpanding),
+  mInsetLayout(new QCPLayoutInset),
+  mRangeDrag(Qt::Horizontal|Qt::Vertical),
+  mRangeZoom(Qt::Horizontal|Qt::Vertical),
+  mRangeZoomFactorHorz(0.85),
+  mRangeZoomFactorVert(0.85),
+  mDragging(false)
 {
   setMinimumSize(50, 50);
   setMinimumMargins(QMargins(15, 15, 15, 15));
@@ -48,6 +55,24 @@ QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot) :
   mAxes.insert(QCPAxis::atRight, QList<QCPAxis*>());
   mAxes.insert(QCPAxis::atTop, QList<QCPAxis*>());
   mAxes.insert(QCPAxis::atBottom, QList<QCPAxis*>());
+  
+  if (setupDefaultAxes)
+  {
+    QCPAxis *yAxis = addAxis(QCPAxis::atLeft);
+    QCPAxis *yAxis2 = addAxis(QCPAxis::atRight);
+    QCPAxis *xAxis2 = addAxis(QCPAxis::atTop);
+    QCPAxis *xAxis = addAxis(QCPAxis::atBottom);
+    setRangeDragAxes(xAxis, yAxis);
+    setRangeZoomAxes(xAxis, yAxis);
+    xAxis->setGrid(true);
+    yAxis->setGrid(true);
+    xAxis2->setGrid(false);
+    yAxis2->setGrid(false);
+    xAxis2->setZeroLinePen(Qt::NoPen);
+    yAxis2->setZeroLinePen(Qt::NoPen);
+    xAxis2->setVisible(false);
+    yAxis2->setVisible(false);
+  }
 }
 
 QCPAxisRect::~QCPAxisRect()
@@ -381,6 +406,125 @@ void QCPAxisRect::setBackgroundScaledMode(Qt::AspectRatioMode mode)
   mBackgroundScaledMode = mode;
 }
 
+/*!
+  Returns the range drag axis of the \a orientation provided
+  \see setRangeDragAxes
+*/
+QCPAxis *QCPAxisRect::rangeDragAxis(Qt::Orientation orientation)
+{
+  return (orientation == Qt::Horizontal ? mRangeDragHorzAxis.data() : mRangeDragVertAxis.data());
+}
+
+/*!
+  Returns the range zoom axis of the \a orientation provided
+  \see setRangeZoomAxes
+*/
+QCPAxis *QCPAxisRect::rangeZoomAxis(Qt::Orientation orientation)
+{
+  return (orientation == Qt::Horizontal ? mRangeZoomHorzAxis.data() : mRangeZoomVertAxis.data());
+}
+
+/*!
+  Returns the range zoom factor of the \a orientation provided
+  \see setRangeZoomFactor
+*/
+double QCPAxisRect::rangeZoomFactor(Qt::Orientation orientation)
+{
+  return (orientation == Qt::Horizontal ? mRangeZoomFactorHorz : mRangeZoomFactorVert);
+}
+
+/*!
+  Sets which axis orientation may be range dragged by the user with mouse interaction.
+  What orientation corresponds to which specific axis can be set with
+  \ref setRangeDragAxes(QCPAxis *horizontal, QCPAxis *vertical). By
+  default, the horizontal axis is the bottom axis (xAxis) and the vertical axis
+  is the left axis (yAxis).
+  
+  To disable range dragging entirely, pass 0 as \a orientations or remove \ref iRangeDrag from \ref
+  setInteractions. To enable range dragging for both directions, pass <tt>Qt::Horizontal |
+  Qt::Vertical</tt> as \a orientations.
+  
+  In addition to setting \a orientations to a non-zero value, make sure \ref setInteractions
+  contains \ref iRangeDrag to enable the range dragging interaction.
+  
+  \see setRangeZoom, setRangeDragAxes, setNoAntialiasingOnDrag
+*/
+void QCPAxisRect::setRangeDrag(Qt::Orientations orientations)
+{
+  mRangeDrag = orientations;
+}
+
+/*!
+  Sets which axis orientation may be zoomed by the user with the mouse wheel. What orientation
+  corresponds to which specific axis can be set with \ref setRangeZoomAxes(QCPAxis *horizontal,
+  QCPAxis *vertical). By default, the horizontal axis is the bottom axis (xAxis) and the vertical
+  axis is the left axis (yAxis).
+
+  To disable range zooming entirely, pass 0 as \a orientations or remove \ref iRangeZoom from \ref
+  setInteractions. To enable range zooming for both directions, pass <tt>Qt::Horizontal |
+  Qt::Vertical</tt> as \a orientations.
+  
+  In addition to setting \a orientations to a non-zero value, make sure \ref setInteractions
+  contains \ref iRangeZoom to enable the range zooming interaction.
+  
+  \see setRangeZoomFactor, setRangeZoomAxes, setRangeDrag
+*/
+void QCPAxisRect::setRangeZoom(Qt::Orientations orientations)
+{
+  mRangeZoom = orientations;
+}
+
+/*!
+  Sets the axes whose range will be dragged when \ref setRangeDrag enables mouse range dragging
+  on the QCustomPlot widget.
+  
+  \see setRangeZoomAxes
+*/
+void QCPAxisRect::setRangeDragAxes(QCPAxis *horizontal, QCPAxis *vertical)
+{
+  mRangeDragHorzAxis = horizontal;
+  mRangeDragVertAxis = vertical;
+}
+
+/*!
+  Sets the axes whose range will be zoomed when \ref setRangeZoom enables mouse wheel zooming on the
+  QCustomPlot widget. The two axes can be zoomed with different strengths, when different factors
+  are passed to \ref setRangeZoomFactor(double horizontalFactor, double verticalFactor).
+  
+  \see setRangeDragAxes
+*/
+void QCPAxisRect::setRangeZoomAxes(QCPAxis *horizontal, QCPAxis *vertical)
+{
+  mRangeZoomHorzAxis = horizontal;
+  mRangeZoomVertAxis = vertical;
+}
+
+/*!
+  Sets how strong one rotation step of the mouse wheel zooms, when range zoom was activated with
+  \ref setRangeZoom. The two parameters \a horizontalFactor and \a verticalFactor provide a way to
+  let the horizontal axis zoom at different rates than the vertical axis. Which axis is horizontal
+  and which is vertical, can be set with \ref setRangeZoomAxes.
+
+  When the zoom factor is greater than one, scrolling the mouse wheel backwards (towards the user)
+  will zoom in (make the currently visible range smaller). For zoom factors smaller than one, the
+  same scrolling direction will zoom out.
+*/
+void QCPAxisRect::setRangeZoomFactor(double horizontalFactor, double verticalFactor)
+{
+  mRangeZoomFactorHorz = horizontalFactor;
+  mRangeZoomFactorVert = verticalFactor;
+}
+
+/*! \overload
+  
+  Sets both the horizontal and vertical zoom \a factor.
+*/
+void QCPAxisRect::setRangeZoomFactor(double factor)
+{
+  mRangeZoomFactorHorz = factor;
+  mRangeZoomFactorVert = factor;
+}
+
 /*! \internal
   
   Draws the background of this axis rect. It may consist of a background fill (a QBrush) and a
@@ -443,6 +587,110 @@ int QCPAxisRect::calculateAutoMargin(QCP::MarginSide side)
     return axesList.last()->offset() + axesList.last()->calculateMargin();
   else
     return 0;
+}
+
+void QCPAxisRect::mousePressEvent(QMouseEvent *event)
+{
+  mDragStart = event->pos(); // need this even when not LeftButton is pressed, to determine in releaseEvent whether it was a full click (no position change between press and release)
+  if (event->buttons() & Qt::LeftButton)
+  {
+    mDragging = true;
+    // initialize antialiasing backup in case we start dragging:
+    if (mParentPlot->noAntialiasingOnDrag())
+    {
+      mAADragBackup = mParentPlot->antialiasedElements();
+      mNotAADragBackup = mParentPlot->notAntialiasedElements();
+    }
+    // Mouse range dragging interaction:
+    if (mParentPlot->interactions().testFlag(QCP::iRangeDrag))
+    {
+      if (mRangeDragHorzAxis)
+        mDragStartHorzRange = mRangeDragHorzAxis.data()->range();
+      if (mRangeDragVertAxis)
+        mDragStartVertRange = mRangeDragVertAxis.data()->range();
+    }
+  }
+}
+
+void QCPAxisRect::mouseMoveEvent(QMouseEvent *event)
+{
+  // Mouse range dragging interaction:
+  if (mDragging && mParentPlot->interactions().testFlag(QCP::iRangeDrag))
+  {
+    if (mRangeDrag.testFlag(Qt::Horizontal))
+    {
+      if (QCPAxis *rangeDragHorzAxis = mRangeDragHorzAxis.data())
+      {
+        if (rangeDragHorzAxis->mScaleType == QCPAxis::stLinear)
+        {
+          double diff = rangeDragHorzAxis->pixelToCoord(mDragStart.x()) - rangeDragHorzAxis->pixelToCoord(event->pos().x());
+          rangeDragHorzAxis->setRange(mDragStartHorzRange.lower+diff, mDragStartHorzRange.upper+diff);
+        } else if (rangeDragHorzAxis->mScaleType == QCPAxis::stLogarithmic)
+        {
+          double diff = rangeDragHorzAxis->pixelToCoord(mDragStart.x()) / rangeDragHorzAxis->pixelToCoord(event->pos().x());
+          rangeDragHorzAxis->setRange(mDragStartHorzRange.lower*diff, mDragStartHorzRange.upper*diff);
+        }
+      }
+    }
+    if (mRangeDrag.testFlag(Qt::Vertical))
+    {
+      if (QCPAxis *rangeDragVertAxis = mRangeDragVertAxis.data())
+      {
+        if (rangeDragVertAxis->mScaleType == QCPAxis::stLinear)
+        {
+          double diff = rangeDragVertAxis->pixelToCoord(mDragStart.y()) - rangeDragVertAxis->pixelToCoord(event->pos().y());
+          rangeDragVertAxis->setRange(mDragStartVertRange.lower+diff, mDragStartVertRange.upper+diff);
+        } else if (rangeDragVertAxis->mScaleType == QCPAxis::stLogarithmic)
+        {
+          double diff = rangeDragVertAxis->pixelToCoord(mDragStart.y()) / rangeDragVertAxis->pixelToCoord(event->pos().y());
+          rangeDragVertAxis->setRange(mDragStartVertRange.lower*diff, mDragStartVertRange.upper*diff);
+        }
+      }
+    }
+    if (mRangeDrag != 0) // if either vertical or horizontal drag was enabled, do a replot
+    {
+      if (mParentPlot->noAntialiasingOnDrag())
+        mParentPlot->setNotAntialiasedElements(QCP::aeAll);
+      mParentPlot->replot();
+    }
+  }
+}
+
+void QCPAxisRect::mouseReleaseEvent(QMouseEvent *event)
+{
+  Q_UNUSED(event)
+  mDragging = false;
+  if (mParentPlot->noAntialiasingOnDrag())
+  {
+    mParentPlot->setAntialiasedElements(mAADragBackup);
+    mParentPlot->setNotAntialiasedElements(mNotAADragBackup);
+  }
+}
+
+void QCPAxisRect::wheelEvent(QWheelEvent *event)
+{
+  // Mouse range zooming interaction:
+  if (mParentPlot->interactions().testFlag(QCP::iRangeZoom))
+  {
+    if (mRangeZoom != 0)
+    {
+      double factor;
+      double wheelSteps = event->delta()/120.0; // a single step delta is +/-120 usually
+      if (mRangeZoom.testFlag(Qt::Horizontal))
+      {
+        factor = pow(mRangeZoomFactorHorz, wheelSteps);
+        if (mRangeZoomHorzAxis.data())
+          mRangeZoomHorzAxis.data()->scaleRange(factor, mRangeZoomHorzAxis.data()->pixelToCoord(event->pos().x()));
+      }
+      if (mRangeZoom.testFlag(Qt::Vertical))
+      {
+        factor = pow(mRangeZoomFactorVert, wheelSteps);
+        if (mRangeZoomVertAxis.data())
+          mRangeZoomVertAxis.data()->scaleRange(factor, mRangeZoomVertAxis.data()->pixelToCoord(event->pos().y()));
+      }
+      mParentPlot->replot();
+    }
+  }
 }
 
 

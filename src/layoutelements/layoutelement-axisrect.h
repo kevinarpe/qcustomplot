@@ -40,19 +40,33 @@ class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement, public QCPLayerable
 {
   Q_OBJECT
 public:
-  explicit QCPAxisRect(QCustomPlot *parentPlot);
+  explicit QCPAxisRect(QCustomPlot *parentPlot, bool setupDefaultAxes=true);
   virtual ~QCPAxisRect();
   
+  // getters:
   QPixmap background() const { return mBackgroundPixmap; }
   bool backgroundScaled() const { return mBackgroundScaled; }
   Qt::AspectRatioMode backgroundScaledMode() const { return mBackgroundScaledMode; }
-
+  Qt::Orientations rangeDrag() const { return mRangeDrag; }
+  Qt::Orientations rangeZoom() const { return mRangeZoom; }
+  QCPAxis *rangeDragAxis(Qt::Orientation orientation);
+  QCPAxis *rangeZoomAxis(Qt::Orientation orientation);
+  double rangeZoomFactor(Qt::Orientation orientation);
+  
+  // setters:
   void setBackground(const QPixmap &pm);
   void setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode=Qt::KeepAspectRatioByExpanding);
   void setBackground(const QBrush &brush);
   void setBackgroundScaled(bool scaled);
   void setBackgroundScaledMode(Qt::AspectRatioMode mode);
+  void setRangeDrag(Qt::Orientations orientations);
+  void setRangeZoom(Qt::Orientations orientations);
+  void setRangeDragAxes(QCPAxis *horizontal, QCPAxis *vertical);
+  void setRangeZoomAxes(QCPAxis *horizontal, QCPAxis *vertical);
+  void setRangeZoomFactor(double horizontalFactor, double verticalFactor);
+  void setRangeZoomFactor(double factor);
   
+  // non-property methods:
   int axisCount(QCPAxis::AxisType type) const;
   QCPAxis *axis(QCPAxis::AxisType type, int index=0) const;
   QList<QCPAxis*> axes(QCPAxis::AxisTypes types) const;
@@ -92,12 +106,23 @@ protected:
   bool mBackgroundScaled;
   Qt::AspectRatioMode mBackgroundScaledMode;
   QCPLayoutInset *mInsetLayout;
+  Qt::Orientations mRangeDrag, mRangeZoom;
+  QWeakPointer<QCPAxis> mRangeDragHorzAxis, mRangeDragVertAxis, mRangeZoomHorzAxis, mRangeZoomVertAxis;
+  double mRangeZoomFactorHorz, mRangeZoomFactorVert;
+  QPoint mDragStart;
+  QCPRange mDragStartHorzRange, mDragStartVertRange;
+  bool mDragging;
+  QCP::AntialiasedElements mAADragBackup, mNotAADragBackup;
   
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
   void drawBackground(QCPPainter *painter);
   void updateAxesOffset(QCPAxis::AxisType type);
   virtual int calculateAutoMargin(QCP::MarginSide side);
+  virtual void mousePressEvent(QMouseEvent *event);
+  virtual void mouseMoveEvent(QMouseEvent *event);
+  virtual void mouseReleaseEvent(QMouseEvent *event);
+  virtual void wheelEvent(QWheelEvent *event);
   
   friend class QCustomPlot;
 };

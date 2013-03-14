@@ -1,6 +1,7 @@
 ### axis refactoring (branch layoutsystem):
 
-- add rangeDragAxes/rangeZoomAxes to each QCPAxisRect and remove it from QCustomPlot
+> add rangeDragAxes/rangeZoomAxes to each QCPAxisRect and remove it from QCustomPlot
+  - update docs of events in QCustomPlot and in QCPAxisRect
 - make range zoom/drag happen only to the QCPAxisRect that it's on, for that we might need to forward mouse events to QCPLayoutElements or
   find the axis rect the mouse is on in the mousePressEvent/wheelEvent and save that rect for future move/releaseEvent calls
 
@@ -15,7 +16,9 @@
   leaving y free by setting it to 0.)
   That's inconsistent internally and in comparison with how Qt does it.
 - write test for QCPLayoutGrid::insertRow/Column
+- remove QCustomPlot::setColor and introduce QCustomPlot::setBackground (just like QCPAxisRect, with pixmap option)
 
+- clean up QCustomPlot ctor
 - make uniform header commenting scheme for class definitions ("non-property methods", "introduced virtual functions", ...)
 
 doc:

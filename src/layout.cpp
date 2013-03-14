@@ -135,7 +135,6 @@ void QCPLayoutElement::setOuterRect(const QRect &rect)
 
 void QCPLayoutElement::setMargins(const QMargins &margins)
 {
-  // don't check mMargins != margins here, because we use setMargins(mMargins) to enforce minimum margins e.g. in setMinimumMargins
   if (mMargins != margins)
   {
     mMargins = margins;

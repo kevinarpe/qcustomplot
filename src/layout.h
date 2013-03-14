@@ -96,10 +96,12 @@ protected:
   QHash<QCP::MarginSide, QCPMarginGroup*> mMarginGroups;
   
   virtual int calculateAutoMargin(QCP::MarginSide side);
+  virtual bool hitTest(const QPointF &pos) const;
   virtual void mousePressEvent(QMouseEvent *event) {Q_UNUSED(event)}
+  virtual void mouseMoveEvent(QMouseEvent *event) {Q_UNUSED(event)}
   virtual void mouseReleaseEvent(QMouseEvent *event) {Q_UNUSED(event)}
   virtual void mouseDoubleClickEvent(QMouseEvent *event) {Q_UNUSED(event)}
-  virtual bool hitTest(const QPointF &pos) const;
+  virtual void wheelEvent(QWheelEvent *event) {Q_UNUSED(event)}
 
 private:
   Q_DISABLE_COPY(QCPLayoutElement)

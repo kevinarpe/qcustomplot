@@ -423,7 +423,7 @@
 */
 QCustomPlot::QCustomPlot(QWidget *parent) :
   QWidget(parent),
-  mDragging(false),
+  mMouseEventElement(0),
   mReplotting(false),
   mPlottingHints(QCP::phCacheLabels)
 {
@@ -444,33 +444,22 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   updateLayerIndices();
   setCurrentLayer("main");
   
-  // create initial layout, axis rect and axes:
+  // create initial layout, axis rect and legend:
   mPlotLayout = new QCPLayoutGrid;
   mPlotLayout->setParent(this);
-  QCPAxisRect *defaultAxisRect = new QCPAxisRect(this);
-  defaultAxisRect->setBackgroundScaled(true);
-  defaultAxisRect->setBackgroundScaledMode(Qt::KeepAspectRatioByExpanding);
+  QCPAxisRect *defaultAxisRect = new QCPAxisRect(this, true);
+  xAxis = defaultAxisRect->axis(QCPAxis::atBottom);
+  yAxis = defaultAxisRect->axis(QCPAxis::atLeft);
+  xAxis2 = defaultAxisRect->axis(QCPAxis::atTop);
+  yAxis2 = defaultAxisRect->axis(QCPAxis::atRight);
   mPlotLayout->addElement(0, 0, defaultAxisRect);
-  yAxis = defaultAxisRect->addAxis(QCPAxis::atLeft);
-  yAxis2 = defaultAxisRect->addAxis(QCPAxis::atRight);
-  xAxis2 = defaultAxisRect->addAxis(QCPAxis::atTop);
-  xAxis = defaultAxisRect->addAxis(QCPAxis::atBottom);
-
   legend = new QCPLegend(this);
   legend->setVisible(false);
   legend->setLayer("axes");
   defaultAxisRect->insetLayout()->addElement(legend, Qt::AlignRight|Qt::AlignTop);
   defaultAxisRect->insetLayout()->setMargins(QMargins(12, 12, 12, 12));
-  xAxis->setGrid(true);
-  yAxis->setGrid(true);
-  xAxis2->setGrid(false);
-  yAxis2->setGrid(false);
-  xAxis2->setZeroLinePen(Qt::NoPen);
-  yAxis2->setZeroLinePen(Qt::NoPen);
-  xAxis2->setVisible(false);
-  yAxis2->setVisible(false);
-  setViewport(rect());
   
+  setViewport(rect()); // needs to be called after mPlotLayout has been created
   setNoAntialiasingOnDrag(false);
   setAutoAddPlottableToLegend(true);
   setColor(Qt::white);
@@ -480,13 +469,8 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
 #endif
   setAntialiasedElements(QCP::aeNone);
   setNotAntialiasedElements(QCP::aeNone);
-  setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
+  setInteractions(0);
   setMultiSelectModifier(Qt::ControlModifier);
-  setRangeDragAxes(xAxis, yAxis);
-  setRangeZoomAxes(xAxis, yAxis);
-  setRangeDrag(0);
-  setRangeZoom(0);
-  setRangeZoomFactor(0.85);
   setSelectionTolerance(8);
   
   replot();
@@ -515,130 +499,11 @@ QCustomPlot::~QCustomPlot()
 }
 
 /*!
-  Returns the range drag axis of the \a orientation provided
-  \see setRangeDragAxes
-*/
-QCPAxis *QCustomPlot::rangeDragAxis(Qt::Orientation orientation)
-{
-  return (orientation == Qt::Horizontal ? mRangeDragHorzAxis.data() : mRangeDragVertAxis.data());
-}
-
-/*!
-  Returns the range zoom axis of the \a orientation provided
-  \see setRangeZoomAxes
-*/
-QCPAxis *QCustomPlot::rangeZoomAxis(Qt::Orientation orientation)
-{
-  return (orientation == Qt::Horizontal ? mRangeZoomHorzAxis.data() : mRangeZoomVertAxis.data());
-}
-
-/*!
-  Returns the range zoom factor of the \a orientation provided
-  \see setRangeZoomFactor
-*/
-double QCustomPlot::rangeZoomFactor(Qt::Orientation orientation)
-{
-  return (orientation == Qt::Horizontal ? mRangeZoomFactorHorz : mRangeZoomFactorVert);
-}
-
-/*!
   Sets the background color of the QCustomPlot widget.
 */
 void QCustomPlot::setColor(const QColor &color)
 {
   mColor = color;
-}
-
-/*!
-  Sets which axis orientation may be range dragged by the user with mouse interaction.
-  What orientation corresponds to which specific axis can be set with
-  \ref setRangeDragAxes(QCPAxis *horizontal, QCPAxis *vertical). By
-  default, the horizontal axis is the bottom axis (xAxis) and the vertical axis
-  is the left axis (yAxis).
-  
-  To disable range dragging entirely, pass 0 as \a orientations or remove \ref iRangeDrag from \ref
-  setInteractions. To enable range dragging for both directions, pass <tt>Qt::Horizontal |
-  Qt::Vertical</tt> as \a orientations.
-  
-  In addition to setting \a orientations to a non-zero value, make sure \ref setInteractions
-  contains \ref iRangeDrag to enable the range dragging interaction.
-  
-  \see setRangeZoom, setRangeDragAxes, setNoAntialiasingOnDrag
-*/
-void QCustomPlot::setRangeDrag(Qt::Orientations orientations)
-{
-  mRangeDrag = orientations;
-}
-
-/*!
-  Sets which axis orientation may be zoomed by the user with the mouse wheel. What orientation
-  corresponds to which specific axis can be set with \ref setRangeZoomAxes(QCPAxis *horizontal,
-  QCPAxis *vertical). By default, the horizontal axis is the bottom axis (xAxis) and the vertical
-  axis is the left axis (yAxis).
-
-  To disable range zooming entirely, pass 0 as \a orientations or remove \ref iRangeZoom from \ref
-  setInteractions. To enable range zooming for both directions, pass <tt>Qt::Horizontal |
-  Qt::Vertical</tt> as \a orientations.
-  
-  In addition to setting \a orientations to a non-zero value, make sure \ref setInteractions
-  contains \ref iRangeZoom to enable the range zooming interaction.
-  
-  \see setRangeZoomFactor, setRangeZoomAxes, setRangeDrag
-*/
-void QCustomPlot::setRangeZoom(Qt::Orientations orientations)
-{
-  mRangeZoom = orientations;
-}
-
-/*!
-  Sets the axes whose range will be dragged when \ref setRangeDrag enables mouse range dragging
-  on the QCustomPlot widget.
-  
-  \see setRangeZoomAxes
-*/
-void QCustomPlot::setRangeDragAxes(QCPAxis *horizontal, QCPAxis *vertical)
-{
-  mRangeDragHorzAxis = horizontal;
-  mRangeDragVertAxis = vertical;
-}
-
-/*!
-  Sets the axes whose range will be zoomed when \ref setRangeZoom enables mouse wheel zooming on the
-  QCustomPlot widget. The two axes can be zoomed with different strengths, when different factors
-  are passed to \ref setRangeZoomFactor(double horizontalFactor, double verticalFactor).
-  
-  \see setRangeDragAxes
-*/
-void QCustomPlot::setRangeZoomAxes(QCPAxis *horizontal, QCPAxis *vertical)
-{
-  mRangeZoomHorzAxis = horizontal;
-  mRangeZoomVertAxis = vertical;
-}
-
-/*!
-  Sets how strong one rotation step of the mouse wheel zooms, when range zoom was activated with
-  \ref setRangeZoom. The two parameters \a horizontalFactor and \a verticalFactor provide a way to
-  let the horizontal axis zoom at different rates than the vertical axis. Which axis is horizontal
-  and which is vertical, can be set with \ref setRangeZoomAxes.
-
-  When the zoom factor is greater than one, scrolling the mouse wheel backwards (towards the user)
-  will zoom in (make the currently visible range smaller). For zoom factors smaller than one, the
-  same scrolling direction will zoom out.
-*/
-void QCustomPlot::setRangeZoomFactor(double horizontalFactor, double verticalFactor)
-{
-  mRangeZoomFactorHorz = horizontalFactor;
-  mRangeZoomFactorVert = verticalFactor;
-}
-
-/*! \overload
-  
-  Sets both the horizontal and vertical zoom \a factor.
-*/
-void QCustomPlot::setRangeZoomFactor(double factor)
-{
-  mRangeZoomFactorHorz = factor;
-  mRangeZoomFactorVert = factor;
 }
 
 /*!
@@ -1682,28 +1547,25 @@ QList<QCPAxisRect*> QCustomPlot::axisRects() const
   return result;
 }
 
-QCPAxisRect *QCustomPlot::axisRectAt(const QPointF &pos) const
+QCPLayoutElement *QCustomPlot::layoutElementAt(const QPointF &pos) const
 {
   QCPLayoutElement *current = mPlotLayout;
-  QCPAxisRect *result = 0;
   bool searchSubElements = true;
-  while (searchSubElements)
+  while (searchSubElements && current)
   {
     searchSubElements = false;
     const QList<QCPLayoutElement*> elements = current->elements();
     for (int i=0; i<elements.size(); ++i)
     {
-      if (elements.at(i)->hitTest(pos))
+      if (elements.at(i) && elements.at(i)->hitTest(pos))
       {
         current = elements.at(i);
         searchSubElements = true;
-        if (QCPAxisRect *ar = qobject_cast<QCPAxisRect*>(current))
-          result = ar;
         break;
       }
     }
   }
-  return result;
+  return current;
 }
 
 /*!
@@ -2076,6 +1938,10 @@ void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
   else if (QCPPlotTitle *pt = dynamic_cast<QCPPlotTitle*>(clickedLayerable))
     emit titleDoubleClick(event, pt);
   
+  // call event of affected layout element:
+  if (QCPLayoutElement *el = layoutElementAt(event->pos()))
+    el->mouseDoubleClickEvent(event);
+  
   QWidget::mouseDoubleClickEvent(event);
 }
 
@@ -2093,25 +1959,12 @@ void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
 void QCustomPlot::mousePressEvent(QMouseEvent *event)
 {
   emit mousePress(event);
-  mDragStart = event->pos(); // need this even when not LeftButton is pressed, to determine in releaseEvent whether it was a full click (no position change between press and release)
-  if (event->buttons() & Qt::LeftButton)
-  {
-    mDragging = true;
-    // initialize antialiasing backup in case we start dragging:
-    if (mNoAntialiasingOnDrag)
-    {
-      mAADragBackup = antialiasedElements();
-      mNotAADragBackup = notAntialiasedElements();
-    }
-    // Mouse range dragging interaction:
-    if (mInteractions.testFlag(QCP::iRangeDrag))
-    {
-      if (mRangeDragHorzAxis)
-        mDragStartHorzRange = mRangeDragHorzAxis.data()->range();
-      if (mRangeDragVertAxis)
-        mDragStartVertRange = mRangeDragVertAxis.data()->range();
-    }
-  }
+  mMousePressPos = event->pos(); // need this to determine in releaseEvent whether it was a click (no position change between press and release)
+  
+  // call event of affected layout element:
+  mMouseEventElement = layoutElementAt(event->pos());
+  if (mMouseEventElement)
+    mMouseEventElement->mousePressEvent(event);
   
   QWidget::mousePressEvent(event);
 }
@@ -2127,49 +1980,9 @@ void QCustomPlot::mouseMoveEvent(QMouseEvent *event)
 {
   emit mouseMove(event);
 
-  // Mouse range dragging interaction:
-  if (mInteractions.testFlag(QCP::iRangeDrag))
-  {
-    if (mDragging)
-    {
-      if (mRangeDrag.testFlag(Qt::Horizontal))
-      {
-        if (QCPAxis *rangeDragHorzAxis = mRangeDragHorzAxis.data())
-        {
-          if (rangeDragHorzAxis->mScaleType == QCPAxis::stLinear)
-          {
-            double diff = rangeDragHorzAxis->pixelToCoord(mDragStart.x()) - rangeDragHorzAxis->pixelToCoord(event->pos().x());
-            rangeDragHorzAxis->setRange(mDragStartHorzRange.lower+diff, mDragStartHorzRange.upper+diff);
-          } else if (rangeDragHorzAxis->mScaleType == QCPAxis::stLogarithmic)
-          {
-            double diff = rangeDragHorzAxis->pixelToCoord(mDragStart.x()) / rangeDragHorzAxis->pixelToCoord(event->pos().x());
-            rangeDragHorzAxis->setRange(mDragStartHorzRange.lower*diff, mDragStartHorzRange.upper*diff);
-          }
-        }
-      }
-      if (mRangeDrag.testFlag(Qt::Vertical))
-      {
-        if (QCPAxis *rangeDragVertAxis = mRangeDragVertAxis.data())
-        {
-          if (rangeDragVertAxis->mScaleType == QCPAxis::stLinear)
-          {
-            double diff = rangeDragVertAxis->pixelToCoord(mDragStart.y()) - rangeDragVertAxis->pixelToCoord(event->pos().y());
-            rangeDragVertAxis->setRange(mDragStartVertRange.lower+diff, mDragStartVertRange.upper+diff);
-          } else if (rangeDragVertAxis->mScaleType == QCPAxis::stLogarithmic)
-          {
-            double diff = rangeDragVertAxis->pixelToCoord(mDragStart.y()) / rangeDragVertAxis->pixelToCoord(event->pos().y());
-            rangeDragVertAxis->setRange(mDragStartVertRange.lower*diff, mDragStartVertRange.upper*diff);
-          }
-        }
-      }
-      if (mRangeDrag != 0) // if either vertical or horizontal drag was enabled, do a replot
-      {
-        if (mNoAntialiasingOnDrag)
-          setNotAntialiasedElements(QCP::aeAll);
-        replot();
-      }
-    }
-  }
+  // call event of affected layout element:
+  if (mMouseEventElement)
+    mMouseEventElement->mouseMoveEvent(event);
   
   QWidget::mouseMoveEvent(event);
 }
@@ -2184,16 +1997,9 @@ void QCustomPlot::mouseMoveEvent(QMouseEvent *event)
 void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
 {
   emit mouseRelease(event);
-  mDragging = false;
   bool doReplot = false;
-  if (mNoAntialiasingOnDrag)
-  {
-    setAntialiasedElements(mAADragBackup);
-    setNotAntialiasedElements(mNotAADragBackup);
-    doReplot = true;
-  }
   
-  if ((mDragStart-event->pos()).manhattanLength() < 5) // determine whether it was a click operation
+  if ((mMousePressPos-event->pos()).manhattanLength() < 5) // determine whether it was a click operation
   {
     if (event->button() == Qt::LeftButton)
     {
@@ -2248,7 +2054,14 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
       emit titleClick(event, pt);
   }
   
-  if (doReplot)
+  // call event of affected layout element:
+  if (mMouseEventElement)
+  {
+    mMouseEventElement->mouseReleaseEvent(event);
+    mMouseEventElement = 0;
+  }
+  
+  if (doReplot || noAntialiasingOnDrag())
     replot();
   
   QWidget::mouseReleaseEvent(event);
@@ -2274,28 +2087,9 @@ void QCustomPlot::wheelEvent(QWheelEvent *event)
 {
   emit mouseWheel(event);
   
-  // Mouse range zooming interaction:
-  if (mInteractions.testFlag(QCP::iRangeZoom))
-  {
-    if (mRangeZoom != 0)
-    {
-      double factor;
-      double wheelSteps = event->delta()/120.0; // a single step delta is +/-120 usually
-      if (mRangeZoom.testFlag(Qt::Horizontal))
-      {
-        factor = pow(mRangeZoomFactorHorz, wheelSteps);
-        if (mRangeZoomHorzAxis.data())
-          mRangeZoomHorzAxis.data()->scaleRange(factor, mRangeZoomHorzAxis.data()->pixelToCoord(event->pos().x()));
-      }
-      if (mRangeZoom.testFlag(Qt::Vertical))
-      {
-        factor = pow(mRangeZoomFactorVert, wheelSteps);
-        if (mRangeZoomVertAxis.data())
-          mRangeZoomVertAxis.data()->scaleRange(factor, mRangeZoomVertAxis.data()->pixelToCoord(event->pos().y()));
-      }
-      replot();
-    }
-  }
+  // call event of affected layout element:
+  if (QCPLayoutElement *el = layoutElementAt(event->pos()))
+    el->wheelEvent(event);
   
   QWidget::wheelEvent(event);
 }

@@ -41,9 +41,6 @@ class QCP_LIB_DECL QCustomPlot : public QWidget
 {
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
-  Q_PROPERTY(QColor color READ color WRITE setColor)
-  Q_PROPERTY(Qt::Orientations rangeDrag READ rangeDrag WRITE setRangeDrag)
-  Q_PROPERTY(Qt::Orientations rangeZoom READ rangeZoom WRITE setRangeZoom)
   /// \endcond
 public:
   /*!
@@ -63,11 +60,6 @@ public:
   QRect viewport() const { return mViewport; }
   QCPLayoutGrid *plotLayout() const { return mPlotLayout; }
   QColor color() const { return mColor; }
-  Qt::Orientations rangeDrag() const { return mRangeDrag; }
-  Qt::Orientations rangeZoom() const { return mRangeZoom; }
-  QCPAxis *rangeDragAxis(Qt::Orientation orientation);
-  QCPAxis *rangeZoomAxis(Qt::Orientation orientation);
-  double rangeZoomFactor(Qt::Orientation orientation);
   QCP::AntialiasedElements antialiasedElements() const { return mAntialiasedElements; }
   QCP::AntialiasedElements notAntialiasedElements() const { return mNotAntialiasedElements; }
   bool autoAddPlottableToLegend() const { return mAutoAddPlottableToLegend; }
@@ -80,12 +72,6 @@ public:
   // setters:
   void setViewport(const QRect &rect);
   void setColor(const QColor &color);
-  void setRangeDrag(Qt::Orientations orientations);
-  void setRangeZoom(Qt::Orientations orientations);
-  void setRangeDragAxes(QCPAxis *horizontal, QCPAxis *vertical);
-  void setRangeZoomAxes(QCPAxis *horizontal, QCPAxis *vertical);
-  void setRangeZoomFactor(double horizontalFactor, double verticalFactor);
-  void setRangeZoomFactor(double factor);
   void setAntialiasedElements(const QCP::AntialiasedElements &antialiasedElements);
   void setAntialiasedElement(QCP::AntialiasedElement antialiasedElement, bool enabled=true);
   void setNotAntialiasedElements(const QCP::AntialiasedElements &notAntialiasedElements);
@@ -145,11 +131,11 @@ public:
   bool removeLayer(QCPLayer *layer);
   bool moveLayer(QCPLayer *layer, QCPLayer *otherLayer, LayerInsertMode insertMode=limAbove);
   
-  // axis rect interface:
+  // axis rect/layout interface:
   int axisRectCount() const;
   QCPAxisRect* axisRect(int index=0) const;
   QList<QCPAxisRect*> axisRects() const;
-  QCPAxisRect* axisRectAt(const QPointF &pos) const;
+  QCPLayoutElement* layoutElementAt(const QPointF &pos) const;
   
   QList<QCPAxis*> selectedAxes() const;
   QList<QCPLegend*> selectedLegends() const;
@@ -200,21 +186,16 @@ protected:
   QList<QCPGraph*> mGraphs; // extra list of items also in mPlottables that are of type QCPGraph
   QList<QCPAbstractItem*> mItems;
   QList<QCPLayer*> mLayers;
-  Qt::Orientations mRangeDrag, mRangeZoom;
-  QWeakPointer<QCPAxis> mRangeDragHorzAxis, mRangeDragVertAxis, mRangeZoomHorzAxis, mRangeZoomVertAxis;
-  double mRangeZoomFactorHorz, mRangeZoomFactorVert;
-  bool mDragging;
   QCP::AntialiasedElements mAntialiasedElements, mNotAntialiasedElements;
   QCP::Interactions mInteractions;
   int mSelectionTolerance;
   bool mNoAntialiasingOnDrag;
   // not explicitly exposed properties:
   QPixmap mPaintBuffer;
-  QPoint mDragStart;
-  QCPRange mDragStartHorzRange, mDragStartVertRange;
+  QPoint mMousePressPos;
+  QCPLayoutElement *mMouseEventElement;
   
   bool mReplotting;
-  QCP::AntialiasedElements mAADragBackup, mNotAADragBackup;
   QCPLayer *mCurrentLayer;
   QCP::PlottingHints mPlottingHints;
   Qt::KeyboardModifier mMultiSelectModifier;

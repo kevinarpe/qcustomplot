@@ -573,18 +573,17 @@ void MainWindow::setupLegendTest(QCustomPlot *customPlot)
 void MainWindow::setupMultiAxisRectInteractions(QCustomPlot *customPlot)
 {
   QCPAxisRect *r1 = new QCPAxisRect(customPlot);
-  r1->addAxes(QCPAxis::atLeft|QCPAxis::atBottom);
   customPlot->plotLayout()->addElement(1, 0, r1);
   QCPAxisRect *r2 = new QCPAxisRect(customPlot);
-  r2->addAxes(QCPAxis::atLeft|QCPAxis::atBottom);
   customPlot->plotLayout()->addElement(0, 1, r2);
   QCPAxisRect *r3 = new QCPAxisRect(customPlot);
-  r3->addAxes(QCPAxis::atLeft|QCPAxis::atBottom);
   customPlot->plotLayout()->addElement(1, 1, r3);
   
   QCPAxisRect *inset = new QCPAxisRect(customPlot);
-  inset->addAxes(QCPAxis::atLeft|QCPAxis::atBottom|QCPAxis::atRight|QCPAxis::atTop);
   inset->setMinimumSize(170, 120);
+  inset->setupFullAxesBox(true);
+  foreach (QCPAxis *ax, inset->axes())
+    ax->setAutoTickCount(3);
   r3->insetLayout()->addElement(inset, Qt::AlignRight|Qt::AlignTop);
   
   connect(mCustomPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(setupMultiAxisRectInteractionsMouseMove(QMouseEvent*)));
@@ -601,8 +600,8 @@ void MainWindow::presetInteractive(QCustomPlot *customPlot)
                               QCP::iSelectPlottables|
                               QCP::iSelectOther|
                               QCP::iMultiSelect);
-  customPlot->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-  customPlot->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+  customPlot->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+  customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
 }
 
 void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool circle, bool labelBelow)
@@ -754,7 +753,7 @@ void MainWindow::tickLabelTestTimerSlot()
 
 void MainWindow::setupMultiAxisRectInteractionsMouseMove(QMouseEvent *event)
 {
-  QCPAxisRect *ar = mCustomPlot->axisRectAt(event->posF());
+  QCPAxisRect *ar = qobject_cast<QCPAxisRect*>(mCustomPlot->layoutElementAt(event->posF()));
   if (ar)
     ar->setBackground(QColor(230, 230, 230));
   for (int i=0; i<mCustomPlot->axisRectCount(); ++i)
