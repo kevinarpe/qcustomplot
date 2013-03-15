@@ -1,15 +1,6 @@
 ### axis refactoring (branch layoutsystem):
 
-> add rangeDragAxes/rangeZoomAxes to each QCPAxisRect and remove it from QCustomPlot
-  - update docs of events in QCustomPlot and in QCPAxisRect
-- make range zoom/drag happen only to the QCPAxisRect that it's on, for that we might need to forward mouse events to QCPLayoutElements or
-  find the axis rect the mouse is on in the mousePressEvent/wheelEvent and save that rect for future move/releaseEvent calls
-
-- add setPlotLayout? should destroy old layout, make sure to manually setParent(parentCustomPlot) on the new top-level layout (so updateGeometry gets called)
-  if added, write in its documentation that for top level layouts the parent is the customPlot and why.
 - update all the documentation referencing QCustomPlot::setMargin, QCustomPlot::setAutoMargin, QCustomPlot::axisRect
-- check whether selection boxes of axes are properly positioned (also with rotated tick labels!)
-- remove delete legend from QCP dtor after legend integrated into layout system
 
 - minimum sizes of layout element is ignored in favor of minimumSizeHint differently for inset layout and for grid layout. Inset ignores if size is invalid, grid always
   uses it as upper bound of minimum size. (Did it like that because grid sometimes wants to control x/y independently, e.g. restrict x by setting high minimum width but

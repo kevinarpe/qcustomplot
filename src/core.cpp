@@ -480,13 +480,7 @@ QCustomPlot::~QCustomPlot()
 {
   clearPlottables();
   clearItems();
-  
-  if (legend)
-  {
-    delete legend;
-    legend = 0;
-  }
-  
+
   if (mPlotLayout)
   {
     delete mPlotLayout;
@@ -1915,7 +1909,11 @@ void QCustomPlot::resizeEvent(QResizeEvent *event)
 
 /*! \internal
   
-  Event handler for when a double click occurs.
+ Event handler for when a double click occurs. Emits the mouseDoubleClick signal, then emits the
+ specialized signals when certain objecs are clicked (e.g. plottableDoubleClick, axisDoubleClick,
+ etc.). Finally determines the affected layout element and forwards the event to it.
+ 
+ \see mousePressEvent, mouseReleaseEvent
 */
 void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
 {
@@ -1947,12 +1945,8 @@ void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
 
 /*! \internal
   
-  Event handler for when a mouse button is pressed. If the left mouse button is pressed, the range
-  dragging interaction is initialized (the actual range manipulation happens in the \ref
-  mouseMoveEvent).
-
-  The mDragging flag is set to true and some anchor points are set that are needed to determine the
-  distance the mouse was dragged in the mouse move/release events later.
+  Event handler for when a mouse button is pressed. Emits the mousePress signal. Then determines
+  the affected layout element and forwards the event to it.
   
   \see mouseMoveEvent, mouseReleaseEvent
 */
@@ -1971,8 +1965,10 @@ void QCustomPlot::mousePressEvent(QMouseEvent *event)
 
 /*! \internal
   
-  Event handler for when the cursor is moved. This is where the built-in range dragging mechanism
-  is handled.
+  Event handler for when the cursor is moved. Emits the mouseMove signal.
+
+  If a layout element has mouse capture focus (a mousePressEvent happened on top of the layout
+  element before), the mouseMoveEvent is forwarded to that element.
   
   \see mousePressEvent, mouseReleaseEvent
 */
@@ -1989,8 +1985,15 @@ void QCustomPlot::mouseMoveEvent(QMouseEvent *event)
 
 /*! \internal
   
-  Event handler for when a mouse button is released. This is where the selection mechanism is
-  handled.
+  Event handler for when a mouse button is released. Emits the mouseRelease signal.
+  
+  If the mouse was moved less than a certain threshold in any direction since the mousePressEvent,
+  it is considered a click which causes the selection mechanism (if activated via \ref
+  setInteractions) to possibly change selection states accordingly. Further, specialized mouse
+  click signals are emitted (e.g. plottableClick, axesClick, etc.)
+  
+  If a layout element has mouse capture focus (a mousePressEvent happened on top of the layout
+  element before), the mouseReleaseEvent is forwarded to that element.
   
   \see mousePressEvent, mouseMoveEvent
 */
@@ -2069,19 +2072,9 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
 
 /*! \internal
   
-  Event handler for mouse wheel events. First, the mouseWheel signal is emitted.
-  If rangeZoom is Qt::Horizontal, Qt::Vertical or both, the ranges of the axes defined as
-  rangeZoomHorzAxis and rangeZoomVertAxis are scaled. The center of the scaling
-  operation is the current cursor position inside the plot. The scaling factor
-  is dependant on the mouse wheel delta (which direction the wheel was rotated)
-  to provide a natural zooming feel. The Strength of the zoom can be controlled via
-  \ref setRangeZoomFactor.
+  Event handler for mouse wheel events. First, the mouseWheel signal is emitted. Then determines
+  the affected layout element and forwards the event to it.
   
-  Note, that event->delta() is usually +/-120 for single rotation steps. However, if the mouse
-  wheel is turned rapidly, many steps may bunch up to one event, so the event->delta() may then be
-  multiples of 120. This is taken into account here, by calculating \a wheelSteps and using it as
-  exponent of the range zoom factor. This takes care of the wheel direction automatically, by
-  inverting the factor, when the wheel step is negative (f^-1 = 1/f).
 */
 void QCustomPlot::wheelEvent(QWheelEvent *event)
 {

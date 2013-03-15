@@ -2107,7 +2107,8 @@ void QCPAxis::draw(QCPPainter *painter)
     mLabelSelectionBox.setCoords(mAxisRect->left(), origin.y()+selLabelOffset+selLabelSize, mAxisRect->right(), origin.y()+selLabelOffset);
   }
   // draw hitboxes for debug purposes:
-  //painter->drawRects(QVector<QRect>() << mAxisSelectionBox << mTickLabelsSelectionBox << mLabelSelectionBox);
+  //painter->setBrush(Qt::NoBrush); // DBG
+  //painter->drawRects(QVector<QRect>() << mAxisSelectionBox << mTickLabelsSelectionBox << mLabelSelectionBox); // DBG
 }
 
 /*! \internal

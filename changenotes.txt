@@ -20,7 +20,10 @@
     - selectTest functions now ignores visibility of objects and (if parameter onlySelectable is true) does not anymore ignore selectability of the object
     - moved QCustomPlot::Interaction/Interactions to QCP namespace as QCP::Interaction/Interactions
     - moved QCustomPlot::setupFullAxesBox() to QCPAxisRect::setupFullAxesBox. Now also accepts parameter to decide whether to connect opposite axis ranges
-
+    - moved range dragging/zooming interface from QCustomPlot to QCPAxisRect (setRangeDrag, setRangeZoom, setRangeDragAxes, setRangeZoomAxes,...)
+    - rangeDrag/Zoom is now set to Qt::Horizontal|Qt::Vertical instead of 0 by default, on the other hand, iRangeDrag/Zoom is unset in interactions by
+      default (this makes enabling dragging/zooming easier by just adding the interaction flags)
+    
   Added features:
     - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).
     - classes QCPAxisRect, QCPLayout, QCPLayoutGrid, QCPLayoutElement

@@ -589,6 +589,17 @@ int QCPAxisRect::calculateAutoMargin(QCP::MarginSide side)
     return 0;
 }
 
+/*! \internal
+  
+  Event handler for when a mouse button is pressed on the axis rect. If the left mouse button is pressed, the range
+  dragging interaction is initialized (the actual range manipulation happens in the \ref
+  mouseMoveEvent).
+
+  The mDragging flag is set to true and some anchor points are set that are needed to determine the
+  distance the mouse was dragged in the mouse move/release events later.
+  
+  \see mouseMoveEvent, mouseReleaseEvent
+*/
 void QCPAxisRect::mousePressEvent(QMouseEvent *event)
 {
   mDragStart = event->pos(); // need this even when not LeftButton is pressed, to determine in releaseEvent whether it was a full click (no position change between press and release)
@@ -667,6 +678,20 @@ void QCPAxisRect::mouseReleaseEvent(QMouseEvent *event)
   }
 }
 
+/*! \internal
+  
+  Event handler for mouse wheel events. If rangeZoom is Qt::Horizontal, Qt::Vertical or both, the
+  ranges of the axes defined as rangeZoomHorzAxis and rangeZoomVertAxis are scaled. The center of
+  the scaling operation is the current cursor position inside the axis rect. The scaling factor is
+  dependant on the mouse wheel delta (which direction the wheel was rotated) to provide a natural
+  zooming feel. The Strength of the zoom can be controlled via \ref setRangeZoomFactor.
+  
+  Note, that event->delta() is usually +/-120 for single rotation steps. However, if the mouse
+  wheel is turned rapidly, many steps may bunch up to one event, so the event->delta() may then be
+  multiples of 120. This is taken into account here, by calculating \a wheelSteps and using it as
+  exponent of the range zoom factor. This takes care of the wheel direction automatically, by
+  inverting the factor, when the wheel step is negative (f^-1 = 1/f).
+*/
 void QCPAxisRect::wheelEvent(QWheelEvent *event)
 {
   // Mouse range zooming interaction:
