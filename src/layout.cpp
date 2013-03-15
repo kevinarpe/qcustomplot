@@ -335,9 +335,6 @@ void QCPLayout::sizeConstraintsChanged() const
     w->updateGeometry();
   else if (QCPLayout *l = qobject_cast<QCPLayout*>(parent()))
     l->sizeConstraintsChanged();
-// don't warn here because it's normal situation for QCPLayoutInset in QCPAxisRect:
-//  else
-//    qDebug() << Q_FUNC_INFO << "Layout has no parent QWidget or QCPLayout";
 }
 
 void QCPLayout::updateLayout()
@@ -937,32 +934,37 @@ void QCPLayoutInset::updateLayout()
   for (int i=0; i<mElements.size(); ++i)
   {
     QRect insetRect;
-    QSize minSize = mElements.at(i)->minimumSize().isValid() ? mElements.at(i)->minimumSize() : mElements.at(i)->minimumSizeHint();
-    QSize maxSize = mElements.at(i)->maximumSize().isValid() ? mElements.at(i)->maximumSize() : mElements.at(i)->maximumSizeHint();
+    QSize finalMinSize, finalMaxSize;
+    QSize minSizeHint = mElements.at(i)->minimumSizeHint();
+    QSize maxSizeHint = mElements.at(i)->maximumSizeHint();
+    finalMinSize.setWidth(mElements.at(i)->minimumSize().width() > 0 ? mElements.at(i)->minimumSize().width() : minSizeHint.width());
+    finalMinSize.setHeight(mElements.at(i)->minimumSize().height() > 0 ? mElements.at(i)->minimumSize().height() : minSizeHint.height());
+    finalMaxSize.setWidth(mElements.at(i)->maximumSize().width() < QWIDGETSIZE_MAX ? mElements.at(i)->maximumSize().width() : maxSizeHint.width());
+    finalMaxSize.setHeight(mElements.at(i)->maximumSize().height() < QWIDGETSIZE_MAX ? mElements.at(i)->maximumSize().height() : maxSizeHint.height());
     if (mInsetPlacement.at(i) == ipFree)
     {
       insetRect = QRect(rect().x()+rect().width()*mInsetRect.at(i).x(),
                         rect().y()+rect().height()*mInsetRect.at(i).y(),
                         rect().width()*mInsetRect.at(i).width(),
                         rect().height()*mInsetRect.at(i).height());
-      if (insetRect.size().width() < minSize.width())
-        insetRect.setWidth(minSize.width());
-      if (insetRect.size().height() < minSize.height())
-        insetRect.setHeight(minSize.height());
-      if (insetRect.size().width() > maxSize.width())
-        insetRect.setWidth(maxSize.width());
-      if (insetRect.size().height() > maxSize.height())
-        insetRect.setHeight(maxSize.height());
+      if (insetRect.size().width() < finalMinSize.width())
+        insetRect.setWidth(finalMinSize.width());
+      if (insetRect.size().height() < finalMinSize.height())
+        insetRect.setHeight(finalMinSize.height());
+      if (insetRect.size().width() > finalMaxSize.width())
+        insetRect.setWidth(finalMaxSize.width());
+      if (insetRect.size().height() > finalMaxSize.height())
+        insetRect.setHeight(finalMaxSize.height());
     } else if (mInsetPlacement.at(i) == ipBorderAligned)
     {
-      insetRect.setSize(minSize);
+      insetRect.setSize(finalMinSize);
       Qt::Alignment al = mInsetAlignment.at(i);
       if (al.testFlag(Qt::AlignLeft)) insetRect.moveLeft(rect().x());
       else if (al.testFlag(Qt::AlignRight)) insetRect.moveRight(rect().x()+rect().width());
-      else if (al.testFlag(Qt::AlignHCenter)) insetRect.moveLeft(rect().x()+rect().width()*0.5-minSize.width()*0.5);
+      else if (al.testFlag(Qt::AlignHCenter)) insetRect.moveLeft(rect().x()+rect().width()*0.5-finalMinSize.width()*0.5);
       if (al.testFlag(Qt::AlignTop)) insetRect.moveTop(rect().y());
       else if (al.testFlag(Qt::AlignBottom)) insetRect.moveBottom(rect().y()+rect().height());
-      else if (al.testFlag(Qt::AlignVCenter)) insetRect.moveTop(rect().y()+rect().height()*0.5-minSize.height()*0.5);
+      else if (al.testFlag(Qt::AlignVCenter)) insetRect.moveTop(rect().y()+rect().height()*0.5-finalMinSize.height()*0.5);
     }
     mElements.at(i)->setOuterRect(insetRect);
   }

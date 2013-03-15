@@ -31,12 +31,12 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupTickLabelTest(mCustomPlot);
   //setupDaqPerformance(mCustomPlot);
   //setupLayoutTest(mCustomPlot);
-  setupMultiAxisTest(mCustomPlot);
+  //setupMultiAxisTest(mCustomPlot);
   //setupLayoutElementBugTest(mCustomPlot);
   //setupMarginGroupTest(mCustomPlot);
   //setupInsetLayoutTest(mCustomPlot);
   //setupLegendTest(mCustomPlot);
-  //setupMultiAxisRectInteractions(mCustomPlot);
+  setupMultiAxisRectInteractions(mCustomPlot);
   
 }
 

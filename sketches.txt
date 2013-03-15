@@ -2,10 +2,6 @@
 
 - update all the documentation referencing QCustomPlot::setMargin, QCustomPlot::setAutoMargin, QCustomPlot::axisRect
 
-- minimum sizes of layout element is ignored in favor of minimumSizeHint differently for inset layout and for grid layout. Inset ignores if size is invalid, grid always
-  uses it as upper bound of minimum size. (Did it like that because grid sometimes wants to control x/y independently, e.g. restrict x by setting high minimum width but
-  leaving y free by setting it to 0.)
-  That's inconsistent internally and in comparison with how Qt does it.
 - write test for QCPLayoutGrid::insertRow/Column
 - remove QCustomPlot::setColor and introduce QCustomPlot::setBackground (just like QCPAxisRect, with pixmap option)
 
