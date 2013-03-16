@@ -15,7 +15,7 @@ void TestQCPLayout::cleanup()
 
 void TestQCPLayout::layoutGridElementManagement()
 {
-  QCPLayoutGrid *mainLayout = qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout());
+  QCPLayoutGrid *mainLayout = mPlot->plotLayout();
   QVERIFY(mainLayout);
   QCOMPARE(mainLayout->elementCount(), 1);
   QCOMPARE(mainLayout->elementAt(0), mainLayout->element(0, 0));
@@ -112,6 +112,82 @@ void TestQCPLayout::layoutGridElementManagement()
   QCOMPARE(mPlot->axisRect(0), r4);
 }
 
+void TestQCPLayout::layoutGridInsertion()
+{
+  QCPLayoutGrid *mainLayout = mPlot->plotLayout();
+  
+  // test inserting rows/columns in front/end of initial axis rect:
+  mainLayout->setColumnStretchFactor(0, 2);
+  mainLayout->setRowStretchFactor(0, 3);
+  mainLayout->insertColumn(0);
+  QCOMPARE(mainLayout->columnCount(), 2);
+  QCOMPARE(mainLayout->element(0, 0), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(0, 1), mPlot->axisRect());
+  QCOMPARE(mainLayout->columnStretchFactors().at(0), 1.0);
+  QCOMPARE(mainLayout->columnStretchFactors().at(1), 2.0);
+  
+  mainLayout->insertColumn(2);
+  QCOMPARE(mainLayout->columnCount(), 3);
+  QCOMPARE(mainLayout->element(0, 0), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(0, 1), mPlot->axisRect());
+  QCOMPARE(mainLayout->element(0, 2), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->columnStretchFactors().at(0), 1.0);
+  QCOMPARE(mainLayout->columnStretchFactors().at(1), 2.0);
+  QCOMPARE(mainLayout->columnStretchFactors().at(2), 1.0);
+  
+  mainLayout->insertRow(0);
+  QCOMPARE(mainLayout->rowCount(), 2);
+  QCOMPARE(mainLayout->element(0, 0), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(0, 1), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(0, 2), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(1, 0), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(1, 1), mPlot->axisRect());
+  QCOMPARE(mainLayout->element(1, 2), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->rowStretchFactors().at(0), 1.0);
+  QCOMPARE(mainLayout->rowStretchFactors().at(1), 3.0);
+  
+  mainLayout->insertRow(2);
+  QCOMPARE(mainLayout->rowCount(), 3);
+  QCOMPARE(mainLayout->element(0, 0), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(0, 1), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(0, 2), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(1, 0), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(1, 1), mPlot->axisRect());
+  QCOMPARE(mainLayout->element(1, 2), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(2, 0), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(2, 1), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->element(2, 2), (QCPLayoutElement*)0);
+  QCOMPARE(mainLayout->rowStretchFactors().at(0), 1.0);
+  QCOMPARE(mainLayout->rowStretchFactors().at(1), 3.0);
+  QCOMPARE(mainLayout->rowStretchFactors().at(2), 1.0);
+  
+  // clear grid:
+  mainLayout->clear();
+  QCOMPARE(mainLayout->rowCount(), 0);
+  QCOMPARE(mainLayout->columnCount(), 0);
+  QCOMPARE(mainLayout->columnStretchFactors().size(), 0);
+  QCOMPARE(mainLayout->rowStretchFactors().size(), 0);
+  
+  // test repopulation of completely empty grid by insertColumn:
+  mainLayout->insertColumn(0);
+  QCOMPARE(mainLayout->columnStretchFactors().size(), 1);
+  QCOMPARE(mainLayout->rowStretchFactors().size(), 1);
+  QCOMPARE(mainLayout->rowCount(), 1);
+  QCOMPARE(mainLayout->columnCount(), 1);
+  mainLayout->addElement(0, 0, new QCPAxisRect(mPlot));
+  
+  // clear grid:
+  mainLayout->clear();
+  
+  // test repopulation of completely empty grid by insertRow:
+  mainLayout->insertRow(0);
+  QCOMPARE(mainLayout->columnStretchFactors().size(), 1);
+  QCOMPARE(mainLayout->rowStretchFactors().size(), 1);
+  QCOMPARE(mainLayout->rowCount(), 1);
+  QCOMPARE(mainLayout->columnCount(), 1);
+  mainLayout->addElement(0, 0, new QCPAxisRect(mPlot));
+}
+
 void TestQCPLayout::layoutGridLayout()
 {
   mPlot->setGeometry(50, 50, 500, 500);
@@ -180,12 +256,9 @@ void TestQCPLayout::marginGroup()
   mPlot->setGeometry(50, 50, 500, 500);
   
   // setup 2x2 grid layout with 4 axes on each axisrect:
-  QCPLayoutGrid *mainLayout = qobject_cast<QCPLayoutGrid*>(mPlot->plotLayout());
-  mainLayout->addElement(0, 1, new QCPAxisRect(mPlot));
-  mainLayout->addElement(1, 0, new QCPAxisRect(mPlot));
-  mainLayout->addElement(1, 1, new QCPAxisRect(mPlot));
-  for (int i=1; i<4; ++i)
-    mPlot->axisRect(i)->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+  mPlot->plotLayout()->addElement(0, 1, new QCPAxisRect(mPlot));
+  mPlot->plotLayout()->addElement(1, 0, new QCPAxisRect(mPlot));
+  mPlot->plotLayout()->addElement(1, 1, new QCPAxisRect(mPlot));
   
   QCPAxisRect *ar0 = mPlot->axisRect(0);
   QCPAxisRect *ar2 = mPlot->axisRect(2);
@@ -210,6 +283,7 @@ void TestQCPLayout::marginGroup()
   QCOMPARE(leftGroup->elements(QCP::msLeft).at(1), ar2);
   
   ar0->axis(QCPAxis::atLeft)->setPadding(10);
+  ar2->axis(QCPAxis::atLeft)->setPadding(5);
   mPlot->replot();
   QCOMPARE(ar0->margins().left(), 10);
   QCOMPARE(ar2->margins().left(), 10);
