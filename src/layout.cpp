@@ -326,7 +326,11 @@ bool QCPLayout::remove(QCPLayoutElement *element)
 void QCPLayout::clear()
 {
   for (int i=elementCount()-1; i>=0; --i)
-    removeAt(i);
+  {
+    if (elementAt(i))
+      removeAt(i);
+  }
+  simplify();
 }
 
 void QCPLayout::sizeConstraintsChanged() const
@@ -608,16 +612,16 @@ void QCPLayoutGrid::setRowSpacing(int pixels)
   mRowSpacing = pixels;
 }
 
-void QCPLayoutGrid::expandTo(int rows, int columns)
+void QCPLayoutGrid::expandTo(int newRowCount, int newColumnCount)
 {
   // add rows as necessary:
-  while (rowCount() < rows)
+  while (rowCount() < newRowCount)
   {
     mElements.append(QList<QCPLayoutElement*>());
     mRowStretchFactors.append(1);
   }
   // go through rows and expand columns as necessary:
-  int newColCount = qMax(columnCount(), columns);
+  int newColCount = qMax(columnCount(), newColumnCount);
   for (int i=0; i<rowCount(); ++i)
   {
     while (mElements.at(i).size() < newColCount)
@@ -629,6 +633,12 @@ void QCPLayoutGrid::expandTo(int rows, int columns)
 
 void QCPLayoutGrid::insertRow(int newIndex)
 {
+  if (mElements.isEmpty() || mElements.first().isEmpty()) // if grid is completely empty, add first cell
+  {
+    expandTo(1, 1);
+    return;
+  }
+  
   if (newIndex < 0)
     newIndex = 0;
   if (newIndex > rowCount())
@@ -643,8 +653,11 @@ void QCPLayoutGrid::insertRow(int newIndex)
 
 void QCPLayoutGrid::insertColumn(int newIndex)
 {
-  if (rowCount() == 0)
-    insertRow(0);
+  if (mElements.isEmpty() || mElements.first().isEmpty()) // if grid is completely empty, add first cell
+  {
+    expandTo(1, 1);
+    return;
+  }
   
   if (newIndex < 0)
     newIndex = 0;
