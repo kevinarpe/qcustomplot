@@ -391,6 +391,7 @@ QCPLegend::QCPLegend(QCustomPlot *parentPlot) :
 QCPLegend::~QCPLegend()
 {
   clearItems();
+  mParentPlot->legendRemoved(this);
 }
 
 QCPLegend::SelectableParts QCPLegend::selectedParts() const

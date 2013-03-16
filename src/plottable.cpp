@@ -468,13 +468,16 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
   needs a more specialized representation in the legend, this function will take this into account
   and instead create the specialized subclass of QCPAbstractLegendItem.
     
-  Returns true on success, i.e. when a legend item associated with this plottable isn't already in
+  Returns true on success, i.e. when the legend exists and a legend item associated with this plottable isn't already in
   the legend.
     
   \see removeFromLegend, QCPLegend::addItem
 */
 bool QCPAbstractPlottable::addToLegend()
 {
+  if (!mParentPlot->legend)
+    return false;
+  
   if (!mParentPlot->legend->hasItemWithPlottable(this))
   {
     mParentPlot->legend->addItem(new QCPPlottableLegendItem(mParentPlot->legend, this));
@@ -488,13 +491,16 @@ bool QCPAbstractPlottable::addToLegend()
   QCPAbstractLegendItem (usually a QCPPlottableLegendItem) that is associated with this plottable
   is removed.
     
-  Returns true on success, i.e. if a legend item associated with this plottable was found and
-  removed from the legend.
+  Returns true on success, i.e. if the legend exists and a legend item associated with this plottable was found and
+  removed.
     
   \see addToLegend, QCPLegend::removeItem
 */
 bool QCPAbstractPlottable::removeFromLegend() const
 {
+  if (!mParentPlot->legend)
+    return false;
+  
   if (QCPPlottableLegendItem *lip = mParentPlot->legend->itemWithPlottable(this))
     return mParentPlot->legend->removeItem(lip);
   else

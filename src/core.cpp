@@ -2137,6 +2137,12 @@ void QCustomPlot::axisRemoved(QCPAxis *axis)
   // Note: No need to take care of range drag axes and range zoom axes, because they are stored in smart pointers
 }
 
+void QCustomPlot::legendRemoved(QCPLegend *legend)
+{
+  if (this->legend == legend)
+    this->legend = 0;
+}
+
 void QCustomPlot::updateLayerIndices() const
 {
   for (int i=0; i<mLayers.size(); ++i)

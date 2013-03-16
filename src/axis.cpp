@@ -62,6 +62,8 @@ QCPGrid::QCPGrid(QCPAxis *parentAxis) :
   mSectionBrushEven(Qt::NoBrush),
   mSectionBrushOdd(Qt::NoBrush)
 {
+  // warning: this is called in QCPAxis constructor, so parentAxis members should not be accessed/called
+  
   setPen(QPen(QColor(200,200,200), 0, Qt::DotLine));
   setSubGridPen(QPen(QColor(220,220,220), 0, Qt::DotLine));
   setZeroLinePen(QPen(QColor(200,200,200), 0, Qt::SolidLine));

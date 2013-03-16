@@ -215,6 +215,7 @@ protected:
   // introduced methods:
   virtual void draw(QCPPainter *painter);
   virtual void axisRemoved(QCPAxis *axis);
+  virtual void legendRemoved(QCPLegend *legend);
   
   // helpers:
   void updateLayerIndices() const;
