@@ -28,7 +28,6 @@
 #include "global.h"
 #include "range.h"
 #include "axis.h"
-#include "layoutelements/layoutelement-legend.h"
 
 class QCPPainter;
 class QCPLayer;
@@ -36,6 +35,8 @@ class QCPAbstractPlottable;
 class QCPAbstractItem;
 class QCPGraph;
 class QCPPlotTitle;
+class QCPLegend;
+class QCPAbstractLegendItem;
 
 class QCP_LIB_DECL QCustomPlot : public QWidget
 {
