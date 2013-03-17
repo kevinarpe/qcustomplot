@@ -82,5 +82,4 @@ layoutelements/layoutelement-axisrect.cpp \
 
 OTHER_FILES += \
     ../changenotes.txt \
-    ../todo.txt \
-    ../sketches.txt
+    ../todo.txt
