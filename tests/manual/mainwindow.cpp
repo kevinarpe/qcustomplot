@@ -251,7 +251,7 @@ void MainWindow::setupExportTest(QCustomPlot *customPlot)
   }
   graph->setData(x, y);
   graph->setLineStyle(QCPGraph::lsNone);
-  graph->setScatterStyle(QCP::ssPlus);
+  graph->setScatterStyle(QCPScatterStyle::ssPlus);
   customPlot->xAxis->setRange(0, 1.1);
   customPlot->yAxis->setRange(0, 101);
   customPlot->savePng(dir.filePath("float-precision-raster.png"), 500, 400, 5);
@@ -274,7 +274,7 @@ void MainWindow::setupLogErrorsTest(QCustomPlot *customPlot)
     xerr[i] = qAbs(qCos(i/2.0)*0.5);
   }
   customPlot->addGraph();
-  customPlot->graph()->setScatterStyle(QCP::ssCross);
+  customPlot->graph()->setScatterStyle(QCPScatterStyle::ssCross);
   customPlot->graph()->setDataBothError(x, y, xerr, yerr);
   customPlot->graph()->setErrorType(QCPGraph::etBoth);
   customPlot->graph()->setErrorBarSkipSymbol(true);

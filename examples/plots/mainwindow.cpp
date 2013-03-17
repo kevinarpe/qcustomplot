@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(400, 250, 542, 390);
   
-  setupDemo(8);
+  setupDemo(1);
   //setupPlayground(ui->customPlot);
   // 0:  setupQuadraticDemo(ui->customPlot);
   // 1:  setupSimpleDemo(ui->customPlot);
@@ -141,7 +141,7 @@ void MainWindow::setupSimpleDemo(QCustomPlot *customPlot)
     y0[i] = exp(-i/150.0)*cos(i/10.0); // exponentially decaying cosine
     y1[i] = exp(-i/150.0);             // exponential envelope
   }
-  // configure right and top axis to show ticks but no labels (could've also just called customPlot->setupFullAxesBox):
+  // configure right and top axis to show ticks but no labels:
   customPlot->xAxis2->setVisible(true);
   customPlot->xAxis2->setTickLabels(false);
   customPlot->yAxis2->setVisible(true);
@@ -157,10 +157,8 @@ void MainWindow::setupSimpleDemo(QCustomPlot *customPlot)
   // same thing for graph 1, but only enlarge ranges (in case graph 1 is smaller than graph 0):
   customPlot->graph(1)->rescaleAxes(true);
   // Note: we could have also just called customPlot->rescaleAxes(); instead
-  // make range moveable by mouse interaction (click and drag):
-  customPlot->setRangeDrag(Qt::Horizontal | Qt::Vertical);
-  customPlot->setRangeZoom(Qt::Horizontal | Qt::Vertical);
-  customPlot->setInteraction(QCustomPlot::iSelectPlottables); // allow selection of graphs via mouse click
+  // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
+  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 }
 
 void MainWindow::setupSincScatterDemo(QCustomPlot *customPlot)
@@ -236,8 +234,8 @@ void MainWindow::setupSincScatterDemo(QCustomPlot *customPlot)
   customPlot->xAxis->setNumberFormat("ebc");
   customPlot->xAxis->setNumberPrecision(1);
   customPlot->xAxis->moveRange(-10);
-  // make top right axes clones of bottom left axes, looks prettier:
-  customPlot->setupFullAxesBox();
+  // make top right axes clones of bottom left axes. Looks prettier:
+  customPlot->axisRect()->setupFullAxesBox();
 }
 
 void MainWindow::setupScatterStyleDemo(QCustomPlot *customPlot)
@@ -245,7 +243,6 @@ void MainWindow::setupScatterStyleDemo(QCustomPlot *customPlot)
   demoName = "Scatter Style Demo";
   customPlot->legend->setVisible(true);
   customPlot->legend->setFont(QFont("Helvetica", 9));
-  customPlot->legend->setPositionStyle(QCPLegend::psRight);
   QPen pen;
   QStringList scatterNames;
   scatterNames << "ssCross" << "ssPlus" << "ssCircle" << "ssDisc"
@@ -279,7 +276,7 @@ void MainWindow::setupScatterStyleDemo(QCustomPlot *customPlot)
   customPlot->xAxis->setTickLabels(false);
   customPlot->yAxis->setTickLabels(false);
   // make top right axes clones of bottom left axes:
-  customPlot->setupFullAxesBox();
+  customPlot->axisRect()->setupFullAxesBox();
 }
 
 void MainWindow::setupLineStyleDemo(QCustomPlot *customPlot)
@@ -287,7 +284,6 @@ void MainWindow::setupLineStyleDemo(QCustomPlot *customPlot)
   demoName = "Line Style Demo";
   customPlot->legend->setVisible(true);
   customPlot->legend->setFont(QFont("Helvetica", 9));
-  customPlot->legend->setPositionStyle(QCPLegend::psTopRight);
   QPen pen;
   QStringList lineNames;
   lineNames << "lsNone" << "lsLine" << "lsStepLeft" << "lsStepRight"
@@ -320,7 +316,7 @@ void MainWindow::setupLineStyleDemo(QCustomPlot *customPlot)
   customPlot->xAxis->setTickLabels(false);
   customPlot->yAxis->setTickLabels(true);
   // make top right axes clones of bottom left axes:
-  customPlot->setupFullAxesBox();
+  customPlot->axisRect()->setupFullAxesBox();
 }
 
 void MainWindow::setupScatterPixmapDemo(QCustomPlot *customPlot)
@@ -345,7 +341,8 @@ void MainWindow::setupScatterPixmapDemo(QCustomPlot *customPlot)
   customPlot->graph()->setData(year, value);
 
   // set title of plot:
-  customPlot->setTitle("Regenerative Energies");
+  customPlot->plotLayout()->insertRow(0);
+  customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(customPlot, "Regenerative Energies"));
   // set a fixed tick-step to one tick per year value:
   customPlot->xAxis->setAutoTickStep(false);
   customPlot->xAxis->setTickStep(1);
@@ -363,8 +360,7 @@ void MainWindow::setupScatterPixmapDemo(QCustomPlot *customPlot)
   customPlot->yAxis2->setSubTickCount(0);
   customPlot->xAxis->setRange(2004.5, 2010.5);
   customPlot->yAxis->setRange(0, 30);
-  // setup legend position:
-  customPlot->legend->setPositionStyle(QCPLegend::psTopLeft);
+  // setup legend:
   customPlot->legend->setFont(QFont(font().family(), 7));
   customPlot->legend->setIconSize(50, 20);
   customPlot->legend->setVisible(true);
@@ -427,9 +423,8 @@ void MainWindow::setupDateDemo(QCustomPlot *customPlot)
   // set axis ranges to show all data:
   customPlot->xAxis->setRange(now, now+24*3600*249);
   customPlot->yAxis->setRange(0, 60);
-  // activate legend and position it in top left corner:
+  // show legend:
   customPlot->legend->setVisible(true);
-  customPlot->legend->setPositionStyle(QCPLegend::psTopLeft);
 }
 
 void MainWindow::setupTextureBrushDemo(QCustomPlot *customPlot)
@@ -474,13 +469,12 @@ void MainWindow::setupTextureBrushDemo(QCustomPlot *customPlot)
   customPlot->xAxis->setRange(0, 2.5);
   customPlot->yAxis->setRange(0.9, 1.6);
   // assign top/right axes same properties as bottom/left:
-  customPlot->setupFullAxesBox();
+  customPlot->axisRect()->setupFullAxesBox();
 }
 
 void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
 {
-  customPlot->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-  customPlot->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
   demoName = "Multi Axis Demo";
   
   customPlot->setLocale(QLocale(QLocale::English, QLocale::UnitedKingdom)); // period as decimal separator and comma as thousand separator
@@ -488,8 +482,9 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
   QFont legendFont = font();  // start out with MainWindow's font..
   legendFont.setPointSize(9); // and make a bit smaller for legend
   customPlot->legend->setFont(legendFont);
-  customPlot->legend->setPositionStyle(QCPLegend::psBottomRight);
   customPlot->legend->setBrush(QBrush(QColor(255,255,255,230)));
+  // by default, the legend is in the inset layout of the main axis rect. So this is how we access it to change legend placement:
+  customPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom|Qt::AlignRight);
   
   // setup for graph 0: key axis left, value axis bottom
   // will contain left maxwell-like function
@@ -535,19 +530,19 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
   customPlot->graph(4)->setName("Some random data around\na quadratic function");
   
   // generate data, just playing with numbers, not much to learn here:
-  QVector<double> x0(50), y0(50);
-  QVector<double> x1(25), y1(25), y1err(25);
+  QVector<double> x0(25), y0(25);
+  QVector<double> x1(15), y1(15), y1err(15);
   QVector<double> x2(250), y2(250);
   QVector<double> x3(250), y3(250);
   QVector<double> x4(250), y4(250);
-  for (int i=0; i<50; ++i) // data for graph 0
+  for (int i=0; i<25; ++i) // data for graph 0
   {
-    x0[i] = 5*i/50.0;
+    x0[i] = 3*i/25.0;
     y0[i] = exp(-x0[i]*x0[i]*0.8)*(x0[i]*x0[i]+x0[i]);
   }
-  for (int i=0; i<25; ++i) // data for graph 1
+  for (int i=0; i<15; ++i) // data for graph 1
   {
-    x1[i] = 5*i/25.0;;
+    x1[i] = 3*i/15.0;;
     y1[i] = exp(-x1[i]*x1[i])*(x1[i]*x1[i])*2.6;
     y1err[i] = y1[i]*0.25;
   }
@@ -560,6 +555,7 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
     y3[i] = cos(x3[i])*10;
     y4[i] = 0.01*x4[i]*x4[i] + 1.5*(rand()/(double)RAND_MAX-0.5) + 1.5*M_PI;
   }
+  
   // pass data points to graphs:
   customPlot->graph(0)->setData(x0, y0);
   customPlot->graph(1)->setDataValueError(x1, y1, y1err);
@@ -583,8 +579,10 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
   customPlot->xAxis2->setAutoTickLabels(false);
   customPlot->xAxis2->setTickVector(piTicks);
   customPlot->xAxis2->setTickVectorLabels(piLabels);
+  // add title layout element:
+  customPlot->plotLayout()->insertRow(0);
+  customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(customPlot, "Way too many graphs in one plot"));
   // set labels:
-  customPlot->setTitle("Way too many graphs in one plot");
   customPlot->xAxis->setLabel("Bottom axis with outward ticks");
   customPlot->yAxis->setLabel("Left axis label");
   customPlot->xAxis2->setLabel("Top axis label");
@@ -663,17 +661,15 @@ void MainWindow::setupLogarithmicDemo(QCustomPlot *customPlot)
   customPlot->xAxis->setRange(0, 19.9);
   customPlot->yAxis->setRange(1e-2, 1e10);
   // make range draggable and zoomable:
-  customPlot->setRangeZoom(Qt::Horizontal | Qt::Vertical);
-  customPlot->setRangeDrag(Qt::Horizontal | Qt::Vertical);
+  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
   
   // make top right axes clones of bottom left axes:
-  customPlot->setupFullAxesBox();
+  customPlot->axisRect()->setupFullAxesBox();
   // connect signals so top and right axes move in sync with bottom and left axes:
   connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->xAxis2, SLOT(setRange(QCPRange)));
   connect(customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->yAxis2, SLOT(setRange(QCPRange)));
   
   customPlot->legend->setVisible(true);
-  customPlot->legend->setPositionStyle(QCPLegend::psTopLeft);
   customPlot->legend->setBrush(QBrush(QColor(255,255,255,150)));
 }
 
@@ -714,7 +710,7 @@ void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot)
   customPlot->xAxis->setDateTimeFormat("hh:mm:ss");
   customPlot->xAxis->setAutoTickStep(false);
   customPlot->xAxis->setTickStep(2);
-  customPlot->setupFullAxesBox();
+  customPlot->axisRect()->setupFullAxesBox();
   
   // make left and bottom axes transfer their ranges to right and top axes:
   connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->xAxis2, SLOT(setRange(QCPRange)));
@@ -728,7 +724,6 @@ void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot)
 void MainWindow::setupParametricCurveDemo(QCustomPlot *customPlot)
 {
   demoName = "Parametric Curves Demo";
-  customPlot->setInteraction(QCustomPlot::iSelectPlottables);
   
   // create empty curve objects and add them to customPlot:
   QCPCurve *fermatSpiral1 = new QCPCurve(customPlot->xAxis, customPlot->yAxis);
@@ -769,9 +764,8 @@ void MainWindow::setupParametricCurveDemo(QCustomPlot *customPlot)
   deltoidRadial->setPen(QPen(QColor(170, 20, 240)));
   deltoidRadial->setBrush(QBrush(radialGrad));
   // set some basic customPlot config:
-  customPlot->setRangeDrag(Qt::Horizontal | Qt::Vertical);
-  customPlot->setRangeZoom(Qt::Horizontal | Qt::Vertical);
-  customPlot->setupFullAxesBox();
+  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+  customPlot->axisRect()->setupFullAxesBox();
   customPlot->rescaleAxes();
 }
 
@@ -842,7 +836,7 @@ void MainWindow::setupBarChartDemo(QCustomPlot *customPlot)
   
   // setup legend:
   customPlot->legend->setVisible(true);
-  customPlot->legend->setPositionStyle(QCPLegend::psTop);
+  customPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignHCenter);
   customPlot->legend->setBrush(QColor(255, 255, 255, 200));
   QPen legendPen;
   legendPen.setColor(QColor(130, 130, 130, 200));
@@ -850,9 +844,7 @@ void MainWindow::setupBarChartDemo(QCustomPlot *customPlot)
   QFont legendFont = font();
   legendFont.setPointSize(10);
   customPlot->legend->setFont(legendFont);
-  
-  customPlot->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-  customPlot->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
 }
 
 void MainWindow::setupStatisticalDemo(QCustomPlot *customPlot)
@@ -908,15 +900,13 @@ void MainWindow::setupStatisticalDemo(QCustomPlot *customPlot)
   customPlot->rescaleAxes();
   customPlot->xAxis->scaleRange(1.7, customPlot->xAxis->range().center());
   customPlot->yAxis->setRange(0, 7);
-  customPlot->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-  customPlot->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
 }
 
 void MainWindow::setupSimpleItemDemo(QCustomPlot *customPlot)
 {
   demoName = "Simple Item Demo";
-  customPlot->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-  customPlot->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
   
   // add the text label at the top:
   QCPItemText *textLabel = new QCPItemText(customPlot);
@@ -944,8 +934,7 @@ void MainWindow::setupItemDemo(QCustomPlot *customPlot)
   
   demoName = "Item Demo";
   
-  customPlot->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-  customPlot->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
   QCPGraph *graph = customPlot->addGraph();
   int n = 500;
   double phase = 0;
