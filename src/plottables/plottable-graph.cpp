@@ -127,8 +127,6 @@ QCPGraph::QCPGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   setSelectedBrush(Qt::NoBrush);
   
   setLineStyle(lsLine);
-  setScatterStyle(QCP::ssNone);
-  setScatterSize(6);
   setErrorType(etNone);
   setErrorBarSize(6);
   setErrorBarSkipSymbol(true);
@@ -359,37 +357,14 @@ void QCPGraph::setLineStyle(LineStyle ls)
 }
 
 /*! 
-  Sets the visual appearance of single data points in the plot. If set to \ref QCP::ssNone, no scatter points
+  Sets the visual appearance of single data points in the plot. If set to \ref QCPScatterStyle::ssNone, no scatter points
   are drawn (e.g. for line-only-plots with appropriate line style).
   
-  \see ScatterStyle, setLineStyle
+  \see QCPScatterStyle, setLineStyle
 */
-void QCPGraph::setScatterStyle(QCP::ScatterStyle ss)
+void QCPGraph::setScatterStyle(const QCPScatterStyle &style)
 {
-  mScatterStyle = ss;
-}
-
-/*! 
-  This defines how big (in pixels) single scatters are drawn, if scatter style (\ref
-  setScatterStyle) isn't \ref QCP::ssNone, \ref QCP::ssDot or \ref QCP::ssPixmap. Floating point values are
-  allowed for fine grained control over optical appearance with antialiased painting.
-  
-  \see ScatterStyle
-*/
-void QCPGraph::setScatterSize(double size)
-{
-  mScatterSize = size;
-}
-
-/*! 
-  If the scatter style (\ref setScatterStyle) is set to ssPixmap, this function defines the QPixmap
-  that will be drawn centered on the data point coordinate.
-  
-  \see ScatterStyle
-*/
-void QCPGraph::setScatterPixmap(const QPixmap &pixmap)
-{
-  mScatterPixmap = pixmap;
+  mScatterStyle = style;
 }
 
 /*!
@@ -666,12 +641,12 @@ void QCPGraph::draw(QCPPainter *painter)
 {
   if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
   if (mKeyAxis.data()->range().size() <= 0 || mData->isEmpty()) return;
-  if (mLineStyle == lsNone && mScatterStyle == QCP::ssNone) return;
+  if (mLineStyle == lsNone && mScatterStyle.isNone()) return;
   
   // allocate line and (if necessary) point vectors:
   QVector<QPointF> *lineData = new QVector<QPointF>;
   QVector<QCPData> *pointData = 0;
-  if (mScatterStyle != QCP::ssNone)
+  if (!mScatterStyle.isNone())
     pointData = new QVector<QCPData>;
   
   // fill vectors with data appropriate to plot style:
@@ -725,18 +700,21 @@ void QCPGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
     painter->drawLine(QLineF(rect.left(), rect.top()+rect.height()/2.0, rect.right()+5, rect.top()+rect.height()/2.0)); // +5 on x2 else last segment is missing from dashed/dotted pens
   }
   // draw scatter symbol:
-  if (mScatterStyle != QCP::ssNone)
+  if (!mScatterStyle.isNone())
   {
     applyScattersAntialiasingHint(painter);
-    painter->setPen(mPen);
-    if (mScatterStyle == QCP::ssPixmap)
+    // TODO: draw shrinked scatter pixmap if necessary
+    /*
+    if (mScatterStyle.shape() == QCPScatterStyle::ssPixmap)
     {
-      if (mScatterPixmap.size().width() > rect.width() || mScatterPixmap.size().height() > rect.height()) // scale scatter pixmap if it's too large to fit in legend icon rect
-        painter->setScatterPixmap(mScatterPixmap.scaled(rect.size().toSize(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+      if (mScatterStyle.pixmap().size().width() > rect.width() || mScatterStyle.pixmap().size().height() > rect.height()) // scale scatter pixmap if it's too large to fit in legend icon rect
+        painter->setScatterPixmap(mScatterStyle.pixmap().scaled(rect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
       else
         painter->setScatterPixmap(mScatterPixmap);
     }
-    painter->drawScatter(QRectF(rect).center().x(), QRectF(rect).center().y(), mScatterSize, mScatterStyle);
+    */
+    mScatterStyle.applyTo(painter, mPen);
+    mScatterStyle.drawShape(painter, QRectF(rect).center());
   }
 }
 
@@ -1282,17 +1260,15 @@ void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData)
   
   // draw scatter point symbols:
   applyScattersAntialiasingHint(painter);
-  painter->setPen(mainPen());
-  painter->setBrush(mainBrush());
-  painter->setScatterPixmap(mScatterPixmap);
+  mScatterStyle.applyTo(painter, mPen);
   if (keyAxis->orientation() == Qt::Vertical)
   {
     for (int i=0; i<pointData->size(); ++i)
-      painter->drawScatter(valueAxis->coordToPixel(pointData->at(i).value), keyAxis->coordToPixel(pointData->at(i).key), mScatterSize, mScatterStyle);
+      mScatterStyle.drawShape(painter, valueAxis->coordToPixel(pointData->at(i).value), keyAxis->coordToPixel(pointData->at(i).key));
   } else
   {
     for (int i=0; i<pointData->size(); ++i)
-      painter->drawScatter(keyAxis->coordToPixel(pointData->at(i).key), valueAxis->coordToPixel(pointData->at(i).value), mScatterSize, mScatterStyle);
+      mScatterStyle.drawShape(painter, keyAxis->coordToPixel(pointData->at(i).key), valueAxis->coordToPixel(pointData->at(i).value));
   }
 }
 
@@ -1378,7 +1354,7 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
   
   double a, b; // positions of error bar bounds in pixels
   double barWidthHalf = mErrorBarSize*0.5;
-  double skipSymbolMargin = mScatterSize*1.25; // pixels left blank per side, when mErrorBarSkipSymbol is true
+  double skipSymbolMargin = mScatterStyle.size(); // pixels left blank per side, when mErrorBarSkipSymbol is true
 
   if (keyAxis->orientation() == Qt::Vertical)
   {
@@ -1905,7 +1881,7 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
     return QVector2D(dataPoint-pixelPoint).length();
   }
   
-  if (mLineStyle == lsNone && mScatterStyle == QCP::ssNone)
+  if (mLineStyle == lsNone && mScatterStyle.isNone())
     return 500;
   
   // calculate minimum distances to graph representation:

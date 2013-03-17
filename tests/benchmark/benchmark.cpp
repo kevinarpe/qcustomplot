@@ -82,9 +82,9 @@ void Benchmark::QCPGraph_ManyPoints()
   QCPGraph *graph2 = mPlot->addGraph();
   QCPGraph *graph3 = mPlot->addGraph();
   graph1->setBrush(QBrush(QColor(100, 0, 0, 100)));
-  graph1->setScatterStyle(QCP::ssCross);
-  graph2->setScatterStyle(QCP::ssCircle);
-  graph3->setScatterStyle(QCP::ssDiamond);
+  graph1->setScatterStyle(QCPScatterStyle::ssCross);
+  graph2->setScatterStyle(QCPScatterStyle::ssCircle);
+  graph3->setScatterStyle(QCPScatterStyle::ssDiamond);
   graph1->setLineStyle(QCPGraph::lsNone);
   graph2->setLineStyle(QCPGraph::lsNone);
   graph3->setLineStyle(QCPGraph::lsNone);
@@ -115,9 +115,9 @@ void Benchmark::QCPGraph_ManyLines()
   QCPGraph *graph2 = mPlot->addGraph();
   QCPGraph *graph3 = mPlot->addGraph();
   graph1->setBrush(QBrush(QColor(100, 0, 0, 100)));
-  graph1->setScatterStyle(QCP::ssNone);
-  graph2->setScatterStyle(QCP::ssNone);
-  graph3->setScatterStyle(QCP::ssNone);
+  graph1->setScatterStyle(QCPScatterStyle());
+  graph2->setScatterStyle(QCPScatterStyle());
+  graph3->setScatterStyle(QCPScatterStyle());
   graph1->setLineStyle(QCPGraph::lsLine);
   graph2->setLineStyle(QCPGraph::lsLine);
   graph3->setLineStyle(QCPGraph::lsLine);

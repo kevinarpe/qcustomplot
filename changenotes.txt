@@ -23,7 +23,10 @@
     - moved range dragging/zooming interface from QCustomPlot to QCPAxisRect (setRangeDrag, setRangeZoom, setRangeDragAxes, setRangeZoomAxes,...)
     - rangeDrag/Zoom is now set to Qt::Horizontal|Qt::Vertical instead of 0 by default, on the other hand, iRangeDrag/Zoom is unset in interactions by
       default (this makes enabling dragging/zooming easier by just adding the interaction flags)
-    
+    - QCPScatterStyle takes over everything related to handling scatters in all plottables
+    - removed setScatterPen/Size on QCPGraph and QCPCurve, removed setOutlierPen/Size on QCPStatisticalBox (now handled via QCPScatterStyle)
+    - modified setScatterStyle on QCPGraph and QCPCurve, and setOutlierStyle on QCPStatisticalBox, to take QCPScatterStyle
+
   Added features:
     - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).
     - classes QCPAxisRect, QCPLayout, QCPLayoutGrid, QCPLayoutElement
@@ -43,6 +46,8 @@
     - Automatic margin calculation can now be enabled/disabled on a per-side basis, see QCPAxisRect::setAutoMargins
     - QCPAxisRect margins of multiple axis rects can be coupled via QCPMarginGroup
     - Added new default layers "background" and "legend" (QCPAxisRect draws its background on the "background" layer, QCPLegend is on the "legend" layer by default)
+    - Custom scatter style via QCP::ssCustom and respective setCustomScatter functions that take a QPainterPath
+    - Filled scatters via setScatterBrush (in analogy to setScatterPen)
 
   Bugfixes:
     - Fixed compile error on ARM

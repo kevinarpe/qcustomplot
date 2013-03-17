@@ -28,6 +28,7 @@
 #include "../global.h"
 #include "../range.h"
 #include "../plottable.h"
+#include "../painter.h"
 
 class QCPPainter;
 class QCPAxis;
@@ -71,18 +72,14 @@ public:
   
   // getters:
   const QCPCurveDataMap *data() const { return mData; }
-  QCP::ScatterStyle scatterStyle() const { return mScatterStyle; }
-  double scatterSize() const { return mScatterSize; }
-  QPixmap scatterPixmap() const { return mScatterPixmap; }
+  QCPScatterStyle scatterStyle() const { return mScatterStyle; }
   LineStyle lineStyle() const { return mLineStyle; }
   
   // setters:
   void setData(QCPCurveDataMap *data, bool copy=false);
   void setData(const QVector<double> &t, const QVector<double> &key, const QVector<double> &value);
   void setData(const QVector<double> &key, const QVector<double> &value);
-  void setScatterStyle(QCP::ScatterStyle style);
-  void setScatterSize(double size);
-  void setScatterPixmap(const QPixmap &pixmap);
+  void setScatterStyle(const QCPScatterStyle &style);
   void setLineStyle(LineStyle style);
   
   // non-property methods:
@@ -100,9 +97,7 @@ public:
   
 protected:
   QCPCurveDataMap *mData;
-  QCP::ScatterStyle mScatterStyle;
-  double mScatterSize;
-  QPixmap mScatterPixmap;
+  QCPScatterStyle mScatterStyle;
   LineStyle mLineStyle;
   
   virtual void draw(QCPPainter *painter);

@@ -1,3 +1,54 @@
+*** Benchmark on 2013-01-07 21:44 ***
+Platform: Linux-3.5.0-21-generic-i686-with-LinuxMint-14-nadia, dermanu on manulinux2
+Git Branch: scatter
+Git Head: 4a2d37d - Benchmark of QCPGraph data manipulation (add/remove)
+Rounds: 20
+Comment: Original scatter system without subclass/virtual functions
+
+QCPAxis_TickLabels            1.19 +/- 0.04 ms
+QCPAxis_TickLabelsCached      0.34 +/- 0.01 ms
+QCPGraph_AddData            129.65 +/- 5.56 ms
+QCPGraph_ManyLines           21.00 +/- 0.89 ms
+QCPGraph_ManyPoints         113.75 +/- 3.92 ms
+QCPGraph_RemoveDataAfter     64.00 +/- 4.56 ms
+QCPGraph_RemoveDataBefore    29.15 +/- 0.96 ms
+QCPGraph_RemoveDataBetween   51.10 +/- 1.55 ms
+QCPGraph_Standard             1.59 +/- 0.12 ms
+
+*** Benchmark on 2013-01-07 21:56 ***
+Platform: Linux-3.5.0-21-generic-i686-with-LinuxMint-14-nadia, dermanu on manulinux2
+Git Branch: scatter
+Git Head: 4a2d37d - Benchmark of QCPGraph data manipulation (add/remove)
+Rounds: 20
+Comment: Using QCPScatterPainter baseclass to do painting
+
+QCPAxis_TickLabels            1.20 +/- 0.10 ms
+QCPAxis_TickLabelsCached      0.34 +/- 0.02 ms
+QCPGraph_AddData            126.90 +/- 3.77 ms
+QCPGraph_ManyLines           21.98 +/- 1.97 ms
+QCPGraph_ManyPoints         114.65 +/- 2.48 ms
+QCPGraph_RemoveDataAfter     63.65 +/- 4.29 ms
+QCPGraph_RemoveDataBefore    29.50 +/- 0.87 ms
+QCPGraph_RemoveDataBetween   53.50 +/- 7.49 ms
+QCPGraph_Standard             1.61 +/- 0.12 ms
+
+*** Benchmark on 2013-01-07 22:03 ***
+Platform: Linux-3.5.0-21-generic-i686-with-LinuxMint-14-nadia, dermanu on manulinux2
+Git Branch: scatter
+Git Head: 4a2d37d - Benchmark of QCPGraph data manipulation (add/remove)
+Rounds: 20
+Comment: Using QCPScatterPainter2 subclass virtual function to do painting
+
+QCPAxis_TickLabels            1.21 +/- 0.06 ms
+QCPAxis_TickLabelsCached      0.34 +/- 0.02 ms
+QCPGraph_AddData             89.30 +/- 5.81 ms
+QCPGraph_ManyLines           21.00 +/- 1.14 ms
+QCPGraph_ManyPoints         114.60 +/- 4.92 ms
+QCPGraph_RemoveDataAfter     65.20 +/- 8.89 ms
+QCPGraph_RemoveDataBefore    29.35 +/- 1.49 ms
+QCPGraph_RemoveDataBetween   73.05 +/- 21.48 ms
+QCPGraph_Standard             1.59 +/- 0.09 ms
+
 *** Benchmark on 2013-01-08 00:17 ***
 Platform: Linux-3.5.0-21-generic-i686-athlon-with-LinuxMint-14-nadia, dermanu on manulinux
 Git Branch: dev
@@ -13,4 +64,21 @@ QCPGraph_RemoveDataAfter     92.00 +/- 4.51 ms
 QCPGraph_RemoveDataBefore    35.10 +/- 0.30 ms
 QCPGraph_RemoveDataBetween   54.25 +/- 2.12 ms
 QCPGraph_Standard             2.50 +/- 0.00 ms
+
+*** Benchmark on 2013-02-23 11:48 ***
+Platform: Linux-3.5.0-21-generic-i686-with-LinuxMint-14-nadia, dermanu on manulinux2
+Git Branch: scatter
+Git Head: 264b6c3 - Experiments with scatter drawing performance (wip)
+Rounds: 20
+Comment: New scatter mechanism with QCPScatterStyle doing the shape drawing
+
+QCPAxis_TickLabels            1.20 +/- 0.07 ms
+QCPAxis_TickLabelsCached      0.33 +/- 0.01 ms
+QCPGraph_AddData            124.05 +/- 4.41 ms
+QCPGraph_ManyLines           20.55 +/- 0.59 ms
+QCPGraph_ManyPoints         114.20 +/- 4.65 ms
+QCPGraph_RemoveDataAfter     63.55 +/- 3.20 ms
+QCPGraph_RemoveDataBefore    30.30 +/- 0.71 ms
+QCPGraph_RemoveDataBetween   54.20 +/- 6.08 ms
+QCPGraph_Standard             1.63 +/- 0.13 ms
 
