@@ -9,6 +9,8 @@ desktop.ini
 
 build-release/
 build-debug/
+*-build-*-Release/
+*-build-*-Debug/
 *.pro.user*
 Makefile*
 moc_*.cpp
