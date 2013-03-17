@@ -52,7 +52,7 @@ public:
   void setTail(const QCPLineEnding &tail);
   
   // non-property methods:
-  virtual double selectTest(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   QCPItemPosition * const start;
   QCPItemPosition * const end;

@@ -127,7 +127,7 @@ public:
   void removeData(double fromKey, double toKey);
   void removeData(double key);
   virtual void clearData();
-  virtual double selectTest(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   using QCPAbstractPlottable::rescaleAxes;
   using QCPAbstractPlottable::rescaleKeyAxis;
   using QCPAbstractPlottable::rescaleValueAxis;
@@ -148,7 +148,7 @@ protected:
   QWeakPointer<QCPGraph> mChannelFillGraph;
 
   virtual void draw(QCPPainter *painter);
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
 
   // functions to generate plot data points in pixel coordinates:
   void getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;

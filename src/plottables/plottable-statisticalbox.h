@@ -75,7 +75,7 @@ public:
   
   // non-property methods:
   virtual void clearData();
-  virtual double selectTest(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
   QVector<double> mOutliers;
@@ -87,7 +87,7 @@ protected:
   QCP::ScatterStyle mOutlierStyle;
   
   virtual void draw(QCPPainter *painter);
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
   
   virtual void drawQuartileBox(QCPPainter *painter, QRectF *quartileBox=0) const;
   virtual void drawMedian(QCPPainter *painter) const;

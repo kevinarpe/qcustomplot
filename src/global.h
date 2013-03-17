@@ -41,6 +41,7 @@
 #include <QVector2D>
 #include <QStack>
 #include <QCache>
+#include <QMargins>
 #include <qmath.h>
 #include <limits>
 
@@ -139,6 +140,23 @@ enum PlottingHint { phNone            = 0x000 ///< <tt>0x000</tt> No hints are s
                   };
 Q_DECLARE_FLAGS(PlottingHints, PlottingHint)
 
+/*!
+  Defines the mouse interactions possible with QCustomPlot
+  
+  \c Interactions is a flag of or-combined elements of this enum type.
+  \see QCustomPlot::setInteractions
+*/
+enum Interaction { iRangeDrag         = 0x001 ///< <tt>0x001</tt> Axis ranges are draggable (see \ref setRangeDrag, \ref setRangeDragAxes)
+                   ,iRangeZoom        = 0x002 ///< <tt>0x002</tt> Axis ranges are zoomable with the mouse wheel (see \ref setRangeZoom, \ref setRangeZoomAxes)
+                   ,iMultiSelect      = 0x004 ///< <tt>0x004</tt> The user can select multiple objects by holding the modifier set by \ref setMultiSelectModifier while clicking
+                   ,iSelectPlottables = 0x008 ///< <tt>0x008</tt> Plottables are selectable
+                   ,iSelectAxes       = 0x010 ///< <tt>0x010</tt> Axes are selectable (or parts of them, see QCPAxis::setSelectable)
+                   ,iSelectLegend     = 0x020 ///< <tt>0x020</tt> Legends are selectable (or their child items, see QCPLegend::setSelectable)
+                   ,iSelectItems      = 0x040 ///< <tt>0x040</tt> Items are selectable (Rectangles, Arrows, Textitems, etc. see \ref QCPAbstractItem)
+                   ,iSelectOther      = 0x080 ///< <tt>0x080</tt> All other objects are selectable (e.g. your own derived layerables, the plot title,...)
+                 };
+Q_DECLARE_FLAGS(Interactions, Interaction)
+
 /*! \internal
   Returns whether the specified \a value is considered an invalid data value for plottables (i.e. is \e nan or \e +/-inf). This
   function is used to check data validity upon replots, when the compiler flag \c
@@ -161,10 +179,50 @@ inline bool isInvalidData(double value1, double value2)
   return isInvalidData(value1) || isInvalidData(value2);
 }
 
+/*! \internal
+  
+  Sets the specified \a side of \a margins to \a value
+  
+  \see getMarginValue
+*/
+inline void setMarginValue(QMargins &margins, QCP::MarginSide side, int value)
+{
+  switch (side)
+  {
+    case QCP::msLeft: margins.setLeft(value); break;
+    case QCP::msRight: margins.setRight(value); break;
+    case QCP::msTop: margins.setTop(value); break;
+    case QCP::msBottom: margins.setBottom(value); break;
+    case QCP::msAll: margins = QMargins(value, value, value, value); break;
+    default: break;
+  }
+}
+
+/*! \internal
+  
+  Returns the value of the specified \a side of \a margins. If \a side is \ref QCP::msNone or
+  \ref QCP::msAll, returns 0.
+  
+  \see setMarginValue
+*/
+inline int getMarginValue(const QMargins &margins, QCP::MarginSide side)
+{
+  switch (side)
+  {
+    case QCP::msLeft: return margins.left();
+    case QCP::msRight: return margins.right();
+    case QCP::msTop: return margins.top();
+    case QCP::msBottom: return margins.bottom();
+    default: break;
+  }
+  return 0;
+}
+
 } // end of namespace QCP
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::AntialiasedElements)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::PlottingHints)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::MarginSides)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::Interactions)
 
 #endif // QCP_GLOBAL_H

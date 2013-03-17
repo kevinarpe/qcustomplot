@@ -36,17 +36,19 @@ class QCP_LIB_DECL QCPLayer : public QObject
   Q_OBJECT
 public:
   QCPLayer(QCustomPlot* parentPlot, const QString &layerName);
+  ~QCPLayer();
   
   // getters:
   QCustomPlot *parentPlot() const { return mParentPlot; }
   QString name() const { return mName; }
-  int index() const;
+  int index() const { return mIndex; }
   QList<QCPLayerable*> children() const { return mChildren; }
   
 protected:
   QCustomPlot *mParentPlot;
   QString mName;
   QList<QCPLayerable*> mChildren;
+  int mIndex;
   
   void addChild(QCPLayerable *layerable, bool prepend);
   void removeChild(QCPLayerable *layerable);
@@ -54,6 +56,7 @@ protected:
 private:
   Q_DISABLE_COPY(QCPLayer)
   
+  friend class QCustomPlot;
   friend class QCPLayerable;
 };
 
@@ -75,6 +78,9 @@ public:
   bool setLayer(const QString &layerName);
   void setAntialiased(bool enabled);
   
+  // non-property methods:
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  
 protected:
   bool mVisible;
   QCustomPlot *mParentPlot;
@@ -83,11 +89,16 @@ protected:
   
   // non-property methods:
   bool moveToLayer(QCPLayer *layer, bool prepend);
-  
   void applyAntialiasingHint(QCPPainter *painter, bool localAntialiased, QCP::AntialiasedElement overrideElement) const;
-  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const = 0;
+  
+  // introduced virtual functions:
+  virtual QCP::Interaction selectionCategory() const;
   virtual QRect clipRect() const;
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const = 0;
   virtual void draw(QCPPainter *painter) = 0;
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
   
 private:
   Q_DISABLE_COPY(QCPLayerable)

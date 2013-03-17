@@ -6,7 +6,7 @@
 # If compiling your application in release mode, you should link with qcustomplot.
 #
 # In your project's HEADERS, you may use either the amalgamated header qcustomplot.h or all separated headers.
-# (note that qmake undestands *.h if you choose the latter option.)
+# (note that qmake undestands "*.h" if you choose the latter option.)
 #
 
 QT += core gui
@@ -31,7 +31,6 @@ painter.h \
 layer.h \
 range.h \
 axis.h \
-legend.h \
 plottable.h \
 item.h \
 lineending.h \
@@ -49,14 +48,16 @@ items/item-text.h \
 items/item-ellipse.h \
 items/item-pixmap.h \
 items/item-tracer.h \
-items/item-bracket.h
+items/item-bracket.h \
+layoutelements/layoutelement-axisrect.h \
+    layoutelements/layoutelement-legend.h \
+    layoutelements/layoutelement-plottitle.h
 
 SOURCES += \
 painter.cpp \
 layer.cpp \
 range.cpp \
 axis.cpp \
-legend.cpp \
 plottable.cpp \
 item.cpp \
 lineending.cpp \
@@ -74,7 +75,10 @@ items/item-text.cpp \
 items/item-ellipse.cpp \
 items/item-pixmap.cpp \
 items/item-tracer.cpp \
-items/item-bracket.cpp
+items/item-bracket.cpp \
+layoutelements/layoutelement-axisrect.cpp \
+    layoutelements/layoutelement-legend.cpp \
+    layoutelements/layoutelement-plottitle.cpp
 
 OTHER_FILES += \
     ../changenotes.txt \

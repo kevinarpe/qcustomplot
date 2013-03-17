@@ -14,6 +14,7 @@ private slots:
   void QCPGraph_Standard();
   void QCPGraph_ManyPoints();
   void QCPGraph_ManyLines();
+  void QCPGraph_ManyOffScreenLines();
   void QCPGraph_RemoveDataBetween();
   void QCPGraph_RemoveDataAfter();
   void QCPGraph_RemoveDataBefore();
@@ -39,6 +40,7 @@ void Benchmark::init()
 {
   mPlot = new QCustomPlot(0);
   mPlot->setGeometry(0, 0, 640, 360);
+  mPlot->show();
 }
 
 void Benchmark::cleanup()
@@ -140,23 +142,36 @@ void Benchmark::QCPGraph_ManyLines()
   }
 }
 
-void Benchmark::QCPGraph_AddData()
+void Benchmark::QCPGraph_ManyOffScreenLines()
 {
-  QCPGraph *graph = mPlot->addGraph();
-  int n = 500000;
-  QVector<double> x1(n), y1(n), x2(n), y2(n);
+  QCPGraph *graph1 = mPlot->addGraph();
+  QCPGraph *graph2 = mPlot->addGraph();
+  QCPGraph *graph3 = mPlot->addGraph();
+  graph1->setBrush(QBrush(QColor(100, 0, 0, 100)));
+  graph1->setScatterStyle(QCP::ssNone);
+  graph2->setScatterStyle(QCP::ssNone);
+  graph3->setScatterStyle(QCP::ssNone);
+  graph1->setLineStyle(QCPGraph::lsLine);
+  graph2->setLineStyle(QCPGraph::lsLine);
+  graph3->setLineStyle(QCPGraph::lsLine);
+  int n = 50000;
+  QVector<double> x(n), y1(n), y2(n), y3(n);
   for (int i=0; i<n; ++i)
   {
-    x1[i] = i/(double)n;
-    y1[i] = qSin(x1[i]*10*M_PI);
-    x2[i] = (i+n)/(double)n;
-    y2[i] = qSin(x2[i]*10*M_PI);
+    x[i] = i/(double)n;
+    y1[i] = qSin(x[i]*10*M_PI);
+    y2[i] = qCos(x[i]*40*M_PI);
+    y3[i] = x[i];
   }
-
-  graph->setData(x1, y1);
-  QBENCHMARK_ONCE
+  graph1->setData(x, y1);
+  graph2->setData(x, y2);
+  graph3->setData(x, y3);
+  mPlot->rescaleAxes();
+  mPlot->xAxis->setRange(1.1, 2.1);
+  
+  QBENCHMARK
   {
-    graph->addData(x2, y2);
+    mPlot->replot();
   }
 }
 
@@ -219,7 +234,27 @@ void Benchmark::QCPGraph_RemoveDataBefore()
   graph->addData(x2, y2);
   QBENCHMARK_ONCE
   {
-    graph->removeDataBefore(1.0); // first 50% of total dat
+    graph->removeDataBefore(1.0); // last 50% of total data
+  }
+}
+
+void Benchmark::QCPGraph_AddData()
+{
+  QCPGraph *graph = mPlot->addGraph();
+  int n = 500000;
+  QVector<double> x1(n), y1(n), x2(n), y2(n);
+  for (int i=0; i<n; ++i)
+  {
+    x1[i] = i/(double)n;
+    y1[i] = qSin(x1[i]*10*M_PI);
+    x2[i] = (i+n)/(double)n;
+    y2[i] = qSin(x2[i]*10*M_PI);
+  }
+
+  graph->setData(x1, y1);
+  QBENCHMARK_ONCE
+  {
+    graph->addData(x2, y2);
   }
 }
 

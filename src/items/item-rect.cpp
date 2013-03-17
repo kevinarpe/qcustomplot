@@ -111,9 +111,10 @@ void QCPItemRect::setSelectedBrush(const QBrush &brush)
 }
 
 /* inherits documentation from base class */
-double QCPItemRect::selectTest(const QPointF &pos) const
+double QCPItemRect::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (!mVisible)
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
     return -1;
   
   QRectF rect = QRectF(topLeft->pixelPoint(), bottomRight->pixelPoint()).normalized();

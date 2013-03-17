@@ -30,7 +30,6 @@
 #include "layer.h"
 #include "range.h"
 #include "axis.h"
-#include "legend.h"
 #include "plottable.h"
 #include "item.h"
 #include "lineending.h"
@@ -48,5 +47,8 @@
 #include "items/item-pixmap.h"
 #include "items/item-tracer.h"
 #include "items/item-bracket.h"
+#include "layoutelements/layoutelement-axisrect.h"
+#include "layoutelements/layoutelement-legend.h"
+#include "layoutelements/layoutelement-plottitle.h"
 
 #endif // QCP_H

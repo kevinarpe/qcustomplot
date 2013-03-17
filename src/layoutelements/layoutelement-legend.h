@@ -22,25 +22,26 @@
 **             Date: 09.06.12                                             **
 ****************************************************************************/
 
-#ifndef QCP_LEGEND_H
-#define QCP_LEGEND_H
+#ifndef QCP_LAYOUTELEMENT_LEGEND_H
+#define QCP_LAYOUTELEMENT_LEGEND_H
 
-#include "global.h"
-#include "layer.h"
+#include "../global.h"
+#include "../layer.h"
+#include "../layout.h"
 
 class QCPPainter;
 class QCustomPlot;
 class QCPAbstractPlottable;
 class QCPLegend;
 
-class QCP_LIB_DECL QCPAbstractLegendItem : public QObject
+class QCP_LIB_DECL QCPAbstractLegendItem : public QCPLayoutElement, public QCPLayerable
 {
   Q_OBJECT
 public:
-  QCPAbstractLegendItem(QCPLegend *parent);
+  explicit QCPAbstractLegendItem(QCPLegend *parent);
   
   // getters:
-  bool antialiased() const { return mAntialiased; }
+  QCPLegend *parentLegend() const { return mParentLegend; }
   QFont font() const { return mFont; }
   QColor textColor() const { return mTextColor; }
   QFont selectedFont() const { return mSelectedFont; }
@@ -49,7 +50,6 @@ public:
   bool selected() const { return mSelected; }
   
   // setters:
-  void setAntialiased(bool enabled);
   void setFont(const QFont &font);
   void setTextColor(const QColor &color);
   void setSelectedFont(const QFont &font);
@@ -57,21 +57,28 @@ public:
   void setSelectable(bool selectable);
   void setSelected(bool selected);
   
+  // non-property methods:
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  
 signals:
   void selectionChanged(bool selected);
   
 protected:
   QCPLegend *mParentLegend;
-  bool mAntialiased;
   QFont mFont;
   QColor mTextColor;
   QFont mSelectedFont;
   QColor mSelectedTextColor;
   bool mSelectable, mSelected;
   
-  virtual void draw(QCPPainter *painter, const QRect &rect) const = 0;
-  virtual QSize size(const QSize &targetSize) const = 0;
-  void applyAntialiasingHint(QCPPainter *painter) const;
+  virtual QCP::Interaction selectionCategory() const;
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
+  virtual QRect clipRect() const;
+  virtual void draw(QCPPainter *painter) = 0;
+  
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
   
 private:
   Q_DISABLE_COPY(QCPAbstractLegendItem)
@@ -88,49 +95,29 @@ public:
   
   // getters:
   QCPAbstractPlottable *plottable() { return mPlottable; }
-  bool textWrap() const { return mTextWrap; }
-  
-  // setters:
-  void setTextWrap(bool wrap);
   
 protected:
   QCPAbstractPlottable *mPlottable;
-  bool mTextWrap;
   
   QPen getIconBorderPen() const;
   QColor getTextColor() const;
   QFont getFont() const;
 
-  virtual void draw(QCPPainter *painter, const QRect &rect) const;
-  virtual QSize size(const QSize &targetSize) const;
+  virtual void draw(QCPPainter *painter);
+  virtual QSize minimumSizeHint() const;
 };
 
 
-class QCP_LIB_DECL QCPLegend : public QObject, public QCPLayerable // TODO: Change this to inherit from QCPLayoutElement instead of QObject directly
+class QCP_LIB_DECL QCPLegend : public QCPLayoutGrid, public QCPLayerable
 {
   Q_OBJECT
 public:
   /*!
-    Defines where the legend is positioned inside the QCustomPlot axis rect.
-  */
-  enum PositionStyle { psManual       ///< Position is not changed automatically. Set manually via \ref setPosition
-                      ,psTopLeft      ///< Legend is positioned in the top left corner of the axis rect with distance to the border corresponding to the currently set top and left margins
-                      ,psTop          ///< Legend is horizontally centered at the top of the axis rect with distance to the border corresponding to the currently set top margin
-                      ,psTopRight     ///< Legend is positioned in the top right corner of the axis rect with distance to the border corresponding to the currently set top and right margins
-                      ,psRight        ///< Legend is vertically centered at the right of the axis rect with distance to the border corresponding to the currently set right margin
-                      ,psBottomRight  ///< Legend is positioned in the bottom right corner of the axis rect with distance to the border corresponding to the currently set bottom and right margins
-                      ,psBottom       ///< Legend is horizontally centered at the bottom of the axis rect with distance to the border corresponding to the currently set bottom margin
-                      ,psBottomLeft   ///< Legend is positioned in the bottom left corner of the axis rect with distance to the border corresponding to the currently set bottom and left margins
-                      ,psLeft         ///< Legend is vertically centered at the left of the axis rect with distance to the border corresponding to the currently set left margin
-                     };
-  Q_ENUMS(PositionStyle)
-  
-  /*!
     Defines the selectable parts of a legend
   */
-  enum SelectablePart { spNone       = 0      ///< None
-                       ,spLegendBox  = 0x001  ///< The legend box (frame)
-                       ,spItems      = 0x002  ///< Legend items individually (see \ref selectedItems)
+  enum SelectablePart { spNone       = 0x000  ///< <tt>0x000</tt> None
+                       ,spLegendBox  = 0x001  ///< <tt>0x001</tt> The legend box (frame)
+                       ,spItems      = 0x002  ///< <tt>0x002</tt> Legend items individually (see \ref selectedItems)
                       };
   Q_ENUMS(SelectablePart)
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)
@@ -143,25 +130,11 @@ public:
   QBrush brush() const { return mBrush; }
   QFont font() const { return mFont; }
   QColor textColor() const { return mTextColor; }
-  PositionStyle positionStyle() const { return mPositionStyle; }
-  QPoint position() const { return mPosition; }
-  bool autoSize() const { return mAutoSize; }
-  QSize size() const { return mSize; }
-  QSize minimumSize() const { return mMinimumSize; }
-  int paddingLeft() const { return mPaddingLeft; }
-  int paddingRight() const { return mPaddingRight; }
-  int paddingTop() const { return mPaddingTop; }
-  int paddingBottom() const { return mPaddingBottom; }
-  int marginLeft() const { return mMarginLeft; }
-  int marginRight() const { return mMarginRight; }
-  int marginTop() const { return mMarginTop; }
-  int marginBottom() const { return mMarginBottom; }
-  int itemSpacing() const { return mItemSpacing; }
   QSize iconSize() const { return mIconSize; }
   int iconTextPadding() const { return mIconTextPadding; }
   QPen iconBorderPen() const { return mIconBorderPen; }
-  SelectableParts selectable() const { return mSelectable; }
-  SelectableParts selected() const { return mSelected; }
+  SelectableParts selectableParts() const { return mSelectableParts; }
+  SelectableParts selectedParts() const;
   QPen selectedBorderPen() const { return mSelectedBorderPen; }
   QPen selectedIconBorderPen() const { return mSelectedIconBorderPen; }
   QBrush selectedBrush() const { return mSelectedBrush; }
@@ -173,30 +146,12 @@ public:
   void setBrush(const QBrush &brush);
   void setFont(const QFont &font);
   void setTextColor(const QColor &color);
-  void setPositionStyle(PositionStyle legendPositionStyle);
-  void setPosition(const QPoint &pixelPosition);
-  void setAutoSize(bool on);
-  void setSize(const QSize &size);
-  void setSize(int width, int height);
-  void setMinimumSize(const QSize &size);
-  void setMinimumSize(int width, int height);
-  void setPaddingLeft(int padding);
-  void setPaddingRight(int padding);
-  void setPaddingTop(int padding);
-  void setPaddingBottom(int padding);
-  void setPadding(int left, int right, int top, int bottom);
-  void setMarginLeft(int margin);
-  void setMarginRight(int margin);
-  void setMarginTop(int margin);
-  void setMarginBottom(int margin);
-  void setMargin(int left, int right, int top, int bottom);
-  void setItemSpacing(int spacing);
   void setIconSize(const QSize &size);
   void setIconSize(int width, int height);
   void setIconTextPadding(int padding);
   void setIconBorderPen(const QPen &pen);
-  void setSelectable(const SelectableParts &selectable);
-  void setSelected(const SelectableParts &selected);
+  void setSelectableParts(const SelectableParts &selectableParts);
+  void setSelectedParts(const SelectableParts &selectedParts);
   void setSelectedBorderPen(const QPen &pen);
   void setSelectedIconBorderPen(const QPen &pen);
   void setSelectedBrush(const QBrush &brush);
@@ -214,10 +169,6 @@ public:
   bool removeItem(QCPAbstractLegendItem *item);
   void clearItems();
   QList<QCPAbstractLegendItem*> selectedItems() const;
-  void reArrange();
-  
-  bool selectTestLegend(const QPointF &pos) const;
-  QCPAbstractLegendItem *selectTestItem(const QPoint pos) const;
   
 signals:
   void selectionChanged(QCPLegend::SelectableParts selection);
@@ -228,30 +179,22 @@ protected:
   QBrush mBrush;
   QFont mFont;
   QColor mTextColor;
-  QPoint mPosition;
-  QSize mSize, mMinimumSize, mIconSize;
-  PositionStyle mPositionStyle;
-  bool mAutoSize;
-  int mPaddingLeft, mPaddingRight, mPaddingTop, mPaddingBottom;
-  int mMarginLeft, mMarginRight, mMarginTop, mMarginBottom;
-  int mItemSpacing, mIconTextPadding;
-  SelectableParts mSelected, mSelectable;
+  QSize mIconSize;
+  int mIconTextPadding;
+  SelectableParts mSelectedParts, mSelectableParts;
   QPen mSelectedBorderPen, mSelectedIconBorderPen;
   QBrush mSelectedBrush;
   QFont mSelectedFont;
   QColor mSelectedTextColor;
   
-  // internal or not explicitly exposed properties:
-  QList<QCPAbstractLegendItem*> mItems;
-  QMap<QCPAbstractLegendItem*, QRect> mItemBoundingBoxes;
-  
-  virtual void updateSelectionState();
-  virtual bool handleLegendSelection(QMouseEvent *event, bool additiveSelection, bool &modified);
-  // introduced methods:
+  // reimplemented functions from QCPLayerable:
+  virtual QCP::Interaction selectionCategory() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
-  virtual void calculateAutoSize();
-  virtual void calculateAutoPosition();
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
   
   // drawing helpers:
   QPen getBorderPen() const;
@@ -264,5 +207,6 @@ private:
   friend class QCPAbstractLegendItem;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPLegend::SelectableParts)
+Q_DECLARE_METATYPE(QCPLegend::SelectablePart)
 
-#endif // QCP_LEGEND_H
+#endif // QCP_LAYOUTELEMENT_LEGEND_H

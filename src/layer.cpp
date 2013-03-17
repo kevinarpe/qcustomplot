@@ -44,12 +44,15 @@
   A QCPLayer itself contains an ordered list of QCPLayerable instances. QCPLayerable is an abstract
   base class from which almost all visible objects derive, like axes, grids, graphs, items, etc.
   
-  By default, QCustomPlot has three layers: "grid", "main" and "axes" (in that order). Initially
-  the QCPGrid instances are on the "grid" layer, so the grid will be drawn beneath the objects on
-  the other two layers. The top layer is "axes" and contains all four axes, so they will be drawn
-  on top. Between these two layers, there is the "main" layer. It is initially empty and set as the
-  current layer (see QCustomPlot::setCurrentLayer). This means, all new plottables, items etc.
-  are created on this layer by default, and are thus drawn above the grid but below the axes.
+  By default, QCustomPlot has five layers: "background", "grid", "main", "axes" and "legend" (in
+  that order). By default, the QCPGrid instances are on the "grid" layer, so the grid will be drawn
+  beneath the objects on the other two layers. The top two layers are "axes" and "legend" which
+  contain all axes and legends respectively, so they will be drawn on top. In the middle, there is
+  the "main" layer. It is initially empty and set as the current layer (see
+  QCustomPlot::setCurrentLayer). This means, all new plottables, items etc. are created on this
+  layer by default, and are thus drawn above the grid but below the axes. Axis rect backgrounds
+  shall be drawn behind everything else, thus QCPAxisRect instances place themselves on the
+  "background" layer by default.
   
   Controlling the ordering of objects is easy: Create a new layer in the position you want it to
   be, e.g. above "main", with QCustomPlot::addLayer. Then set the current layer with
@@ -79,6 +82,14 @@
   i.e. layerables with higher indices are drawn above layerables with lower indices.
 */
 
+/*! \fn int QCPLayer::index() const
+  
+  Returns the index this layer has in the QCustomPlot. The index is the integer number by which this layer can be
+  accessed via QCustomPlot::layer.
+  
+  Layers with greater indices will be drawn above layers with smaller indices.
+*/
+
 /* end documentation of inline functions */
 
 /*!
@@ -92,21 +103,25 @@
 QCPLayer::QCPLayer(QCustomPlot *parentPlot, const QString &layerName) :
   QObject(parentPlot),
   mParentPlot(parentPlot),
-  mName(layerName)
+  mName(layerName),
+  mIndex(-1) // will be set to a proper value by the QCustomPlot layer creation function
 {
   // Note: no need to make sure layerName is unique, because layer
   // management is done with QCustomPlot functions.
 }
 
-/*!
-  Returns the index this layer has in the QCustomPlot. The index is the integer number by which this layer can be
-  accessed via QCustomPlot::layer.
-  
-  Layers with greater indices will be drawn above layers with smaller indices.
-*/
-int QCPLayer::index() const
+QCPLayer::~QCPLayer()
 {
-  return mParentPlot->mLayers.indexOf(const_cast<QCPLayer*>(this));
+  // If child layerables are still on this layer, detach them, so they don't try to reach back to this
+  // then invalid layer once they get deleted/moved themselves. This only happens when layers are deleted
+  // directly, like in the QCustomPlot destructor. (The regular layer removal procedure for the user is to
+  // call QCustomPlot::removeLayer, which moves all layerables off this layer before deleting it.)
+  
+  while (!mChildren.isEmpty())
+    mChildren.last()->setLayer(0); // removes itself from mChildren via removeChild()
+  
+  if (mParentPlot->currentLayer() == this)
+    qDebug() << Q_FUNC_INFO << "The parent plot's mCurrentLayer will be a dangling pointer. Should have been set to a valid layer or 0 beforehand.";
 }
 
 /*! \internal
@@ -293,6 +308,14 @@ void QCPLayerable::setAntialiased(bool enabled)
   mAntialiased = enabled;
 }
 
+double QCPLayerable::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
+{
+  Q_UNUSED(pos)
+  Q_UNUSED(onlySelectable)
+  Q_UNUSED(details)
+  return -1.0;
+}
+
 /*! \internal
   
   Moves this layerable object to \a layer. If \a prepend is true, this object will be prepended to
@@ -303,7 +326,7 @@ void QCPLayerable::setAntialiased(bool enabled)
 */
 bool QCPLayerable::moveToLayer(QCPLayer *layer, bool prepend)
 {
-  if (!mParentPlot)
+  if (layer && !mParentPlot)
   {
     qDebug() << Q_FUNC_INFO << "no parent QCustomPlot set";
     return false;
@@ -344,6 +367,11 @@ void QCPLayerable::applyAntialiasingHint(QCPPainter *painter, bool localAntialia
     painter->setAntialiasing(localAntialiased);
 }
 
+QCP::Interaction QCPLayerable::selectionCategory() const
+{
+  return QCP::iSelectOther;
+}
+
 /*! \internal
   
   Returns the clipping rectangle of this layerable object. By default, this is the viewport of the parent QCustomPlot.
@@ -358,4 +386,17 @@ QRect QCPLayerable::clipRect() const
     return mParentPlot->viewport();
   else
     return QRect();
+}
+
+void QCPLayerable::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
+{
+  Q_UNUSED(event)
+  Q_UNUSED(additive)
+  Q_UNUSED(details)
+  Q_UNUSED(selectionStateChanged)
+}
+
+void QCPLayerable::deselectEvent(bool *selectionStateChanged)
+{
+  Q_UNUSED(selectionStateChanged)
 }

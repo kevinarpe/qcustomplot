@@ -22,57 +22,69 @@
 **             Date: 09.06.12                                             **
 ****************************************************************************/
 
-#ifndef QCP_ITEM_RECT_H
-#define QCP_ITEM_RECT_H
+#ifndef QCP_LAYOUTELEMENT_PLOTTITLE_H
+#define QCP_LAYOUTELEMENT_PLOTTITLE_H
 
 #include "../global.h"
-#include "../item.h"
+#include "../layer.h"
+#include "../layout.h"
 
 class QCPPainter;
 class QCustomPlot;
 
-class QCP_LIB_DECL QCPItemRect : public QCPAbstractItem
+class QCP_LIB_DECL QCPPlotTitle : public QCPLayoutElement, public QCPLayerable
 {
   Q_OBJECT
 public:
-  QCPItemRect(QCustomPlot *parentPlot);
-  virtual ~QCPItemRect();
+  explicit QCPPlotTitle(QCustomPlot *parentPlot);
   
   // getters:
-  QPen pen() const { return mPen; }
-  QPen selectedPen() const { return mSelectedPen; }
-  QBrush brush() const { return mBrush; }
-  QBrush selectedBrush() const { return mSelectedBrush; }
+  QString text() const { return mText; }
+  QFont font() const { return mFont; }
+  QColor textColor() const { return mTextColor; }
+  QFont selectedFont() const { return mSelectedFont; }
+  QColor selectedTextColor() const { return mSelectedTextColor; }
+  bool selectable() const { return mSelectable; }
+  bool selected() const { return mSelected; }
   
-  // setters;
-  void setPen(const QPen &pen);
-  void setSelectedPen(const QPen &pen);
-  void setBrush(const QBrush &brush);
-  void setSelectedBrush(const QBrush &brush);
+  // setters:
+  void setText(const QString &text);
+  void setFont(const QFont &font);
+  void setTextColor(const QColor &color);
+  void setSelectedFont(const QFont &font);
+  void setSelectedTextColor(const QColor &color);
+  void setSelectable(bool selectable);
+  void setSelected(bool selected);
   
-  // non-property methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
-  QCPItemPosition * const topLeft;
-  QCPItemPosition * const bottomRight;
-  QCPItemAnchor * const top;
-  QCPItemAnchor * const topRight;
-  QCPItemAnchor * const right;
-  QCPItemAnchor * const bottom;
-  QCPItemAnchor * const bottomLeft;
-  QCPItemAnchor * const left;
+signals:
+  void selectionChanged(bool selected);
   
 protected:
-  enum AnchorIndex {aiTop, aiTopRight, aiRight, aiBottom, aiBottomLeft, aiLeft};
-  QPen mPen, mSelectedPen;
-  QBrush mBrush, mSelectedBrush;
+  QString mText;
+  QFont mFont;
+  QColor mTextColor;
+  QFont mSelectedFont;
+  QColor mSelectedTextColor;
+  QRect mTextBoundingRect;
+  bool mSelectable, mSelected;
   
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
-  virtual QPointF anchorPixelPoint(int anchorId) const;
+  virtual QSize minimumSizeHint() const;
+  virtual QSize maximumSizeHint() const;
   
-  // helper functions:
-  QPen mainPen() const;
-  QBrush mainBrush() const;
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
+  
+  QFont mainFont() const;
+  QColor mainTextColor() const;
+  
+private:
+  Q_DISABLE_COPY(QCPPlotTitle)
 };
 
-#endif // QCP_ITEM_RECT_H
+
+
+#endif // QCP_LAYOUTELEMENT_PLOTTITLE_H

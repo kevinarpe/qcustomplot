@@ -206,9 +206,10 @@ void QCPItemTracer::setInterpolating(bool enabled)
 }
 
 /* inherits documentation from base class */
-double QCPItemTracer::selectTest(const QPointF &pos) const
+double QCPItemTracer::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (!mVisible || mStyle == tsNone)
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
     return -1;
 
   QPointF center(position->pixelPoint());

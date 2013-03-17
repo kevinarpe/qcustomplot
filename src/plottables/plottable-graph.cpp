@@ -27,6 +27,7 @@
 #include "../painter.h"
 #include "../core.h"
 #include "../axis.h"
+#include "../layoutelements/layoutelement-axisrect.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPData
@@ -572,9 +573,10 @@ void QCPGraph::clearData()
 }
 
 /* inherits documentation from base class */
-double QCPGraph::selectTest(const QPointF &pos) const
+double QCPGraph::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (mData->isEmpty() || !mVisible)
+  Q_UNUSED(details)
+  if ((onlySelectable && !mSelectable) || mData->isEmpty())
     return -1;
   
   return pointDistance(pos);
@@ -707,7 +709,7 @@ void QCPGraph::draw(QCPPainter *painter)
 }
 
 /* inherits documentation from base class */
-void QCPGraph::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
+void QCPGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
   // draw fill:
   if (mBrush.style() != Qt::NoBrush)
@@ -730,7 +732,7 @@ void QCPGraph::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
     if (mScatterStyle == QCP::ssPixmap)
     {
       if (mScatterPixmap.size().width() > rect.width() || mScatterPixmap.size().height() > rect.height()) // scale scatter pixmap if it's too large to fit in legend icon rect
-        painter->setScatterPixmap(mScatterPixmap.scaled(rect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        painter->setScatterPixmap(mScatterPixmap.scaled(rect.size().toSize(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
       else
         painter->setScatterPixmap(mScatterPixmap);
     }
@@ -1479,14 +1481,22 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
 void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper, int &count) const
 {
   if (!mKeyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
+  if (mData->isEmpty())
+  {
+    lower = mData->constEnd();
+    upper = mData->constEnd();
+    count = 0;
+    return;
+  }
   
   // get visible data range as QMap iterators
   QCPDataMap::const_iterator lbound = mData->lowerBound(mKeyAxis.data()->range().lower);
-  QCPDataMap::const_iterator ubound = mData->upperBound(mKeyAxis.data()->range().upper)-1;
+  QCPDataMap::const_iterator ubound = mData->upperBound(mKeyAxis.data()->range().upper);
   bool lowoutlier = lbound != mData->constBegin(); // indicates whether there exist points below axis range
-  bool highoutlier = ubound+1 != mData->constEnd(); // indicates whether there exist points above axis range
-  lower = (lowoutlier ? lbound-1 : lbound); // data pointrange that will be actually drawn
-  upper = (highoutlier ? ubound+1 : ubound); // data pointrange that will be actually drawn
+  bool highoutlier = ubound != mData->constEnd(); // indicates whether there exist points above axis range
+  
+  lower = (lowoutlier ? lbound-1 : lbound); // data point range that will be actually drawn
+  upper = (highoutlier ? ubound : ubound-1); // data point range that will be actually drawn
   
   // count number of points in range lower to upper (including them), so we can allocate array for them in draw functions:
   QCPDataMap::const_iterator it = lower;

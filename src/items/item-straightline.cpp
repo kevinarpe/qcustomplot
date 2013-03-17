@@ -81,9 +81,10 @@ void QCPItemStraightLine::setSelectedPen(const QPen &pen)
 }
 
 /* inherits documentation from base class */
-double QCPItemStraightLine::selectTest(const QPointF &pos) const
+double QCPItemStraightLine::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (!mVisible)
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
     return -1;
   
   return distToStraightLine(QVector2D(point1->pixelPoint()), QVector2D(point2->pixelPoint()-point1->pixelPoint()), QVector2D(pos));

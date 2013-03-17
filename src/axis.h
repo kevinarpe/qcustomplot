@@ -29,6 +29,7 @@
 #include "range.h"
 #include "layer.h"
 #include "layout.h"
+#include "lineending.h"
 
 class QCPPainter;
 class QCustomPlot;
@@ -207,8 +208,8 @@ public:
   int labelPadding() const { return mLabelPadding; }
   int padding() const { return mPadding; }
   int offset() const { return mOffset; }
-  SelectableParts selected() const { return mSelected; }
-  SelectableParts selectable() const { return mSelectable; }
+  SelectableParts selectedParts() const { return mSelectedParts; }
+  SelectableParts selectableParts() const { return mSelectableParts; }
   QFont selectedTickLabelFont() const { return mSelectedTickLabelFont; }
   QFont selectedLabelFont() const { return mSelectedLabelFont; }
   QColor selectedTickLabelColor() const { return mSelectedTickLabelColor; }
@@ -216,6 +217,8 @@ public:
   QPen selectedBasePen() const { return mSelectedBasePen; }
   QPen selectedTickPen() const { return mSelectedTickPen; }
   QPen selectedSubTickPen() const { return mSelectedSubTickPen; }
+  QCPLineEnding lowerEnding() const { return mLowerEnding; }
+  QCPLineEnding upperEnding() const { return mUpperEnding; }
   
   // setters:
   void setScaleType(ScaleType type);
@@ -270,6 +273,8 @@ public:
   void setSelectedBasePen(const QPen &pen);
   void setSelectedTickPen(const QPen &pen);
   void setSelectedSubTickPen(const QPen &pen);
+  void setLowerEnding(const QCPLineEnding &ending);
+  void setUpperEnding(const QCPLineEnding &ending);
   
   // non-property methods:
   Qt::Orientation orientation() const { return mOrientation; }
@@ -278,22 +283,25 @@ public:
   void setScaleRatio(const QCPAxis *otherAxis, double ratio=1.0);
   double pixelToCoord(double value) const;
   double coordToPixel(double value) const;
-  SelectablePart selectTest(const QPointF &pos) const;
+  SelectablePart getPartAt(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   QList<QCPAbstractPlottable*> plottables() const;
   QList<QCPGraph*> graphs() const;
   QList<QCPAbstractItem*> items() const;
   
+  static AxisType marginSideToAxisType(QCP::MarginSide side);
+  
 public slots:
   // slot setters:
   void setRange(const QCPRange &range);
-  void setSelectable(const QCPAxis::SelectableParts &selectable);
-  void setSelected(const QCPAxis::SelectableParts &selected);
+  void setSelectableParts(const QCPAxis::SelectableParts &selectableParts);
+  void setSelectedParts(const QCPAxis::SelectableParts &selectedParts);
   
 signals:
   void ticksRequest();
   void rangeChanged(const QCPRange &newRange);
-  void selectionChanged(QCPAxis::SelectableParts selection);
+  void selectionChanged(const QCPAxis::SelectableParts &parts);
 
 protected:
   struct CachedLabel
@@ -314,8 +322,9 @@ protected:
   QCPAxisRect *mAxisRect;
   int mOffset, mPadding;
   Qt::Orientation mOrientation;
-  SelectableParts mSelectable, mSelected;
+  SelectableParts mSelectableParts, mSelectedParts;
   QPen mBasePen, mSelectedBasePen;
+  QCPLineEnding mLowerEnding, mUpperEnding;
   // axis label:
   int mLabelPadding;
   QString mLabel;
@@ -356,13 +365,15 @@ protected:
   QVector<QString> mTickVectorLabels;
   QVector<double> mSubTickVector;
   QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
+  bool mCachedMarginValid;
+  int mCachedMargin;
   
   // introduced methods:
   virtual void setupTickVectors();
   virtual void generateAutoTicks();
   virtual int calculateAutoSubTickCount(double tickStep) const;
   virtual int calculateMargin();
-  virtual bool handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified);
+  virtual QCP::Interaction selectionCategory() const;
   
   // drawing:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
@@ -374,6 +385,10 @@ protected:
   virtual TickLabelData getTickLabelData(const QFont &font, const QString &text) const;
   virtual QPointF getTickLabelDrawOffset(const TickLabelData &labelData) const;
   virtual void getMaxTickLabelSize(const QFont &font, const QString &text, QSize *tickLabelsSize) const;
+  
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
   
   // basic non virtual helpers:
   void visibleTickBounds(int &lowIndex, int &highIndex) const;
@@ -398,69 +413,6 @@ private:
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::SelectableParts)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::AxisTypes)
-
-
-
-class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement
-{
-  Q_OBJECT
-public:
-  explicit QCPAxisRect(QCustomPlot *parentPlot);
-  virtual ~QCPAxisRect();
-  
-  QPixmap background() const { return mBackground; }
-  bool backgroundScaled() const { return mBackgroundScaled; }
-  Qt::AspectRatioMode backgroundScaledMode() const { return mBackgroundScaledMode; }
-
-  void setBackground(const QPixmap &pm);
-  void setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode=Qt::KeepAspectRatioByExpanding);
-  void setBackgroundScaled(bool scaled);
-  void setBackgroundScaledMode(Qt::AspectRatioMode mode);
-  
-  int axisCount(QCPAxis::AxisType type) const;
-  QCPAxis *axis(QCPAxis::AxisType type, int index=0) const;
-  QList<QCPAxis*> axes(QCPAxis::AxisTypes types) const;
-  QList<QCPAxis*> axes() const;
-  QCPAxis *addAxis(QCPAxis::AxisType type);
-  QList<QCPAxis*> addAxes(QCPAxis::AxisTypes types);
-  bool removeAxis(QCPAxis *axis);
-  
-  QList<QCPAbstractPlottable*> plottables() const;
-  QList<QCPGraph*> graphs() const;
-  QList<QCPAbstractItem*> items() const;
-  
-  // read-only interface imitating a QRect:
-  int left() const { return mRect.left(); }
-  int right() const { return mRect.right(); }
-  int top() const { return mRect.top(); }
-  int bottom() const { return mRect.bottom(); }
-  int width() const { return mRect.width(); }
-  int height() const { return mRect.height(); }
-  QSize size() const { return mRect.size(); }
-  QPoint topLeft() const { return mRect.topLeft(); }
-  QPoint topRight() const { return mRect.topRight(); }
-  QPoint bottomLeft() const { return mRect.bottomLeft(); }
-  QPoint bottomRight() const { return mRect.bottomRight(); }
-  
-protected:
-  QHash<QCPAxis::AxisType, QList<QCPAxis*> > mAxes;
-  QPixmap mBackground;
-  QPixmap mScaledBackground;
-  bool mBackgroundScaled;
-  Qt::AspectRatioMode mBackgroundScaledMode;
-  
-  void drawBackground(QCPPainter *painter);
-  void updateAxisOffsets();
-  virtual void update();
-  virtual QMargins calculateAutoMargins() const;
-  
-  friend class QCustomPlot;
-};
-
-
-
-
-
-
+Q_DECLARE_METATYPE(QCPAxis::SelectablePart)
 
 #endif // QCP_AXIS_H

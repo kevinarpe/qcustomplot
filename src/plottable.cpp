@@ -27,7 +27,8 @@
 #include "painter.h"
 #include "core.h"
 #include "axis.h"
-#include "legend.h"
+#include "layoutelements/layoutelement-axisrect.h"
+#include "layoutelements/layoutelement-legend.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPAbstractPlottable
@@ -138,8 +139,8 @@
   Draws this plottable with the provided \a painter. Called by \ref QCustomPlot::draw on all its
   visible plottables.
   
-  The cliprect of the provided painter is set to the axis rect of the key/value axis of this
-  plottable (what \ref clipRect returns), before this function is called.
+  The cliprect of the provided painter is set to the axis rect of this plottable (what \ref
+  clipRect returns), before this function is called.
 */
 
 /*! \fn void QCPAbstractPlottable::drawLegendIcon(QCPPainter *painter, const QRect &rect) const = 0
@@ -213,8 +214,8 @@ QCPAbstractPlottable::QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis)
   mSelectedBrush(Qt::NoBrush),
   mKeyAxis(keyAxis),
   mValueAxis(valueAxis),
-  mSelected(false),
-  mSelectable(true)
+  mSelectable(true),
+  mSelected(false)
 {
   if (keyAxis->parentPlot() != valueAxis->parentPlot())
     qDebug() << Q_FUNC_INFO << "Parent plot of keyAxis is not the same as that of valueAxis.";
@@ -373,7 +374,7 @@ void QCPAbstractPlottable::setSelectable(bool selectable)
   
   emits the \ref selectionChanged signal when \a selected is different from the previous selection state.
   
-  \see selectTest
+  \see setSelectable, selectTest
 */
 void QCPAbstractPlottable::setSelected(bool selected)
 {
@@ -467,13 +468,16 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
   needs a more specialized representation in the legend, this function will take this into account
   and instead create the specialized subclass of QCPAbstractLegendItem.
     
-  Returns true on success, i.e. when a legend item associated with this plottable isn't already in
+  Returns true on success, i.e. when the legend exists and a legend item associated with this plottable isn't already in
   the legend.
     
   \see removeFromLegend, QCPLegend::addItem
 */
 bool QCPAbstractPlottable::addToLegend()
 {
+  if (!mParentPlot->legend)
+    return false;
+  
   if (!mParentPlot->legend->hasItemWithPlottable(this))
   {
     mParentPlot->legend->addItem(new QCPPlottableLegendItem(mParentPlot->legend, this));
@@ -487,13 +491,16 @@ bool QCPAbstractPlottable::addToLegend()
   QCPAbstractLegendItem (usually a QCPPlottableLegendItem) that is associated with this plottable
   is removed.
     
-  Returns true on success, i.e. if a legend item associated with this plottable was found and
-  removed from the legend.
+  Returns true on success, i.e. if the legend exists and a legend item associated with this plottable was found and
+  removed.
     
   \see addToLegend, QCPLegend::removeItem
 */
 bool QCPAbstractPlottable::removeFromLegend() const
 {
+  if (!mParentPlot->legend)
+    return false;
+  
   if (QCPPlottableLegendItem *lip = mParentPlot->legend->itemWithPlottable(this))
     return mParentPlot->legend->removeItem(lip);
   else
@@ -507,6 +514,11 @@ QRect QCPAbstractPlottable::clipRect() const
     return mKeyAxis.data()->axisRect()->rect() & mValueAxis.data()->axisRect()->rect();
   else
     return QRect();
+}
+
+QCP::Interaction QCPAbstractPlottable::selectionCategory() const
+{
+  return QCP::iSelectPlottables;
 }
 
 /*! \internal
@@ -701,4 +713,28 @@ double QCPAbstractPlottable::distSqrToLine(const QPointF &start, const QPointF &
       return ((a + mu*v)-p).lengthSquared();
   } else
     return (a-p).lengthSquared();
+}
+
+void QCPAbstractPlottable::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
+{
+  Q_UNUSED(event)
+  Q_UNUSED(details)
+  if (mSelectable)
+  {
+    bool selBefore = mSelected;
+    setSelected(additive ? !mSelected : true);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
+}
+
+void QCPAbstractPlottable::deselectEvent(bool *selectionStateChanged)
+{
+  if (mSelectable)
+  {
+    bool selBefore = mSelected;
+    setSelected(false);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
 }

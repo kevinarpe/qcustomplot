@@ -33,11 +33,10 @@
 //amalgamation: add layer.h
 //amalgamation: add range.h
 //amalgamation: add layout.h
+//amalgamation: add lineending.h
 //amalgamation: add axis.h
-//amalgamation: add legend.h
 //amalgamation: add plottable.h
 //amalgamation: add item.h
-//amalgamation: add lineending.h
 //amalgamation: add core.h
 //amalgamation: add plottables/plottable-graph.h
 //amalgamation: add plottables/plottable-curve.h
@@ -52,6 +51,9 @@
 //amalgamation: add items/item-pixmap.h
 //amalgamation: add items/item-tracer.h
 //amalgamation: add items/item-bracket.h
+//amalgamation: add layoutelements/layoutelement-axisrect.h
+//amalgamation: add layoutelements/layoutelement-legend.h
+//amalgamation: add layoutelements/layoutelement-plottitle.h
 
 #endif // QCUSTOMPLOT_H
 

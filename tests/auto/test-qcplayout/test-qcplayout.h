@@ -9,7 +9,10 @@ private slots:
   void cleanup();
   
   void layoutGridElementManagement();
+  void layoutGridInsertion();
   void layoutGridLayout();
+  void marginGroup();
+  
   
 private:
   QCustomPlot *mPlot;

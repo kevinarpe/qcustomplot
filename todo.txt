@@ -1,20 +1,25 @@
 NEXT RELEASE:
 
-- alternating axis section backgrounds
+- remove QCustomPlot::setColor and introduce QCustomPlot::setBackground (just like QCPAxisRect, with pixmap option)
+- clean up QCustomPlot ctor
 - expose mGrid as grid() and remove property forwarding in QCPAxis.
-- fix Q_PROPERTY entries
 - Refactor scatter system. User should be able to fill all scatters with a color he likes. (Make example line plot with white-filled circles and a non-white background. Looks good) 
-- doc: duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between
-  QCustomPlot::/QCPGraph::/QCPAbstractPlottable::rescaleAxes 
-- add doc-note and qDebug output for case when addToLegend (QCPGraph/QCPAbstractPlottable) is called without the plottable being in the plot. 
-- doc: explain ltDateTime mode on axes better. Probably give examples with numbers
 - Experiment with better styled background, Gradients/patterns. Maybe replace setColor with setBrush or overload setColor to also accept QBrush.
-- restructure tests. Have top level dir "tests" with subdir "manual", "automatic". place current "export test" and "test" into "manual".
 - Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs
 - give QCustomPlot::rescaleAxes() the parameter "bool onlyVisible=true" to allow rescaling only via visible graphs
+- fix Q_PROPERTY entries
+- make uniform header commenting scheme for class definitions ("non-property methods", "introduced virtual functions", ...)
+
+doc:
+- duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between
+  QCustomPlot::/QCPGraph::/QCPAbstractPlottable::rescaleAxes 
+- add doc-note and qDebug output for case when addToLegend (QCPGraph/QCPAbstractPlottable) is called without the plottable being in the plot. 
+- explain ltDateTime mode on axes better. Probably give examples with numbers
+  
 
 FUTURE RELEASE:
 
+- alternating axis section backgrounds
 - Item class based on tracer which adds tag-like labels to points. With option to show x/y values via formatting strings (%key and %value).
 - Range navigation via selection rectangle
 - optimize QCPGraph (and QCPCurve) with improved intersection clip algorithm (keep old algo for timing). QCPGraph will need clipping on left and right
@@ -42,7 +47,3 @@ FUTURE RELEASE:
   polygon data here and make this function aware of at which increments the
   data points are positioned in the polygon (depends on line style!).
 - Fix for N900 error for pen width 0 (perhaps with Q_OS_SYMBIAN flag in QCPPainter?)
-
-- subplots, maybe as some sort of descendant of QCustomPlot, or an own widget with
-  friend access to QCustomPlot (yeah, do that), which manages multiple internal QCustomPlots, so
-  they don't need to know about eachother.

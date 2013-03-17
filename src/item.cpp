@@ -26,6 +26,8 @@
 
 #include "painter.h"
 #include "core.h"
+#include "axis.h"
+#include "layoutelements/layoutelement-axisrect.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPItemAnchor
@@ -816,7 +818,7 @@ void QCPAbstractItem::setSelectable(bool selectable)
   
   emits the \ref selectionChanged signal when \a selected is different from the previous selection state.
   
-  \see selectTest
+  \see setSelectable, selectTest
 */
 void QCPAbstractItem::setSelected(bool selected)
 {
@@ -1036,9 +1038,8 @@ QCPItemPosition *QCPAbstractItem::createPosition(const QString &name)
   mAnchors.append(newPosition); // every position is also an anchor
   newPosition->setAxes(mParentPlot->xAxis, mParentPlot->yAxis);
   newPosition->setType(QCPItemPosition::ptPlotCoords);
-  QList<QCPAxisRect*> rects = mParentPlot->axisRects();
-  if (rects.size() > 0)
-    newPosition->setAxisRect(rects.first());
+  if (mParentPlot->axisRect())
+    newPosition->setAxisRect(mParentPlot->axisRect());
   newPosition->setCoords(0, 0);
   return newPosition;
 }
@@ -1069,4 +1070,33 @@ QCPItemAnchor *QCPAbstractItem::createAnchor(const QString &name, int anchorId)
   QCPItemAnchor *newAnchor = new QCPItemAnchor(mParentPlot, this, name, anchorId);
   mAnchors.append(newAnchor);
   return newAnchor;
+}
+
+void QCPAbstractItem::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
+{
+  Q_UNUSED(event)
+  Q_UNUSED(details)
+  if (mSelectable)
+  {
+    bool selBefore = mSelected;
+    setSelected(additive ? !mSelected : true);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
+}
+
+void QCPAbstractItem::deselectEvent(bool *selectionStateChanged)
+{
+  if (mSelectable)
+  {
+    bool selBefore = mSelected;
+    setSelected(false);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
+}
+
+QCP::Interaction QCPAbstractItem::selectionCategory() const
+{
+  return QCP::iSelectItems;
 }
