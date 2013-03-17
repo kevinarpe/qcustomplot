@@ -190,6 +190,9 @@ protected:
   
   void getMinimumRowColSizes(QVector<int> *minColWidths, QVector<int> *minRowHeights) const;
   void getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<int> *maxRowHeights) const;
+  
+private:
+  Q_DISABLE_COPY(QCPLayoutGrid)
 };
 
 
@@ -226,6 +229,9 @@ protected:
   
   void getMinimumRowColSizes(QVector<int> *minColWidths, QVector<int> *minRowHeights) const;
   void getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<int> *maxRowHeights) const;
+  
+private:
+  Q_DISABLE_COPY(QCPLayoutInset)
 };
 
 #endif // QCP_LAYOUT_H

@@ -43,6 +43,19 @@ QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot) :
   setMargins(QMargins(5, 5, 5, 0));
 }
 
+QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot, const QString &text) :
+  QCPLayerable(parentPlot, "axes"),
+  mText(text),
+  mFont(QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.5, QFont::Bold)),
+  mTextColor(Qt::black),
+  mSelectedFont(QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.6, QFont::Bold)),
+  mSelectedTextColor(Qt::blue),
+  mSelectable(false),
+  mSelected(false)
+{
+  setMargins(QMargins(5, 5, 5, 0));
+}
+
 void QCPPlotTitle::setText(const QString &text)
 {
   mText = text;

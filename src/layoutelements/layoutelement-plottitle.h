@@ -37,6 +37,7 @@ class QCP_LIB_DECL QCPPlotTitle : public QCPLayoutElement, public QCPLayerable
   Q_OBJECT
 public:
   explicit QCPPlotTitle(QCustomPlot *parentPlot);
+  explicit QCPPlotTitle(QCustomPlot *parentPlot, const QString &text);
   
   // getters:
   QString text() const { return mText; }

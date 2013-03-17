@@ -124,6 +124,9 @@ protected:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
   
+private:
+  Q_DISABLE_COPY(QCPAxisRect)
+  
   friend class QCustomPlot;
 };
 
