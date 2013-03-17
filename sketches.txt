@@ -1,11 +1,5 @@
 ### axis refactoring (branch layoutsystem):
 
-- remove QCustomPlot::setColor and introduce QCustomPlot::setBackground (just like QCPAxisRect, with pixmap option)
-
-- clean up QCustomPlot ctor
-- make uniform header commenting scheme for class definitions ("non-property methods", "introduced virtual functions", ...)
-
 doc:
 - update all the documentation referencing QCustomPlot::setMargin, QCustomPlot::setAutoMargin, QCustomPlot::axisRect
 - emphasize in documentation for QCPLayoutGrid::removeElement that only a call to simplify() will actually remove empty rows/columns
-- document selectionChanged signal of QCPLayerable
