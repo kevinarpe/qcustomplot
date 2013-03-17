@@ -284,7 +284,7 @@ QList<QCPGraph*> QCPAxisRect::graphs() const
 
 QList<QCPAbstractItem *> QCPAxisRect::items() const
 {
-  // Note: don't append all QCPAxis::items() into a list, because we might get duplicate entries
+  // Note: don't just append all QCPAxis::items() into a list, because we might get duplicate entries
   //       and miss those items that have this axis rect as clipAxisRect.
   QList<QCPAbstractItem*> result;
   for (int itemId=0; itemId<mParentPlot->mItems.size(); ++itemId)
@@ -347,11 +347,13 @@ void QCPAxisRect::draw(QCPPainter *painter)
 
 /*!
   Sets \a pm as the axis background pixmap. The axis background pixmap will be drawn inside the
-  axis rect, before anything else (e.g. the axes themselves, grids, graphs, etc.) is drawn. If the
-  provided pixmap doesn't have the same size as the axis rect, scaling can be enabled with \ref
-  setBackgroundScaled and the scaling mode (i.e. whether and how the aspect ratio is preserved) can
-  be set with \ref setBackgroundScaledMode. To set all these options in one call, consider using
-  the overloaded version of this function.
+  axis rect. Since axis rects place themselves on the "background" layer by default, the axis rect
+  backgrounds are usually drawn below everything else.
+
+  For cases where the provided pixmap doesn't have the same size as the axis rect, scaling can be
+  enabled with \ref setBackgroundScaled and the scaling mode (i.e. whether and how the aspect ratio
+  is preserved) can be set with \ref setBackgroundScaledMode. To set all these options in one call,
+  consider using the overloaded version of this function.
 
   \see setBackgroundScaled, setBackgroundScaledMode
 */
@@ -387,7 +389,7 @@ void QCPAxisRect::setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioM
   preserved with \ref setBackgroundScaledMode.
   
   Note that the scaled version of the original pixmap is buffered, so there is no performance
-  penalty on replots. (Except when the axis rect is changed continuously.)
+  penalty on replots. (Except when the axis rect dimensions are changed continuously.)
   
   \see setBackground, setBackgroundScaledMode
 */

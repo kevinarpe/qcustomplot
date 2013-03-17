@@ -1,5 +1,1 @@
 ### axis refactoring (branch layoutsystem):
-
-doc:
-- update all the documentation referencing QCustomPlot::setMargin, QCustomPlot::setAutoMargin, QCustomPlot::axisRect
-- emphasize in documentation for QCPLayoutGrid::removeElement that only a call to simplify() will actually remove empty rows/columns

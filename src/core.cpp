@@ -138,14 +138,15 @@
   Apart from plottables there is another category of plot objects that are important: Items. The
   base class of all items is QCPAbstractItem. An item sets itself apart from plottables in that
   it's not necessarily bound to any axes. This means it may also be positioned in absolute pixel
-  coordinates or placed at a relative position on the axis rect. Further it usually doesn't
-  represent data directly but acts as decoration, emphasis, description etc.
+  coordinates or placed at a relative position on the axis rect. Further, it usually doesn't
+  represent data directly, but acts as decoration, emphasis, description etc.
   
   Multiple items can be arranged in a parent-child-hierarchy allowing for dynamical behaviour. For
-  example, you could place the head of an arrow at a certain plot coordinate, so it always points
-  to some important part of your data. The tail of the arrow can be fixed at a text label item
-  which always resides in the top center of the axis rect (independent of where the user drags the
-  axis ranges).
+  example, you could place the head of an arrow at a fixed plot coordinate, so it always points to
+  some important part of your data. The tail of the arrow can be anchored to a text item which
+  always resides in the top center of the axis rect, independent of where the user drags the axis
+  ranges. This way the arrow stretches and turns so it always points from the label to the
+  specified plot coordinate, without any further code necessary.
   
   For a more detailed introduction, see the QCPAbstractItem documentation, and from there the
   documentations of the individual built-in items, to find out how to use them.
@@ -1896,8 +1897,8 @@ void QCustomPlot::paintEvent(QPaintEvent *event)
 /*! \internal
   
   Event handler for a resize of the QCustomPlot widget. Causes the internal buffer to be resized to
-  the new size. The viewport and the axis rect are resized appropriately. Finally a replot is
-  performed.
+  the new size. The viewport (which becomes the outer rect of mPlotLayout) is resized
+  appropriately. Finally a replot is performed.
 */
 void QCustomPlot::resizeEvent(QResizeEvent *event)
 {

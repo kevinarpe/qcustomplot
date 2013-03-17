@@ -139,8 +139,8 @@
   Draws this plottable with the provided \a painter. Called by \ref QCustomPlot::draw on all its
   visible plottables.
   
-  The cliprect of the provided painter is set to the axis rect of the key/value axis of this
-  plottable (what \ref clipRect returns), before this function is called.
+  The cliprect of the provided painter is set to the axis rect of this plottable (what \ref
+  clipRect returns), before this function is called.
 */
 
 /*! \fn void QCPAbstractPlottable::drawLegendIcon(QCPPainter *painter, const QRect &rect) const = 0

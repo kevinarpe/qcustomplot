@@ -1313,13 +1313,10 @@ void QCPAxis::setLabelPadding(int padding)
 /*!
   Sets the padding of the axis.
 
-  When \ref QCustomPlot::setAutoMargin is enabled, the padding is the additional distance to the
-  respective widget border, that is left blank. If \a padding is zero (default), the auto margin
-  mechanism will find a margin that the axis label (or tick label, if no axis label is set) barely
-  fits inside the QCustomPlot widget. To give the label closest to the border some freedom,
-  increase \a padding.
+  When \ref QCPAxisRect::setAutoMargin is enabled, the padding is the additional outer most space,
+  that is left blank.
   
-  The axis padding has no meaning if \ref QCustomPlot::setAutoMargin is disabled.
+  The axis padding has no meaning if \ref QCPAxisRect::setAutoMargin is disabled.
   
   \see setLabelPadding, setTickLabelPadding
 */
@@ -2619,18 +2616,17 @@ QColor QCPAxis::getLabelColor() const
 
 /*! \internal
   
-  Returns the appropriate outward margin for this axis. It is needed to make sure nothing is drawn
-  beyond the widget border in the actual \ref draw function, if \ref QCPAxisRect::setAutoMargins is
-  set appropriately on the parent axis rect. An axis with axis type \ref atLeft will return an
-  appropriate left margin, \ref atBottom will return an appropriate bottom margin and so forth. For
-  the calculation, this function goes through similar steps as \ref draw, so changing one function
-  likely requires the modification of the other one aswell.
+  Returns the appropriate outward margin for this axis. It is used if \ref
+  QCPAxisRect::setAutoMargins is set to true on the parent axis rect. An axis with axis type \ref
+  atLeft will return an appropriate left margin, \ref atBottom will return an appropriate bottom
+  margin and so forth. For the calculation, this function goes through similar steps as \ref draw,
+  so changing one function likely requires the modification of the other one aswell.
   
   The margin consists of: outward tick length, tick label padding, tick label size, label padding,
-  label size and padding.
+  label size, padding.
   
-  The margin is cached internally, so repeated calls without changing the axis range, fonts, etc.
-  are very fast.
+  The margin is cached internally, so repeated calls while leaving the axis range, fonts, etc.
+  unchanged are very fast.
 */
 int QCPAxis::calculateMargin()
 {
@@ -2644,7 +2640,7 @@ int QCPAxis::calculateMargin()
   {
     int lowTick, highTick;
     visibleTickBounds(lowTick, highTick);
-    // get length of tick marks reaching outside axis rect:
+    // get length of tick marks pointing outwards:
     if (mTicks)
       margin += qMax(0, qMax(mTickLengthOut, mSubTickLengthOut));
     // calculate size of tick labels:
