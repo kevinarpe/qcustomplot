@@ -335,7 +335,7 @@ void QCPScatterStyle::drawShape(QCPPainter *painter, double x, double y) const
     case ssNone: break;
     case ssDot:
     {
-      painter->drawLine(QPointF(0, 0), QPointF(0.0001, 0));
+      painter->drawLine(QPointF(x, y), QPointF(x+0.0001, y));
       break;
     }
     case ssCross:
