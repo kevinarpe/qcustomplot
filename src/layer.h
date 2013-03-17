@@ -79,7 +79,6 @@ public:
   void setAntialiased(bool enabled);
   
   // non-property methods:
-  bool isAbove(QCPLayerable *other) const;
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:

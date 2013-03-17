@@ -308,30 +308,6 @@ void QCPLayerable::setAntialiased(bool enabled)
   mAntialiased = enabled;
 }
 
-bool QCPLayerable::isAbove(QCPLayerable *other) const
-{
-  if (other->parentPlot() != mParentPlot)
-  {
-    qDebug() << Q_FUNC_INFO << "Other layerable is not in same QCustomPlot as this";
-    return false;
-  }
-  
-  if (layer() == other->layer())
-  {
-    const QList<QCPLayerable*> layerables = mLayer->children();
-    for (int i=layerables.size()-1; i>=0; --i)
-    {
-      if (layerables.at(i) == this)
-        return true;
-      if (layerables.at(i) == other)
-        return false;
-    }
-    qDebug() << Q_FUNC_INFO << "Neither this nor other layerable found in layer. Layering mechanism out of sync.";
-    return false;
-  } else
-    return layer()->index() > other->layer()->index();
-}
-
 double QCPLayerable::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   Q_UNUSED(pos)
