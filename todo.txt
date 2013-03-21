@@ -1,14 +1,14 @@
 NEXT RELEASE:
 
-- remove QCustomPlot::setColor and introduce QCustomPlot::setBackground (just like QCPAxisRect, with pixmap option)
-- clean up QCustomPlot ctor
+> find way to turn QCPLayoutElement children invisible if parent is set invisible
+- test transparent/alpha backgrounds for png/pdf export.
+- test QCustomPlot::rescaleAxes(true)
 - expose mGrid as grid() and remove property forwarding in QCPAxis.
-- Refactor scatter system. User should be able to fill all scatters with a color he likes. (Make example line plot with white-filled circles and a non-white background. Looks good) 
-- Experiment with better styled background, Gradients/patterns. Maybe replace setColor with setBrush or overload setColor to also accept QBrush.
-- Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs
-- give QCustomPlot::rescaleAxes() the parameter "bool onlyVisible=true" to allow rescaling only via visible graphs
 - fix Q_PROPERTY entries
 - make uniform header commenting scheme for class definitions ("non-property methods", "introduced virtual functions", ...)
+- Make example line plot with white-filled circles and a non-white background.
+- Experiment with better styled background, Gradients/patterns
+- Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between

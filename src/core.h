@@ -59,8 +59,10 @@ public:
   
   // getters:
   QRect viewport() const { return mViewport; }
+  QPixmap background() const { return mBackgroundPixmap; }
+  bool backgroundScaled() const { return mBackgroundScaled; }
+  Qt::AspectRatioMode backgroundScaledMode() const { return mBackgroundScaledMode; }
   QCPLayoutGrid *plotLayout() const { return mPlotLayout; }
-  QColor color() const { return mColor; }
   QCP::AntialiasedElements antialiasedElements() const { return mAntialiasedElements; }
   QCP::AntialiasedElements notAntialiasedElements() const { return mNotAntialiasedElements; }
   bool autoAddPlottableToLegend() const { return mAutoAddPlottableToLegend; }
@@ -72,7 +74,11 @@ public:
 
   // setters:
   void setViewport(const QRect &rect);
-  void setColor(const QColor &color);
+  void setBackground(const QPixmap &pm);
+  void setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode=Qt::KeepAspectRatioByExpanding);
+  void setBackground(const QBrush &brush);
+  void setBackgroundScaled(bool scaled);
+  void setBackgroundScaledMode(Qt::AspectRatioMode mode);
   void setAntialiasedElements(const QCP::AntialiasedElements &antialiasedElements);
   void setAntialiasedElement(QCP::AntialiasedElement antialiasedElement, bool enabled=true);
   void setNotAntialiasedElements(const QCP::AntialiasedElements &notAntialiasedElements);
@@ -153,7 +159,7 @@ public:
 public slots:
   void deselectAll();
   void replot();
-  void rescaleAxes();
+  void rescaleAxes(bool onlyVisible=false);
   
 signals:
   void mouseDoubleClick(QMouseEvent *event);
@@ -179,9 +185,8 @@ signals:
   
 protected:
   QRect mViewport;
-  bool mAutoAddPlottableToLegend;
-  QColor mColor;
   QCPLayoutGrid *mPlotLayout;
+  bool mAutoAddPlottableToLegend;
   QList<QCPAbstractPlottable*> mPlottables;
   QList<QCPGraph*> mGraphs; // extra list of items also in mPlottables that are of type QCPGraph
   QList<QCPAbstractItem*> mItems;
@@ -190,15 +195,19 @@ protected:
   QCP::Interactions mInteractions;
   int mSelectionTolerance;
   bool mNoAntialiasingOnDrag;
+  QBrush mBackgroundBrush;
+  QPixmap mBackgroundPixmap;
+  QPixmap mScaledBackgroundPixmap;
+  bool mBackgroundScaled;
+  Qt::AspectRatioMode mBackgroundScaledMode;
+  QCPLayer *mCurrentLayer;
+  QCP::PlottingHints mPlottingHints;
+  Qt::KeyboardModifier mMultiSelectModifier;
   // not explicitly exposed properties:
   QPixmap mPaintBuffer;
   QPoint mMousePressPos;
   QCPLayoutElement *mMouseEventElement;
-  
   bool mReplotting;
-  QCPLayer *mCurrentLayer;
-  QCP::PlottingHints mPlottingHints;
-  Qt::KeyboardModifier mMultiSelectModifier;
   
   // reimplemented methods:
   virtual QSize minimumSizeHint() const;
@@ -219,6 +228,7 @@ protected:
   // helpers:
   void updateLayerIndices() const;
   QCPLayerable *layerableAt(const QPointF &pos, bool onlySelectable, QVariant *selectionDetails=0) const;
+  void drawBackground(QCPPainter *painter);
   
   friend class QCPLegend;
   friend class QCPAxis;

@@ -537,7 +537,7 @@ void QCPAxisRect::setRangeZoomFactor(double factor)
   
   Then, if a pixmap was provided via \ref setBackground, this function buffers the scaled version
   depending on \ref setBackgroundScaled and \ref setBackgroundScaledMode and then draws it inside
-  the axisRect with the provided \a painter. The scaled version is buffered in
+  the axis rect with the provided \a painter. The scaled version is buffered in
   mScaledBackgroundPixmap to prevent expensive rescaling at every redraw. It is only updated, when
   the axis rect has changed in a way that requires a rescale of the background pixmap (this is
   dependant on the \ref setBackgroundScaledMode), or when a differend axis backgroud pixmap was

@@ -424,9 +424,27 @@
 */
 QCustomPlot::QCustomPlot(QWidget *parent) :
   QWidget(parent),
+  xAxis(0),
+  yAxis(0),
+  xAxis2(0),
+  yAxis2(0),
+  legend(0),
+  mPlotLayout(0),
+  mAutoAddPlottableToLegend(true),
+  mAntialiasedElements(QCP::aeNone),
+  mNotAntialiasedElements(QCP::aeNone),
+  mInteractions(0),
+  mSelectionTolerance(8),
+  mNoAntialiasingOnDrag(false),
+  mBackgroundBrush(Qt::white, Qt::SolidPattern),
+  mBackgroundScaled(true),
+  mBackgroundScaledMode(Qt::KeepAspectRatioByExpanding),
+  mCurrentLayer(0),
+  mPlottingHints(QCP::phCacheLabels),
+  mMultiSelectModifier(Qt::ControlModifier),
+  mPaintBuffer(size()),
   mMouseEventElement(0),
-  mReplotting(false),
-  mPlottingHints(QCP::phCacheLabels)
+  mReplotting(false)
 {
   setAttribute(Qt::WA_NoMousePropagation);
   setAttribute(Qt::WA_OpaquePaintEvent);
@@ -434,7 +452,6 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   QLocale currentLocale = locale();
   currentLocale.setNumberOptions(QLocale::OmitGroupSeparator);
   setLocale(currentLocale);
-  mPaintBuffer = QPixmap(size());
   
   // create initial layers:
   mLayers.append(new QCPLayer(this, "background"));
@@ -447,32 +464,24 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   
   // create initial layout, axis rect and legend:
   mPlotLayout = new QCPLayoutGrid;
-  mPlotLayout->setParent(this);
+  mPlotLayout->setParent(this); // important because if parent is QWidget, QCPLayout::sizeConstraintsChanged will call QWidget::updateGeometry
   QCPAxisRect *defaultAxisRect = new QCPAxisRect(this, true);
+  mPlotLayout->addElement(0, 0, defaultAxisRect);
   xAxis = defaultAxisRect->axis(QCPAxis::atBottom);
   yAxis = defaultAxisRect->axis(QCPAxis::atLeft);
   xAxis2 = defaultAxisRect->axis(QCPAxis::atTop);
   yAxis2 = defaultAxisRect->axis(QCPAxis::atRight);
-  mPlotLayout->addElement(0, 0, defaultAxisRect);
   legend = new QCPLegend(this);
   legend->setVisible(false);
-  legend->setLayer("axes");
+  legend->setLayer("legend");
   defaultAxisRect->insetLayout()->addElement(legend, Qt::AlignRight|Qt::AlignTop);
   defaultAxisRect->insetLayout()->setMargins(QMargins(12, 12, 12, 12));
   
   setViewport(rect()); // needs to be called after mPlotLayout has been created
-  setNoAntialiasingOnDrag(false);
-  setAutoAddPlottableToLegend(true);
-  setColor(Qt::white);
   
 #ifdef Q_WS_WIN
   setPlottingHint(QCP::phForceRepaint);
 #endif
-  setAntialiasedElements(QCP::aeNone);
-  setNotAntialiasedElements(QCP::aeNone);
-  setInteractions(0);
-  setMultiSelectModifier(Qt::ControlModifier);
-  setSelectionTolerance(8);
   
   replot();
 }
@@ -491,14 +500,6 @@ QCustomPlot::~QCustomPlot()
   mCurrentLayer = 0;
   qDeleteAll(mLayers); // don't use removeLayer, because it would prevent the last layer to be removed
   mLayers.clear();
-}
-
-/*!
-  Sets the background color of the QCustomPlot widget.
-*/
-void QCustomPlot::setColor(const QColor &color)
-{
-  mColor = color;
 }
 
 /*!
@@ -772,6 +773,68 @@ void QCustomPlot::setViewport(const QRect &rect)
   mViewport = rect;
   if (mPlotLayout)
     mPlotLayout->setOuterRect(mViewport);
+}
+
+/*!
+  Sets \a pm as the viewport background pixmap. (The Viewport is usually the entire QCustomPlot
+  widget.) The viewport background pixmap is drawn below all layerable objects in the plot.
+
+  For cases where the provided pixmap doesn't have the same size as the viewport, scaling can be
+  enabled with \ref setBackgroundScaled and the scaling mode (i.e. whether and how the aspect ratio
+  is preserved) can be set with \ref setBackgroundScaledMode. To set all these options in one call,
+  consider using the overloaded version of this function.
+
+  \see setBackgroundScaled, setBackgroundScaledMode
+*/
+void QCustomPlot::setBackground(const QPixmap &pm)
+{
+  mBackgroundPixmap = pm;
+  mScaledBackgroundPixmap = QPixmap();
+}
+
+void QCustomPlot::setBackground(const QBrush &brush)
+{
+  mBackgroundBrush = brush;
+}
+
+/*! \overload
+  
+  Allows setting the background pixmap of the viewport, whether it shall be scaled and how it
+  shall be scaled in one call.
+
+  \see setBackground(const QPixmap &pm), setBackgroundScaled, setBackgroundScaledMode
+*/
+void QCustomPlot::setBackground(const QPixmap &pm, bool scaled, Qt::AspectRatioMode mode)
+{
+  mBackgroundPixmap = pm;
+  mScaledBackgroundPixmap = QPixmap();
+  mBackgroundScaled = scaled;
+  mBackgroundScaledMode = mode;
+}
+
+/*!
+  Sets whether the viewport background pixmap shall be scaled to fit the viewport. If \a scaled
+  is set to true, you may control whether and how the aspect ratio of the original pixmap is
+  preserved with \ref setBackgroundScaledMode.
+  
+  Note that the scaled version of the original pixmap is buffered, so there is no performance
+  penalty on replots. (Except when the viewport dimensions are changed continuously.)
+  
+  \see setBackground, setBackgroundScaledMode
+*/
+void QCustomPlot::setBackgroundScaled(bool scaled)
+{
+  mBackgroundScaled = scaled;
+}
+
+/*!
+  If scaling of the viewport background pixmap is enabled (\ref setBackgroundScaled), use this function to
+  define whether and how the aspect ratio of the original pixmap passed to \ref setBackground is preserved.
+  \see setBackground, setBackgroundScaled
+*/
+void QCustomPlot::setBackgroundScaledMode(Qt::AspectRatioMode mode)
+{
+  mBackgroundScaledMode = mode;
 }
 
 /*!
@@ -1652,12 +1715,14 @@ void QCustomPlot::replot()
     return;
   mReplotting = true;
   emit beforeReplot();
-  mPaintBuffer.fill(mColor);
+  mPaintBuffer.fill(mBackgroundBrush.style() == Qt::SolidPattern ? mBackgroundBrush.color() : Qt::transparent);
   QCPPainter painter;
   painter.begin(&mPaintBuffer);
   if (painter.isActive()) 
   {
     painter.setRenderHint(QPainter::HighQualityAntialiasing); // to make Antialiasing look good if using the OpenGL graphicssystem
+    if (mBackgroundBrush.style() != Qt::SolidPattern && mBackgroundBrush.style() != Qt::NoBrush)
+      painter.fillRect(mViewport, mBackgroundBrush);
     draw(&painter);
     painter.end();
     if (mPlottingHints.testFlag(QCP::phForceRepaint))
@@ -1676,13 +1741,19 @@ void QCustomPlot::replot()
   
   \see QCPAbstractPlottable::rescaleAxes
 */
-void QCustomPlot::rescaleAxes()
+void QCustomPlot::rescaleAxes(bool onlyVisible)
 {
   if (mPlottables.isEmpty()) return;
+  bool firstPlottable = true;
   
-  mPlottables.at(0)->rescaleAxes(false); // onlyEnlarge disabled on first plottable
-  for (int i=1; i<mPlottables.size(); ++i)
-    mPlottables.at(i)->rescaleAxes(true);  // onlyEnlarge enabled on all other plottables
+  for (int i=0; i<mPlottables.size(); ++i)
+  {
+    if (mPlottables.at(i)->visible() || !onlyVisible)
+    {
+      mPlottables.at(i)->rescaleAxes(!firstPlottable); // onlyEnlarge disabled on first plottable
+      firstPlottable = false;
+    }
+  }
 }
 
 /*!
@@ -1744,8 +1815,11 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
     printpainter.setMode(QCPPainter::pmNoCaching);
     printpainter.setWindow(mViewport);
     printpainter.setRenderHint(QPainter::NonCosmeticDefaultPen, noCosmeticPen);
-    if (mColor != Qt::white && mColor != Qt::transparent && mColor.alpha() > 0) // draw pdf background color if not white/transparent
-      printpainter.fillRect(viewport(), mColor);
+    if (mBackgroundBrush.style() != Qt::NoBrush &&
+        mBackgroundBrush.color() != Qt::white &&
+        mBackgroundBrush.color() != Qt::transparent &&
+        mBackgroundBrush.color().alpha() > 0) // draw pdf background color if not white/transparent
+      printpainter.fillRect(viewport(), mBackgroundBrush);
     draw(&printpainter);
     printpainter.end();
     success = true;
@@ -2099,12 +2173,9 @@ void QCustomPlot::draw(QCPPainter *painter)
   // recalculate layout (this also updates tick vectors on axes via QCPAxisRect::update):
   mPlotLayout->update();
   
-  /*
-  // draw axis backgrounds:
-  for (int i=0; i<axisRectList.size(); ++i)
-    axisRectList.at(i)->drawBackground(painter);
-  */
-    
+  // draw viewport background pixmap:
+  drawBackground(painter);
+
   // draw all layered objects (grid, axes, plottables, items, legend,...):
   for (int layerIndex=0; layerIndex < mLayers.size(); ++layerIndex)
   {
@@ -2120,6 +2191,42 @@ void QCustomPlot::draw(QCPPainter *painter)
         child->draw(painter);
         painter->restore();
       }
+    }
+  }
+}
+
+/*! \internal
+  
+  Draws the viewport background pixmap of the plot.
+  
+  If a pixmap was provided via \ref setBackground, this function buffers the scaled version
+  depending on \ref setBackgroundScaled and \ref setBackgroundScaledMode and then draws it inside
+  the viewport with the provided \a painter. The scaled version is buffered in
+  mScaledBackgroundPixmap to prevent expensive rescaling at every redraw. It is only updated, when
+  the axis rect has changed in a way that requires a rescale of the background pixmap (this is
+  dependant on the \ref setBackgroundScaledMode), or when a differend axis backgroud pixmap was
+  set.
+  
+  \see setBackground, setBackgroundScaled, setBackgroundScaledMode
+*/
+void QCustomPlot::drawBackground(QCPPainter *painter)
+{
+  // Note: background color is handled in individual replot/save functions
+
+  // draw background pixmap (on top of fill, if brush specified):
+  if (!mBackgroundPixmap.isNull())
+  {
+    if (mBackgroundScaled)
+    {
+      // check whether mScaledBackground needs to be updated:
+      QSize scaledSize(mBackgroundPixmap.size());
+      scaledSize.scale(mViewport.size(), mBackgroundScaledMode);
+      if (mScaledBackgroundPixmap.size() != scaledSize)
+        mScaledBackgroundPixmap = mBackgroundPixmap.scaled(mViewport.size(), mBackgroundScaledMode, Qt::SmoothTransformation);
+      painter->drawPixmap(mViewport.topLeft(), mScaledBackgroundPixmap, QRect(0, 0, mViewport.width(), mViewport.height()) & mScaledBackgroundPixmap.rect());
+    } else
+    {
+      painter->drawPixmap(mViewport.topLeft(), mBackgroundPixmap, QRect(0, 0, mViewport.width(), mViewport.height()));
     }
   }
 }
@@ -2221,7 +2328,7 @@ QPixmap QCustomPlot::pixmap(int width, int height, double scale)
   int scaledHeight = qRound(scale*newHeight);
 
   QPixmap result(scaledWidth, scaledHeight);
-  result.fill(mColor);
+  result.fill(mBackgroundBrush.style() == Qt::SolidPattern ? mBackgroundBrush.color() : Qt::transparent);
   QCPPainter painter;
   painter.begin(&result);
   if (painter.isActive())
@@ -2238,6 +2345,8 @@ QPixmap QCustomPlot::pixmap(int width, int height, double scale)
       }
       painter.scale(scale, scale);
     }
+    if (mBackgroundBrush.style() != Qt::SolidPattern && mBackgroundBrush.style() != Qt::NoBrush)
+      painter.fillRect(mViewport, mBackgroundBrush);
     draw(&painter);
     setViewport(oldViewport);
     painter.end();
