@@ -1,6 +1,9 @@
 NEXT RELEASE:
 
 > find way to turn QCPLayoutElement children invisible if parent is set invisible
+  - Idea: protected QCPLayerable::asLayoutElement and QCPLayoutElement::asLayerable, have them return 0 or the respective pointer
+          thing to think about: how to properly set up the pointers to eachother in ctor. Do think about QCPLayerableLayoutElement...
+
 - test transparent/alpha backgrounds for png/pdf export.
 - test QCustomPlot::rescaleAxes(true)
 - expose mGrid as grid() and remove property forwarding in QCPAxis.

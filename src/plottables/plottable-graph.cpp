@@ -761,31 +761,33 @@ void QCPGraph::getScatterPlotData(QVector<QCPData> *pointData) const
   
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
-  int dataCount;
+  int dataCount = 0;
   getVisibleDataBounds(lower, upper, dataCount);
-  // prepare vectors:
-  if (pointData)
+  if (dataCount > 0)
+  {
+    // prepare vectors:
     pointData->resize(dataCount);
-
-  // position data points:
-  QCPDataMap::const_iterator it = lower;
-  QCPDataMap::const_iterator upperEnd = upper+1;
-  int i = 0;
-  if (keyAxis->orientation() == Qt::Vertical)
-  {
-    while (it != upperEnd)
+    
+    // position data points:
+    QCPDataMap::const_iterator it = lower;
+    QCPDataMap::const_iterator upperEnd = upper+1;
+    int i = 0;
+    if (keyAxis->orientation() == Qt::Vertical)
     {
-      (*pointData)[i] = it.value();
-      ++i;
-      ++it;
-    }
-  } else // key axis is horizontal
-  {
-    while (it != upperEnd)
+      while (it != upperEnd)
+      {
+        (*pointData)[i] = it.value();
+        ++i;
+        ++it;
+      }
+    } else // key axis is horizontal
     {
-      (*pointData)[i] = it.value();
-      ++i;
-      ++it;
+      while (it != upperEnd)
+      {
+        (*pointData)[i] = it.value();
+        ++i;
+        ++it;
+      }
     }
   }
 }
@@ -805,46 +807,45 @@ void QCPGraph::getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *poi
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  if (!lineData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
   
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
-  int dataCount;
+  int dataCount = 0;
   getVisibleDataBounds(lower, upper, dataCount);
-  // prepare vectors:
-  if (lineData)
-  { 
-    // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
-    lineData->reserve(dataCount+2);
+  if (dataCount > 0)
+  {
+    lineData->reserve(dataCount+2); // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
     lineData->resize(dataCount);
-  }
-  if (pointData)
-    pointData->resize(dataCount);
-
-  // position data points:
-  QCPDataMap::const_iterator it = lower;
-  QCPDataMap::const_iterator upperEnd = upper+1;
-  int i = 0;
-  if (keyAxis->orientation() == Qt::Vertical)
-  {
-    while (it != upperEnd)
+    if (pointData)
+      pointData->resize(dataCount);
+    
+    // position data points:
+    QCPDataMap::const_iterator it = lower;
+    QCPDataMap::const_iterator upperEnd = upper+1;
+    int i = 0;
+    if (keyAxis->orientation() == Qt::Vertical)
     {
-      if (pointData)
-        (*pointData)[i] = it.value();
-      (*lineData)[i].setX(valueAxis->coordToPixel(it.value().value));
-      (*lineData)[i].setY(keyAxis->coordToPixel(it.key()));
-      ++i;
-      ++it;
-    }
-  } else // key axis is horizontal
-  {
-    while (it != upperEnd)
+      while (it != upperEnd)
+      {
+        if (pointData)
+          (*pointData)[i] = it.value();
+        (*lineData)[i].setX(valueAxis->coordToPixel(it.value().value));
+        (*lineData)[i].setY(keyAxis->coordToPixel(it.key()));
+        ++i;
+        ++it;
+      }
+    } else // key axis is horizontal
     {
-      if (pointData)
-        (*pointData)[i] = it.value();
-      (*lineData)[i].setX(keyAxis->coordToPixel(it.key()));
-      (*lineData)[i].setY(valueAxis->coordToPixel(it.value().value));
-      ++i;
-      ++it;
+      while (it != upperEnd)
+      {
+        if (pointData)
+          (*pointData)[i] = it.value();
+        (*lineData)[i].setX(keyAxis->coordToPixel(it.key()));
+        (*lineData)[i].setY(valueAxis->coordToPixel(it.value().value));
+        ++i;
+        ++it;
+      }
     }
   }
 }
@@ -864,68 +865,66 @@ void QCPGraph::getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> 
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  if (!lineData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
   
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
-  int dataCount;
+  int dataCount = 0;
   getVisibleDataBounds(lower, upper, dataCount);
-  // prepare vectors:
-  if (lineData)
+  if (dataCount > 0)
   {
-    // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
-    // multiplied by 2 because step plot needs two polyline points per one actual data point
-    lineData->reserve(dataCount*2+2);
-    lineData->resize(dataCount*2);
-  }
-  if (pointData)
-    pointData->resize(dataCount);
-  
-  // position data points:
-  QCPDataMap::const_iterator it = lower;
-  QCPDataMap::const_iterator upperEnd = upper+1;
-  int i = 0;
-  int ipoint = 0;
-  if (keyAxis->orientation() == Qt::Vertical)
-  {
-    double lastValue = valueAxis->coordToPixel(it.value().value);
-    double key;
-    while (it != upperEnd)
+    lineData->reserve(dataCount*2+2); // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
+    lineData->resize(dataCount*2); // multiplied by 2 because step plot needs two polyline points per one actual data point
+    if (pointData)
+      pointData->resize(dataCount);
+    
+    // position data points:
+    QCPDataMap::const_iterator it = lower;
+    QCPDataMap::const_iterator upperEnd = upper+1;
+    int i = 0;
+    int ipoint = 0;
+    if (keyAxis->orientation() == Qt::Vertical)
     {
-      if (pointData)
+      double lastValue = valueAxis->coordToPixel(it.value().value);
+      double key;
+      while (it != upperEnd)
       {
-        (*pointData)[ipoint] = it.value();
-        ++ipoint;
+        if (pointData)
+        {
+          (*pointData)[ipoint] = it.value();
+          ++ipoint;
+        }
+        key = keyAxis->coordToPixel(it.key());
+        (*lineData)[i].setX(lastValue);
+        (*lineData)[i].setY(key);
+        ++i;
+        lastValue = valueAxis->coordToPixel(it.value().value);
+        (*lineData)[i].setX(lastValue);
+        (*lineData)[i].setY(key);
+        ++i;
+        ++it;
       }
-      key = keyAxis->coordToPixel(it.key());
-      (*lineData)[i].setX(lastValue);
-      (*lineData)[i].setY(key);
-      ++i;
-      lastValue = valueAxis->coordToPixel(it.value().value);
-      (*lineData)[i].setX(lastValue);
-      (*lineData)[i].setY(key);
-      ++i;
-      ++it;
-    }
-  } else // key axis is horizontal
-  {
-    double lastValue = valueAxis->coordToPixel(it.value().value);
-    double key;
-    while (it != upperEnd)
+    } else // key axis is horizontal
     {
-      if (pointData)
+      double lastValue = valueAxis->coordToPixel(it.value().value);
+      double key;
+      while (it != upperEnd)
       {
-        (*pointData)[ipoint] = it.value();
-        ++ipoint;
+        if (pointData)
+        {
+          (*pointData)[ipoint] = it.value();
+          ++ipoint;
+        }
+        key = keyAxis->coordToPixel(it.key());
+        (*lineData)[i].setX(key);
+        (*lineData)[i].setY(lastValue);
+        ++i;
+        lastValue = valueAxis->coordToPixel(it.value().value);
+        (*lineData)[i].setX(key);
+        (*lineData)[i].setY(lastValue);
+        ++i;
+        ++it;
       }
-      key = keyAxis->coordToPixel(it.key());
-      (*lineData)[i].setX(key);
-      (*lineData)[i].setY(lastValue);
-      ++i;
-      lastValue = valueAxis->coordToPixel(it.value().value);
-      (*lineData)[i].setX(key);
-      (*lineData)[i].setY(lastValue);
-      ++i;
-      ++it;
     }
   }
 }
@@ -945,68 +944,66 @@ void QCPGraph::getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData>
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  if (!lineData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
   
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
-  int dataCount;
+  int dataCount = 0;
   getVisibleDataBounds(lower, upper, dataCount);
-  // prepare vectors:
-  if (lineData)
+  if (dataCount > 0)
   {
-    // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
-    // multiplied by 2 because step plot needs two polyline points per one actual data point
-    lineData->reserve(dataCount*2+2);
-    lineData->resize(dataCount*2);
-  }
-  if (pointData)
-    pointData->resize(dataCount);
-  
-  // position points:
-  QCPDataMap::const_iterator it = lower;
-  QCPDataMap::const_iterator upperEnd = upper+1;
-  int i = 0;
-  int ipoint = 0;
-  if (keyAxis->orientation() == Qt::Vertical)
-  {
-    double lastKey = keyAxis->coordToPixel(it.key());
-    double value;
-    while (it != upperEnd)
+    lineData->reserve(dataCount*2+2); // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
+    lineData->resize(dataCount*2); // multiplied by 2 because step plot needs two polyline points per one actual data point
+    if (pointData)
+      pointData->resize(dataCount);
+    
+    // position points:
+    QCPDataMap::const_iterator it = lower;
+    QCPDataMap::const_iterator upperEnd = upper+1;
+    int i = 0;
+    int ipoint = 0;
+    if (keyAxis->orientation() == Qt::Vertical)
     {
-      if (pointData)
+      double lastKey = keyAxis->coordToPixel(it.key());
+      double value;
+      while (it != upperEnd)
       {
-        (*pointData)[ipoint] = it.value();
-        ++ipoint;
+        if (pointData)
+        {
+          (*pointData)[ipoint] = it.value();
+          ++ipoint;
+        }
+        value = valueAxis->coordToPixel(it.value().value);
+        (*lineData)[i].setX(value);
+        (*lineData)[i].setY(lastKey);
+        ++i;
+        lastKey = keyAxis->coordToPixel(it.key());
+        (*lineData)[i].setX(value);
+        (*lineData)[i].setY(lastKey);
+        ++i;
+        ++it;
       }
-      value = valueAxis->coordToPixel(it.value().value);
-      (*lineData)[i].setX(value);
-      (*lineData)[i].setY(lastKey);
-      ++i;
-      lastKey = keyAxis->coordToPixel(it.key());
-      (*lineData)[i].setX(value);
-      (*lineData)[i].setY(lastKey);
-      ++i;
-      ++it;
-    }
-  } else // key axis is horizontal
-  {
-    double lastKey = keyAxis->coordToPixel(it.key());
-    double value;
-    while (it != upperEnd)
+    } else // key axis is horizontal
     {
-      if (pointData)
+      double lastKey = keyAxis->coordToPixel(it.key());
+      double value;
+      while (it != upperEnd)
       {
-        (*pointData)[ipoint] = it.value();
-        ++ipoint;
+        if (pointData)
+        {
+          (*pointData)[ipoint] = it.value();
+          ++ipoint;
+        }
+        value = valueAxis->coordToPixel(it.value().value);
+        (*lineData)[i].setX(lastKey);
+        (*lineData)[i].setY(value);
+        ++i;
+        lastKey = keyAxis->coordToPixel(it.key());
+        (*lineData)[i].setX(lastKey);
+        (*lineData)[i].setY(value);
+        ++i;
+        ++it;
       }
-      value = valueAxis->coordToPixel(it.value().value);
-      (*lineData)[i].setX(lastKey);
-      (*lineData)[i].setY(value);
-      ++i;
-      lastKey = keyAxis->coordToPixel(it.key());
-      (*lineData)[i].setX(lastKey);
-      (*lineData)[i].setY(value);
-      ++i;
-      ++it;
     }
   }
 }
@@ -1026,95 +1023,95 @@ void QCPGraph::getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  if (!lineData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
   
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
-  int dataCount;
+  int dataCount = 0;
   getVisibleDataBounds(lower, upper, dataCount);
-  // prepare vectors:
-  if (lineData)
+  if (dataCount > 0)
   {
     // added 2 to reserve memory for lower/upper fill base points that might be needed for base fill
     // multiplied by 2 because step plot needs two polyline points per one actual data point
     lineData->reserve(dataCount*2+2);
     lineData->resize(dataCount*2);
-  }
-  if (pointData)
-    pointData->resize(dataCount);
-  
-  // position points:
-  QCPDataMap::const_iterator it = lower;
-  QCPDataMap::const_iterator upperEnd = upper+1;
-  int i = 0;
-  int ipoint = 0;
-  if (keyAxis->orientation() == Qt::Vertical)
-  {
-    double lastKey = keyAxis->coordToPixel(it.key());
-    double lastValue = valueAxis->coordToPixel(it.value().value);
-    double key;
     if (pointData)
+      pointData->resize(dataCount);
+    
+    // position points:
+    QCPDataMap::const_iterator it = lower;
+    QCPDataMap::const_iterator upperEnd = upper+1;
+    int i = 0;
+    int ipoint = 0;
+    if (keyAxis->orientation() == Qt::Vertical)
     {
-      (*pointData)[ipoint] = it.value();
-      ++ipoint;
-    }
-    (*lineData)[i].setX(lastValue);
-    (*lineData)[i].setY(lastKey);
-    ++it;
-    ++i;
-    while (it != upperEnd)
-    {
+      double lastKey = keyAxis->coordToPixel(it.key());
+      double lastValue = valueAxis->coordToPixel(it.value().value);
+      double key;
       if (pointData)
       {
         (*pointData)[ipoint] = it.value();
         ++ipoint;
       }
-      key = (keyAxis->coordToPixel(it.key())-lastKey)*0.5 + lastKey;
       (*lineData)[i].setX(lastValue);
-      (*lineData)[i].setY(key);
-      ++i;
-      lastValue = valueAxis->coordToPixel(it.value().value);
-      lastKey = keyAxis->coordToPixel(it.key());
-      (*lineData)[i].setX(lastValue);
-      (*lineData)[i].setY(key);
+      (*lineData)[i].setY(lastKey);
       ++it;
       ++i;
-    }
-    (*lineData)[i].setX(lastValue);
-    (*lineData)[i].setY(lastKey);
-  } else // key axis is horizontal
-  {
-    double lastKey = keyAxis->coordToPixel(it.key());
-    double lastValue = valueAxis->coordToPixel(it.value().value);
-    double key;
-    if (pointData)
+      while (it != upperEnd)
+      {
+        if (pointData)
+        {
+          (*pointData)[ipoint] = it.value();
+          ++ipoint;
+        }
+        key = (keyAxis->coordToPixel(it.key())-lastKey)*0.5 + lastKey;
+        (*lineData)[i].setX(lastValue);
+        (*lineData)[i].setY(key);
+        ++i;
+        lastValue = valueAxis->coordToPixel(it.value().value);
+        lastKey = keyAxis->coordToPixel(it.key());
+        (*lineData)[i].setX(lastValue);
+        (*lineData)[i].setY(key);
+        ++it;
+        ++i;
+      }
+      (*lineData)[i].setX(lastValue);
+      (*lineData)[i].setY(lastKey);
+    } else // key axis is horizontal
     {
-      (*pointData)[ipoint] = it.value();
-      ++ipoint;
-    }
-    (*lineData)[i].setX(lastKey);
-    (*lineData)[i].setY(lastValue);
-    ++it;
-    ++i;
-    while (it != upperEnd)
-    {
+      double lastKey = keyAxis->coordToPixel(it.key());
+      double lastValue = valueAxis->coordToPixel(it.value().value);
+      double key;
       if (pointData)
       {
         (*pointData)[ipoint] = it.value();
         ++ipoint;
       }
-      key = (keyAxis->coordToPixel(it.key())-lastKey)*0.5 + lastKey;
-      (*lineData)[i].setX(key);
-      (*lineData)[i].setY(lastValue);
-      ++i;
-      lastValue = valueAxis->coordToPixel(it.value().value);
-      lastKey = keyAxis->coordToPixel(it.key());
-      (*lineData)[i].setX(key);
+      (*lineData)[i].setX(lastKey);
       (*lineData)[i].setY(lastValue);
       ++it;
       ++i;
+      while (it != upperEnd)
+      {
+        if (pointData)
+        {
+          (*pointData)[ipoint] = it.value();
+          ++ipoint;
+        }
+        key = (keyAxis->coordToPixel(it.key())-lastKey)*0.5 + lastKey;
+        (*lineData)[i].setX(key);
+        (*lineData)[i].setY(lastValue);
+        ++i;
+        lastValue = valueAxis->coordToPixel(it.value().value);
+        lastKey = keyAxis->coordToPixel(it.key());
+        (*lineData)[i].setX(key);
+        (*lineData)[i].setY(lastValue);
+        ++it;
+        ++i;
+      }
+      (*lineData)[i].setX(lastKey);
+      (*lineData)[i].setY(lastValue);
     }
-    (*lineData)[i].setX(lastKey);
-    (*lineData)[i].setY(lastValue);
   }
 }
 
@@ -1133,64 +1130,63 @@ void QCPGraph::getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  if (!lineData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
   
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
-  int dataCount;
+  int dataCount = 0;
   getVisibleDataBounds(lower, upper, dataCount);
-  // prepare vectors:
-  if (lineData)
+  if (dataCount > 0)
   {
-    // no need to reserve 2 extra points, because there is no fill for impulse plot
-    lineData->resize(dataCount*2);
-  }
-  if (pointData)
-    pointData->resize(dataCount);
-  
-  // position data points:
-  QCPDataMap::const_iterator it = lower;
-  QCPDataMap::const_iterator upperEnd = upper+1;
-  int i = 0;
-  int ipoint = 0;
-  if (keyAxis->orientation() == Qt::Vertical)
-  {
-    double zeroPointX = valueAxis->coordToPixel(0);
-    double key;
-    while (it != upperEnd)
+    lineData->resize(dataCount*2); // no need to reserve 2 extra points, because there is no fill for impulse plot
+    if (pointData)
+      pointData->resize(dataCount);
+    
+    // position data points:
+    QCPDataMap::const_iterator it = lower;
+    QCPDataMap::const_iterator upperEnd = upper+1;
+    int i = 0;
+    int ipoint = 0;
+    if (keyAxis->orientation() == Qt::Vertical)
     {
-      if (pointData)
+      double zeroPointX = valueAxis->coordToPixel(0);
+      double key;
+      while (it != upperEnd)
       {
-        (*pointData)[ipoint] = it.value();
-        ++ipoint;
+        if (pointData)
+        {
+          (*pointData)[ipoint] = it.value();
+          ++ipoint;
+        }
+        key = keyAxis->coordToPixel(it.key());
+        (*lineData)[i].setX(zeroPointX);
+        (*lineData)[i].setY(key);
+        ++i;
+        (*lineData)[i].setX(valueAxis->coordToPixel(it.value().value));
+        (*lineData)[i].setY(key);
+        ++i;
+        ++it;
       }
-      key = keyAxis->coordToPixel(it.key());
-      (*lineData)[i].setX(zeroPointX);
-      (*lineData)[i].setY(key);
-      ++i;
-      (*lineData)[i].setX(valueAxis->coordToPixel(it.value().value));
-      (*lineData)[i].setY(key);
-      ++i;
-      ++it;
-    }
-  } else // key axis is horizontal
-  {
-    double zeroPointY = valueAxis->coordToPixel(0);
-    double key;
-    while (it != upperEnd)
+    } else // key axis is horizontal
     {
-      if (pointData)
+      double zeroPointY = valueAxis->coordToPixel(0);
+      double key;
+      while (it != upperEnd)
       {
-        (*pointData)[ipoint] = it.value();
-        ++ipoint;
+        if (pointData)
+        {
+          (*pointData)[ipoint] = it.value();
+          ++ipoint;
+        }
+        key = keyAxis->coordToPixel(it.key());
+        (*lineData)[i].setX(key);
+        (*lineData)[i].setY(zeroPointY);
+        ++i;
+        (*lineData)[i].setX(key);
+        (*lineData)[i].setY(valueAxis->coordToPixel(it.value().value));
+        ++i;
+        ++it;
       }
-      key = keyAxis->coordToPixel(it.key());
-      (*lineData)[i].setX(key);
-      (*lineData)[i].setY(zeroPointY);
-      ++i;
-      (*lineData)[i].setX(key);
-      (*lineData)[i].setY(valueAxis->coordToPixel(it.value().value));
-      ++i;
-      ++it;
     }
   }
 }
