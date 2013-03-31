@@ -230,8 +230,12 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
   If \a plot is provided, it automatically places itself on the layer named \a targetLayer. If \a
   targetLayer is an empty string, it places itself on the current layer of the plot (see \ref
   QCustomPlot::setCurrentLayer).
+  
+  It is possible to provide 0 as \a plot. In that case, you should assign a parent plot at a later
+  time with \ref initializeParentPlot.
 */
 QCPLayerable::QCPLayerable(QCustomPlot *plot, QString targetLayer) :
+  QObject(plot),
   mVisible(true),
   mParentPlot(plot),
   mLayer(0),
@@ -314,6 +318,35 @@ double QCPLayerable::selectTest(const QPointF &pos, bool onlySelectable, QVarian
   Q_UNUSED(onlySelectable)
   Q_UNUSED(details)
   return -1.0;
+}
+
+/*! \internal
+  
+  Sets the parent plot of this layerable. Use this function once to set the parent plot if you have
+  passed 0 in the constructor. It can not be used to move a layerable from one QCustomPlot to
+  another one.
+  
+  Note that unlike when passing a non-null parent plot in the constructor, this function does not
+  make \a parentPlot the QObject-parent of this layerable. If you want this, call
+  QObject::setParent(\a parentPlot) in addition to this function.
+  
+  Further, you will probably want to set a layer (\ref setLayer) after calling this function, to
+  make the layerable appear on the QCustomPlot.
+  
+  The parent plot change will be propagated to subclasses via a call to \ref parentPlotInitialized
+  so they can react accordingly (e.g. also set the parent plot of child layerables, like QCPLayout
+  does).
+*/
+void QCPLayerable::initializeParentPlot(QCustomPlot *parentPlot)
+{
+  if (mParentPlot)
+  {
+    qDebug() << Q_FUNC_INFO << "called with mParentPlot already initialized";
+    return;
+  }
+  
+  mParentPlot = parentPlot;
+  parentPlotInitialized(mParentPlot);
 }
 
 /*! \internal

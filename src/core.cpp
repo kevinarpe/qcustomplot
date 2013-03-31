@@ -471,9 +471,8 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   yAxis = defaultAxisRect->axis(QCPAxis::atLeft);
   xAxis2 = defaultAxisRect->axis(QCPAxis::atTop);
   yAxis2 = defaultAxisRect->axis(QCPAxis::atRight);
-  legend = new QCPLegend(this);
+  legend = new QCPLegend;
   legend->setVisible(false);
-  legend->setLayer("legend");
   defaultAxisRect->insetLayout()->addElement(legend, Qt::AlignRight|Qt::AlignTop);
   defaultAxisRect->insetLayout()->setMargins(QMargins(12, 12, 12, 12));
   
@@ -1615,7 +1614,7 @@ QCPLayoutElement *QCustomPlot::layoutElementAt(const QPointF &pos) const
     const QList<QCPLayoutElement*> elements = current->elements();
     for (int i=0; i<elements.size(); ++i)
     {
-      if (elements.at(i) && elements.at(i)->hitTest(pos))
+      if (elements.at(i) && elements.at(i)->realVisibility() && elements.at(i)->selectTest(pos, false) >= 0)
       {
         current = elements.at(i);
         searchSubElements = true;
@@ -1748,7 +1747,7 @@ void QCustomPlot::rescaleAxes(bool onlyVisible)
   
   for (int i=0; i<mPlottables.size(); ++i)
   {
-    if (mPlottables.at(i)->visible() || !onlyVisible)
+    if (mPlottables.at(i)->realVisibility() || !onlyVisible)
     {
       mPlottables.at(i)->rescaleAxes(!firstPlottable); // onlyEnlarge disabled on first plottable
       firstPlottable = false;
@@ -2183,7 +2182,7 @@ void QCustomPlot::draw(QCPPainter *painter)
     for (int k=0; k < layerChildren.size(); ++k)
     {
       QCPLayerable *child = layerChildren.at(k);
-      if (child->visible())
+      if (child->realVisibility())
       {
         painter->save();
         painter->setClipRect(child->clipRect().translated(0, -1));
@@ -2266,7 +2265,7 @@ QCPLayerable *QCustomPlot::layerableAt(const QPointF &pos, bool onlySelectable, 
     QCPLayerable *minimumDistanceLayerable = 0;
     for (int i=layerables.size()-1; i>=0; --i)
     {
-      if (!layerables.at(i)->visible())
+      if (!layerables.at(i)->realVisibility())
         continue;
       QVariant details;
       double dist = layerables.at(i)->selectTest(pos, onlySelectable, &details);

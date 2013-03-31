@@ -39,7 +39,7 @@ class QCPAbstractPlottable;
 class QCPGraph;
 class QCPAbstractItem;
 
-class QCP_LIB_DECL QCPGrid : public QObject, public QCPLayerable
+class QCP_LIB_DECL QCPGrid :public QCPLayerable
 {
   Q_OBJECT
 public:
@@ -82,7 +82,7 @@ protected:
 };
 
 
-class QCP_LIB_DECL QCPAxis : public QObject, public QCPLayerable
+class QCP_LIB_DECL QCPAxis : public QCPLayerable
 {
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES

@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot) : 
-  QCPLayerable(parentPlot, "axes"),
+  QCPLayoutElement(parentPlot),
   mFont(QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.5, QFont::Bold)),
   mTextColor(Qt::black),
   mSelectedFont(QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.6, QFont::Bold)),
@@ -40,11 +40,12 @@ QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot) :
   mSelectable(false),
   mSelected(false)
 {
+  setLayer("axes");
   setMargins(QMargins(5, 5, 5, 0));
 }
 
 QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot, const QString &text) :
-  QCPLayerable(parentPlot, "axes"),
+  QCPLayoutElement(parentPlot),
   mText(text),
   mFont(QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.5, QFont::Bold)),
   mTextColor(Qt::black),
@@ -53,6 +54,7 @@ QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot, const QString &text) :
   mSelectable(false),
   mSelected(false)
 {
+  setLayer("axes");
   setMargins(QMargins(5, 5, 5, 0));
 }
 

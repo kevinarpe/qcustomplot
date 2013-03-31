@@ -32,7 +32,7 @@
 class QCPPainter;
 class QCustomPlot;
 
-class QCP_LIB_DECL QCPPlotTitle : public QCPLayoutElement, public QCPLayerable
+class QCP_LIB_DECL QCPPlotTitle : public QCPLayoutElement
 {
   Q_OBJECT
 public:

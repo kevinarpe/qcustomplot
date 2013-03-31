@@ -36,7 +36,7 @@ class QCPAbstractPlottable;
 class QCPGraph;
 class QCPAbstractItem; 
 
-class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement, public QCPLayerable
+class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement
 {
   Q_OBJECT
 public:

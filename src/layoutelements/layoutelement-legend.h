@@ -34,7 +34,7 @@ class QCustomPlot;
 class QCPAbstractPlottable;
 class QCPLegend;
 
-class QCP_LIB_DECL QCPAbstractLegendItem : public QCPLayoutElement, public QCPLayerable
+class QCP_LIB_DECL QCPAbstractLegendItem : public QCPLayoutElement
 {
   Q_OBJECT
 public:
@@ -108,7 +108,7 @@ protected:
 };
 
 
-class QCP_LIB_DECL QCPLegend : public QCPLayoutGrid, public QCPLayerable
+class QCP_LIB_DECL QCPLegend : public QCPLayoutGrid
 {
   Q_OBJECT
 public:
@@ -122,7 +122,7 @@ public:
   Q_ENUMS(SelectablePart)
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)
   
-  explicit QCPLegend(QCustomPlot *parentPlot);
+  explicit QCPLegend();
   virtual ~QCPLegend();
   
   // getters:
@@ -188,6 +188,7 @@ protected:
   QColor mSelectedTextColor;
   
   // reimplemented functions from QCPLayerable:
+  virtual void parentPlotInitialized(QCustomPlot *parentPlot);
   virtual QCP::Interaction selectionCategory() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);

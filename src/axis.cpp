@@ -56,7 +56,6 @@
   internally
 */
 QCPGrid::QCPGrid(QCPAxis *parentAxis) :
-  QObject(parentAxis),
   QCPLayerable(parentAxis->parentPlot(), "grid"),
   mParentAxis(parentAxis),
   mSectionBrushEven(Qt::NoBrush),
@@ -390,7 +389,6 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   Constructs an Axis instance of Type \a type inside \a parentPlot.
 */
 QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
-  QObject(parent),
   QCPLayerable(parent->parentPlot(), "axes"),
   // axis base:
   mAxisType(type),
@@ -453,8 +451,8 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mLabelCache(16), // cache at most 16 (tick) labels
   mLowestVisibleTick(0),
   mHighestVisibleTick(-1),
-  mExponentialChar(mParentPlot->locale().exponential()),
-  mPositiveSignChar(mParentPlot->locale().positiveSign()),
+  mExponentialChar('e'), // will be updated with locale sensitive values in setupTickVector
+  mPositiveSignChar('+'), // will be updated with locale sensitive values in setupTickVector
   mCachedMarginValid(false),
   mCachedMargin(0)
 {
@@ -1628,6 +1626,7 @@ QCPAxis::SelectablePart QCPAxis::getPartAt(const QPointF &pos) const
 
 double QCPAxis::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
+  if (!mParentPlot) return -1;
   SelectablePart part = getPartAt(pos);
   if ((onlySelectable && !mSelectableParts.testFlag(part)) || part == spNone)
     return -1;
@@ -1640,6 +1639,8 @@ double QCPAxis::selectTest(const QPointF &pos, bool onlySelectable, QVariant *de
 QList<QCPAbstractPlottable*> QCPAxis::plottables() const
 {
   QList<QCPAbstractPlottable*> result;
+  if (!mParentPlot) return result;
+  
   for (int i=0; i<mParentPlot->mPlottables.size(); ++i)
   {
     if (mParentPlot->mPlottables.at(i)->keyAxis() == this ||mParentPlot->mPlottables.at(i)->valueAxis() == this)
@@ -1651,6 +1652,8 @@ QList<QCPAbstractPlottable*> QCPAxis::plottables() const
 QList<QCPGraph*> QCPAxis::graphs() const
 {
   QList<QCPGraph*> result;
+  if (!mParentPlot) return result;
+  
   for (int i=0; i<mParentPlot->mGraphs.size(); ++i)
   {
     if (mParentPlot->mGraphs.at(i)->keyAxis() == this || mParentPlot->mGraphs.at(i)->valueAxis() == this)
@@ -1662,6 +1665,8 @@ QList<QCPGraph*> QCPAxis::graphs() const
 QList<QCPAbstractItem*> QCPAxis::items() const
 {
   QList<QCPAbstractItem*> result;
+  if (!mParentPlot) return result;
+  
   for (int itemId=0; itemId<mParentPlot->mItems.size(); ++itemId)
   {
     QList<QCPItemPosition*> positions = mParentPlot->mItems.at(itemId)->positions();
@@ -1701,6 +1706,7 @@ QCPAxis::AxisType QCPAxis::marginSideToAxisType(QCP::MarginSide side)
 */
 void QCPAxis::setupTickVectors()
 {
+  if (!mParentPlot) return;
   if ((!mTicks && !mTickLabels && !mGrid->visible()) || mRange.size() <= 0) return;
   
   // fill tick vectors, either by auto generating or by notifying user to fill the vectors himself
@@ -1751,8 +1757,8 @@ void QCPAxis::setupTickVectors()
   }
 
   // generate tick labels according to tick positions:
-  mExponentialChar = mParentPlot->locale().exponential();   // will be needed when drawing the numbers generated here, in drawTickLabel()
-  mPositiveSignChar = mParentPlot->locale().positiveSign(); // will be needed when drawing the numbers generated here, in drawTickLabel()
+  mExponentialChar = mParentPlot->locale().exponential();   // will be needed when drawing the numbers generated here, in getTickLabelData()
+  mPositiveSignChar = mParentPlot->locale().positiveSign(); // will be needed when drawing the numbers generated here, in getTickLabelData()
   if (mAutoTickLabels)
   {
     int vecsize = mTickVector.size();
@@ -1937,6 +1943,7 @@ int QCPAxis::calculateAutoSubTickCount(double tickStep) const
 */
 void QCPAxis::draw(QCPPainter *painter)
 {
+  if (!mParentPlot) return;
   QPoint origin;
   if (mAxisType == atLeft)
     origin = mAxisRect->bottomLeft()+QPoint(-mOffset, 0);
@@ -2130,6 +2137,7 @@ void QCPAxis::draw(QCPPainter *painter)
 void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceToAxis, const QString &text, QSize *tickLabelsSize)
 {
   // warning: if you change anything here, also adapt getMaxTickLabelSize() accordingly!
+  if (!mParentPlot) return;
   QSize finalSize;
   QPointF labelAnchor;
   switch (mAxisType)

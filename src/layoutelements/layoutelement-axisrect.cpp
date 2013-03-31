@@ -38,7 +38,7 @@
 
 
 QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot, bool setupDefaultAxes) :
-  QCPLayerable(parentPlot, "background"),
+  QCPLayoutElement(parentPlot),
   mBackgroundBrush(Qt::NoBrush),
   mBackgroundScaled(true),
   mBackgroundScaledMode(Qt::KeepAspectRatioByExpanding),
@@ -49,6 +49,10 @@ QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot, bool setupDefaultAxes) :
   mRangeZoomFactorVert(0.85),
   mDragging(false)
 {
+  setLayer("background");
+  mInsetLayout->initializeParentPlot(mParentPlot);
+  mInsetLayout->setParent(this);
+  
   setMinimumSize(50, 50);
   setMinimumMargins(QMargins(15, 15, 15, 15));
   mAxes.insert(QCPAxis::atLeft, QList<QCPAxis*>());
