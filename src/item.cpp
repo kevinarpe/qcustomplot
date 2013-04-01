@@ -777,6 +777,8 @@ QCPAbstractItem::~QCPAbstractItem()
 void QCPAbstractItem::setClipToAxisRect(bool clip)
 {
   mClipToAxisRect = clip;
+  if (mClipToAxisRect)
+    setParentLayerable(mClipAxisRect.data());
 }
 
 /*!
@@ -788,7 +790,9 @@ void QCPAbstractItem::setClipToAxisRect(bool clip)
 
 void QCPAbstractItem::setClipAxisRect(QCPAxisRect *rect)
 {
-  mClipToAxisRect = rect;
+  mClipAxisRect = rect;
+  if (mClipToAxisRect)
+    setParentLayerable(mClipAxisRect.data());
 }
 
 /*!

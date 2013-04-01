@@ -202,7 +202,7 @@
   \see setKeyAxis, setValueAxis
 */
 QCPAbstractPlottable::QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis) :
-  QCPLayerable(keyAxis->parentPlot()),
+  QCPLayerable(keyAxis->parentPlot(), "", keyAxis->axisRect()),
   mName(""),
   mAntialiasedFill(true),
   mAntialiasedScatters(true),

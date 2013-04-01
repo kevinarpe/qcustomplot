@@ -51,6 +51,7 @@ QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot, bool setupDefaultAxes) :
 {
   setLayer("background");
   mInsetLayout->initializeParentPlot(mParentPlot);
+  mInsetLayout->setParentLayerable(this);
   mInsetLayout->setParent(this);
   
   setMinimumSize(50, 50);

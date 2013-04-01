@@ -268,18 +268,6 @@ double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVa
     return -1;
 }
 
-bool QCPLayoutElement::realVisibility() const
-{
-  if (mVisible)
-  {
-    if (mParentLayout)
-      return mParentLayout->realVisibility();
-    else
-      return true; // topmost layout has no parent layout, must be visible
-  } else
-    return false;
-}
-
 void QCPLayoutElement::parentPlotInitialized(QCustomPlot *parentPlot)
 {
   QList<QCPLayoutElement*> els = elements();
@@ -380,6 +368,7 @@ void QCPLayout::adoptElement(QCPLayoutElement *el)
   if (el)
   {
     el->mParentLayout = this;
+    el->setParentLayerable(this);
     el->setParent(this);
     if (!el->parentPlot())
       el->initializeParentPlot(mParentPlot);
@@ -392,7 +381,8 @@ void QCPLayout::releaseElement(QCPLayoutElement *el)
   if (el)
   {
     el->mParentLayout = 0;
-    el->setParent(0);
+    el->setParentLayerable(0);
+    el->setParent(mParentPlot);
     // Note: Don't initializeParentPlot(0) here, because layout element will stay in same parent plot
   } else
     qDebug() << Q_FUNC_INFO << "Null element passed";

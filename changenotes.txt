@@ -28,12 +28,11 @@
     - modified setScatterStyle on QCPGraph and QCPCurve, and setOutlierStyle on QCPStatisticalBox, to take QCPScatterStyle
 
   Added features:
-    - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%).
+    - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%). See plotting hint phCacheLabels which is set by default
     - classes QCPAxisRect, QCPLayout, QCPLayoutGrid, QCPLayoutElement
     - QCustomPlot::axisRects() returns all the axis rects in the QCustomPlot.
-    - QCustomPlot::plotLayout() returns the top level layout (initially a QCPGridLayout with one QCPAxisRect inside)
+    - QCustomPlot::plotLayout() returns the top level layout (initially a QCPLayoutGrid with one QCPAxisRect inside)
     - QCustomPlot::pixmap renders the plot into a pixmap and returns it
-      See plotting hint phCacheLabels which is set by default
     - When setting tick label rotation to +90 or -90 degrees on a vertical axis, the labels are now centered vertically on the tick height
       (This allows space saving vertical tick labels by having the text direction parallel to the axis)
     - Substantially increased replot performance when using very large manual tick vectors (> 10000 ticks) via QCPAxis::setTickVector
@@ -47,7 +46,7 @@
     - QCPAxisRect margins of multiple axis rects can be coupled via QCPMarginGroup
     - Added new default layers "background" and "legend" (QCPAxisRect draws its background on the "background" layer, QCPLegend is on the "legend" layer by default)
     - Custom scatter style via QCP::ssCustom and respective setCustomScatter functions that take a QPainterPath
-    - Filled scatters via setScatterBrush (in analogy to setScatterPen)
+    - Filled scatters via QCPScatterStyle::setBrush
 
   Bugfixes:
     - Fixed compile error on ARM

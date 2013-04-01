@@ -233,11 +233,16 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
   
   It is possible to provide 0 as \a plot. In that case, you should assign a parent plot at a later
   time with \ref initializeParentPlot.
+  
+  The layerable's direct parent is set to \a parentLayerable, if provided. Direct layerable parents
+  are mainly used to control visibility in a hierarchy of layerables. This means a layerable is only
+  drawn, if all its ancestor layerables are also visible.
 */
-QCPLayerable::QCPLayerable(QCustomPlot *plot, QString targetLayer) :
+QCPLayerable::QCPLayerable(QCustomPlot *plot, QString targetLayer, QCPLayerable *parentLayerable) :
   QObject(plot),
   mVisible(true),
   mParentPlot(plot),
+  mParentLayerable(parentLayerable),
   mLayer(0),
   mAntialiased(true)
 {
@@ -312,6 +317,11 @@ void QCPLayerable::setAntialiased(bool enabled)
   mAntialiased = enabled;
 }
 
+bool QCPLayerable::realVisibility() const
+{
+  return mVisible && (mParentLayerable && mParentLayerable.data()->realVisibility());
+}
+
 double QCPLayerable::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   Q_UNUSED(pos)
@@ -347,6 +357,11 @@ void QCPLayerable::initializeParentPlot(QCustomPlot *parentPlot)
   
   mParentPlot = parentPlot;
   parentPlotInitialized(mParentPlot);
+}
+
+void QCPLayerable::setParentLayerable(QCPLayerable *parentLayerable)
+{
+  mParentLayerable = parentLayerable;
 }
 
 /*! \internal

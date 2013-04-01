@@ -56,13 +56,12 @@
   internally
 */
 QCPGrid::QCPGrid(QCPAxis *parentAxis) :
-  QCPLayerable(parentAxis->parentPlot(), "grid"),
+  QCPLayerable(parentAxis->parentPlot(), "grid", parentAxis),
   mParentAxis(parentAxis),
   mSectionBrushEven(Qt::NoBrush),
   mSectionBrushOdd(Qt::NoBrush)
 {
   // warning: this is called in QCPAxis constructor, so parentAxis members should not be accessed/called
-  
   setPen(QPen(QColor(200,200,200), 0, Qt::DotLine));
   setSubGridPen(QPen(QColor(220,220,220), 0, Qt::DotLine));
   setZeroLinePen(QPen(QColor(200,200,200), 0, Qt::SolidLine));
@@ -159,14 +158,10 @@ void QCPGrid::applyDefaultAntialiasingHint(QCPPainter *painter) const
   
   Draws grid lines and sub grid lines at the positions of (sub) ticks of the parent axis, spanning
   over the complete axis rect. Also draws the zero line, if appropriate (\ref setZeroLinePen).
-  
-  Called by QCustomPlot::draw to draw the grid of an axis.
 */
 void QCPGrid::draw(QCPPainter *painter)
 {
   if (!mParentAxis) { qDebug() << Q_FUNC_INFO << "invalid parent axis"; return; }
-  
-  if (!mParentAxis->visible()) return; // don't draw grid when parent axis isn't visible
   
   if (mSectionBrushEven != Qt::NoBrush || mSectionBrushOdd != Qt::NoBrush)
     drawSections(painter);
@@ -389,7 +384,7 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   Constructs an Axis instance of Type \a type inside \a parentPlot.
 */
 QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
-  QCPLayerable(parent->parentPlot(), "axes"),
+  QCPLayerable(parent->parentPlot(), "axes", parent),
   // axis base:
   mAxisType(type),
   mAxisRect(parent),

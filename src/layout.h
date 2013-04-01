@@ -88,7 +88,6 @@ public:
   virtual QSize maximumSizeHint() const;
   virtual QList<QCPLayoutElement*> elements() const;
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
-  virtual bool realVisibility() const;
   
 protected:
   QCPLayout *mParentLayout;

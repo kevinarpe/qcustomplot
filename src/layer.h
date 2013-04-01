@@ -66,12 +66,13 @@ class QCP_LIB_DECL QCPLayerable : public QObject
 {
   Q_OBJECT
 public:
-  QCPLayerable(QCustomPlot *plot, QString targetLayer="");
+  QCPLayerable(QCustomPlot *plot, QString targetLayer="", QCPLayerable *parentLayerable=0);
   ~QCPLayerable();
   
   // getters:
   bool visible() const { return mVisible; }
   QCustomPlot *parentPlot() const { return mParentPlot; }
+  QCPLayerable *parentLayerable() const { return mParentLayerable.data(); }
   QCPLayer *layer() const { return mLayer; }
   bool antialiased() const { return mAntialiased; }
   
@@ -82,17 +83,19 @@ public:
   void setAntialiased(bool enabled);
   
   // non-property methods:
-  virtual bool realVisibility() const { return mVisible; }
+  bool realVisibility() const;
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
   bool mVisible;
   QCustomPlot *mParentPlot;
+  QWeakPointer<QCPLayerable> mParentLayerable;
   QCPLayer *mLayer;
   bool mAntialiased;
   
   // non-property methods:
   void initializeParentPlot(QCustomPlot *parentPlot);
+  void setParentLayerable(QCPLayerable* parentLayerable);
   bool moveToLayer(QCPLayer *layer, bool prepend);
   void applyAntialiasingHint(QCPPainter *painter, bool localAntialiased, QCP::AntialiasedElement overrideElement) const;
   
@@ -110,8 +113,6 @@ private:
   Q_DISABLE_COPY(QCPLayerable)
   
   friend class QCustomPlot;
-  friend class QCPLayout;
-  friend class QCPLayoutElement;
   friend class QCPAxisRect;
 };
 

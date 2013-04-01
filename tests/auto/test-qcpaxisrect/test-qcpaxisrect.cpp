@@ -76,7 +76,6 @@ void TestQCPAxisRect::axisRemovalConsequencesToPlottables()
   mPlot->replot();
 
   QVERIFY(mPlot->axisRect()->removeAxis(mPlot->xAxis));
-  QTest::ignoreMessage(QtDebugMsg, "virtual void QCPGraph::draw(QCPPainter*) invalid key or value axis ");
   mPlot->replot();
   QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleKeyAxis(bool) const invalid key axis ");
   mPlot->rescaleAxes();
@@ -101,8 +100,6 @@ void TestQCPAxisRect::axisRemovalConsequencesToItems()
   QVERIFY(mPlot->axisRect()->removeAxis(mPlot->xAxis));
   mPlot->replot(); // currently, QCPItemPosition handles this gracefully by assuming pixels for the missing axis coordinate, so we expect no debug output
   QVERIFY(mPlot->axisRect()->removeAxis(mPlot->yAxis));
-  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axes defined "); // for start position
-  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axes defined "); // for end position
   mPlot->replot();
   
   
@@ -138,7 +135,6 @@ void TestQCPAxisRect::axisRectRemovalConsequencesToPlottables()
   QVERIFY(mPlot->plotLayout()->removeAt(0));
   mPlot->plotLayout()->simplify();
   QCOMPARE(mPlot->plotLayout()->elementCount(), 0);
-  QTest::ignoreMessage(QtDebugMsg, "virtual void QCPGraph::draw(QCPPainter*) invalid key or value axis ");
   mPlot->replot();
   QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleKeyAxis(bool) const invalid key axis ");
   QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleValueAxis(bool) const invalid value axis ");
@@ -171,9 +167,6 @@ void TestQCPAxisRect::axisRectRemovalConsequencesToItems()
   QVERIFY(mPlot->plotLayout()->removeAt(0));
   mPlot->plotLayout()->simplify();
   QCOMPARE(mPlot->plotLayout()->elementCount(), 0);
-  
-  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axis rect defined "); // for start position
-  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axes defined "); // for end position
   mPlot->replot();
   
   QTest::ignoreMessage(QtDebugMsg, "void QCPItemPosition::setPixelPoint(const QPointF&) No axis rect defined ");
