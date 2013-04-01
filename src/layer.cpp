@@ -319,7 +319,7 @@ void QCPLayerable::setAntialiased(bool enabled)
 
 bool QCPLayerable::realVisibility() const
 {
-  return mVisible && (mParentLayerable && mParentLayerable.data()->realVisibility());
+  return mVisible && (!mParentLayerable || mParentLayerable.data()->realVisibility());
 }
 
 double QCPLayerable::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
