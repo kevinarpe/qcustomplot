@@ -230,10 +230,19 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
   If \a plot is provided, it automatically places itself on the layer named \a targetLayer. If \a
   targetLayer is an empty string, it places itself on the current layer of the plot (see \ref
   QCustomPlot::setCurrentLayer).
+  
+  It is possible to provide 0 as \a plot. In that case, you should assign a parent plot at a later
+  time with \ref initializeParentPlot.
+  
+  The layerable's direct parent is set to \a parentLayerable, if provided. Direct layerable parents
+  are mainly used to control visibility in a hierarchy of layerables. This means a layerable is only
+  drawn, if all its ancestor layerables are also visible.
 */
-QCPLayerable::QCPLayerable(QCustomPlot *plot, QString targetLayer) :
+QCPLayerable::QCPLayerable(QCustomPlot *plot, QString targetLayer, QCPLayerable *parentLayerable) :
+  QObject(plot),
   mVisible(true),
   mParentPlot(plot),
+  mParentLayerable(parentLayerable),
   mLayer(0),
   mAntialiased(true)
 {
@@ -308,12 +317,51 @@ void QCPLayerable::setAntialiased(bool enabled)
   mAntialiased = enabled;
 }
 
+bool QCPLayerable::realVisibility() const
+{
+  return mVisible && (!mParentLayerable || mParentLayerable.data()->realVisibility());
+}
+
 double QCPLayerable::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   Q_UNUSED(pos)
   Q_UNUSED(onlySelectable)
   Q_UNUSED(details)
   return -1.0;
+}
+
+/*! \internal
+  
+  Sets the parent plot of this layerable. Use this function once to set the parent plot if you have
+  passed 0 in the constructor. It can not be used to move a layerable from one QCustomPlot to
+  another one.
+  
+  Note that unlike when passing a non-null parent plot in the constructor, this function does not
+  make \a parentPlot the QObject-parent of this layerable. If you want this, call
+  QObject::setParent(\a parentPlot) in addition to this function.
+  
+  Further, you will probably want to set a layer (\ref setLayer) after calling this function, to
+  make the layerable appear on the QCustomPlot.
+  
+  The parent plot change will be propagated to subclasses via a call to \ref parentPlotInitialized
+  so they can react accordingly (e.g. also set the parent plot of child layerables, like QCPLayout
+  does).
+*/
+void QCPLayerable::initializeParentPlot(QCustomPlot *parentPlot)
+{
+  if (mParentPlot)
+  {
+    qDebug() << Q_FUNC_INFO << "called with mParentPlot already initialized";
+    return;
+  }
+  
+  mParentPlot = parentPlot;
+  parentPlotInitialized(mParentPlot);
+}
+
+void QCPLayerable::setParentLayerable(QCPLayerable *parentLayerable)
+{
+  mParentLayerable = parentLayerable;
 }
 
 /*! \internal

@@ -750,7 +750,6 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
   Base class constructor which initializes base class members.
 */
 QCPAbstractItem::QCPAbstractItem(QCustomPlot *parentPlot) :
-  QObject(parentPlot),
   QCPLayerable(parentPlot),
   mClipToAxisRect(false),
   mSelectable(true),
@@ -778,6 +777,8 @@ QCPAbstractItem::~QCPAbstractItem()
 void QCPAbstractItem::setClipToAxisRect(bool clip)
 {
   mClipToAxisRect = clip;
+  if (mClipToAxisRect)
+    setParentLayerable(mClipAxisRect.data());
 }
 
 /*!
@@ -789,7 +790,9 @@ void QCPAbstractItem::setClipToAxisRect(bool clip)
 
 void QCPAbstractItem::setClipAxisRect(QCPAxisRect *rect)
 {
-  mClipToAxisRect = rect;
+  mClipAxisRect = rect;
+  if (mClipToAxisRect)
+    setParentLayerable(mClipAxisRect.data());
 }
 
 /*!

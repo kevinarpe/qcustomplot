@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
   presetInteractive(mCustomPlot);
   //setupItemAnchorTest(mCustomPlot);
   //setupItemTracerTest(mCustomPlot);
-  setupGraphTest(mCustomPlot);
+  //setupGraphTest(mCustomPlot);
   //setupExportTest(mCustomPlot);
   //setupLogErrorsTest(mCustomPlot);
   //setupSelectTest(mCustomPlot);
@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupMarginGroupTest(mCustomPlot);
   //setupInsetLayoutTest(mCustomPlot);
   //setupLegendTest(mCustomPlot);
-  //setupMultiAxisRectInteractions(mCustomPlot);
+  setupMultiAxisRectInteractions(mCustomPlot);
   
 }
 

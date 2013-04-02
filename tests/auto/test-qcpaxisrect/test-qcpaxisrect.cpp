@@ -171,7 +171,6 @@ void TestQCPAxisRect::axisRectRemovalConsequencesToItems()
   QVERIFY(mPlot->plotLayout()->removeAt(0));
   mPlot->plotLayout()->simplify();
   QCOMPARE(mPlot->plotLayout()->elementCount(), 0);
-  
   QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axis rect defined "); // for start position
   QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axes defined "); // for end position
   mPlot->replot();

@@ -106,8 +106,8 @@ void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element
 //////////////////// QCPLayoutElement
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-QCPLayoutElement::QCPLayoutElement() :
-  QObject(0), // parenthood is changed as soon as layout element gets inserted into a layout (except for top level layout)
+QCPLayoutElement::QCPLayoutElement(QCustomPlot *parentPlot) :
+  QCPLayerable(parentPlot), // parenthood is changed as soon as layout element gets inserted into a layout (except for top level layout)
   mParentLayout(0),
   mMinimumSize(),
   mMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX),
@@ -255,14 +255,32 @@ QList<QCPLayoutElement*> QCPLayoutElement::elements() const
   return QList<QCPLayoutElement*>();
 }
 
+double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
+{
+  Q_UNUSED(details)
+  
+  if (onlySelectable)
+    return -1;
+  
+  if (QRectF(mOuterRect).contains(pos))
+    return mParentPlot->selectionTolerance()*0.99;
+  else
+    return -1;
+}
+
+void QCPLayoutElement::parentPlotInitialized(QCustomPlot *parentPlot)
+{
+  QList<QCPLayoutElement*> els = elements();
+  for (int i=0; i<els.size(); ++i)
+  {
+    if (!els.at(i)->parentPlot())
+      els.at(i)->initializeParentPlot(parentPlot);
+  }
+}
+
 int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
 {
   return QCP::getMarginValue(mMargins, side);
-}
-
-bool QCPLayoutElement::hitTest(const QPointF &pos) const
-{
-  return QRectF(mOuterRect).contains(pos);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -350,7 +368,10 @@ void QCPLayout::adoptElement(QCPLayoutElement *el)
   if (el)
   {
     el->mParentLayout = this;
+    el->setParentLayerable(this);
     el->setParent(this);
+    if (!el->parentPlot())
+      el->initializeParentPlot(mParentPlot);
   } else
     qDebug() << Q_FUNC_INFO << "Null element passed";
 }
@@ -360,7 +381,9 @@ void QCPLayout::releaseElement(QCPLayoutElement *el)
   if (el)
   {
     el->mParentLayout = 0;
-    el->setParent(0);
+    el->setParentLayerable(0);
+    el->setParent(mParentPlot);
+    // Note: Don't initializeParentPlot(0) here, because layout element will stay in same parent plot
   } else
     qDebug() << Q_FUNC_INFO << "Null element passed";
 }

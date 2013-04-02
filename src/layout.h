@@ -26,6 +26,7 @@
 #define QCP_LAYOUT_H
 
 #include "global.h"
+#include "layer.h"
 
 class QCPLayout;
 class QCPLayoutElement;
@@ -54,11 +55,11 @@ protected:
 };
 
 
-class QCP_LIB_DECL QCPLayoutElement : public QObject
+class QCP_LIB_DECL QCPLayoutElement : public QCPLayerable
 {
   Q_OBJECT
 public:
-  explicit QCPLayoutElement();
+  explicit QCPLayoutElement(QCustomPlot *parentPlot=0);
   ~QCPLayoutElement();
   
   QCPLayout *layout() const { return mParentLayout; }
@@ -86,6 +87,7 @@ public:
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;
   virtual QList<QCPLayoutElement*> elements() const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
   QCPLayout *mParentLayout;
@@ -95,8 +97,10 @@ protected:
   QCP::MarginSides mAutoMargins;
   QHash<QCP::MarginSide, QCPMarginGroup*> mMarginGroups;
   
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const { Q_UNUSED(painter) }
+  virtual void draw(QCPPainter *painter) { Q_UNUSED(painter) }
+  virtual void parentPlotInitialized(QCustomPlot *parentPlot);
   virtual int calculateAutoMargin(QCP::MarginSide side);
-  virtual bool hitTest(const QPointF &pos) const;
   virtual void mousePressEvent(QMouseEvent *event) {Q_UNUSED(event)}
   virtual void mouseMoveEvent(QMouseEvent *event) {Q_UNUSED(event)}
   virtual void mouseReleaseEvent(QMouseEvent *event) {Q_UNUSED(event)}

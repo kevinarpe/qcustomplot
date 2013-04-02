@@ -114,7 +114,7 @@ private:
 };
 
 
-class QCP_LIB_DECL QCPAbstractItem : public QObject, public QCPLayerable
+class QCP_LIB_DECL QCPAbstractItem : public QCPLayerable
 {
   Q_OBJECT
 public:

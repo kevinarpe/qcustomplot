@@ -89,7 +89,7 @@
   cause the item to be added to \a parent, so \ref QCPLegend::addItem must be called separately.
 */
 QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) : 
-  QCPLayerable(parent->parentPlot(), "legend"),
+  QCPLayoutElement(parent->parentPlot()),
   mParentLegend(parent),
   mFont(parent->font()),
   mTextColor(parent->textColor()),
@@ -98,6 +98,7 @@ QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) :
   mSelectable(true),
   mSelected(false)
 {
+  setLayer("legend");
   setMargins(QMargins(8, 2, 8, 2));
 }
 
@@ -173,6 +174,7 @@ void QCPAbstractLegendItem::setSelected(bool selected)
 double QCPAbstractLegendItem::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   Q_UNUSED(details)
+  if (!mParentPlot) return -1;
   if (onlySelectable && (!mSelectable || !mParentLegend->selectableParts().testFlag(QCPLegend::spItems)))
     return -1;
   
@@ -357,13 +359,12 @@ QSize QCPPlottableLegendItem::minimumSizeHint() const
 /* end of documentation of signals */
 
 /*!
-  Constructs a new QCPLegend instance with \a parentPlot as the containing plot and default
-  values. Under normal usage, QCPLegend needn't be instantiated outside of QCustomPlot.
-  Access QCustomPlot::legend to modify the legend (set to invisible by default, see \ref
-  setVisible).
+  Constructs a new QCPLegend instance with \a parentPlot as the containing plot and default values.
+  
+  Note that by default, QCustomPlot already contains a legend ready to be used as
+  QCustomPlot::legend
 */
-QCPLegend::QCPLegend(QCustomPlot *parentPlot) :
-  QCPLayerable(parentPlot)
+QCPLegend::QCPLegend()
 {
   setRowSpacing(0);
   setColumnSpacing(10);
@@ -382,8 +383,6 @@ QCPLegend::QCPLegend(QCustomPlot *parentPlot) :
   setSelectedIconBorderPen(QPen(Qt::blue, 2));
   setBrush(Qt::white);
   setSelectedBrush(Qt::white);
-  setFont(parentPlot->font());
-  setSelectedFont(parentPlot->font());
   setTextColor(Qt::black);
   setSelectedTextColor(Qt::blue);
 }
@@ -391,7 +390,8 @@ QCPLegend::QCPLegend(QCustomPlot *parentPlot) :
 QCPLegend::~QCPLegend()
 {
   clearItems();
-  mParentPlot->legendRemoved(this);
+  if (mParentPlot)
+    mParentPlot->legendRemoved(this);
 }
 
 QCPLegend::SelectableParts QCPLegend::selectedParts() const
@@ -825,6 +825,7 @@ void QCPLegend::draw(QCPPainter *painter)
 
 double QCPLegend::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
+  if (!mParentPlot) return -1;
   if (onlySelectable && !mSelectableParts.testFlag(spLegendBox))
     return -1;
   
@@ -871,4 +872,11 @@ QCP::Interaction QCPLegend::selectionCategory() const
 QCP::Interaction QCPAbstractLegendItem::selectionCategory() const
 {
   return QCP::iSelectLegend;
+}
+
+
+void QCPLegend::parentPlotInitialized(QCustomPlot *parentPlot)
+{
+  Q_UNUSED(parentPlot)
+  setLayer("legend");
 }

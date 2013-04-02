@@ -28,6 +28,7 @@
 #include "global.h"
 #include "painter.h"
 #include "layer.h"
+#include "layout.h"
 #include "range.h"
 #include "axis.h"
 #include "plottable.h"
