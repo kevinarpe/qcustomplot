@@ -1,7 +1,5 @@
 NEXT RELEASE:
 
-- test transparent/alpha backgrounds for png/pdf export.
-- test QCustomPlot::rescaleAxes(true)
 - expose mGrid as grid() and remove property forwarding in QCPAxis.
 - remove section brush interface from dev branch and move to other sectionbrush branch
 - fix Q_PROPERTY entries

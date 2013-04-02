@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupItemAnchorTest(mCustomPlot);
   //setupItemTracerTest(mCustomPlot);
   //setupGraphTest(mCustomPlot);
-  //setupExportTest(mCustomPlot);
+  setupExportTest(mCustomPlot);
   //setupLogErrorsTest(mCustomPlot);
   //setupSelectTest(mCustomPlot);
   //setupDateTest(mCustomPlot);
@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupMarginGroupTest(mCustomPlot);
   //setupInsetLayoutTest(mCustomPlot);
   //setupLegendTest(mCustomPlot);
-  setupMultiAxisRectInteractions(mCustomPlot);
+  //setupMultiAxisRectInteractions(mCustomPlot);
   
 }
 
@@ -239,9 +239,9 @@ void MainWindow::setupExportTest(QCustomPlot *customPlot)
   qDebug() << customPlot->savePng(dir.filePath("exportTest_2x.png"), 500, 400, 2);
   qDebug() << customPlot->saveJpg(dir.filePath("exportTest_1x.jpg"), 500, 400);
   qDebug() << customPlot->saveJpg(dir.filePath("exportTest_2x.jpg"), 500, 400, 2);
+  customPlot->clearPlottables();
   
   // test floating-point precision of vectorized (pdf) export:
-  customPlot->clearPlottables();
   QCPGraph *graph = customPlot->addGraph();
   QVector<double> x, y;
   for (int i=0; i<100; ++i)
@@ -254,8 +254,27 @@ void MainWindow::setupExportTest(QCustomPlot *customPlot)
   graph->setScatterStyle(QCPScatterStyle::ssPlus);
   customPlot->xAxis->setRange(0, 1.1);
   customPlot->yAxis->setRange(0, 101);
-  customPlot->savePng(dir.filePath("float-precision-raster.png"), 500, 400, 5);
-  customPlot->savePdf(dir.filePath("float-precision-vector.pdf"), false, 500, 400);
+  qDebug() << customPlot->savePng(dir.filePath("float-precision-raster.png"), 500, 400, 5);
+  qDebug() << customPlot->savePdf(dir.filePath("float-precision-vector.pdf"), false, 500, 400);
+  customPlot->clearPlottables();
+  
+  // test transparent/colored background:
+  customPlot->addGraph();
+  x.clear();
+  y.clear();
+  for (int i=0; i<100; ++i)
+  {
+    x << i;
+    y << qSin(i/20.0);
+  }
+  customPlot->graph()->setData(x, y);
+  customPlot->rescaleAxes();
+  customPlot->setBackground(Qt::transparent);
+  qDebug() << customPlot->savePng(dir.filePath("exportTest_bg_transparent.png"), 500, 400);
+  qDebug() << customPlot->savePdf(dir.filePath("exportTest_bg_transparent.pdf"), true, 500, 400);
+  customPlot->setBackground(QColor(100, 100, 155));
+  qDebug() << customPlot->savePng(dir.filePath("exportTest_bg_color.png"), 500, 400);
+  qDebug() << customPlot->savePdf(dir.filePath("exportTest_bg_color.pdf"), true, 500, 400);
   customPlot->clearPlottables();
 }
 

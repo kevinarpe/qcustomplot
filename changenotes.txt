@@ -53,6 +53,7 @@
     - Wrong legend icons were displayed if using pixmaps for scatters that are smaller than the legend icon rect
     - Fixed clipping inaccuracy for rotated tick labels (were hidden too early, because the non-rotated bounding box was used)
     - Fixed bug that caused wrong clipping of axis ticks and subticks when the ticks were given manually by QCPAxis::setTickVector
+    - Fixed Qt5 crash when dragging graph out of view (iterator out of bounds in QCPGraph::getVisibleDataBounds)
     
   Other:
     - Opened up non-amalgamated project structure to public via git repository
