@@ -57,9 +57,7 @@
 */
 QCPGrid::QCPGrid(QCPAxis *parentAxis) :
   QCPLayerable(parentAxis->parentPlot(), "grid", parentAxis),
-  mParentAxis(parentAxis),
-  mSectionBrushEven(Qt::NoBrush),
-  mSectionBrushOdd(Qt::NoBrush)
+  mParentAxis(parentAxis)
 {
   // warning: this is called in QCPAxis constructor, so parentAxis members should not be accessed/called
   setParent(parentAxis);
@@ -70,9 +68,6 @@ QCPGrid::QCPGrid(QCPAxis *parentAxis) :
   setAntialiased(false);
   setAntialiasedSubGrid(false);
   setAntialiasedZeroLine(false);
-  
-  //DBG:
-  //setSectionBrushes(QBrush(Qt::lightGray), QBrush(Qt::gray));
 }
 
 /*!
@@ -128,16 +123,6 @@ void QCPGrid::setZeroLinePen(const QPen &pen)
   mZeroLinePen = pen;
 }
 
-/*!
-  Sets the brushes that will be used to draw tick section backgrounds of the axes alternatingly. To
-  disable alternating background brushes for axis tick sections, set the brushes to Qt::NoBrush
-*/
-void QCPGrid::setSectionBrushes(const QBrush &brushEven, const QBrush &brushOdd)
-{
-  mSectionBrushEven = brushEven;
-  mSectionBrushOdd = brushOdd;
-}
-
 /*! \internal
 
   A convenience function to easily set the QPainter::Antialiased hint on the provided \a painter
@@ -164,63 +149,9 @@ void QCPGrid::draw(QCPPainter *painter)
 {
   if (!mParentAxis) { qDebug() << Q_FUNC_INFO << "invalid parent axis"; return; }
   
-  if (mSectionBrushEven != Qt::NoBrush || mSectionBrushOdd != Qt::NoBrush)
-    drawSections(painter);
   if (mSubGridVisible)
     drawSubGridLines(painter);
   drawGridLines(painter);
-}
-
-/*! \internal
-  
-  Draws tick sections of the axis with alternating brushes set via \ref setSectionBrushes.
-  
-  Called by QCustomPlot::draw to draw the sections of an axis.
-*/
-void QCPGrid::drawSections(QCPPainter *painter) const
-{
-  if (!mParentAxis) { qDebug() << Q_FUNC_INFO << "invalid parent axis"; return; }
-  
-  int lowTick = mParentAxis->mLowestVisibleTick;
-  int highTick = mParentAxis->mHighestVisibleTick;
-  double t1, t2; // helper variable, result of coordinate-to-pixel transforms
-  if (mParentAxis->orientation() == Qt::Horizontal)
-  {
-    // TODO: make this properly work. Doesn't work when only one tick in range and probably when logarithmic scale.
-    // idea for no tick in visible range: if (lowtick > hightick), draw full axis fillrect with color depending on
-    // side (left or right of ticks) and whether there are ticks to left/right in tickvector.
-    applyDefaultAntialiasingHint(painter);
-    painter->setPen(Qt::NoPen);
-    for (int i=lowTick; i <= highTick-1; ++i)
-    {
-      int sectionId = 0;
-      if (mParentAxis->autoTicks())
-      {
-        double sectionHalf = (mParentAxis->mTickVector.at(i)+mParentAxis->mTickVector.at(i+1))/2.0;
-        sectionId = qFloor(sectionHalf/mParentAxis->mTickStep);
-      }
-      {
-        sectionId = i;
-      }
-      t1 = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i)); // x1
-      t2 = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i+1)); // x2
-      if (i == lowTick) // draw first section extra
-      {
-        painter->setBrush((sectionId-1) % 2 == 0 ? mSectionBrushEven : mSectionBrushOdd);
-        painter->drawRect(QRectF(mParentAxis->mAxisRect->left(), mParentAxis->mAxisRect->top(), t1-mParentAxis->mAxisRect->left(), mParentAxis->mAxisRect->height()));
-      }
-      painter->setBrush(sectionId % 2 == 0 ? mSectionBrushEven : mSectionBrushOdd);
-      painter->drawRect(QRectF(t1, mParentAxis->mAxisRect->top(), t2-t1, mParentAxis->mAxisRect->height()));
-      if (i == highTick-1) // draw last section extra
-      {
-        painter->setBrush((sectionId+1) % 2 == 0 ? mSectionBrushEven : mSectionBrushOdd);
-        painter->drawRect(QRectF(t2, mParentAxis->mAxisRect->top(), mParentAxis->mAxisRect->right()-t2+1, mParentAxis->mAxisRect->height()));
-      }
-    }
-  } else
-  {
-    // TODO: same for Qt::Vertical
-  }
 }
 
 /*! \internal
