@@ -62,6 +62,8 @@ public:
   QPen pen() const { return mPen; }
   QPen subGridPen() const { return mSubGridPen; }
   QPen zeroLinePen() const { return mZeroLinePen; }
+  QBrush sectionBrushEven() const { return mSectionBrushEven; }
+  QBrush sectionBrushOdd() const { return mSectionBrushOdd; }
   
   // setters:
   void setSubGridVisible(bool visible);
@@ -70,20 +72,24 @@ public:
   void setPen(const QPen &pen);
   void setSubGridPen(const QPen &pen);
   void setZeroLinePen(const QPen &pen);
+  void setSectionBrushes(const QBrush &brushEven, const QBrush &brushOdd);
   
 protected:
   // property members:
   bool mSubGridVisible;
   bool mAntialiasedSubGrid, mAntialiasedZeroLine;
   QPen mPen, mSubGridPen, mZeroLinePen;
+  QBrush mSectionBrushEven, mSectionBrushOdd;
+  
   // non-property members:
   QCPAxis *mParentAxis;
-  
+
   // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
-  
+
   // non-virtual methods:
+  void drawSections(QCPPainter *painter) const;
   void drawGridLines(QCPPainter *painter) const;
   void drawSubGridLines(QCPPainter *painter) const;
   
