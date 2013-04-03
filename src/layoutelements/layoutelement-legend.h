@@ -37,6 +37,15 @@ class QCPLegend;
 class QCP_LIB_DECL QCPAbstractLegendItem : public QCPLayoutElement
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QCPLegend* parentLegend READ parentLegend)
+  Q_PROPERTY(QFont font READ font WRITE setFont)
+  Q_PROPERTY(QColor textColor READ textColor WRITE setTextColor)
+  Q_PROPERTY(QFont selectedFont READ selectedFont WRITE setSelectedFont)
+  Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor)
+  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable)
+  Q_PROPERTY(bool selected READ selected WRITE setSelected)
+  /// \endcond
 public:
   explicit QCPAbstractLegendItem(QCPLegend *parent);
   
@@ -111,6 +120,22 @@ protected:
 class QCP_LIB_DECL QCPLegend : public QCPLayoutGrid
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QPen borderPen READ borderPen WRITE setBorderPen)
+  Q_PROPERTY(QBrush brush READ brush WRITE setBrush)
+  Q_PROPERTY(QFont font READ font WRITE setFont)
+  Q_PROPERTY(QColor textColor READ textColor WRITE setTextColor)
+  Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
+  Q_PROPERTY(int iconTextPadding READ iconTextPadding WRITE setIconTextPadding)
+  Q_PROPERTY(QPen iconBorderPen READ iconBorderPen WRITE setIconBorderPen)
+  Q_PROPERTY(SelectableParts selectableParts READ selectableParts WRITE setSelectableParts)
+  Q_PROPERTY(SelectableParts selectedParts READ selectedParts WRITE setSelectedParts)
+  Q_PROPERTY(QPen selectedBorderPen READ selectedBorderPen WRITE setSelectedBorderPen)
+  Q_PROPERTY(QPen selectedIconBorderPen READ selectedIconBorderPen WRITE setSelectedIconBorderPen)
+  Q_PROPERTY(QBrush selectedBrush READ selectedBrush WRITE setSelectedBrush)
+  Q_PROPERTY(QFont selectedFont READ selectedFont WRITE setSelectedFont)
+  Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor)
+  /// \endcond
 public:
   /*!
     Defines the selectable parts of a legend

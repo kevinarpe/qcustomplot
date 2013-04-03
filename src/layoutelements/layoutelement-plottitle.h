@@ -35,6 +35,15 @@ class QCustomPlot;
 class QCP_LIB_DECL QCPPlotTitle : public QCPLayoutElement
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QString text READ text WRITE setText)
+  Q_PROPERTY(QFont font READ font WRITE setFont)
+  Q_PROPERTY(QColor textColor READ textColor WRITE setTextColor)
+  Q_PROPERTY(QFont selectedFont READ selectedFont WRITE setSelectedFont)
+  Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor)
+  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable)
+  Q_PROPERTY(bool selected READ selected WRITE setSelected)
+  /// \endcond
 public:
   explicit QCPPlotTitle(QCustomPlot *parentPlot);
   explicit QCPPlotTitle(QCustomPlot *parentPlot, const QString &text);

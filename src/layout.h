@@ -58,10 +58,20 @@ protected:
 class QCP_LIB_DECL QCPLayoutElement : public QCPLayerable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QCPLayout* layout READ layout)
+  Q_PROPERTY(QRect rect READ rect)
+  Q_PROPERTY(QRect outerRect READ outerRect WRITE setOuterRect)
+  Q_PROPERTY(QMargins margins READ margins WRITE setMargins)
+  Q_PROPERTY(QMargins minimumMargins READ minimumMargins WRITE setMinimumMargins)
+  Q_PROPERTY(QSize minimumSize READ minimumSize WRITE setMinimumSize)
+  Q_PROPERTY(QSize maximumSize READ maximumSize WRITE setMaximumSize)
+  /// \endcond
 public:
   explicit QCPLayoutElement(QCustomPlot *parentPlot=0);
   ~QCPLayoutElement();
   
+  // getters:
   QCPLayout *layout() const { return mParentLayout; }
   QRect rect() const { return mRect; }
   QRect outerRect() const { return mOuterRect; }
@@ -73,6 +83,7 @@ public:
   QCPMarginGroup *marginGroup(QCP::MarginSide side) const { return mMarginGroups.value(side, (QCPMarginGroup*)0); }
   QHash<QCP::MarginSide, QCPMarginGroup*> marginGroups() const { return mMarginGroups; }
   
+  // setters:
   void setOuterRect(const QRect &rect);
   void setMargins(const QMargins &margins);
   void setMinimumMargins(const QMargins &margins);
@@ -151,9 +162,18 @@ private:
 class QCP_LIB_DECL QCPLayoutGrid : public QCPLayout
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(int rowCount READ rowCount)
+  Q_PROPERTY(int columnCount READ columnCount)
+  Q_PROPERTY(QList<double> columnStretchFactors READ columnStretchFactors WRITE setColumnStretchFactors)
+  Q_PROPERTY(QList<double> rowStretchFactors READ rowStretchFactors WRITE setRowStretchFactors)
+  Q_PROPERTY(int columnSpacing READ columnSpacing WRITE setColumnSpacing)
+  Q_PROPERTY(int rowSpacing READ rowSpacing WRITE setRowSpacing)
+  /// \endcond
 public:
   explicit QCPLayoutGrid();
   
+  // getters:
   int rowCount() const;
   int columnCount() const;
   QList<double> columnStretchFactors() const { return mColumnStretchFactors; }
@@ -161,6 +181,7 @@ public:
   int columnSpacing() const { return mColumnSpacing; }
   int rowSpacing() const { return mRowSpacing; }
   
+  // setters:
   void setColumnStretchFactor(int column, double factor);
   void setColumnStretchFactors(const QList<double> &factors);
   void setRowStretchFactor(int row, double factor);

@@ -56,6 +56,11 @@ typedef QMutableMapIterator<double, QCPBarData> QCPBarDataMutableMapIterator;
 class QCP_LIB_DECL QCPBars : public QCPAbstractPlottable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(double width READ width WRITE setWidth)
+  Q_PROPERTY(QCPBars* barBelow READ barBelow)
+  Q_PROPERTY(QCPBars* barAbove READ barAbove)
+  /// \endcond
 public:
   explicit QCPBars(QCPAxis *keyAxis, QCPAxis *valueAxis);
   virtual ~QCPBars();

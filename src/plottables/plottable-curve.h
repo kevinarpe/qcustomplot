@@ -58,6 +58,10 @@ typedef QMutableMapIterator<double, QCPCurveData> QCPCurveDataMutableMapIterator
 class QCP_LIB_DECL QCPCurve : public QCPAbstractPlottable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QCPScatterStyle scatterStyle READ scatterStyle WRITE setScatterStyle)
+  Q_PROPERTY(LineStyle lineStyle READ lineStyle WRITE setLineStyle)
+  /// \endcond
 public:
   /*!
     Defines how the curve's line is represented visually in the plot. The line is drawn with the

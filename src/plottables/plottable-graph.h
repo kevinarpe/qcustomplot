@@ -59,6 +59,15 @@ typedef QMutableMapIterator<double, QCPData> QCPDataMutableMapIterator;
 class QCP_LIB_DECL QCPGraph : public QCPAbstractPlottable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(LineStyle lineStyle READ lineStyle WRITE setLineStyle)
+  Q_PROPERTY(QCPScatterStyle scatterStyle READ scatterStyle WRITE setScatterStyle)
+  Q_PROPERTY(ErrorType errorType READ errorType WRITE setErrorType)
+  Q_PROPERTY(QPen errorPen READ errorPen WRITE setErrorPen)
+  Q_PROPERTY(double errorBarSize READ errorBarSize WRITE setErrorBarSize)
+  Q_PROPERTY(bool errorBarSkipSymbol READ errorBarSkipSymbol WRITE setErrorBarSkipSymbol)
+  Q_PROPERTY(QCPGraph* channelFillGraph READ channelFillGraph WRITE setChannelFillGraph)
+  /// \endcond
 public:
   /*!
     Defines how the graph's line is represented visually in the plot. The line is drawn with the

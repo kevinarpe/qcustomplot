@@ -34,6 +34,10 @@ class QCustomPlot;
 class QCP_LIB_DECL QCPItemStraightLine : public QCPAbstractItem
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QPen pen READ pen WRITE setPen)
+  Q_PROPERTY(QPen selectedPen READ selectedPen WRITE setSelectedPen)
+  /// \endcond
 public:
   QCPItemStraightLine(QCustomPlot *parentPlot);
   virtual ~QCPItemStraightLine();

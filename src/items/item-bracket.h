@@ -34,6 +34,12 @@ class QCustomPlot;
 class QCP_LIB_DECL QCPItemBracket : public QCPAbstractItem
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QPen pen READ pen WRITE setPen)
+  Q_PROPERTY(QPen selectedPen READ selectedPen WRITE setSelectedPen)
+  Q_PROPERTY(double length READ length WRITE setLength)
+  Q_PROPERTY(BracketStyle style READ style WRITE setStyle)
+  /// \endcond
 public:
   enum BracketStyle { bsSquare  ///< A brace with angled edges
                       ,bsRound  ///< A brace with round edges

@@ -36,6 +36,21 @@ class QCPAxis;
 class QCP_LIB_DECL QCPStatisticalBox : public QCPAbstractPlottable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(double key READ key WRITE setKey)
+  Q_PROPERTY(double minimum READ minimum WRITE setMinimum)
+  Q_PROPERTY(double lowerQuartile READ lowerQuartile WRITE setLowerQuartile)
+  Q_PROPERTY(double median READ median WRITE setMedian)
+  Q_PROPERTY(double upperQuartile READ upperQuartile WRITE setUpperQuartile)
+  Q_PROPERTY(double maximum READ maximum WRITE setMaximum)
+  Q_PROPERTY(QVector<double> outliers READ outliers WRITE setOutliers)
+  Q_PROPERTY(double width READ width WRITE setWidth)
+  Q_PROPERTY(double whiskerWidth READ whiskerWidth WRITE setWhiskerWidth)
+  Q_PROPERTY(QPen whiskerPen READ whiskerPen WRITE setWhiskerPen)
+  Q_PROPERTY(QPen whiskerBarPen READ whiskerBarPen WRITE setWhiskerBarPen)
+  Q_PROPERTY(QPen medianPen READ medianPen WRITE setMedianPen)
+  Q_PROPERTY(QCPScatterStyle outlierStyle READ outlierStyle WRITE setOutlierStyle)
+  /// \endcond
 public:
   explicit QCPStatisticalBox(QCPAxis *keyAxis, QCPAxis *valueAxis);
   

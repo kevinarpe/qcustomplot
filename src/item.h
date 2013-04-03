@@ -117,6 +117,12 @@ private:
 class QCP_LIB_DECL QCPAbstractItem : public QCPLayerable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(bool clipToAxisRect READ clipToAxisRect WRITE setClipToAxisRect)
+  Q_PROPERTY(QCPAxisRect* clipAxisRect READ clipAxisRect WRITE setClipAxisRect)
+  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable)
+  Q_PROPERTY(bool selected READ selected WRITE setSelected)
+  /// \endcond
 public:
   QCPAbstractItem(QCustomPlot *parentPlot);
   virtual ~QCPAbstractItem();

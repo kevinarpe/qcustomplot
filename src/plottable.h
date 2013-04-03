@@ -35,6 +35,20 @@ class QCPAxis;
 class QCP_LIB_DECL QCPAbstractPlottable : public QCPLayerable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QString name READ name WRITE setName)
+  Q_PROPERTY(bool antialiasedFill READ antialiasedFill WRITE setAntialiasedFill)
+  Q_PROPERTY(bool antialiasedScatters READ antialiasedScatters WRITE setAntialiasedScatters)
+  Q_PROPERTY(bool antialiasedErrorBars READ antialiasedErrorBars WRITE setAntialiasedErrorBars)
+  Q_PROPERTY(QPen pen READ pen WRITE setPen)
+  Q_PROPERTY(QPen selectedPen READ selectedPen WRITE setSelectedPen)
+  Q_PROPERTY(QBrush brush READ brush WRITE setBrush)
+  Q_PROPERTY(QBrush selectedBrush READ selectedBrush WRITE setSelectedBrush)
+  Q_PROPERTY(QCPAxis* keyAxis READ keyAxis WRITE setKeyAxis)
+  Q_PROPERTY(QCPAxis* valueAxis READ valueAxis WRITE setValueAxis)
+  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable)
+  Q_PROPERTY(bool selected READ selected WRITE setSelected)
+  /// \endcond
 public:
   QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis);
   

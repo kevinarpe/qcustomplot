@@ -42,6 +42,14 @@ class QCPAbstractItem;
 class QCP_LIB_DECL QCPGrid :public QCPLayerable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(bool subGridVisible READ subGridVisible WRITE setSubGridVisible)
+  Q_PROPERTY(bool antialiasedSubGrid READ antialiasedSubGrid WRITE setAntialiasedSubGrid)
+  Q_PROPERTY(bool antialiasedZeroLine READ antialiasedZeroLine WRITE setAntialiasedZeroLine)
+  Q_PROPERTY(QPen pen READ pen WRITE setPen)
+  Q_PROPERTY(QPen subGridPen READ subGridPen WRITE setSubGridPen)
+  Q_PROPERTY(QPen zeroLinePen READ zeroLinePen WRITE setZeroLinePen)
+  /// \endcond
 public:
   QCPGrid(QCPAxis *parentAxis);
   
@@ -81,9 +89,12 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
 {
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(AxisType axisType READ axisType)
+  Q_PROPERTY(QCPAxisRect* axisRect READ axisRect)
   Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType)
   Q_PROPERTY(double scaleLogBase READ scaleLogBase WRITE setScaleLogBase)
   Q_PROPERTY(QCPRange range READ range WRITE setRange)
+  Q_PROPERTY(bool rangeReversed READ rangeReversed WRITE setRangeReversed)
   Q_PROPERTY(bool autoTicks READ autoTicks WRITE setAutoTicks)
   Q_PROPERTY(int autoTickCount READ autoTickCount WRITE setAutoTickCount)
   Q_PROPERTY(bool autoTickLabels READ autoTickLabels WRITE setAutoTickLabels)
@@ -94,19 +105,40 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(int tickLabelPadding READ tickLabelPadding WRITE setTickLabelPadding)
   Q_PROPERTY(LabelType tickLabelType READ tickLabelType WRITE setTickLabelType)
   Q_PROPERTY(QFont tickLabelFont READ tickLabelFont WRITE setTickLabelFont)
+  Q_PROPERTY(QColor tickLabelColor READ tickLabelColor WRITE setTickLabelColor)
   Q_PROPERTY(double tickLabelRotation READ tickLabelRotation WRITE setTickLabelRotation)
   Q_PROPERTY(QString dateTimeFormat READ dateTimeFormat WRITE setDateTimeFormat)
   Q_PROPERTY(QString numberFormat READ numberFormat WRITE setNumberFormat)
+  Q_PROPERTY(int numberPrecision READ numberPrecision WRITE setNumberPrecision)
   Q_PROPERTY(double tickStep READ tickStep WRITE setTickStep)
   Q_PROPERTY(QVector<double> tickVector READ tickVector WRITE setTickVector)
   Q_PROPERTY(QVector<QString> tickVectorLabels READ tickVectorLabels WRITE setTickVectorLabels)
+  Q_PROPERTY(int tickLengthIn READ tickLengthIn WRITE setTickLengthIn)
+  Q_PROPERTY(int tickLengthOut READ tickLengthOut WRITE setTickLengthOut)
   Q_PROPERTY(int subTickCount READ subTickCount WRITE setSubTickCount)
+  Q_PROPERTY(int subTickLengthIn READ subTickLengthIn WRITE setSubTickLengthIn)
+  Q_PROPERTY(int subTickLengthOut READ subTickLengthOut WRITE setSubTickLengthOut)
   Q_PROPERTY(QPen basePen READ basePen WRITE setBasePen)
   Q_PROPERTY(QPen tickPen READ tickPen WRITE setTickPen)
   Q_PROPERTY(QPen subTickPen READ subTickPen WRITE setSubTickPen)
   Q_PROPERTY(QFont labelFont READ labelFont WRITE setLabelFont)
+  Q_PROPERTY(QColor labelColor READ labelColor WRITE setLabelColor)
   Q_PROPERTY(QString label READ label WRITE setLabel)
   Q_PROPERTY(int labelPadding READ labelPadding WRITE setLabelPadding)
+  Q_PROPERTY(int padding READ padding WRITE setPadding)
+  Q_PROPERTY(int offset READ offset WRITE setOffset)
+  Q_PROPERTY(SelectableParts selectedParts READ selectedParts WRITE setSelectedParts)
+  Q_PROPERTY(SelectableParts selectableParts READ selectableParts WRITE setSelectableParts)
+  Q_PROPERTY(QFont selectedTickLabelFont READ selectedTickLabelFont WRITE setSelectedTickLabelFont)
+  Q_PROPERTY(QFont selectedLabelFont READ selectedLabelFont WRITE setSelectedLabelFont)
+  Q_PROPERTY(QColor selectedTickLabelColor READ selectedTickLabelColor WRITE setSelectedTickLabelColor)
+  Q_PROPERTY(QColor selectedLabelColor READ selectedLabelColor WRITE setSelectedLabelColor)
+  Q_PROPERTY(QPen selectedBasePen READ selectedBasePen WRITE setSelectedBasePen)
+  Q_PROPERTY(QPen selectedTickPen READ selectedTickPen WRITE setSelectedTickPen)
+  Q_PROPERTY(QPen selectedSubTickPen READ selectedSubTickPen WRITE setSelectedSubTickPen)
+  Q_PROPERTY(QCPLineEnding lowerEnding READ lowerEnding WRITE setLowerEnding)
+  Q_PROPERTY(QCPLineEnding upperEnding READ upperEnding WRITE setUpperEnding)
+  Q_PROPERTY(QCPGrid* grid READ grid)
   /// \endcond
 public:
   /*!
