@@ -26,6 +26,7 @@
     - QCPScatterStyle takes over everything related to handling scatters in all plottables
     - removed setScatterPen/Size on QCPGraph and QCPCurve, removed setOutlierPen/Size on QCPStatisticalBox (now handled via QCPScatterStyle)
     - modified setScatterStyle on QCPGraph and QCPCurve, and setOutlierStyle on QCPStatisticalBox, to take QCPScatterStyle
+    - axis grid and subgrid are now reachable via the QCPGrid *QCPAxis::grid() method. (e.g. instead of xAxis->setGrid(true), write xAxis->grid()->setVisible(true))
 
   Added features:
     - Axis tick labels are now pixmap-cached, thus increasing replot performance (in usual setups by about 24%). See plotting hint phCacheLabels which is set by default

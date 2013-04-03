@@ -1,6 +1,5 @@
 NEXT RELEASE:
 
-- expose mGrid as grid() and remove property forwarding in QCPAxis.
 - remove section brush interface from dev branch and move to other sectionbrush branch
 - fix Q_PROPERTY entries
 - make uniform header commenting scheme for class definitions ("non-property methods", "introduced virtual functions", ...)

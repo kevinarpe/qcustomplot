@@ -89,8 +89,6 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType)
   Q_PROPERTY(double scaleLogBase READ scaleLogBase WRITE setScaleLogBase)
   Q_PROPERTY(QCPRange range READ range WRITE setRange)
-  Q_PROPERTY(bool grid READ grid WRITE setGrid)
-  Q_PROPERTY(bool subGrid READ subGrid WRITE setSubGrid)
   Q_PROPERTY(bool autoTicks READ autoTicks WRITE setAutoTicks)
   Q_PROPERTY(int autoTickCount READ autoTickCount WRITE setAutoTickCount)
   Q_PROPERTY(bool autoTickLabels READ autoTickLabels WRITE setAutoTickLabels)
@@ -109,8 +107,6 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(QVector<QString> tickVectorLabels READ tickVectorLabels WRITE setTickVectorLabels)
   Q_PROPERTY(int subTickCount READ subTickCount WRITE setSubTickCount)
   Q_PROPERTY(QPen basePen READ basePen WRITE setBasePen)
-  Q_PROPERTY(QPen gridPen READ gridPen WRITE setGridPen)
-  Q_PROPERTY(QPen subGridPen READ subGridPen WRITE setSubGridPen)
   Q_PROPERTY(QPen tickPen READ tickPen WRITE setTickPen)
   Q_PROPERTY(QPen subTickPen READ subTickPen WRITE setSubTickPen)
   Q_PROPERTY(QFont labelFont READ labelFont WRITE setLabelFont)
@@ -168,11 +164,6 @@ public:
   double scaleLogBase() const { return mScaleLogBase; }
   const QCPRange range() const { return mRange; }
   bool rangeReversed() const { return mRangeReversed; }
-  bool antialiasedGrid() const { return mGrid->antialiased(); }
-  bool antialiasedSubGrid() const { return mGrid->antialiasedSubGrid(); }
-  bool antialiasedZeroLine() const { return mGrid->antialiasedZeroLine(); }
-  bool grid() const { return mGrid->visible(); }
-  bool subGrid() const { return mGrid->subGridVisible(); }
   bool autoTicks() const { return mAutoTicks; }
   int autoTickCount() const { return mAutoTickCount; }
   bool autoTickLabels() const { return mAutoTickLabels; }
@@ -197,9 +188,6 @@ public:
   int subTickLengthIn() const { return mSubTickLengthIn; }
   int subTickLengthOut() const { return mSubTickLengthOut; }
   QPen basePen() const { return mBasePen; }
-  QPen gridPen() const { return mGrid->pen(); }
-  QPen subGridPen() const { return mGrid->subGridPen(); }
-  QPen zeroLinePen() const { return mGrid->zeroLinePen(); }
   QPen tickPen() const { return mTickPen; }
   QPen subTickPen() const { return mSubTickPen; }
   QFont labelFont() const { return mLabelFont; }
@@ -219,6 +207,7 @@ public:
   QPen selectedSubTickPen() const { return mSelectedSubTickPen; }
   QCPLineEnding lowerEnding() const { return mLowerEnding; }
   QCPLineEnding upperEnding() const { return mUpperEnding; }
+  QCPGrid *grid() const { return mGrid; }
   
   // setters:
   void setScaleType(ScaleType type);
@@ -228,11 +217,6 @@ public:
   void setRangeLower(double lower);
   void setRangeUpper(double upper);
   void setRangeReversed(bool reversed);
-  void setAntialiasedGrid(bool enabled);
-  void setAntialiasedSubGrid(bool enabled);
-  void setAntialiasedZeroLine(bool enabled);
-  void setGrid(bool show);
-  void setSubGrid(bool show);
   void setAutoTicks(bool on);
   void setAutoTickCount(int approximateCount);
   void setAutoTickLabels(bool on);
@@ -255,9 +239,6 @@ public:
   void setSubTickCount(int count);
   void setSubTickLength(int inside, int outside=0);
   void setBasePen(const QPen &pen);
-  void setGridPen(const QPen &pen);
-  void setSubGridPen(const QPen &pen);
-  void setZeroLinePen(const QPen &pen);
   void setTickPen(const QPen &pen);
   void setSubTickPen(const QPen &pen);
   void setLabelFont(const QFont &font);

@@ -120,7 +120,7 @@ void QCPGrid::setSubGridPen(const QPen &pen)
 /*!
   Sets the pen with which zero lines are drawn.
   
-  Zero lines are lines at coordinate 0 which may be drawn with a different pen than other grid
+  Zero lines are lines at value coordinate 0 which may be drawn with a different pen than other grid
   lines. To disable zero lines and just draw normal grid lines at zero, set \a pen to Qt::NoPen.
 */
 void QCPGrid::setZeroLinePen(const QPen &pen)
@@ -452,7 +452,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mCachedMarginValid(false),
   mCachedMargin(0)
 {
-  setGrid(false);
+  mGrid->setVisible(false);
   setAntialiased(false);
   
   if (type == atTop)
@@ -703,57 +703,6 @@ void QCPAxis::setRangeReversed(bool reversed)
     mRangeReversed = reversed;
     mCachedMarginValid = false;
   }
-}
-
-/*!
-  Sets whether the grid of this axis is drawn antialiased or not.
-  
-  Note that this setting may be overridden by \ref QCustomPlot::setAntialiasedElements and \ref
-  QCustomPlot::setNotAntialiasedElements.
-*/
-void QCPAxis::setAntialiasedGrid(bool enabled)
-{
-  mGrid->setAntialiased(enabled);
-}
-
-/*!
-  Sets whether the sub grid of this axis is drawn antialiased or not.
-  
-  Note that this setting may be overridden by \ref QCustomPlot::setAntialiasedElements and \ref
-  QCustomPlot::setNotAntialiasedElements.
-*/
-void QCPAxis::setAntialiasedSubGrid(bool enabled)
-{
-  mGrid->setAntialiasedSubGrid(enabled);
-}
-
-/*!
-  Sets whether the zero line of this axis is drawn antialiased or not.
-  
-  Note that this setting may be overridden by \ref QCustomPlot::setAntialiasedElements and \ref
-  QCustomPlot::setNotAntialiasedElements.
-*/
-void QCPAxis::setAntialiasedZeroLine(bool enabled)
-{
-  mGrid->setAntialiasedZeroLine(enabled);
-}
-
-/*!
-  Sets whether the grid lines are visible.
-  \see setSubGrid, setGridPen, setZeroLinePen
-*/
-void QCPAxis::setGrid(bool show)
-{
-  mGrid->setVisible(show);
-}
-
-/*!
-  Sets whether the sub grid lines are visible.
-  \see setGrid, setSubGridPen, setZeroLinePen
-*/
-void QCPAxis::setSubGrid(bool show)
-{
-  mGrid->setSubGridVisible(show);
 }
 
 /*!
@@ -1204,37 +1153,6 @@ void QCPAxis::setSubTickLength(int inside, int outside)
 void QCPAxis::setBasePen(const QPen &pen)
 {
   mBasePen = pen;
-}
-
-/*!
-  Sets the pen, grid lines are drawn with.
-  \see setSubGridPen, setZeroLinePen
-*/
-void QCPAxis::setGridPen(const QPen &pen)
-{
-  mGrid->setPen(pen);
-}
-
-/*!
-  Sets the pen, the sub grid lines are drawn with.
-  (By default, subgrid drawing needs to be enabled first with \ref setSubGrid.)
-  \see setGridPen, setZeroLinePen
-*/
-void QCPAxis::setSubGridPen(const QPen &pen)
-{
-  mGrid->setSubGridPen(pen);
-}
-
-/*!
-  Sets the pen with which a single grid-like line will be drawn at value position zero. The line
-  will be drawn instead of a grid line at that position, and not on top. To disable the drawing of
-  a zero-line, set \a pen to Qt::NoPen. Then, if \ref setGrid is enabled, a grid line will be
-  drawn instead.
-  \see setGrid, setGridPen
-*/
-void QCPAxis::setZeroLinePen(const QPen &pen)
-{
-  mGrid->setZeroLinePen(pen);
 }
 
 /*!

@@ -23,8 +23,8 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupItemAnchorTest(mCustomPlot);
   //setupItemTracerTest(mCustomPlot);
   //setupGraphTest(mCustomPlot);
-  setupExportTest(mCustomPlot);
-  //setupLogErrorsTest(mCustomPlot);
+  //setupExportTest(mCustomPlot);
+  setupLogErrorsTest(mCustomPlot);
   //setupSelectTest(mCustomPlot);
   //setupDateTest(mCustomPlot);
   //setupIntegerTickStepCase(mCustomPlot);
@@ -282,7 +282,7 @@ void MainWindow::setupLogErrorsTest(QCustomPlot *customPlot)
 {
   customPlot->yAxis->setScaleType(QCPAxis::stLogarithmic);
   customPlot->yAxis->setSubTickCount(8);
-  customPlot->yAxis->setSubGrid(true);
+  customPlot->yAxis->grid()->setSubGridVisible(true);
   int n = 11;
   QVector<double> x(n), y(n), yerr(n), xerr(n);
   for (int i=0; i<n; ++i)
@@ -510,7 +510,7 @@ void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
       QCPAxis *ax = rects.at(i)->axes().at(k);
       ax->setTicks(false);
       ax->setTickLabels(false);
-      ax->setGrid(false);
+      ax->grid()->setVisible(false);
     }
     rects.at(i)->setAutoMargins(QCP::msNone);
     rects.at(i)->setMargins(QMargins(1, 1, 1, 1));

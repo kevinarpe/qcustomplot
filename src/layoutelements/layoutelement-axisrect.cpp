@@ -69,14 +69,14 @@ QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot, bool setupDefaultAxes) :
     QCPAxis *xAxis = addAxis(QCPAxis::atBottom);
     setRangeDragAxes(xAxis, yAxis);
     setRangeZoomAxes(xAxis, yAxis);
-    xAxis->setGrid(true);
-    yAxis->setGrid(true);
-    xAxis2->setGrid(false);
-    yAxis2->setGrid(false);
-    xAxis2->setZeroLinePen(Qt::NoPen);
-    yAxis2->setZeroLinePen(Qt::NoPen);
-    xAxis2->setVisible(false);
-    yAxis2->setVisible(false);
+    xAxis->grid()->setVisible(true);
+    yAxis->grid()->setVisible(true);
+    xAxis2->grid()->setVisible(false);
+    yAxis2->grid()->setVisible(false);
+    xAxis2->grid()->setZeroLinePen(Qt::NoPen);
+    yAxis2->grid()->setZeroLinePen(Qt::NoPen);
+    xAxis2->grid()->setVisible(false);
+    yAxis2->grid()->setVisible(false);
   }
 }
 
