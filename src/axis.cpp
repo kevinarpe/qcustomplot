@@ -1027,6 +1027,7 @@ void QCPAxis::setTickVectorLabels(const QVector<QString> &vec)
   plot and \a outside is the length they will reach outside the plot. If \a outside is greater than
   zero, the tick labels will increase their distance to the axis accordingly, so they won't collide
   with the ticks.
+  
   \see setSubTickLength
 */
 void QCPAxis::setTickLength(int inside, int outside)
@@ -1035,6 +1036,36 @@ void QCPAxis::setTickLength(int inside, int outside)
   {
     mTickLengthIn = inside;
   }
+  if (mTickLengthOut != outside)
+  {
+    mTickLengthOut = outside;
+    mCachedMarginValid = false; // only outside tick length can change margin
+  }
+}
+
+/*!
+  Sets the length of the inward ticks in pixels. \a inside is the length the ticks will reach
+  inside the plot.
+  
+  \see setTickLengthOut, setSubTickLength
+*/
+void QCPAxis::setTickLengthIn(int inside)
+{
+  if (mTickLengthIn != inside)
+  {
+    mTickLengthIn = inside;
+  }
+}
+
+/*!
+  Sets the length of the outward ticks in pixels. \a outside is the length the ticks will reach
+  outside the plot. If \a outside is greater than zero, the tick labels will increase their
+  distance to the axis accordingly, so they won't collide with the ticks.
+  
+  \see setTickLengthIn, setSubTickLength
+*/
+void QCPAxis::setTickLengthOut(int outside)
+{
   if (mTickLengthOut != outside)
   {
     mTickLengthOut = outside;
@@ -1069,6 +1100,36 @@ void QCPAxis::setSubTickLength(int inside, int outside)
   {
     mSubTickLengthIn = inside;
   }
+  if (mSubTickLengthOut != outside)
+  {
+    mSubTickLengthOut = outside;
+    mCachedMarginValid = false; // only outside tick length can change margin
+  }
+}
+
+/*!
+  Sets the length of the inward subticks in pixels. \a inside is the length the subticks will reach inside
+  the plot.
+  
+  \see setSubTickLengthOut, setTickLength
+*/
+void QCPAxis::setSubTickLengthIn(int inside)
+{
+  if (mSubTickLengthIn != inside)
+  {
+    mSubTickLengthIn = inside;
+  }
+}
+
+/*!
+  Sets the length of the outward subticks in pixels. \a outside is the length the subticks will reach
+  outside the plot. If \a outside is greater than zero, the tick labels will increase their
+  distance to the axis accordingly, so they won't collide with the ticks.
+  
+  \see setSubTickLengthIn, setTickLength
+*/
+void QCPAxis::setSubTickLengthOut(int outside)
+{
   if (mSubTickLengthOut != outside)
   {
     mSubTickLengthOut = outside;
