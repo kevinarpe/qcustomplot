@@ -58,7 +58,7 @@ public:
   void setPen(const QPen &pen);
   void setSelectedPen(const QPen &pen);
   
-  // non-property methods:
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   QCPItemPosition * const topLeft;
@@ -72,16 +72,19 @@ public:
   
 protected:
   enum AnchorIndex {aiTop, aiTopRight, aiRight, aiBottom, aiBottomLeft, aiLeft};
+  
+  // property members:
   QPixmap mPixmap;
   QPixmap mScaledPixmap;
   bool mScaled;
   Qt::AspectRatioMode mAspectRatioMode;
   QPen mPen, mSelectedPen;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
   virtual QPointF anchorPixelPoint(int anchorId) const;
   
-  // helper functions:
+  // non-virtual methods:
   void updateScaledPixmap(QRect finalRect=QRect(), bool flipHorz=false, bool flipVert=false);
   QRect getFinalRect(bool *flippedHorz=0, bool *flippedVert=0) const;
   QPen mainPen() const;

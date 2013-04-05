@@ -85,13 +85,16 @@ public:
   void setGraphKey(double key);
   void setInterpolating(bool enabled);
 
-  // non-property methods:
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  
+  // non-virtual methods:
   void updatePosition();
 
   QCPItemPosition * const position;
 
 protected:
+  // property members:
   QPen mPen, mSelectedPen;
   QBrush mBrush, mSelectedBrush;
   double mSize;
@@ -100,9 +103,10 @@ protected:
   double mGraphKey;
   bool mInterpolating;
 
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
 
-  // helper functions:
+  // non-virtual methods:
   QPen mainPen() const;
   QBrush mainBrush() const;
 };

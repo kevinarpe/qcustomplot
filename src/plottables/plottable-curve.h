@@ -96,26 +96,30 @@ public:
   void removeDataAfter(double t);
   void removeData(double fromt, double tot);
   void removeData(double t);
+  
+  // reimplemented virtual methods:
   virtual void clearData();
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
+  // property members:
   QCPCurveDataMap *mData;
   QCPScatterStyle mScatterStyle;
   LineStyle mLineStyle;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
   virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
-  // drawing helpers:
-  virtual void drawScatterPlot(QCPPainter *painter, const QVector<QPointF> *pointData) const;
-  
-  // helper functions:
-  void getCurveData(QVector<QPointF> *lineData) const;
-  double pointDistance(const QPointF &pixelPoint) const;
-
-  QPointF outsideCoordsToPixels(double key, double value, int region, QRect axisRect) const;
   virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
   virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
+  
+  // introduced virtual methods:
+  virtual void drawScatterPlot(QCPPainter *painter, const QVector<QPointF> *pointData) const;
+  
+  // non-virtual methods:
+  void getCurveData(QVector<QPointF> *lineData) const;
+  double pointDistance(const QPointF &pixelPoint) const;
+  QPointF outsideCoordsToPixels(double key, double value, int region, QRect axisRect) const;
   
   friend class QCustomPlot;
   friend class QCPLegend;

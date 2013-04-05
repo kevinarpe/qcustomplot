@@ -102,11 +102,12 @@ public:
   QPoint bottomRight() const { return mRect.bottomRight(); }
   QPoint center() const { return mRect.center(); }
   
+  // reimplemented virtual methods:
   virtual void update();
   virtual QList<QCPLayoutElement*> elements() const;
 
 protected:
-  QHash<QCPAxis::AxisType, QList<QCPAxis*> > mAxes;
+  // property members:
   QBrush mBackgroundBrush;
   QPixmap mBackgroundPixmap;
   QPixmap mScaledBackgroundPixmap;
@@ -116,11 +117,14 @@ protected:
   Qt::Orientations mRangeDrag, mRangeZoom;
   QWeakPointer<QCPAxis> mRangeDragHorzAxis, mRangeDragVertAxis, mRangeZoomHorzAxis, mRangeZoomVertAxis;
   double mRangeZoomFactorHorz, mRangeZoomFactorVert;
-  QPoint mDragStart;
+  // non-property members:
   QCPRange mDragStartHorzRange, mDragStartVertRange;
-  bool mDragging;
   QCP::AntialiasedElements mAADragBackup, mNotAADragBackup;
+  QPoint mDragStart;
+  bool mDragging;
+  QHash<QCPAxis::AxisType, QList<QCPAxis*> > mAxes;
   
+  // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
   void drawBackground(QCPPainter *painter);

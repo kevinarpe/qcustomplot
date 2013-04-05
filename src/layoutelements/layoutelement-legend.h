@@ -66,13 +66,14 @@ public:
   void setSelectable(bool selectable);
   void setSelected(bool selected);
   
-  // non-property methods:
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 signals:
   void selectionChanged(bool selected);
   
 protected:
+  // property members:
   QCPLegend *mParentLegend;
   QFont mFont;
   QColor mTextColor;
@@ -80,11 +81,11 @@ protected:
   QColor mSelectedTextColor;
   bool mSelectable, mSelected;
   
+  // reimplemented virtual methods:
   virtual QCP::Interaction selectionCategory() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual QRect clipRect() const;
   virtual void draw(QCPPainter *painter) = 0;
-  
   // events:
   virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
   virtual void deselectEvent(bool *selectionStateChanged);
@@ -106,14 +107,17 @@ public:
   QCPAbstractPlottable *plottable() { return mPlottable; }
   
 protected:
+  // property members:
   QCPAbstractPlottable *mPlottable;
   
+  // reimplemented virtual methods:
+  virtual void draw(QCPPainter *painter);
+  virtual QSize minimumSizeHint() const;
+  
+  // non-virtual methods:
   QPen getIconBorderPen() const;
   QColor getTextColor() const;
   QFont getFont() const;
-
-  virtual void draw(QCPPainter *painter);
-  virtual QSize minimumSizeHint() const;
 };
 
 
@@ -183,7 +187,7 @@ public:
   void setSelectedFont(const QFont &font);
   void setSelectedTextColor(const QColor &color);
 
-  // non-property methods:
+  // non-virtual methods:
   QCPAbstractLegendItem *item(int index) const;
   QCPPlottableLegendItem *itemWithPlottable(const QCPAbstractPlottable *plottable) const;
   int itemCount() const;
@@ -199,7 +203,7 @@ signals:
   void selectionChanged(QCPLegend::SelectableParts selection);
   
 protected:
-  // simple properties with getters and setters:
+  // property members:
   QPen mBorderPen, mIconBorderPen;
   QBrush mBrush;
   QFont mFont;
@@ -212,7 +216,7 @@ protected:
   QFont mSelectedFont;
   QColor mSelectedTextColor;
   
-  // reimplemented functions from QCPLayerable:
+  // reimplemented virtual methods:
   virtual void parentPlotInitialized(QCustomPlot *parentPlot);
   virtual QCP::Interaction selectionCategory() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
@@ -222,7 +226,7 @@ protected:
   virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
   virtual void deselectEvent(bool *selectionStateChanged);
   
-  // drawing helpers:
+  // non-virtual methods:
   QPen getBorderPen() const;
   QBrush getBrush() const;
   

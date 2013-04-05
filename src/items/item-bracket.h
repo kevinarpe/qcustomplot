@@ -62,7 +62,7 @@ public:
   void setLength(double length);
   void setStyle(BracketStyle style);
   
-  // non-property methods:
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   QCPItemPosition * const left;
@@ -70,15 +70,17 @@ public:
   QCPItemAnchor * const center;
   
 protected:
+  // property members:
   enum AnchorIndex {aiCenter};
   QPen mPen, mSelectedPen;
   double mLength;
   BracketStyle mStyle;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
   virtual QPointF anchorPixelPoint(int anchorId) const;
   
-  // helper functions:
+  // non-virtual methods:
   QPen mainPen() const;
 };
 

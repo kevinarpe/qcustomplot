@@ -132,6 +132,8 @@ public:
   void removeDataAfter(double key);
   void removeData(double fromKey, double toKey);
   void removeData(double key);
+  
+  // reimplemented virtual methods:
   virtual void clearData();
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   using QCPAbstractPlottable::rescaleAxes;
@@ -142,6 +144,7 @@ public:
   virtual void rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
   
 protected:
+  // property members:
   QCPDataMap *mData;
   QPen mErrorPen;
   LineStyle mLineStyle;
@@ -150,28 +153,30 @@ protected:
   double mErrorBarSize;
   bool mErrorBarSkipSymbol;
   QWeakPointer<QCPGraph> mChannelFillGraph;
-
+  
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
   virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
-
-  // functions to generate plot data points in pixel coordinates:
+  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
+  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
+  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain, bool includeErrors) const; // overloads base class interface
+  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain, bool includeErrors) const; // overloads base class interface
+  
+  // introduced virtual methods:
+  virtual void drawFill(QCPPainter *painter, QVector<QPointF> *lineData) const;
+  virtual void drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData) const;
+  virtual void drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) const;
+  virtual void drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) const;
+  
+  // non-virtual methods:
   void getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
-  // plot style specific functions to generate plot data, used by getPlotData:
   void getScatterPlotData(QVector<QCPData> *pointData) const;
   void getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
-  
-  // helper functions for drawing:
-  virtual void drawFill(QCPPainter *painter, QVector<QPointF> *lineData) const;
-  virtual void drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData) const;
-  virtual void drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) const;
-  virtual void drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) const;
   void drawError(QCPPainter *painter, double x, double y, const QCPData &data) const;
-  
-  // helper functions:
   void getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper, int &count) const;
   void addFillBasePoints(QVector<QPointF> *lineData) const;
   void removeFillBasePoints(QVector<QPointF> *lineData) const;
@@ -183,10 +188,6 @@ protected:
   int findIndexBelowY(const QVector<QPointF> *data, double y) const;
   int findIndexAboveY(const QVector<QPointF> *data, double y) const;
   double pointDistance(const QPointF &pixelPoint) const;
-  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
-  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
-  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain, bool includeErrors) const; // overloads base class interface
-  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain, bool includeErrors) const; // overloads base class interface
   
   friend class QCustomPlot;
   friend class QCPLegend;

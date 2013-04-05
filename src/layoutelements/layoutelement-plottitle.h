@@ -66,12 +66,14 @@ public:
   void setSelectable(bool selectable);
   void setSelected(bool selected);
   
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 signals:
   void selectionChanged(bool selected);
   
 protected:
+  // property members:
   QString mText;
   QFont mFont;
   QColor mTextColor;
@@ -80,14 +82,16 @@ protected:
   QRect mTextBoundingRect;
   bool mSelectable, mSelected;
   
+  // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;
-  
+  // events:
   virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
   virtual void deselectEvent(bool *selectionStateChanged);
   
+  // non-virtual methods:
   QFont mainFont() const;
   QColor mainTextColor() const;
   

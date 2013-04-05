@@ -1,6 +1,8 @@
 NEXT RELEASE:
 
-- make uniform header commenting scheme for class definitions ("non-property methods", "introduced virtual functions", ...)
+> make uniform header commenting scheme for class definitions ("non-property methods", "introduced virtual functions", ...)
+  - have items, layoutelements, plottables and axis.h
+  
 - Make example line plot with white-filled circles and a non-white background.
 - Experiment with better styled background, Gradients/patterns
 - Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs

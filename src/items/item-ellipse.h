@@ -56,7 +56,7 @@ public:
   void setBrush(const QBrush &brush);
   void setSelectedBrush(const QBrush &brush);
   
-  // non-property methods:
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   QCPItemPosition * const topLeft;
@@ -72,13 +72,16 @@ public:
   
 protected:
   enum AnchorIndex {aiTopLeftRim, aiTop, aiTopRightRim, aiRight, aiBottomRightRim, aiBottom, aiBottomLeftRim, aiLeft};
+  
+  // property members:
   QPen mPen, mSelectedPen;
   QBrush mBrush, mSelectedBrush;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
   virtual QPointF anchorPixelPoint(int anchorId) const;
   
-  // helper functions:
+  // non-virtual methods:
   QPen mainPen() const;
   QBrush mainBrush() const;
 };

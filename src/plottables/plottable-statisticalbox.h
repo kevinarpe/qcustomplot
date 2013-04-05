@@ -90,6 +90,7 @@ public:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
+  // property members:
   QVector<double> mOutliers;
   double mKey, mMinimum, mLowerQuartile, mMedian, mUpperQuartile, mMaximum;
   double mWidth;
@@ -97,15 +98,17 @@ protected:
   QPen mWhiskerPen, mWhiskerBarPen, mMedianPen;
   QCPScatterStyle mOutlierStyle;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
   virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
+  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
+  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
   
+  // introduced virtual methods:
   virtual void drawQuartileBox(QCPPainter *painter, QRectF *quartileBox=0) const;
   virtual void drawMedian(QCPPainter *painter) const;
   virtual void drawWhiskers(QCPPainter *painter) const;
   virtual void drawOutliers(QCPPainter *painter) const;
-  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
-  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
   
   friend class QCustomPlot;
   friend class QCPLegend;

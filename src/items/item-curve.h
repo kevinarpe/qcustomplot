@@ -57,7 +57,7 @@ public:
   void setHead(const QCPLineEnding &head);
   void setTail(const QCPLineEnding &tail);
   
-  // non-property methods:
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   QCPItemPosition * const start;
@@ -66,12 +66,14 @@ public:
   QCPItemPosition * const end;
   
 protected:
+  // property members:
   QPen mPen, mSelectedPen;
   QCPLineEnding mHead, mTail;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
   
-  // helper functions:
+  // non-virtual methods:
   QPen mainPen() const;
 };
 

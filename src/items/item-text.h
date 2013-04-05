@@ -83,7 +83,7 @@ public:
   void setRotation(double degrees);
   void setPadding(const QMargins &padding);
   
-  // non-property methods:
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   QCPItemPosition * const position;
@@ -98,6 +98,8 @@ public:
   
 protected:
   enum AnchorIndex {aiTopLeft, aiTop, aiTopRight, aiRight, aiBottomRight, aiBottom, aiBottomLeft, aiLeft};
+  
+  // property members:
   QColor mColor, mSelectedColor;
   QPen mPen, mSelectedPen;
   QBrush mBrush, mSelectedBrush;
@@ -108,10 +110,11 @@ protected:
   double mRotation;
   QMargins mPadding;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
   virtual QPointF anchorPixelPoint(int anchorId) const;
   
-  // helper functions:
+  // non-virtual methods:
   QPointF getTextDrawPoint(const QPointF &pos, const QRectF &rect, Qt::Alignment positionAlignment) const;
   QFont mainFont() const;
   QColor mainColor() const;

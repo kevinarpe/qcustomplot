@@ -50,18 +50,20 @@ public:
   void setPen(const QPen &pen);
   void setSelectedPen(const QPen &pen);
   
-  // non-property methods:
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   QCPItemPosition * const point1;
   QCPItemPosition * const point2;
   
 protected:
+  // property members:
   QPen mPen, mSelectedPen;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
   
-  // helper functions:
+  // non-virtual methods:
   double distToStraightLine(const QVector2D &point1, const QVector2D &vec, const QVector2D &point) const;
   QLineF getRectClippedStraightLine(const QVector2D &point1, const QVector2D &vec, const QRect &rect) const;
   QPen mainPen() const;

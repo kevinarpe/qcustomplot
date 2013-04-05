@@ -70,14 +70,18 @@ public:
   void setZeroLinePen(const QPen &pen);
   
 protected:
-  QCPAxis *mParentAxis;
+  // property members:
   bool mSubGridVisible;
   bool mAntialiasedSubGrid, mAntialiasedZeroLine;
   QPen mPen, mSubGridPen, mZeroLinePen;
+  // non-property members:
+  QCPAxis *mParentAxis;
   
+  // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
-  // drawing helpers:
+  
+  // non-virtual methods:
   void drawGridLines(QCPPainter *painter) const;
   void drawSubGridLines(QCPPainter *painter) const;
   
@@ -239,6 +243,7 @@ public:
   // setters:
   void setScaleType(ScaleType type);
   void setScaleLogBase(double base);
+  Q_SLOT void setRange(const QCPRange &range);
   void setRange(double lower, double upper);
   void setRange(double position, double size, Qt::AlignmentFlag alignment);
   void setRangeLower(double lower);
@@ -285,10 +290,15 @@ public:
   void setSelectedBasePen(const QPen &pen);
   void setSelectedTickPen(const QPen &pen);
   void setSelectedSubTickPen(const QPen &pen);
+  Q_SLOT void setSelectableParts(const QCPAxis::SelectableParts &selectableParts);
+  Q_SLOT void setSelectedParts(const QCPAxis::SelectableParts &selectedParts);
   void setLowerEnding(const QCPLineEnding &ending);
   void setUpperEnding(const QCPLineEnding &ending);
   
-  // non-property methods:
+  // reimplemented virtual methods:
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  
+  // non-virtual methods:
   Qt::Orientation orientation() const { return mOrientation; }
   void moveRange(double diff);
   void scaleRange(double factor, double center);
@@ -296,19 +306,11 @@ public:
   double pixelToCoord(double value) const;
   double coordToPixel(double value) const;
   SelectablePart getPartAt(const QPointF &pos) const;
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
-  
   QList<QCPAbstractPlottable*> plottables() const;
   QList<QCPGraph*> graphs() const;
   QList<QCPAbstractItem*> items() const;
   
   static AxisType marginSideToAxisType(QCP::MarginSide side);
-  
-public slots:
-  // slot setters:
-  void setRange(const QCPRange &range);
-  void setSelectableParts(const QCPAxis::SelectableParts &selectableParts);
-  void setSelectedParts(const QCPAxis::SelectableParts &selectedParts);
   
 signals:
   void ticksRequest();
@@ -328,7 +330,7 @@ protected:
     QFont baseFont, expFont;
   };
   
-  // properties exposed with getter, setter or both:
+  // property members:
   // axis base:
   AxisType mAxisType;
   QCPAxisRect *mAxisRect;
@@ -368,7 +370,7 @@ protected:
   ScaleType mScaleType;
   double mScaleLogBase, mScaleLogBaseLogInv;
   
-  // internal members:
+  // non-property members:
   QCPGrid *mGrid;
   QCache<QString, CachedLabel> mLabelCache;
   int mLowestVisibleTick, mHighestVisibleTick;
@@ -380,34 +382,30 @@ protected:
   bool mCachedMarginValid;
   int mCachedMargin;
   
-  // introduced methods:
+  // introduced virtual methods:
   virtual void setupTickVectors();
   virtual void generateAutoTicks();
   virtual int calculateAutoSubTickCount(double tickStep) const;
   virtual int calculateMargin();
-  virtual QCP::Interaction selectionCategory() const;
-  
-  // drawing:
-  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
-  virtual void draw(QCPPainter *painter); 
+  // tick label drawing/caching:
   virtual void placeTickLabel(QCPPainter *painter, double position, int distanceToAxis, const QString &text, QSize *tickLabelsSize);
-  
-  // tick label drawing/caching helpers:
   virtual void drawTickLabel(QCPPainter *painter, double x, double y, const TickLabelData &labelData) const;
   virtual TickLabelData getTickLabelData(const QFont &font, const QString &text) const;
   virtual QPointF getTickLabelDrawOffset(const TickLabelData &labelData) const;
   virtual void getMaxTickLabelSize(const QFont &font, const QString &text, QSize *tickLabelsSize) const;
   
+  // reimplemented virtual methods:
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
+  virtual void draw(QCPPainter *painter); 
+  virtual QCP::Interaction selectionCategory() const;
   // events:
   virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
   virtual void deselectEvent(bool *selectionStateChanged);
   
-  // basic non virtual helpers:
+  // non-virtual methods:
   void visibleTickBounds(int &lowIndex, int &highIndex) const;
   double baseLog(double value) const;
   double basePow(double value) const;
-  
-  // helpers to get the right pen/font depending on selection state:
   QPen getBasePen() const;
   QPen getTickPen() const;
   QPen getSubTickPen() const;
