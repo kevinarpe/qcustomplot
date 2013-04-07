@@ -703,18 +703,18 @@ void QCPGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
   if (!mScatterStyle.isNone())
   {
     applyScattersAntialiasingHint(painter);
-    // TODO: draw shrinked scatter pixmap if necessary
-    /*
-    if (mScatterStyle.shape() == QCPScatterStyle::ssPixmap)
+    // scale scatter pixmap if it's too large to fit in legend icon rect:
+    if (mScatterStyle.shape() == QCPScatterStyle::ssPixmap && (mScatterStyle.pixmap().size().width() > rect.width() || mScatterStyle.pixmap().size().height() > rect.height()))
     {
-      if (mScatterStyle.pixmap().size().width() > rect.width() || mScatterStyle.pixmap().size().height() > rect.height()) // scale scatter pixmap if it's too large to fit in legend icon rect
-        painter->setScatterPixmap(mScatterStyle.pixmap().scaled(rect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-      else
-        painter->setScatterPixmap(mScatterPixmap);
+      QCPScatterStyle scaledStyle(mScatterStyle);
+      scaledStyle.setPixmap(scaledStyle.pixmap().scaled(rect.size().toSize(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+      scaledStyle.applyTo(painter, mPen);
+      scaledStyle.drawShape(painter, QRectF(rect).center());
+    } else
+    {
+      mScatterStyle.applyTo(painter, mPen);
+      mScatterStyle.drawShape(painter, QRectF(rect).center());
     }
-    */
-    mScatterStyle.applyTo(painter, mPen);
-    mScatterStyle.drawShape(painter, QRectF(rect).center());
   }
 }
 
