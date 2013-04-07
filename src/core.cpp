@@ -2069,17 +2069,17 @@ void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
   QCPLayerable *clickedLayerable = layerableAt(event->pos(), false, &details);
   
   // emit specialized object double click signals:
-  if (QCPAbstractPlottable *ap = dynamic_cast<QCPAbstractPlottable*>(clickedLayerable))
+  if (QCPAbstractPlottable *ap = qobject_cast<QCPAbstractPlottable*>(clickedLayerable))
     emit plottableDoubleClick(ap, event);
-  else if (QCPAxis *ax = dynamic_cast<QCPAxis*>(clickedLayerable))
+  else if (QCPAxis *ax = qobject_cast<QCPAxis*>(clickedLayerable))
     emit axisDoubleClick(ax, details.value<QCPAxis::SelectablePart>(), event);
-  else if (QCPAbstractItem *ai = dynamic_cast<QCPAbstractItem*>(clickedLayerable))
+  else if (QCPAbstractItem *ai = qobject_cast<QCPAbstractItem*>(clickedLayerable))
     emit itemDoubleClick(ai, event);
-  else if (QCPLegend *lg = dynamic_cast<QCPLegend*>(clickedLayerable))
+  else if (QCPLegend *lg = qobject_cast<QCPLegend*>(clickedLayerable))
     emit legendDoubleClick(lg, 0, event);
-  else if (QCPAbstractLegendItem *li = dynamic_cast<QCPAbstractLegendItem*>(clickedLayerable))
+  else if (QCPAbstractLegendItem *li = qobject_cast<QCPAbstractLegendItem*>(clickedLayerable))
     emit legendDoubleClick(li->parentLegend(), li, event);
-  else if (QCPPlotTitle *pt = dynamic_cast<QCPPlotTitle*>(clickedLayerable))
+  else if (QCPPlotTitle *pt = qobject_cast<QCPPlotTitle*>(clickedLayerable))
     emit titleDoubleClick(event, pt);
   
   // call event of affected layout element:
@@ -2189,17 +2189,17 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
     // emit specialized object click signals:
     QVariant details;
     QCPLayerable *clickedLayerable = layerableAt(event->pos(), false, &details); // for these signals, selectability is ignored, that's why we call this again with onlySelectable set to false
-    if (QCPAbstractPlottable *ap = dynamic_cast<QCPAbstractPlottable*>(clickedLayerable))
+    if (QCPAbstractPlottable *ap = qobject_cast<QCPAbstractPlottable*>(clickedLayerable))
       emit plottableClick(ap, event);
-    else if (QCPAxis *ax = dynamic_cast<QCPAxis*>(clickedLayerable))
+    else if (QCPAxis *ax = qobject_cast<QCPAxis*>(clickedLayerable))
       emit axisClick(ax, details.value<QCPAxis::SelectablePart>(), event);
-    else if (QCPAbstractItem *ai = dynamic_cast<QCPAbstractItem*>(clickedLayerable))
+    else if (QCPAbstractItem *ai = qobject_cast<QCPAbstractItem*>(clickedLayerable))
       emit itemClick(ai, event);
-    else if (QCPLegend *lg = dynamic_cast<QCPLegend*>(clickedLayerable))
+    else if (QCPLegend *lg = qobject_cast<QCPLegend*>(clickedLayerable))
       emit legendClick(lg, 0, event);
-    else if (QCPAbstractLegendItem *li = dynamic_cast<QCPAbstractLegendItem*>(clickedLayerable))
+    else if (QCPAbstractLegendItem *li = qobject_cast<QCPAbstractLegendItem*>(clickedLayerable))
       emit legendClick(li->parentLegend(), li, event);
-    else if (QCPPlotTitle *pt = dynamic_cast<QCPPlotTitle*>(clickedLayerable))
+    else if (QCPPlotTitle *pt = qobject_cast<QCPPlotTitle*>(clickedLayerable))
       emit titleClick(event, pt);
   }
   
