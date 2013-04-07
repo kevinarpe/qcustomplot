@@ -69,6 +69,8 @@ QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot, bool setupDefaultAxes) :
     QCPAxis *xAxis = addAxis(QCPAxis::atBottom);
     setRangeDragAxes(xAxis, yAxis);
     setRangeZoomAxes(xAxis, yAxis);
+    xAxis2->setVisible(false);
+    yAxis2->setVisible(false);
     xAxis->grid()->setVisible(true);
     yAxis->grid()->setVisible(true);
     xAxis2->grid()->setVisible(false);

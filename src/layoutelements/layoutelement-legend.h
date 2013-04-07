@@ -186,7 +186,10 @@ public:
   void setSelectedBrush(const QBrush &brush);
   void setSelectedFont(const QFont &font);
   void setSelectedTextColor(const QColor &color);
-
+  
+  // reimplemented virtual methods:
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  
   // non-virtual methods:
   QCPAbstractLegendItem *item(int index) const;
   QCPPlottableLegendItem *itemWithPlottable(const QCPAbstractPlottable *plottable) const;
@@ -221,7 +224,6 @@ protected:
   virtual QCP::Interaction selectionCategory() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   // events:
   virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
   virtual void deselectEvent(bool *selectionStateChanged);
