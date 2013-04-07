@@ -415,6 +415,11 @@ void QCPLayerable::applyAntialiasingHint(QCPPainter *painter, bool localAntialia
     painter->setAntialiasing(localAntialiased);
 }
 
+void QCPLayerable::parentPlotInitialized(QCustomPlot *parentPlot)
+{
+   Q_UNUSED(parentPlot)
+}
+
 QCP::Interaction QCPLayerable::selectionCategory() const
 {
   return QCP::iSelectOther;

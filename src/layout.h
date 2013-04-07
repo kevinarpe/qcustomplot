@@ -39,17 +39,23 @@ public:
   QCPMarginGroup(QCustomPlot *parentPlot);
   ~QCPMarginGroup();
   
+  // non-virtual methods:
   QList<QCPLayoutElement*> elements(QCP::MarginSide side) const { return mChildren.value(side); }
   bool isEmpty() const;
   void clear();
   
 protected:
+  // non-property members:
   QCustomPlot *mParentPlot;
   QHash<QCP::MarginSide, QList<QCPLayoutElement*> > mChildren;
   
+  // non-virtual methods:
   int commonMargin(QCP::MarginSide side) const;
   void addChild(QCP::MarginSide side, QCPLayoutElement *element);
   void removeChild(QCP::MarginSide side, QCPLayoutElement *element);
+  
+private:
+  Q_DISABLE_COPY(QCPMarginGroup)
   
   friend class QCPLayoutElement;
 };
@@ -94,13 +100,17 @@ public:
   void setMaximumSize(int width, int height);
   void setMarginGroup(QCP::MarginSides sides, QCPMarginGroup *group);
   
+  // introduced virtual methods:
   virtual void update();
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;
   virtual QList<QCPLayoutElement*> elements() const;
+  
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
+  // property members:
   QCPLayout *mParentLayout;
   QSize mMinimumSize, mMaximumSize;
   QRect mRect, mOuterRect;
@@ -108,10 +118,12 @@ protected:
   QCP::MarginSides mAutoMargins;
   QHash<QCP::MarginSide, QCPMarginGroup*> mMarginGroups;
   
+  // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const { Q_UNUSED(painter) }
   virtual void draw(QCPPainter *painter) { Q_UNUSED(painter) }
   virtual void parentPlotInitialized(QCustomPlot *parentPlot);
   virtual int calculateAutoMargin(QCP::MarginSide side);
+  // events:
   virtual void mousePressEvent(QMouseEvent *event) {Q_UNUSED(event)}
   virtual void mouseMoveEvent(QMouseEvent *event) {Q_UNUSED(event)}
   virtual void mouseReleaseEvent(QMouseEvent *event) {Q_UNUSED(event)}
@@ -133,25 +145,30 @@ class QCP_LIB_DECL QCPLayout : public QCPLayoutElement
 public:
   explicit QCPLayout();
   
+  // reimplemented virtual methods:
   virtual void update();
+  virtual QList<QCPLayoutElement*> elements() const;
   
+  // introduced virtual methods:
   virtual int elementCount() const = 0;
   virtual QCPLayoutElement* elementAt(int index) const = 0;
   virtual QCPLayoutElement* takeAt(int index) = 0;
   virtual bool take(QCPLayoutElement* element) = 0;
-  virtual QList<QCPLayoutElement*> elements() const;
   virtual void simplify();
+  
+  // non-virtual methods:
   bool removeAt(int index);
   bool remove(QCPLayoutElement* element);
   void clear();
-  
   void sizeConstraintsChanged() const;
   
 protected:
+  // introduced virtual methods:
   virtual void updateLayout();
+  
+  // non-virtual methods:
   void adoptElement(QCPLayoutElement *el);
   void releaseElement(QCPLayoutElement *el);
-  // layout helpers for subclasses:
   QVector<int> getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const;
   
 private:
@@ -189,13 +206,7 @@ public:
   void setColumnSpacing(int pixels);
   void setRowSpacing(int pixels);
   
-  QCPLayoutElement *element(int row, int column) const;
-  bool addElement(int row, int column, QCPLayoutElement *element);
-  bool hasElement(int row, int column);
-  void expandTo(int newRowCount, int newColumnCount);
-  void insertRow(int newIndex);
-  void insertColumn(int newIndex);
-  
+  // reimplemented virtual methods:
   virtual void updateLayout();
   virtual int elementCount() const;
   virtual QCPLayoutElement* elementAt(int index) const;
@@ -203,16 +214,25 @@ public:
   virtual bool take(QCPLayoutElement* element);
   virtual QList<QCPLayoutElement*> elements() const;
   virtual void simplify();
-  
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;
   
+  // non-virtual methods:
+  QCPLayoutElement *element(int row, int column) const;
+  bool addElement(int row, int column, QCPLayoutElement *element);
+  bool hasElement(int row, int column);
+  void expandTo(int newRowCount, int newColumnCount);
+  void insertRow(int newIndex);
+  void insertColumn(int newIndex);
+  
 protected:
+  // property members:
   QList<QList<QCPLayoutElement*> > mElements;
   QList<double> mColumnStretchFactors;
   QList<double> mRowStretchFactors;
   int mColumnSpacing, mRowSpacing;
   
+  // non-virtual methods:
   void getMinimumRowColSizes(QVector<int> *minColWidths, QVector<int> *minRowHeights) const;
   void getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<int> *maxRowHeights) const;
   
@@ -229,31 +249,33 @@ public:
   
   explicit QCPLayoutInset();
   
-  void addElement(QCPLayoutElement *element, Qt::Alignment alignment);
-  void addElement(QCPLayoutElement *element, const QRectF &rect);
-  
+  // getters:
   InsetPlacement insetPlacement(int index) const;
   Qt::Alignment insetAlignment(int index) const;
   QRectF insetRect(int index) const;
   
+  // setters:
   void setInsetPlacement(int index, InsetPlacement placement);
   void setInsetAlignment(int index, Qt::Alignment alignment);
   void setInsetRect(int index, const QRectF &rect);
   
+  // reimplemented virtual methods:
   virtual void updateLayout();
   virtual int elementCount() const;
   virtual QCPLayoutElement* elementAt(int index) const;
   virtual QCPLayoutElement* takeAt(int index);
   virtual bool take(QCPLayoutElement* element);
   
+  // non-virtual methods:
+  void addElement(QCPLayoutElement *element, Qt::Alignment alignment);
+  void addElement(QCPLayoutElement *element, const QRectF &rect);
+  
 protected:
+  // property members:
   QList<QCPLayoutElement*> mElements;
   QList<InsetPlacement> mInsetPlacement;
   QList<Qt::Alignment> mInsetAlignment;
   QList<QRectF> mInsetRect;
-  
-  void getMinimumRowColSizes(QVector<int> *minColWidths, QVector<int> *minRowHeights) const;
-  void getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<int> *maxRowHeights) const;
   
 private:
   Q_DISABLE_COPY(QCPLayoutInset)

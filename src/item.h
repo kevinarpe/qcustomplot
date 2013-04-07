@@ -41,17 +41,21 @@ public:
   QCPItemAnchor(QCustomPlot *parentPlot, QCPAbstractItem *parentItem, const QString name, int anchorId=-1);
   virtual ~QCPItemAnchor();
   
+  // getters:
   QString name() const { return mName; }
   virtual QPointF pixelPoint() const;
   
 protected:
+  // property members:
+  QString mName;
+  
+  // non-property members:
   QCustomPlot *mParentPlot;
   QCPAbstractItem *mParentItem;
   int mAnchorId;
-  QString mName;
-  // non-property members:
   QSet<QCPItemPosition*> mChildren;
   
+  // non-virtual methods:
   void addChild(QCPItemPosition* pos); // called from pos when this anchor is set as parent
   void removeChild(QCPItemPosition *pos); // called from pos when its parent anchor is reset or pos deleted
   
@@ -102,6 +106,7 @@ public:
   void setPixelPoint(const QPointF &pixelPoint);
   
 protected:
+  // property members:
   PositionType mPositionType;
   QWeakPointer<QCPAxis> mKeyAxis, mValueAxis;
   QWeakPointer<QCPAxisRect> mAxisRect;
@@ -139,8 +144,10 @@ public:
   void setSelectable(bool selectable);
   void setSelected(bool selected);
   
-  // non-property methods:
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const = 0;
+  
+  // non-virtual methods:
   QList<QCPItemPosition*> positions() const { return mPositions; }
   QList<QCPItemAnchor*> anchors() const { return mAnchors; }
   QCPItemPosition *position(const QString &name) const;
@@ -151,29 +158,30 @@ signals:
   void selectionChanged(bool selected);
   
 protected:
+  // property members:
   bool mClipToAxisRect;
   QWeakPointer<QCPAxisRect> mClipAxisRect;
   QList<QCPItemPosition*> mPositions;
   QList<QCPItemAnchor*> mAnchors;
   bool mSelectable, mSelected;
   
+  // reimplemented virtual methods:
   virtual QCP::Interaction selectionCategory() const;
   virtual QRect clipRect() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter) = 0;
-  
-  // helper functions for subclasses:
-  double distSqrToLine(const QPointF &start, const QPointF &end, const QPointF &point) const;
-  double rectSelectTest(const QRectF &rect, const QPointF &pos, bool filledRect) const;
-  
-  // anchor/position interface:
-  virtual QPointF anchorPixelPoint(int anchorId) const;
-  QCPItemPosition *createPosition(const QString &name);
-  QCPItemAnchor *createAnchor(const QString &name, int anchorId);
-  
   // events:
   virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
   virtual void deselectEvent(bool *selectionStateChanged);
+  
+  // introduced virtual methods:
+  virtual QPointF anchorPixelPoint(int anchorId) const;
+  
+  // non-virtual methods:
+  double distSqrToLine(const QPointF &start, const QPointF &end, const QPointF &point) const;
+  double rectSelectTest(const QRectF &rect, const QPointF &pos, bool filledRect) const;
+  QCPItemPosition *createPosition(const QString &name);
+  QCPItemAnchor *createAnchor(const QString &name, int anchorId);
   
 private:
   Q_DISABLE_COPY(QCPAbstractItem)

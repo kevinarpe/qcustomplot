@@ -53,11 +53,13 @@ public:
   QList<QCPLayerable*> children() const { return mChildren; }
   
 protected:
+  // property members:
   QCustomPlot *mParentPlot;
   QString mName;
-  QList<QCPLayerable*> mChildren;
   int mIndex;
+  QList<QCPLayerable*> mChildren;
   
+  // non-virtual methods:
   void addChild(QCPLayerable *layerable, bool prepend);
   void removeChild(QCPLayerable *layerable);
   
@@ -95,25 +97,22 @@ public:
   bool setLayer(const QString &layerName);
   void setAntialiased(bool enabled);
   
-  // non-property methods:
-  bool realVisibility() const;
+  // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
+  // non-property methods:
+  bool realVisibility() const;
+  
 protected:
+  // property members:
   bool mVisible;
   QCustomPlot *mParentPlot;
   QWeakPointer<QCPLayerable> mParentLayerable;
   QCPLayer *mLayer;
   bool mAntialiased;
   
-  // non-property methods:
-  void initializeParentPlot(QCustomPlot *parentPlot);
-  void setParentLayerable(QCPLayerable* parentLayerable);
-  bool moveToLayer(QCPLayer *layer, bool prepend);
-  void applyAntialiasingHint(QCPPainter *painter, bool localAntialiased, QCP::AntialiasedElement overrideElement) const;
-  
-  // introduced virtual functions:
-  virtual void parentPlotInitialized(QCustomPlot *parentPlot) { Q_UNUSED(parentPlot) }
+  // introduced virtual methods:
+  virtual void parentPlotInitialized(QCustomPlot *parentPlot);
   virtual QCP::Interaction selectionCategory() const;
   virtual QRect clipRect() const;
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const = 0;
@@ -121,6 +120,12 @@ protected:
   // events:
   virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
   virtual void deselectEvent(bool *selectionStateChanged);
+  
+  // non-property methods:
+  void initializeParentPlot(QCustomPlot *parentPlot);
+  void setParentLayerable(QCPLayerable* parentLayerable);
+  bool moveToLayer(QCPLayer *layer, bool prepend);
+  void applyAntialiasingHint(QCPPainter *painter, bool localAntialiased, QCP::AntialiasedElement overrideElement) const;
   
 private:
   Q_DISABLE_COPY(QCPLayerable)

@@ -113,7 +113,7 @@ public:
   QList<QCPAbstractPlottable*> selectedPlottables() const;
   QCPAbstractPlottable *plottableAt(const QPointF &pos, bool onlySelectable=false) const;
   bool hasPlottable(QCPAbstractPlottable *plottable) const;
-
+ 
   // specialized interface for QCPGraph:
   QCPGraph *graph(int index) const;
   QCPGraph *graph() const;
@@ -123,7 +123,7 @@ public:
   int clearGraphs();
   int graphCount() const;
   QList<QCPGraph*> selectedGraphs() const;
-  
+
   // item interface:
   QCPAbstractItem *item(int index) const;
   QCPAbstractItem *item() const;
@@ -152,9 +152,12 @@ public:
   QCPAxisRect* axisRect(int index=0) const;
   QList<QCPAxisRect*> axisRects() const;
   QCPLayoutElement* layoutElementAt(const QPointF &pos) const;
+  Q_SLOT void rescaleAxes(bool onlyVisible=false);
   
   QList<QCPAxis*> selectedAxes() const;
   QList<QCPLegend*> selectedLegends() const;
+  Q_SLOT void deselectAll();
+  
   bool savePdf(const QString &fileName, bool noCosmeticPen=false, int width=0, int height=0);
   bool savePs(const QString &fileName, bool noCosmeticPen=false, int width=0, int height=0);
   bool savePng(const QString &fileName, int width=0, int height=0, double scale=1.0, int quality=-1);
@@ -162,14 +165,10 @@ public:
   bool saveBmp(const QString &fileName, int width=0, int height=0, double scale=1.0);
   bool saveRastered(const QString &fileName, int width, int height, double scale, const char *format, int quality=-1);
   QPixmap pixmap(int width=0, int height=0, double scale=1.0);
+  Q_SLOT void replot();
   
   QCPAxis *xAxis, *yAxis, *xAxis2, *yAxis2;
   QCPLegend *legend;
-  
-public slots:
-  void deselectAll();
-  void replot();
-  void rescaleAxes(bool onlyVisible=false);
   
 signals:
   void mouseDoubleClick(QMouseEvent *event);
@@ -194,11 +193,12 @@ signals:
   void afterReplot();
   
 protected:
+  // property members:
   QRect mViewport;
   QCPLayoutGrid *mPlotLayout;
   bool mAutoAddPlottableToLegend;
   QList<QCPAbstractPlottable*> mPlottables;
-  QList<QCPGraph*> mGraphs; // extra list of items also in mPlottables that are of type QCPGraph
+  QList<QCPGraph*> mGraphs; // extra list of plottables also in mPlottables that are of type QCPGraph
   QList<QCPAbstractItem*> mItems;
   QList<QCPLayer*> mLayers;
   QCP::AntialiasedElements mAntialiasedElements, mNotAntialiasedElements;
@@ -213,13 +213,14 @@ protected:
   QCPLayer *mCurrentLayer;
   QCP::PlottingHints mPlottingHints;
   Qt::KeyboardModifier mMultiSelectModifier;
-  // not explicitly exposed properties:
+  
+  // non-property members:
   QPixmap mPaintBuffer;
   QPoint mMousePressPos;
   QCPLayoutElement *mMouseEventElement;
   bool mReplotting;
   
-  // reimplemented methods:
+  // reimplemented virtual methods:
   virtual QSize minimumSizeHint() const;
   virtual QSize sizeHint() const;
   virtual void paintEvent(QPaintEvent *event);
@@ -230,12 +231,12 @@ protected:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
   
-  // introduced methods:
+  // introduced virtual methods:
   virtual void draw(QCPPainter *painter);
   virtual void axisRemoved(QCPAxis *axis);
   virtual void legendRemoved(QCPLegend *legend);
   
-  // helpers:
+  // non-virtual methods:
   void updateLayerIndices() const;
   QCPLayerable *layerableAt(const QPointF &pos, bool onlySelectable, QVariant *selectionDetails=0) const;
   void drawBackground(QCPPainter *painter);

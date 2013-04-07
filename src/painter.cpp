@@ -221,68 +221,68 @@ void QCPPainter::fixScaledPen()
 
 
 QCPScatterStyle::QCPScatterStyle() :
-  mPenDefined(false),
   mSize(6),
   mShape(ssNone),
   mPen(Qt::NoPen),
-  mBrush(Qt::NoBrush)
+  mBrush(Qt::NoBrush),
+  mPenDefined(false)
 {
 }
 
 QCPScatterStyle::QCPScatterStyle(ScatterShape shape, double size) :
-  mPenDefined(false),
   mSize(size),
   mShape(shape),
   mPen(Qt::NoPen),
-  mBrush(Qt::NoBrush)
+  mBrush(Qt::NoBrush),
+  mPenDefined(false)
 {
 }
 
 QCPScatterStyle::QCPScatterStyle(ScatterShape shape, const QColor &color, double size) :
-  mPenDefined(true),
   mSize(size),
   mShape(shape),
   mPen(QPen(color)),
-  mBrush(Qt::NoBrush)
+  mBrush(Qt::NoBrush),
+  mPenDefined(true)
 {
 }
 
 QCPScatterStyle::QCPScatterStyle(ScatterShape shape, const QColor &color, const QColor &fill, double size) :
-  mPenDefined(true),
   mSize(size),
   mShape(shape),
   mPen(QPen(color)),
-  mBrush(QBrush(fill))
+  mBrush(QBrush(fill)),
+  mPenDefined(true)
 {
 }
 
 // doc: maybe warn that ..., Qt::NoPen, Qt::blue,... will call other overload, use QBrush(Qt::blue)
 QCPScatterStyle::QCPScatterStyle(ScatterShape shape, const QPen &pen, const QBrush &brush, double size) :
-  mPenDefined(pen.style() != Qt::NoPen),
   mSize(size),
   mShape(shape),
   mPen(pen),
-  mBrush(brush)
+  mBrush(brush),
+  mPenDefined(pen.style() != Qt::NoPen)
 {
 }
 
 QCPScatterStyle::QCPScatterStyle(const QPixmap &pixmap) :
-  mPenDefined(false),
   mSize(5),
   mShape(ssPixmap),
   mPen(Qt::NoPen),
   mBrush(Qt::NoBrush),
-  mPixmap(pixmap)
+  mPixmap(pixmap),
+  mPenDefined(false)
 {
 }
 
 QCPScatterStyle::QCPScatterStyle(const QPainterPath &customPath, const QPen &pen, const QBrush &brush, double size) :
-  mPenDefined(false),
   mSize(size),
   mShape(ssCustom),
   mPen(pen),
   mBrush(brush),
-  mCustomPath(customPath)
+  mCustomPath(customPath),
+  mPenDefined(false)
 {
 }
 

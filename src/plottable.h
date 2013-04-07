@@ -77,17 +77,19 @@ public:
   void setSelectedBrush(const QBrush &brush);
   void setKeyAxis(QCPAxis *axis);
   void setValueAxis(QCPAxis *axis);
-  void setSelectable(bool selectable);
-  void setSelected(bool selected);
+  Q_SLOT void setSelectable(bool selectable);
+  Q_SLOT void setSelected(bool selected);
 
-  // non-property methods:
-  void rescaleAxes(bool onlyEnlarge=false) const;
-  void rescaleKeyAxis(bool onlyEnlarge=false) const;
-  void rescaleValueAxis(bool onlyEnlarge=false) const;
+  // introduced virtual methods:
   virtual void clearData() = 0;
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const = 0;
   virtual bool addToLegend();
   virtual bool removeFromLegend() const;
+  
+  // non-property methods:
+  void rescaleAxes(bool onlyEnlarge=false) const;
+  void rescaleKeyAxis(bool onlyEnlarge=false) const;
+  void rescaleValueAxis(bool onlyEnlarge=false) const;
   
 signals:
   void selectionChanged(bool selected);
@@ -100,6 +102,8 @@ protected:
                     ,sdBoth     ///< Both sign domains, including zero, i.e. all (rational) numbers
                     ,sdPositive ///< The positive sign domain, i.e. numbers greater than zero
                   };
+  
+  // property members:
   QString mName;
   bool mAntialiasedFill, mAntialiasedScatters, mAntialiasedErrorBars;
   QPen mPen, mSelectedPen;
@@ -107,31 +111,31 @@ protected:
   QWeakPointer<QCPAxis> mKeyAxis, mValueAxis;
   bool mSelectable, mSelected;
   
+  // reimplemented virtual methods:
   virtual QRect clipRect() const;
   virtual void draw(QCPPainter *painter) = 0;
+  virtual QCP::Interaction selectionCategory() const;
+  void applyDefaultAntialiasingHint(QCPPainter *painter) const;
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
+  
+  // introduced virtual methods:
   virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const = 0;
   virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const = 0;
   virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const = 0;
-  virtual QCP::Interaction selectionCategory() const;
   
-  // painting and coordinate transformation helpers:
+  // non-virtual methods:
   void coordsToPixels(double key, double value, double &x, double &y) const;
   const QPointF coordsToPixels(double key, double value) const;
   void pixelsToCoords(double x, double y, double &key, double &value) const;
   void pixelsToCoords(const QPointF &pixelPos, double &key, double &value) const;
   QPen mainPen() const;
   QBrush mainBrush() const;
-  void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   void applyFillAntialiasingHint(QCPPainter *painter) const;
   void applyScattersAntialiasingHint(QCPPainter *painter) const;
   void applyErrorBarsAntialiasingHint(QCPPainter *painter) const;
-  
-  // selection test helpers:
   double distSqrToLine(const QPointF &start, const QPointF &end, const QPointF &point) const;
-  
-  // events:
-  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
-  virtual void deselectEvent(bool *selectionStateChanged);
 
 private:
   Q_DISABLE_COPY(QCPAbstractPlottable)

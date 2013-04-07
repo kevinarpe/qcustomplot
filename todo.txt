@@ -1,8 +1,5 @@
 NEXT RELEASE:
 
-> make uniform header commenting scheme for class definitions ("non-property methods", "introduced virtual functions", ...)
-  - have items, layoutelements, plottables and axis.h
-  
 - Make example line plot with white-filled circles and a non-white background.
 - Experiment with better styled background, Gradients/patterns
 - Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs
@@ -12,7 +9,7 @@ doc:
   QCustomPlot::/QCPGraph::/QCPAbstractPlottable::rescaleAxes 
 - add doc-note and qDebug output for case when addToLegend (QCPGraph/QCPAbstractPlottable) is called without the plottable being in the plot. 
 - explain ltDateTime mode on axes better. Probably give examples with numbers
-  
+- QCPLayoutElement::calculateAutoMargin: note it must be taken care to respect minimumMargins value when using the auto margin
 
 FUTURE RELEASE:
 

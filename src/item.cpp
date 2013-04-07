@@ -60,10 +60,10 @@
   explained in the subclassing section of the QCPAbstractItem documentation.
 */
 QCPItemAnchor::QCPItemAnchor(QCustomPlot *parentPlot, QCPAbstractItem *parentItem, const QString name, int anchorId) :
+  mName(name),
   mParentPlot(parentPlot),
   mParentItem(parentItem),
-  mAnchorId(anchorId),
-  mName(name)
+  mAnchorId(anchorId)
 {
 }
 
@@ -1014,7 +1014,7 @@ double QCPAbstractItem::rectSelectTest(const QRectF &rect, const QPointF &pos, b
 */
 QPointF QCPAbstractItem::anchorPixelPoint(int anchorId) const
 {
-  qDebug() << Q_FUNC_INFO << "called on item which shouldn't have any anchors (anchorPixelPos not reimplemented). anchorId" << anchorId;
+  qDebug() << Q_FUNC_INFO << "called on item which shouldn't have any anchors (this method not reimplemented). anchorId" << anchorId;
   return QPointF();
 }
 
@@ -1022,7 +1022,7 @@ QPointF QCPAbstractItem::anchorPixelPoint(int anchorId) const
 
   Creates a QCPItemPosition, registers it with this item and returns a pointer to it. The specified
   \a name must be a unique string that is usually identical to the variable name of the position
-  member (This is needed to provide the name based \ref position access to positions).
+  member (This is needed to provide the name-based \ref position access to positions).
   
   Don't delete positions created by this function manually, as the item will take care of it.
   

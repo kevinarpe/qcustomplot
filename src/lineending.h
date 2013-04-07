@@ -77,6 +77,7 @@ public:
   void draw(QCPPainter *painter, const QVector2D &pos, double angle) const;
   
 protected:
+  // property members:
   EndingStyle mStyle;
   double mWidth, mLength;
   bool mInverted;

@@ -93,14 +93,18 @@ public:
   void drawShape(QCPPainter *painter, double x, double y) const;
 
 protected:
-  bool mPenDefined;
+  // property members:
   double mSize;
   ScatterShape mShape;
   QPen mPen;
   QBrush mBrush;
   QPixmap mPixmap;
   QPainterPath mCustomPath;
+  
+  // non-property members:
+  bool mPenDefined;
 };
+Q_DECLARE_TYPEINFO(QCPScatterStyle, Q_MOVABLE_TYPE);
 
 
 class QCP_LIB_DECL QCPPainter : public QPainter
@@ -141,12 +145,15 @@ public:
   void save();
   void restore();
 
-  // helpers:
+  // non-virtual methods:
   void fixScaledPen();
   
 protected:
+  // property members:
   PainterModes mModes;
   bool mIsAntialiasing;
+  
+  // non-property members:
   QStack<bool> mAntialiasingStack;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPPainter::PainterModes)
