@@ -2086,7 +2086,14 @@ void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
   if (QCPLayoutElement *el = layoutElementAt(event->pos()))
     el->mouseDoubleClickEvent(event);
   
-  QWidget::mouseDoubleClickEvent(event);
+  // call event of affected layout element (as in mouseReleaseEvent, since the mouseDoubleClick replaces the second release event in double click case):
+  if (mMouseEventElement)
+  {
+    mMouseEventElement->mouseReleaseEvent(event);
+    mMouseEventElement = 0;
+  }
+  
+  //QWidget::mouseDoubleClickEvent(event); don't call base class implementation because it would just cause a mousePress/ReleaseEvent, which we don't want.
 }
 
 /*! \internal
