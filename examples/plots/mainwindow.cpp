@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(400, 250, 542, 390);
   
-  setupDemo(1);
+  setupDemo(0);
   //setupPlayground(ui->customPlot);
   // 0:  setupQuadraticDemo(ui->customPlot);
   // 1:  setupSimpleDemo(ui->customPlot);
@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent) :
   // 15: setupItemDemo(ui->customPlot);
   
   // for making screenshots of the current demo or all demos (for website screenshots):
-  //QTimer::singleShot(1500, this, SLOT(allScreenShots()));
+  QTimer::singleShot(1500, this, SLOT(allScreenShots()));
   //QTimer::singleShot(1000, this, SLOT(screenShot()));
 }
 
@@ -651,8 +651,8 @@ void MainWindow::setupLogarithmicDemo(QCustomPlot *customPlot)
   customPlot->graph(2)->setData(x2, y2);
   customPlot->graph(3)->setData(x3, y3);
 
-  customPlot->yAxis->setSubGrid(true);
-  customPlot->xAxis->setSubGrid(true);
+  customPlot->yAxis->grid()->setSubGridVisible(true);
+  customPlot->xAxis->grid()->setSubGridVisible(true);
   customPlot->yAxis->setScaleType(QCPAxis::stLogarithmic);
   customPlot->yAxis->setScaleLogBase(100);
   customPlot->yAxis->setNumberFormat("eb"); // e = exponential, b = beautiful decimal powers
@@ -810,20 +810,20 @@ void MainWindow::setupBarChartDemo(QCustomPlot *customPlot)
   customPlot->xAxis->setTickLabelRotation(60);
   customPlot->xAxis->setSubTickCount(0);
   customPlot->xAxis->setTickLength(0, 4);
-  customPlot->xAxis->setGrid(false);
+  customPlot->xAxis->grid()->setVisible(true);
   customPlot->xAxis->setRange(0, 8);
   
   // prepare y axis:
   customPlot->yAxis->setRange(0, 12.1);
   customPlot->yAxis->setPadding(5); // a bit more space to the left border
   customPlot->yAxis->setLabel("Power Consumption in\nKilowatts per Capita (2007)");
-  customPlot->yAxis->setSubGrid(true);
+  customPlot->yAxis->grid()->setSubGridVisible(true);
   QPen gridPen;
   gridPen.setStyle(Qt::SolidLine);
   gridPen.setColor(QColor(0, 0, 0, 25));
-  customPlot->yAxis->setGridPen(gridPen);
+  customPlot->yAxis->grid()->setPen(gridPen);
   gridPen.setStyle(Qt::DotLine);
-  customPlot->yAxis->setSubGridPen(gridPen);
+  customPlot->yAxis->grid()->setSubGridPen(gridPen);
   
   // Add data:
   QVector<double> fossilData, nuclearData, regenData;
@@ -949,7 +949,7 @@ void MainWindow::setupItemDemo(QCustomPlot *customPlot)
   graph->setPen(QPen(Qt::blue));
   graph->rescaleKeyAxis();
   customPlot->yAxis->setRange(-1.45, 1.65);
-  customPlot->xAxis->setZeroLinePen(Qt::NoPen);
+  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
   
   // add the bracket at the top:
   QCPItemBracket *bracket = new QCPItemBracket(customPlot);
@@ -1170,7 +1170,7 @@ void MainWindow::screenShot()
 
 void MainWindow::allScreenShots()
 {
-  QPixmap pm = QPixmap::grabWindow(qApp->desktop()->winId(), this->x()-1, this->y()-1, this->frameGeometry().width()+2, this->frameGeometry().height()+3);
+  QPixmap pm = QPixmap::grabWindow(qApp->desktop()->winId(), this->x()+2, this->y()+2, this->frameGeometry().width()-4, this->frameGeometry().height()-4);
   QString fileName = "qcustomplot-"+demoName.toLower()+".png";
   fileName.replace(" ", "");
   pm.save("./screenshots/"+fileName);
@@ -1196,7 +1196,6 @@ void MainWindow::allScreenShots()
     qApp->quit();
   }
 }
-
 
 
 

@@ -11,11 +11,30 @@ doc:
 - explain ltDateTime mode on axes better. Probably give examples with numbers
 - QCPLayoutElement::calculateAutoMargin: note it must be taken care to respect minimumMargins value when using the auto margin
 
+Migration FAQ:
+- setPlotTitle is gone, how do I set a plot title now?
+  Plot titles now are a layout element. You can add a title like this:
+  customPlot->plotLayout()->insertRow(0); // inserts an empty row above the default axis rect
+  customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(customPlot, "Your Plot Title"));
+  
+- where did setupFullAxesBox, setRangeDrag, setMargin etc. go?
+  Many functions related to the axis rect moved to the QCPAxisRect class. You can reach the default axis rect via
+  customPlot->axisRect()
+  from there, you can use the functions like you're used to.
+
+- enable/disable range zoom and drag?
+  By default, the QCPAxisRect::setRangeZoom/Drag are now set to Qt::Horizontal|Qt::Vertical. To enable range zooming/dragging, all you need
+  to do now is set the corresponding interaction flag: customPlot->setInteractions(QCP::iRangeZoom | QCP::iRangeDrag);
+
+- where did setSelected/setSelectable on QCPAxis and QCPLegend go?
+  they're now called setSelectedParts/setSelectableParts reflecting the fact, that they don't handle a bool but an enum with multiple possible parts.
+
 FUTURE RELEASE:
 
 - alternating axis section backgrounds
 - Item class based on tracer which adds tag-like labels to points. With option to show x/y values via formatting strings (%key and %value).
 - Range navigation via selection rectangle
+- QCPTheme for assigning colors/styles/colorwheels easily
 - optimize QCPGraph (and QCPCurve) with improved intersection clip algorithm (keep old algo for timing). QCPGraph will need clipping on left and right
   only for first and last segment due to the sorted underlying QCPDataMap. Watch out for regression for lsImpulse... (shouldn't happen since we work on raw line data)
   - increase the intersection rect by mScatterSize
