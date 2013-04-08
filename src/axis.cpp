@@ -39,21 +39,20 @@
 /*! \class QCPGrid
   \brief Responsible for drawing the grid of a QCPAxis.
   
-  This class is tightly bound to QCPAxis. Every axis owns a grid instance internally and uses it to
-  draw the grid. Normally, you don't need to interact with the QCPGrid instance, because QCPAxis
-  reproduces the grid interface in its own interface.
+  This class is tightly bound to QCPAxis. Every axis owns a grid instance and uses it to draw the
+  grid lines, sub grid lines and zero-line. You can interact with the grid of an axis via \ref
+  QCPAxis::grid(). Normally, you don't need to create an instance of QCPGrid yourself.
   
   The axis and grid drawing was split into two classes to allow them to be placed on different
-  layers (both QCPAxis and QCPGrid inherit from QCPLayerable). So it is possible to have the grid
-  at the background and the axes in the foreground, and any plottables/items in between. This
-  described situation is the default setup, see QCPLayer documentation.  
+  layers (both QCPAxis and QCPGrid inherit from QCPLayerable). Thus it is possible to have the grid
+  in the background and the axes in the foreground, and any plottables/items in between. This
+  described situation is the default setup, see the QCPLayer documentation.
 */
 
 /*!
   Creates a QCPGrid instance and sets default values.
   
-  You shouldn't instantiate grids on their own, since every QCPAxis brings its own QCPGrid
-  internally
+  You shouldn't instantiate grids on their own, since every QCPAxis brings its own QCPGrid.
 */
 QCPGrid::QCPGrid(QCPAxis *parentAxis) :
   QCPLayerable(parentAxis->parentPlot(), "grid", parentAxis),
@@ -266,9 +265,11 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 /*! \class QCPAxis
   \brief Manages a single axis inside a QCustomPlot.
 
-  Usually doesn't need to be instantiated externally. Access %QCustomPlot's axes via
+  Usually doesn't need to be instantiated externally. Access %QCustomPlot's default four axes via
   QCustomPlot::xAxis (bottom), QCustomPlot::yAxis (left), QCustomPlot::xAxis2 (top) and
   QCustomPlot::yAxis2 (right).
+  
+  Axes are always part of an axis rect, see QCPAxisRect.
 */
 
 /* start of documentation of inline functions */
@@ -285,7 +286,7 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 /*! \fn void QCPAxis::ticksRequest()
   
   This signal is emitted when \ref setAutoTicks is false and the axis is about to generate tick
-  labels and replot itself.
+  labels for a replot.
   
   Modifying the tick positions can be done with \ref setTickVector. If you also want to control the
   tick labels, set \ref setAutoTickLabels to false and also provide the labels with \ref
@@ -307,13 +308,14 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 /*! \fn void QCPAxis::selectionChanged(QCPAxis::SelectableParts selection)
   
   This signal is emitted when the selection state of this axis has changed, either by user interaction
-  or by a direct call to \ref setSelected.
+  or by a direct call to \ref setSelectedParts.
 */
 
 /* end of documentation of signals */
 
 /*!
-  Constructs an Axis instance of Type \a type inside \a parentPlot.
+  Constructs an Axis instance of Type \a type for the axis rect \a parent.
+  You shouldn't instantiate axes directly, rather use \ref QCPAxisRect::addAxis.
 */
 QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   QCPLayerable(parent->parentPlot(), "axes", parent),
@@ -467,7 +469,7 @@ void QCPAxis::setScaleLogBase(double base)
   This slot may be connected with the \ref rangeChanged signal of another axis so this axis
   is always synchronized with the other axis range, when it changes.
   
-  To invert the direction of an axis range, use \ref setRangeReversed.
+  To invert the direction of an axis, use \ref setRangeReversed.
 */
 void QCPAxis::setRange(const QCPRange &range)
 {
@@ -491,10 +493,10 @@ void QCPAxis::setRange(const QCPRange &range)
   (When \ref QCustomPlot::setInteractions contains iSelectAxes.)
   
   However, even when \a selectable is set to a value not allowing the selection of a specific part,
-  it is still possible to set the selection of this part manually, by calling \ref setSelected
+  it is still possible to set the selection of this part manually, by calling \ref setSelectedParts
   directly.
   
-  \see SelectablePart, setSelected
+  \see SelectablePart, setSelectedParts
 */
 void QCPAxis::setSelectableParts(const SelectableParts &selectable)
 {
@@ -509,12 +511,11 @@ void QCPAxis::setSelectableParts(const SelectableParts &selectable)
   QCustomPlot::setInteractions contains iSelectAxes. You only need to call this function when you
   wish to change the selection state manually.
   
-  This function can change the selection state of a part even when \ref setSelectable was set to a
-  value that actually excludes the part.
+  This function can change the selection state of a part, independent of the \ref setSelectableParts setting.
   
   emits the \ref selectionChanged signal when \a selected is different from the previous selection state.
   
-  \see SelectablePart, setSelectable, selectTest, setSelectedBasePen, setSelectedTickPen, setSelectedSubTickPen,
+  \see SelectablePart, setSelectableParts, selectTest, setSelectedBasePen, setSelectedTickPen, setSelectedSubTickPen,
   setSelectedTickLabelFont, setSelectedLabelFont, setSelectedTickLabelColor, setSelectedLabelColor
 */
 void QCPAxis::setSelectedParts(const SelectableParts &selected)
@@ -530,9 +531,10 @@ void QCPAxis::setSelectedParts(const SelectableParts &selected)
 
 /*!
   \overload
+  
   Sets the lower and upper bound of the axis range.
   
-  To invert the direction of an axis range, use \ref setRangeReversed.
+  To invert the direction of an axis, use \ref setRangeReversed.
   
   There is also a slot to set a range, see \ref setRange(const QCPRange &range).
 */
@@ -557,16 +559,14 @@ void QCPAxis::setRange(double lower, double upper)
 
 /*!
   \overload
+  
   Sets the range of the axis.
-
-  \param position the \a position coordinate indicates together with the \a alignment parameter, where
-  the new range will be positioned.
-  \param size defines the size (upper-lower) of the new axis range.
-  \param alignment determines how \a position is to be interpreted.\n
-  If \a alignment is Qt::AlignLeft, \a position will be the lower bound of the range.\n
-  If \a alignment is Qt::AlignRight, \a position will be the upper bound of the range.\n
-  If \a alignment is Qt::AlignCenter, the new range will be centered around \a position.\n
-  Any other values for \a alignment will default to Qt::AlignCenter.
+  
+  The \a position coordinate indicates together with the \a alignment parameter, where the new
+  range will be positioned. \a size defines the size of the new axis range. \a alignment may be
+  Qt::AlignLeft, Qt::AlignRight or Qt::AlignCenter. This will cause the left border, right border,
+  or center of the range to be aligned with \a position. Any other values of \a alignment will
+  default to Qt::AlignCenter.
 */
 void QCPAxis::setRange(double position, double size, Qt::AlignmentFlag alignment)
 {
@@ -579,7 +579,7 @@ void QCPAxis::setRange(double position, double size, Qt::AlignmentFlag alignment
 }
 
 /*!
-  Sets the lower bound of the axis range, independently of the upper bound.
+  Sets the lower bound of the axis range. The upper bound is not changed.
   \see setRange
 */
 void QCPAxis::setRangeLower(double lower)
@@ -600,7 +600,7 @@ void QCPAxis::setRangeLower(double lower)
 }
 
 /*!
-  Sets the upper bound of the axis range, independently of the lower bound.
+  Sets the upper bound of the axis range. The lower bound is not changed.
   \see setRange
 */
 void QCPAxis::setRangeUpper(double upper)
@@ -623,9 +623,11 @@ void QCPAxis::setRangeUpper(double upper)
 /*!
   Sets whether the axis range (direction) is displayed reversed. Normally, the values on horizontal
   axes increase left to right, on vertical axes bottom to top. When \a reversed is set to true, the
-  direction of increasing values is inverted. Note that the range and data interface stays the same
-  for reversed axes, e.g. the \a lower part of the \ref setRange interface will still reference the
-  mathematically smaller number than the \a upper part.
+  direction of increasing values is inverted.
+
+  Note that the range and data interface stays the same for reversed axes, e.g. the \a lower part
+  of the \ref setRange interface will still reference the mathematically smaller number than the \a
+  upper part.
 */
 void QCPAxis::setRangeReversed(bool reversed)
 {

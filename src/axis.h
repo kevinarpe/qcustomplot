@@ -149,28 +149,28 @@ public:
     Defines at which side of the axis rect the axis will appear. This also affects how the tick
     marks are drawn, on which side the labels are placed etc.
   */
-  enum AxisType { atLeft    = 0x01  ///< <tt>0x01</tt> Axis is vertical and on the left side of the axis rect of the parent QCustomPlot
-                  ,atRight  = 0x02  ///< <tt>0x02</tt> Axis is vertical and on the right side of the axis rect of the parent QCustomPlot
-                  ,atTop    = 0x04  ///< <tt>0x04</tt> Axis is horizontal and on the top side of the axis rect of the parent QCustomPlot
-                  ,atBottom = 0x08  ///< <tt>0x08</tt> Axis is horizontal and on the bottom side of the axis rect of the parent QCustomPlot
+  enum AxisType { atLeft    = 0x01  ///< <tt>0x01</tt> Axis is vertical and on the left side of the axis rect
+                  ,atRight  = 0x02  ///< <tt>0x02</tt> Axis is vertical and on the right side of the axis rect
+                  ,atTop    = 0x04  ///< <tt>0x04</tt> Axis is horizontal and on the top side of the axis rect
+                  ,atBottom = 0x08  ///< <tt>0x08</tt> Axis is horizontal and on the bottom side of the axis rect
                 };
   Q_ENUMS(AxisType)
   Q_DECLARE_FLAGS(AxisTypes, AxisType)
   /*!
     When automatic tick label generation is enabled (\ref setAutoTickLabels), defines how the
-    numerical value (coordinate) of the tick position is translated into a string that will be
-    drawn at the tick position.
+    coordinate of the tick is interpreted, i.e. translated into a string.
+    
     \see setTickLabelType
   */
   enum LabelType { ltNumber    ///< Tick coordinate is regarded as normal number and will be displayed as such. (see \ref setNumberFormat)
-                   ,ltDateTime ///< Tick coordinate is regarded as a date/time (seconds since 1970-01-01T00:00:00 UTC, see QDateTime::toTime_t) and will be displayed and formatted as such. (see \ref setDateTimeFormat)
+                   ,ltDateTime ///< Tick coordinate is regarded as a date/time (seconds since 1970-01-01T00:00:00 UTC) and will be displayed and formatted as such. (for details, see \ref setDateTimeFormat)
                  };
   Q_ENUMS(LabelType)
   /*!
     Defines the scale of an axis.
     \see setScaleType
   */
-  enum ScaleType { stLinear       ///< Normal linear scaling
+  enum ScaleType { stLinear       ///< Linear scaling
                    ,stLogarithmic ///< Logarithmic scaling with correspondingly transformed plots and (major) tick marks at every base power (see \ref setScaleLogBase).
                  };
   Q_ENUMS(ScaleType)
