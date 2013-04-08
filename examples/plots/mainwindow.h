@@ -74,6 +74,7 @@ public:
   void setupStatisticalDemo(QCustomPlot *customPlot);
   void setupSimpleItemDemo(QCustomPlot *customPlot);
   void setupItemDemo(QCustomPlot *customPlot);
+  void setupStyledDemo(QCustomPlot *customPlot);
   
   void setupPlayground(QCustomPlot *customPlot);
   
