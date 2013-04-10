@@ -643,9 +643,10 @@ void QCPAxis::setRangeReversed(bool reversed)
   generated tick step or a tick step provided manually via \ref setTickStep, see \ref setAutoTickStep).
   
   If \a on is set to false, you must provide the tick positions manually via \ref setTickVector.
-  For these manual ticks you may let QCPAxis generate the appropriate labels automatically
-  by setting/leaving \ref setAutoTickLabels true. If you also wish to control the displayed labels
-  manually, set \ref setAutoTickLabels to false and provide the label strings with \ref setTickVectorLabels.
+  For these manual ticks you may let QCPAxis generate the appropriate labels automatically by
+  leaving \ref setAutoTickLabels set to true. If you also wish to control the displayed labels
+  manually, set \ref setAutoTickLabels to false and provide the label strings with \ref
+  setTickVectorLabels.
   
   If you need dynamically calculated tick vectors (and possibly tick label vectors), set the
   vectors in a slot connected to the \ref ticksRequest signal.
@@ -660,8 +661,11 @@ void QCPAxis::setAutoTicks(bool on)
 }
 
 /*!
-  When \ref setAutoTickStep is true, \a approximateCount determines how many ticks should be generated
-  in the visible range approximately.
+  When \ref setAutoTickStep is true, \a approximateCount determines how many ticks should be
+  generated in the visible range, approximately.
+  
+  It's not guaranteed that this number of ticks is met exactly, but approximately within a
+  tolerance of about two.
   
   Only values greater than zero are accepted as \a approximateCount.
 */
@@ -679,8 +683,9 @@ void QCPAxis::setAutoTickCount(int approximateCount)
 }
 
 /*!
-  Sets whether the tick labels are generated automatically depending on the tick label type
-  (\ref ltNumber or \ref ltDateTime).
+  Sets whether the tick labels are generated automatically. Depending on the tick label type (\ref
+  ltNumber or \ref ltDateTime), the labels will either show the coordinate as floating point
+  number (\ref setNumberFormat), or a date/time formatted according to \ref setDateTimeFormat.
   
   If \a on is set to false, you should provide the tick labels via \ref setTickVectorLabels. This
   is usually used in a combination with \ref setAutoTicks set to false for complete control over
@@ -702,10 +707,10 @@ void QCPAxis::setAutoTickLabels(bool on)
 /*!
   Sets whether the tick step, i.e. the interval between two (major) ticks, is calculated
   automatically. If \a on is set to true, the axis finds a tick step that is reasonable for human
-  readable plots. This means the tick step mantissa is chosen such that it's either a multiple of
-  two or ends in 0.5. The number of ticks the algorithm aims for within the visible range can be
-  set with \ref setAutoTickCount. It's not guaranteed that this number of ticks is met exactly, but
-  approximately within a tolerance of two or three.
+  readable plots. 
+
+  The number of ticks the algorithm aims for within the visible range can be set with \ref
+  setAutoTickCount.
   
   If \a on is set to false, you may set the tick step manually with \ref setTickStep.
 */
@@ -719,9 +724,10 @@ void QCPAxis::setAutoTickStep(bool on)
 }
 
 /*!
-  Sets whether the number of sub ticks in one tick interval is determined automatically.
-  This works, as long as the tick step mantissa is a multiple of 0.5 (which it is, when
-  \ref setAutoTickStep is enabled).\n
+  Sets whether the number of sub ticks in one tick interval is determined automatically. This
+  works, as long as the tick step mantissa is a multiple of 0.5. When \ref setAutoTickStep is
+  enabled, this is always the case.
+  
   When \a on is set to false, you may set the sub tick count with \ref setSubTickCount manually.
 */
 void QCPAxis::setAutoSubTicks(bool on)
@@ -734,8 +740,10 @@ void QCPAxis::setAutoSubTicks(bool on)
 }
 
 /*!
-  Sets whether tick marks are displayed. Setting \a show to false does not imply, that tick labels
-  are invisible, too. To achieve that, see \ref setTickLabels.
+  Sets whether tick marks are displayed.
+
+  Note that setting \a show to false does not imply that tick labels are invisible, too. To achieve
+  that, see \ref setTickLabels.
 */
 void QCPAxis::setTicks(bool show)
 {
@@ -747,7 +755,7 @@ void QCPAxis::setTicks(bool show)
 }
 
 /*!
-  Sets whether tick labels are displayed.
+  Sets whether tick labels are displayed. Tick labels are the numbers drawn next to tick marks.
 */
 void QCPAxis::setTickLabels(bool show)
 {
@@ -759,7 +767,7 @@ void QCPAxis::setTickLabels(bool show)
 }
 
 /*!
-  Sets the distance between the axis base line (or any tick marks pointing outward) and the tick labels.
+  Sets the distance between the axis base line (including any outward ticks) and the tick labels.
   \see setLabelPadding, setPadding
 */
 void QCPAxis::setTickLabelPadding(int padding)
@@ -785,9 +793,11 @@ void QCPAxis::setTickLabelPadding(int padding)
   milliseconds. Divide its return value by 1000.0 to get a value with the format needed for
   date/time plotting, this time with a resolution of one millisecond.
   
-  Using the toMSecsSinceEpoch function allows dates that go back to 2nd January 4713 B.C. (i.e. a
-  negative number), unlike the toTime_t approach which works with unsigned integers and thus only
-  goes back to 1st January 1970.
+  Using the toMSecsSinceEpoch function allows dates that go back to 2nd January 4713 B.C.
+  (represented by a negative number), unlike the toTime_t approach which works with unsigned
+  integers and thus only goes back to 1st January 1970.
+  
+  \see setTicklabels
 */
 void QCPAxis::setTickLabelType(LabelType type)
 {
@@ -799,9 +809,9 @@ void QCPAxis::setTickLabelType(LabelType type)
 }
 
 /*!
-  Sets the font of the tick labels, i.e. the numbers drawn next to tick marks.
+  Sets the font of the tick labels.
   
-  \see setTickLabelColor
+  \see setTicklabels, setTickLabelColor
 */
 void QCPAxis::setTickLabelFont(const QFont &font)
 {
@@ -814,9 +824,9 @@ void QCPAxis::setTickLabelFont(const QFont &font)
 }
 
 /*!
-  Sets the color of the tick labels, i.e. the numbers drawn next to tick marks.
+  Sets the color of the tick labels.
   
-  \see setTickLabelFont
+  \see setTicklabels, setTickLabelFont
 */
 void QCPAxis::setTickLabelColor(const QColor &color)
 {
@@ -829,9 +839,13 @@ void QCPAxis::setTickLabelColor(const QColor &color)
 }
 
 /*!
-  Sets the rotation of the tick labels, i.e. the numbers drawn next to tick marks. If \a degrees
-  is zero, the labels are drawn normally. Else, the tick labels are drawn rotated by \a degrees
-  clockwise. The specified angle is bound to values from -90 to 90 degrees.
+  Sets the rotation of the tick labels. If \a degrees is zero, the labels are drawn normally. Else,
+  the tick labels are drawn rotated by \a degrees clockwise. The specified angle is bound to values
+  from -90 to 90 degrees.
+  
+  If \a degrees is exactly -90, 0 or 90, the tick labels are centered on the tick coordinate. For
+  other angles, the label is drawn with an offset such that it seems to point toward or away from
+  the tick mark.
 */
 void QCPAxis::setTickLabelRotation(double degrees)
 {
@@ -846,6 +860,7 @@ void QCPAxis::setTickLabelRotation(double degrees)
 /*!
   Sets the format in which dates and times are displayed as tick labels, if \ref setTickLabelType is \ref ltDateTime.
   for details about the \a format string, see the documentation of QDateTime::toString().
+  
   Newlines can be inserted with "\n".
 */
 void QCPAxis::setDateTimeFormat(const QString &format)
@@ -951,15 +966,15 @@ void QCPAxis::setNumberFormat(const QString &formatCode)
 }
 
 /*!
-  Sets the precision of the numbers drawn as tick labels. See QLocale::toString(double i, char f,
-  int prec) for details. The effect of precisions are most notably for number Formats starting with
-  'e', see \ref setNumberFormat
+  Sets the precision of the tick label numbers. See QLocale::toString(double i, char f, int prec)
+  for details. The effect of precisions are most notably for number Formats starting with 'e', see
+  \ref setNumberFormat
 
   If the scale type (\ref setScaleType) is \ref stLogarithmic and the number format (\ref
   setNumberFormat) uses the 'b' format code (beautifully typeset decimal powers), the display
   usually is "1 [multiplication sign] 10 [superscript] n", which looks unnatural for logarithmic
-  scaling (the "1 [multiplication sign]" part). To only display the decimal power, set \a precision
-  to zero.
+  scaling (the redundant "1 [multiplication sign]" part). To only display the decimal power "10
+  [superscript] n", set \a precision to zero.
 */
 void QCPAxis::setNumberPrecision(int precision)
 {
@@ -987,14 +1002,13 @@ void QCPAxis::setTickStep(double step)
 /*!
   If you want full control over what ticks (and possibly labels) the axes show, this function is
   used to set the coordinates at which ticks will appear.\ref setAutoTicks must be disabled, else
-  the provided tick vector will be overwritten with automatically generated tick coordinates. The
-  labels of the ticks can either be generated automatically when \ref setAutoTickLabels is left
-  enabled, or be set manually with \ref setTickVectorLabels, when \ref setAutoTickLabels is
-  disabled.
+  the provided tick vector will be overwritten with automatically generated tick coordinates upon
+  replot. The labels of the ticks can be generated automatically when \ref setAutoTickLabels is
+  left enabled. If it is disabled, you can set the labels manually with \ref setTickVectorLabels.
   
-  \a vec is a vector containing the positions of the ticks.
+  \a vec is a vector containing the positions of the ticks, in plot coordinates.
   
-  \warning \a vec must be sorted in ascending order.
+  \warning \a vec must be sorted in ascending order, no additional checks are made to ensure this.
 
   \see setTickVectorLabels
 */
@@ -1012,8 +1026,7 @@ void QCPAxis::setTickVector(const QVector<double> &vec)
   \ref setAutoTicks and \ref setAutoTickLabels first.)
   
   \a vec is a vector containing the labels of the ticks. The entries correspond to the respective
-  indices in the tick vector, passed via \ref setTickVector. So the label in vec[i] will appear at
-  the coordinate given by the tick vector index i.
+  indices in the tick vector, passed via \ref setTickVector.
   
   \see setTickVector
 */
@@ -1027,8 +1040,8 @@ void QCPAxis::setTickVectorLabels(const QVector<QString> &vec)
 /*!
   Sets the length of the ticks in pixels. \a inside is the length the ticks will reach inside the
   plot and \a outside is the length they will reach outside the plot. If \a outside is greater than
-  zero, the tick labels will increase their distance to the axis accordingly, so they won't collide
-  with the ticks.
+  zero, the tick labels and axis label will increase their distance to the axis accordingly, so
+  they won't collide with the ticks.
   
   \see setSubTickLength
 */
@@ -1061,8 +1074,8 @@ void QCPAxis::setTickLengthIn(int inside)
 
 /*!
   Sets the length of the outward ticks in pixels. \a outside is the length the ticks will reach
-  outside the plot. If \a outside is greater than zero, the tick labels will increase their
-  distance to the axis accordingly, so they won't collide with the ticks.
+  outside the plot. If \a outside is greater than zero, the tick labels and axis label will
+  increase their distance to the axis accordingly, so they won't collide with the ticks.
   
   \see setTickLengthIn, setSubTickLength
 */
@@ -1079,10 +1092,12 @@ void QCPAxis::setTickLengthOut(int outside)
   Sets the number of sub ticks in one (major) tick step. A sub tick count of three for example,
   divides the tick intervals in four sub intervals.
   
-  By default, the number of sub ticks is chosen automatically in a reasonable manner as long as
-  the mantissa of the tick step is a multiple of 0.5 (which it is, when \ref setAutoTickStep is enabled).
-  If you want to disable automatic sub ticks and use this function to set the count manually, see
-  \ref setAutoSubTicks.
+  By default, the number of sub ticks is chosen automatically in a reasonable manner as long as the
+  mantissa of the tick step is a multiple of 0.5. When \ref setAutoTickStep is enabled, this is
+  always the case.
+
+  If you want to disable automatic sub tick count and use this function to set the count manually,
+  see \ref setAutoSubTicks.
 */
 void QCPAxis::setSubTickCount(int count)
 {
@@ -1090,11 +1105,10 @@ void QCPAxis::setSubTickCount(int count)
 }
 
 /*!
-  Sets the length of the subticks in pixels. \a inside is the length the subticks will reach inside the
-  plot and \a outside is the length they will reach outside the plot. If \a outside is greater than
-  zero, the tick labels will increase their distance to the axis accordingly, so they won't collide
-  with the ticks.
-  \see setTickLength
+  Sets the length of the subticks in pixels. \a inside is the length the subticks will reach inside
+  the plot and \a outside is the length they will reach outside the plot. If \a outside is greater
+  than zero, the tick labels and axis label will increase their distance to the axis accordingly,
+  so they won't collide with the ticks.
 */
 void QCPAxis::setSubTickLength(int inside, int outside)
 {

@@ -2,7 +2,7 @@ NEXT RELEASE:
 
 doc review:
    - axis.h
-   > axis.cpp void QCPAxis::setAutoTicks(bool on)
+   > axis.cpp void QCPAxis::setSubTickLength(int inside, int outside)
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between
@@ -31,6 +31,7 @@ Migration FAQ:
 
 FUTURE RELEASE:
 
+- more options for tick-generation algorithm (integers, other stepping, range end only at ticks, date/time specific steps...)
 - Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs
 - alternating axis section backgrounds
 - Item class based on tracer which adds tag-like labels to points. With option to show x/y values via formatting strings (%key and %value).
