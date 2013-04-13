@@ -54,7 +54,7 @@ class QCP_LIB_DECL QCustomPlot : public QWidget
   /// \endcond
 public:
   /*!
-    Defines how a layer should be inserted relative to a specified other layer.
+    Defines how a layer should be inserted relative to an other layer.
 
     \see addLayer, moveLayer
   */

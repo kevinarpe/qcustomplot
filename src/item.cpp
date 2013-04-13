@@ -895,7 +895,7 @@ bool QCPAbstractItem::hasAnchor(const QString &name) const
 /*! \internal
   
   Returns the rect the visual representation of this item is clipped to. This depends on the
-  current setting of \ref setClipToAxisRect aswell as the axis rect set with \ref setClipAxisRect.
+  current setting of \ref setClipToAxisRect as well as the axis rect set with \ref setClipAxisRect.
   
   If the item is not clipped to an axis rect, the \ref QCustomPlot::viewport rect is returned.
   

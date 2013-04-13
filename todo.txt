@@ -2,7 +2,8 @@ NEXT RELEASE:
 
 doc review:
    - axis.h
-   > axis.cpp void QCPAxis::setSubTickLength(int inside, int outside)
+   - axis.cpp
+   > core.cpp at setSelectionTolerance
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between
@@ -10,6 +11,8 @@ doc:
 - add doc-note and qDebug output for case when addToLegend (QCPGraph/QCPAbstractPlottable) is called without the plottable being in the plot. 
 - explain ltDateTime mode on axes better. Probably give examples with numbers
 - QCPLayoutElement::calculateAutoMargin: note it must be taken care to respect minimumMargins value when using the auto margin
+- make margins/padding overview picture in doc-image-generator and insert in doc where appropriate – possibly make an own doc page with this
+- make own doc page which explains the layout system with images from doc-image-generator
 
 Migration FAQ:
 - setPlotTitle is gone, how do I set a plot title now?
@@ -31,6 +34,7 @@ Migration FAQ:
 
 FUTURE RELEASE:
 
+- selection rect mechanism
 - more options for tick-generation algorithm (integers, other stepping, range end only at ticks, date/time specific steps...)
 - Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs
 - alternating axis section backgrounds

@@ -1165,6 +1165,7 @@ void QCPAxis::setBasePen(const QPen &pen)
 
 /*!
   Sets the pen, tick marks will be drawn with.
+  
   \see setTickLength, setBasePen
 */
 void QCPAxis::setTickPen(const QPen &pen)
@@ -1174,6 +1175,7 @@ void QCPAxis::setTickPen(const QPen &pen)
 
 /*!
   Sets the pen, subtick marks will be drawn with.
+  
   \see setSubTickCount, setSubTickLength, setBasePen
 */
 void QCPAxis::setSubTickPen(const QPen &pen)
@@ -1206,7 +1208,8 @@ void QCPAxis::setLabelColor(const QColor &color)
 }
 
 /*!
-  Sets the axis label that will be shown below/above or next to the axis, depending on its orientation.
+  Sets the text of the axis label that will be shown below/above or next to the axis, depending on
+  its orientation. To disable axis labels, pass an empty string as \a str.
 */
 void QCPAxis::setLabel(const QString &str)
 {
@@ -1219,6 +1222,7 @@ void QCPAxis::setLabel(const QString &str)
 
 /*!
   Sets the distance between the tick labels and the axis label.
+  
   \see setTickLabelPadding, setPadding
 */
 void QCPAxis::setLabelPadding(int padding)
@@ -1249,6 +1253,12 @@ void QCPAxis::setPadding(int padding)
   }
 }
 
+/*!
+  Sets the offset the axis has to its axis rect side.
+  
+  If an axis rect side has multiple axes, only the offset of the inner most axis has meaning. The offset of the other axes
+  is controlled automatically, to place the axes at appropriate positions to prevent them from overlapping.
+*/
 void QCPAxis::setOffset(int offset)
 {
   if (mOffset != offset)
@@ -1261,7 +1271,7 @@ void QCPAxis::setOffset(int offset)
 /*!
   Sets the font that is used for tick labels when they are selected.
   
-  \see setTickLabelFont, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setTickLabelFont, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedTickLabelFont(const QFont &font)
 {
@@ -1338,11 +1348,31 @@ void QCPAxis::setSelectedSubTickPen(const QPen &pen)
   mSelectedSubTickPen = pen;
 }
 
+/*!
+  Sets the style for the lower axis ending. See the documentation of QCPLineEnding for available
+  styles.
+  
+  For horizontal axes, this method refers to the left ending, for vertical axes the bottom ending.
+  Note that this meaning does not change when the axis range is reversed with \ref
+  setRangeReversed.
+  
+  \see setUpperEnding
+*/
 void QCPAxis::setLowerEnding(const QCPLineEnding &ending)
 {
   mLowerEnding = ending;
 }
 
+/*!
+  Sets the style for the upper axis ending. See the documentation of QCPLineEnding for available
+  styles.
+  
+  For horizontal axes, this method refers to the right ending, for vertical axes the top ending.
+  Note that this meaning does not change when the axis range is reversed with \ref
+  setRangeReversed.
+  
+  \see setUpperEnding
+*/
 void QCPAxis::setUpperEnding(const QCPLineEnding &ending)
 {
   mUpperEnding = ending;
@@ -1410,7 +1440,7 @@ void QCPAxis::scaleRange(double factor, double center)
   axis rect has.
 
   This is an operation that changes the range of this axis once, it doesn't fix the scale ratio
-  indefinitely. Therefore, calling this function in the constructor of the QCustomPlot's parent
+  indefinitely. Note that calling this function in the constructor of the QCustomPlot's parent
   won't have the desired effect, since the widget dimensions aren't defined yet, and a resizeEvent
   will follow.
 */
@@ -1433,7 +1463,7 @@ void QCPAxis::setScaleRatio(const QCPAxis *otherAxis, double ratio)
 }
 
 /*!
-  Transforms \a value (in pixel coordinates of the QCustomPlot widget) to axis coordinates.
+  Transforms \a value, in pixel coordinates of the QCustomPlot widget, to axis coordinates.
 */
 double QCPAxis::pixelToCoord(double value) const
 {
@@ -1471,7 +1501,7 @@ double QCPAxis::pixelToCoord(double value) const
 }
 
 /*!
-  Transforms \a value (in coordinates of the axis) to pixel coordinates of the QCustomPlot widget.
+  Transforms \a value, in coordinates of the axis, to pixel coordinates of the QCustomPlot widget.
 */
 double QCPAxis::coordToPixel(double value) const
 {
@@ -1546,6 +1576,7 @@ QCPAxis::SelectablePart QCPAxis::getPartAt(const QPointF &pos) const
     return spNone;
 }
 
+/* inherits documentation from base class */
 double QCPAxis::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   if (!mParentPlot) return -1;
@@ -1558,6 +1589,13 @@ double QCPAxis::selectTest(const QPointF &pos, bool onlySelectable, QVariant *de
   return mParentPlot->selectionTolerance()*0.99;
 }
 
+/*!
+  Returns a list of all the plottables that have this axis as key or value axis.
+  
+  If you are only interested in plottables of type QCPGraph, see \ref graphs.
+  
+  \see graphs, items
+*/
 QList<QCPAbstractPlottable*> QCPAxis::plottables() const
 {
   QList<QCPAbstractPlottable*> result;
@@ -1571,6 +1609,11 @@ QList<QCPAbstractPlottable*> QCPAxis::plottables() const
   return result;
 }
 
+/*!
+  Returns a list of all the graphs that have this axis as key or value axis.
+  
+  \see plottables, items
+*/
 QList<QCPGraph*> QCPAxis::graphs() const
 {
   QList<QCPGraph*> result;
@@ -1584,6 +1627,12 @@ QList<QCPGraph*> QCPAxis::graphs() const
   return result;
 }
 
+/*!
+  Returns a list of all the items that are associated with this axis. An item is considered
+  associated with an axis if at least one of its positions uses the axis as key or value axis.
+  
+  \see plottables, graphs
+*/
 QList<QCPAbstractItem*> QCPAxis::items() const
 {
   QList<QCPAbstractItem*> result;
@@ -1604,6 +1653,10 @@ QList<QCPAbstractItem*> QCPAxis::items() const
   return result;
 }
 
+/*!
+  Transforms a margin side to the logically corresponding axis type. (QCP::msLeft to
+  QCPAxis::atLeft, QCP::msRight to QCPAxis::atRight, etc.)
+*/
 QCPAxis::AxisType QCPAxis::marginSideToAxisType(QCP::MarginSide side)
 {
   switch (side)
@@ -1620,11 +1673,10 @@ QCPAxis::AxisType QCPAxis::marginSideToAxisType(QCP::MarginSide side)
 
 /*! \internal
   
-  This function is called before the grid and axis is drawn, in order to prepare the tick vector,
-  sub tick vector and tick label vector. If \ref setAutoTicks is set to true, appropriate tick
-  values are determined automatically via \ref generateAutoTicks. If it's set to false, the signal
-  ticksRequest is emitted, which can be used to provide external tick positions. Then the sub tick
-  vectors and tick label vectors are created.
+  This function is called to prepare the tick vector, sub tick vector and tick label vector. If
+  \ref setAutoTicks is set to true, appropriate tick values are determined automatically via \ref
+  generateAutoTicks. If it's set to false, the signal ticksRequest is emitted, which can be used to
+  provide external tick positions. Then the sub tick vectors and tick label vectors are created.
 */
 void QCPAxis::setupTickVectors()
 {
@@ -1716,10 +1768,10 @@ void QCPAxis::setupTickVectors()
   
   If \ref setAutoTicks is set to true, this function is called by \ref setupTickVectors to
   generate reasonable tick positions (and subtick count). The algorithm tries to create
-  approximately <tt>mAutoTickCount</tt> ticks (set via \ref setAutoTickCount), taking into account,
-  that tick mantissas that are divisable by two or end in .5 are nice to look at and practical in
-  linear scales. If the scale is logarithmic, one tick is generated at every power of the current
-  logarithm base, set via \ref setScaleLogBase.
+  approximately <tt>mAutoTickCount</tt> ticks (set via \ref setAutoTickCount).
+ 
+  If the scale is logarithmic, \ref setAutoTickCount is ignored, and one tick is generated at every
+  power of the current logarithm base, set via \ref setScaleLogBase.
 */
 void QCPAxis::generateAutoTicks()
 {
@@ -1857,8 +1909,7 @@ int QCPAxis::calculateAutoSubTickCount(double tickStep) const
 
 /*! \internal
   
-  The main draw function of an axis, called by QCustomPlot::draw for each axis. Draws axis
-  baseline, major ticks, subticks, tick labels and axis label.
+  Draws the axis with the specified \a painter.
   
   The selection boxes (mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox) are set
   here, too.
@@ -2049,12 +2100,14 @@ void QCPAxis::draw(QCPPainter *painter)
   at which the label should be drawn.
   
   In order to later draw the axis label in a place that doesn't overlap with the tick labels, the
-  largest tick label size is needed. This is acquired by passing a \a tickLabelsSize to all \ref
-  drawTickLabel calls during the process of drawing all tick labels of one axis. \a tickLabelsSize
-  is only expanded, if the drawn label exceeds the value \a tickLabelsSize currently holds.
+  largest tick label size is needed. This is acquired by passing a \a tickLabelsSize to the \ref
+  drawTickLabel calls during the process of drawing all tick labels of one axis. In every call, \a
+  tickLabelsSize is expanded, if the drawn label exceeds the value \a tickLabelsSize currently
+  holds.
   
   The label is drawn with the font and pen that are currently set on the \a painter. To draw
-  superscripted powers, the font is temporarily made smaller by a fixed factor.
+  superscripted powers, the font is temporarily made smaller by a fixed factor (see \ref
+  getTickLabelData).
 */
 void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceToAxis, const QString &text, QSize *tickLabelsSize)
 {
@@ -2132,9 +2185,9 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
   This is a \ref placeTickLabel helper function.
   
   Draws the tick label specified in \a labelData with \a painter at the pixel positions \a x and \a
-  y. This function is used by \ref placeTickLabel to create cached tick labels or to directly draw
-  the labels on the QCustomPlot surface when label caching is disabled (when QCP::phCacheLabels
-  plotting hint is not set).
+  y. This function is used by \ref placeTickLabel to create new tick labels for the cache, or to
+  directly draw the labels on the QCustomPlot surface when label caching is disabled, i.e. when
+  QCP::phCacheLabels plotting hint is not set.
 */
 void QCPAxis::drawTickLabel(QCPPainter *painter, double x, double y, const QCPAxis::TickLabelData &labelData) const
 {
@@ -2170,8 +2223,8 @@ void QCPAxis::drawTickLabel(QCPPainter *painter, double x, double y, const QCPAx
   This is a \ref placeTickLabel helper function.
   
   Transforms the passed \a text and \a font to a tickLabelData structure that can then be further
-  processed by \ref getTickLabelDrawOffset and \ref drawTickLabel. Thus it splits the text into base
-  and exponent if necessary (see \ref setNumberFormat) and calculates appropriate bounding boxes.
+  processed by \ref getTickLabelDrawOffset and \ref drawTickLabel. It splits the text into base and
+  exponent if necessary (see \ref setNumberFormat) and calculates appropriate bounding boxes.
 */
 QCPAxis::TickLabelData QCPAxis::getTickLabelData(const QFont &font, const QString &text) const
 {
@@ -2336,10 +2389,10 @@ QPointF QCPAxis::getTickLabelDrawOffset(const QCPAxis::TickLabelData &labelData)
 
 /*! \internal
   
-  Simulates the steps done by \ref drawTickLabel by calculating bounding boxes of the text label to
-  be drawn, depending on number format etc. Since we only want the largest tick label for the
-  margin calculation, the passed \a tickLabelsSize isn't overridden with the calculated label size,
-  but only expanded, if it's currently set to a smaller width/height.
+  Simulates the steps done by \ref placeTickLabel by calculating bounding boxes of the text label
+  to be drawn, depending on number format etc. Since only the largest tick label is wanted for the
+  margin calculation, the passed \a tickLabelsSize is only expanded, if it's currently set to a
+  smaller width/height.
 */
 void QCPAxis::getMaxTickLabelSize(const QFont &font, const QString &text,  QSize *tickLabelsSize) const
 {
@@ -2362,6 +2415,7 @@ void QCPAxis::getMaxTickLabelSize(const QFont &font, const QString &text,  QSize
     tickLabelsSize->setHeight(finalSize.height());
 }
 
+/* inherits documentation from base class */
 void QCPAxis::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
@@ -2375,6 +2429,7 @@ void QCPAxis::selectEvent(QMouseEvent *event, bool additive, const QVariant &det
   }
 }
 
+/* inherits documentation from base class */
 void QCPAxis::deselectEvent(bool *selectionStateChanged)
 {
   SelectableParts selBefore = mSelectedParts;
@@ -2406,7 +2461,7 @@ void QCPAxis::applyDefaultAntialiasingHint(QCPPainter *painter) const
   the current range. The return values are indices of the tick vector, not the positions of the
   ticks themselves.
   
-  The actual use of this function is when we have an externally provided tick vector, which might
+  The actual use of this function is when an external tick vector is provided, since it might
   exceed far beyond the currently displayed range, and would cause unnecessary calculations e.g. of
   subticks.
   
@@ -2414,8 +2469,7 @@ void QCPAxis::applyDefaultAntialiasingHint(QCPPainter *painter) const
   smaller than lowIndex. There is one case, where this function returns indices that are not really
   visible in the current axis range: When the tick spacing is larger than the axis range size and
   one tick is below the axis range and the next tick is already above the axis range. Because in
-  such cases we still want to know that tick pair whose span we are looking at to draw proper
-  subticks.
+  such cases it is usually desirable to know the tick pair, to draw proper subticks.
 */
 void QCPAxis::visibleTickBounds(int &lowIndex, int &highIndex) const
 {
@@ -2546,14 +2600,14 @@ QColor QCPAxis::getLabelColor() const
 
 /*! \internal
   
-  Returns the appropriate outward margin for this axis. It is used if \ref
+  Returns the appropriate outward margin for this axis. It is needed if \ref
   QCPAxisRect::setAutoMargins is set to true on the parent axis rect. An axis with axis type \ref
   atLeft will return an appropriate left margin, \ref atBottom will return an appropriate bottom
   margin and so forth. For the calculation, this function goes through similar steps as \ref draw,
-  so changing one function likely requires the modification of the other one aswell.
+  so changing one function likely requires the modification of the other one as well.
   
-  The margin consists of: outward tick length, tick label padding, tick label size, label padding,
-  label size, padding.
+  The margin consists of the outward tick length, tick label padding, tick label size, label
+  padding, label size, and padding.
   
   The margin is cached internally, so repeated calls while leaving the axis range, fonts, etc.
   unchanged are very fast.
@@ -2598,6 +2652,7 @@ int QCPAxis::calculateMargin()
   return margin;
 }
 
+/* inherits documentation from base class */
 QCP::Interaction QCPAxis::selectionCategory() const
 {
   return QCP::iSelectAxes;

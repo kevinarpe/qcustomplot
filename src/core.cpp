@@ -39,13 +39,13 @@
 /*! \mainpage %QCustomPlot Documentation
  
   Below is a brief overview of and guide to the classes and their relations. If you are new to
-  QCustomPlot and just want to start using it, it's recommended to look at the examples/tutorials
-  at
+  QCustomPlot and just want to start using it, it's recommended to look at the tutorials and
+  examples at
  
   http://www.WorksLikeClockWork.com/index.php/components/qt-plotting-widget
  
-  This documentation is especially helpful when you're familiar with the basic concept of how to use
-  %QCustomPlot and you wish to learn more about specific functionality.
+  This documentation is especially helpful as a reference, when you're familiar with the basic
+  concept of how to use %QCustomPlot and you wish to learn more about specific functionality.
  
   \section simpleoverview Simplified Class Overview
   
@@ -53,9 +53,10 @@
   \image html ClassesOverviewSimplified.png
   <center>Simplified diagram of most important classes, view the \ref classoverview "Class Overview" to see a full overview.</center>
   
-  The central widget which displays the plottables and axes on its surface is QCustomPlot. Usually,
-  you don't create the axes yourself, but you use the ones already inside every QCustomPlot
-  instance (xAxis, yAxis, xAxis2, yAxis2).
+  The central widget which displays the plottables and axes on its surface is QCustomPlot. Every
+  QCustomPlot contains four axes by default. They can be accessed via the members xAxis, yAxis,
+  xAxis2 and yAxis2, and are of type QCPAxis. QCustomPlot supports an arbitrary number of axes and axis rects, see the
+  documentation of QCPAxisRect for details.
 
   \section plottables Plottables
   
@@ -71,15 +72,15 @@
   First, you create an instance of the plottable you want, e.g.
   \code
   QCPCurve *newCurve = new QCPCurve(customPlot->xAxis, customPlot->yAxis);\endcode
-  add it to the customPlot with QCustomPlot::addPlottable:
+  add it to the customPlot:
   \code
   customPlot->addPlottable(newCurve);\endcode
-  and then modify the properties of the newly created plottable via <tt>newCurve</tt>.
+  and then modify the properties of the newly created plottable via the <tt>newCurve</tt> pointer.
   
   Plottables (including graphs) can be retrieved via QCustomPlot::plottable. Since the return type
   of that function is the abstract base class of all plottables, QCPAbstractPlottable, you will
-  probably want to qobject_cast (or dynamic_cast) the returned pointer to the respective plottable
-  subclass. (As usual, if the cast returns zero, the plottable wasn't of that specific subclass.)
+  probably want to qobject_cast the returned pointer to the respective plottable subclass. (As
+  usual, if the cast returns zero, the plottable wasn't of that specific subclass.)
   
   All further interfacing with plottables (e.g how to set data) is specific to the plottable type.
   See the documentations of the subclasses: QCPGraph, QCPCurve, QCPBars, QCPStatisticalBox.
@@ -94,37 +95,41 @@
   scale, set QCPAxis::setScaleType to QCPAxis::stLogarithmic. The logarithm base can be set freely
   with QCPAxis::setScaleLogBase.
   
-  By default, an axis automatically creates and labels ticks in a sensible manner, i.e. with a tick
-  interval that's pleasing to the viewer. See the following functions for tick manipulation:\n
-  QCPAxis::setTicks, QCPAxis::setAutoTicks, QCPAxis::setAutoTickCount, QCPAxis::setAutoTickStep,
-  QCPAxis::setTickLabels, QCPAxis::setTickLabelType, QCPAxis::setTickLabelRotation,
-  QCPAxis::setTickStep, QCPAxis::setTickLength,...
+  By default, an axis automatically creates and labels ticks in a sensible manner. See the
+  following functions for tick manipulation:\n QCPAxis::setTicks, QCPAxis::setAutoTicks,
+  QCPAxis::setAutoTickCount, QCPAxis::setAutoTickStep, QCPAxis::setTickLabels,
+  QCPAxis::setTickLabelType, QCPAxis::setTickLabelRotation, QCPAxis::setTickStep,
+  QCPAxis::setTickLength,...
   
-  Each axis can be given an axis label (e.g. "Voltage [mV]") with QCPAxis::setLabel.
+  Each axis can be given an axis label (e.g. "Voltage (mV)") with QCPAxis::setLabel.
   
-  The distance of an axis backbone to the respective QCustomPlot widget border is called its margin.
-  Normally, the margins are calculated automatically. To change this, set QCustomPlot::setAutoMargin
-  to false and set the margins manually with QCustomPlot::setMargin.
+  The distance of an axis backbone to the respective viewport border is called its margin.
+  Normally, the margins are calculated automatically. To change this, set
+  QCPAxisRect::setAutoMargins to exclude the respective margin sides, set the margins manually with
+  QCPAxisRect::setMargins. The main axis rect can be reached with QCustomPlot::axisRect().
   
   \section legend Plot Legend
   
-  Every QCustomPlot owns a QCPLegend (as \a legend). That's a small window inside the plot which
-  lists the plottables with an icon of the plottable line/symbol and a description. The Description
-  is retrieved from the plottable name (QCPAbstractPlottable::setName). Plottables can be added and
-  removed from the legend via \ref QCPAbstractPlottable::addToLegend and \ref
-  QCPAbstractPlottable::removeFromLegend. By default, adding a plottable to QCustomPlot
-  automatically adds it to the legend, too. This behaviour can be modified with the
-  QCustomPlot::setAutoAddPlottableToLegend property.
+  Every QCustomPlot owns one QCPLegend (as \a legend) by default. A legend is a small layout
+  element inside the plot which lists the plottables with an icon of the plottable line/symbol and
+  a description. The Description is retrieved from the plottable name
+  (QCPAbstractPlottable::setName). Plottables can be added and removed from the legend via \ref
+  QCPAbstractPlottable::addToLegend and \ref QCPAbstractPlottable::removeFromLegend. By default,
+  adding a plottable to QCustomPlot automatically adds it to the legend, too. This behaviour can be
+  modified with the QCustomPlot::setAutoAddPlottableToLegend property.
   
   The QCPLegend provides an interface to access, add and remove legend items directly, too. See
   QCPLegend::item, QCPLegend::itemWithPlottable, QCPLegend::addItem, QCPLegend::removeItem for
   example.
   
+  Multiple legends are supported via the layout system (as a QCPLegend simply is a normal layout
+  element).
+  
   \section userinteraction User Interactions
   
-  QCustomPlot currently supports dragging axis ranges with the mouse (\ref
-  QCustomPlot::setRangeDrag), zooming axis ranges with the mouse wheel (\ref
-  QCustomPlot::setRangeZoom) and a complete selection mechanism of most objects.
+  QCustomPlot supports dragging axis ranges with the mouse (\ref
+  QCPAxisRect::setRangeDrag), zooming axis ranges with the mouse wheel (\ref
+  QCPAxisRect::setRangeZoom) and a complete selection mechanism.
   
   The availability of these interactions is controlled with \ref QCustomPlot::setInteractions. For
   details about the interaction system, see the documentation there.
@@ -138,12 +143,12 @@
   Apart from plottables there is another category of plot objects that are important: Items. The
   base class of all items is QCPAbstractItem. An item sets itself apart from plottables in that
   it's not necessarily bound to any axes. This means it may also be positioned in absolute pixel
-  coordinates or placed at a relative position on the axis rect. Further, it usually doesn't
+  coordinates or placed at a relative position on an axis rect. Further, it usually doesn't
   represent data directly, but acts as decoration, emphasis, description etc.
   
   Multiple items can be arranged in a parent-child-hierarchy allowing for dynamical behaviour. For
   example, you could place the head of an arrow at a fixed plot coordinate, so it always points to
-  some important part of your data. The tail of the arrow can be anchored to a text item which
+  some important area in the plot. The tail of the arrow can be anchored to a text item which
   always resides in the top center of the axis rect, independent of where the user drags the axis
   ranges. This way the arrow stretches and turns so it always points from the label to the
   specified plot coordinate, without any further code necessary.
@@ -153,18 +158,18 @@
   
   \section performancetweaks Performance Tweaks
   
-  Although QCustomPlot is quite fast, some features like semi-transparent fills and antialiasing
-  can cause a significant slow down. Here are some thoughts on how to increase performance. By far
-  the most time is spent in the drawing functions, specifically the drawing of graphs. For maximum
-  performance, consider the following (most recommended/effective measures first):
+  Although QCustomPlot is quite fast, some features like translucent fills, antialiasing and thick
+  lines can cause a significant slow down. Here are some thoughts on how to increase performance.
+  By far the most time is spent in the drawing functions, specifically the drawing of graphs. For
+  maximum performance, consider the following (most recommended/effective measures first):
   
-  \li use Qt 4.8.0 and up. Performance has doubled or tripled with respect to Qt 4.7.4. However they broke QPainter,
+  \li use Qt 4.8.0 and up. Performance has doubled or tripled with respect to Qt 4.7.4. However QPainter was broken,
   drawing pixel precise things, e.g. scatters, isn't possible with Qt 4.8.0/1. So it's a performance vs. plot
   quality tradeoff when switching to Qt 4.8.
   \li To increase responsiveness during dragging, consider setting \ref QCustomPlot::setNoAntialiasingOnDrag to true.
-  \li On X11 (linux), avoid the (slow) native drawing system, use raster by supplying
+  \li On X11 (GNU/Linux), avoid the slow native drawing system, use raster by supplying
   "-graphicssystem raster" as command line argument or calling QApplication::setGraphicsSystem("raster")
-  before creating the QApplication object.
+  before creating the QApplication object. (Only available for Qt versions before 5.0)
   \li On all operating systems, use OpenGL hardware acceleration by supplying "-graphicssystem
   opengl" as command line argument or calling QApplication::setGraphicsSystem("opengl"). If OpenGL
   is available, this will slightly decrease the quality of antialiasing, but extremely increase
@@ -175,6 +180,7 @@
   second), OpenGL acceleration might achieve numerically lower frame rates than the other
   graphics systems, because they are not capped at the VSync frequency.
   \li Avoid any kind of alpha (transparency), especially in fills
+  \li Avoid lines with a pen width greater than one
   \li Avoid any kind of antialiasing, especially in graph lines (see QCustomPlot::setNotAntialiasedElements)
   \li Avoid repeatedly setting the complete data set with QCPGraph::setData. Use QCPGraph::addData instead, if most
   data points stay unchanged, e.g. in a running measurement.
@@ -209,7 +215,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*! \class QCustomPlot
-  \brief The central class of the library, the QWidget which displays the plot and interacts with the user.
+  
+  \brief The central class of the library. This is the QWidget which displays the plot and
+  interacts with the user.
   
   For tutorials on how to use QCustomPlot, see the website\n
   http://www.WorksLikeClockWork.com/index.php/components/qt-plotting-widget
@@ -224,9 +232,9 @@
   plot. The viewport normally is the rect() of the QCustomPlot widget, i.e. a rect with top left
   (0, 0) and size of the QCustomPlot widget.
   
-  Don't confuse the viewport with the axisRect. An axisRect is the rect defined by two axes, where
-  the graphs/plottables are drawn in. The viewport is larger and contains also the axes themselves, their
-  tick numbers, their labels, the plot title etc.
+  Don't confuse the viewport with the axis rect (QCustomPlot::axisRect). An axis rect is typically
+  an area enclosed by four axes, where the graphs/plottables are drawn in. The viewport is larger
+  and contains also the axes themselves, their tick numbers, their labels, the plot title etc.
   
   Only when saving to a file (see \ref savePng, savePdf etc.) the viewport is temporarily modified
   to allow saving plots with sizes independent of the current widget size.
@@ -244,21 +252,22 @@
 
   This signal is emitted when the QCustomPlot receives a mouse press event.
   
-  It is emitted before the QCustomPlot handles its range dragging mechanism, so a slot connected to
-  this signal can still influence the behaviour e.g. with \ref setRangeDrag or \ref
-  setRangeDragAxes.
+  It is emitted before QCustomPlot handles any other mechanism like range dragging. So a slot
+  connected to this signal can still influence the behaviour e.g. with \ref QCPAxisRect::setRangeDrag or \ref
+  QCPAxisRect::setRangeDragAxes.
 */
 
 /*! \fn void QCustomPlot::mouseMove(QMouseEvent *event)
 
   This signal is emitted when the QCustomPlot receives a mouse move event.
   
-  It is emitted before the QCustomPlot handles its range dragging mechanism, so a slot connected to
-  this signal can still influence the behaviour e.g. with \ref setRangeDrag.
+  It is emitted before QCustomPlot handles any other mechanism like range dragging. So a slot
+  connected to this signal can still influence the behaviour e.g. with \ref QCPAxisRect::setRangeDrag or \ref
+  QCPAxisRect::setRangeDragAxes.
   
-  \warning It is discouraged to change the drag-axes with \ref setRangeDragAxes here, because the
-  dragging starting point was saved the moment the mouse was pressed. Thus it only has a sensible
-  meaning for the range drag axes that were set at that moment. If you want to change the drag
+  \warning It is discouraged to change the drag-axes with \ref QCPAxisRect::setRangeDragAxes here,
+  because the dragging starting point was saved the moment the mouse was pressed. Thus it only has
+  a meaning for the range drag axes that were set at that moment. If you want to change the drag
   axes, consider doing this in the \ref mousePress signal instead.
 */
 
@@ -266,18 +275,18 @@
 
   This signal is emitted when the QCustomPlot receives a mouse release event.
   
-  It is emitted before the QCustomPlot handles its selection mechanism, so a slot connected to this
-  signal can still influence the behaviour e.g. with \ref setInteractions or \ref
-  QCPAbstractPlottable::setSelectable.
+  It is emitted before QCustomPlot handles any other mechanisms like object selection. So a
+  slot connected to this signal can still influence the behaviour e.g. with \ref setInteractions or
+  \ref QCPAbstractPlottable::setSelectable.
 */
 
 /*! \fn void QCustomPlot::mouseWheel(QMouseEvent *event)
 
   This signal is emitted when the QCustomPlot receives a mouse wheel event.
   
-  It is emitted before the QCustomPlot handles its range zooming mechanism, so a slot connected to
-  this signal can still influence the behaviour e.g. with \ref setRangeZoom, \ref setRangeZoomAxes
-  or \ref setRangeZoomFactor.
+  It is emitted before QCustomPlot handles any other mechanisms like range zooming. So a slot
+  connected to this signal can still influence the behaviour e.g. with \ref QCPAxisRect::setRangeZoom, \ref
+  QCPAxisRect::setRangeZoomAxes or \ref QCPAxisRect::setRangeZoomFactor.
 */
 
 /*! \fn void QCustomPlot::plottableClick(QCPAbstractPlottable *plottable, QMouseEvent *event)
@@ -346,7 +355,8 @@
   
   \a event is the mouse event that caused the click, \a legend is the legend that received the
   click and \a item is the legend item that received the click. If only the legend and no item is
-  clicked, \a item is 0 (e.g. a click inside the legend padding, which is not part of any item).
+  clicked, \a item is 0. This happens for a click inside the legend padding or the space between
+  two items.
   
   \see legendDoubleClick
 */
@@ -357,25 +367,28 @@
   
   \a event is the mouse event that caused the click, \a legend is the legend that received the
   click and \a item is the legend item that received the click. If only the legend and no item is
-  clicked, \a item is 0 (e.g. a click inside the legend padding, which is not part of any item).
+  clicked, \a item is 0. This happens for a click inside the legend padding or the space between
+  two items.
   
   \see legendClick
 */
 
-/*! \fn void QCustomPlot:: titleClick(QMouseEvent *event)
+/*! \fn void QCustomPlot:: titleClick(QMouseEvent *event, QCPPlotTitle *title)
 
-  This signal is emitted when the plot title is clicked.
+  This signal is emitted when a plot title is clicked.
   
-  \a event is the mouse event that caused the click.
+  \a event is the mouse event that caused the click and \a title is the plot title that received
+  the click.
   
   \see titleDoubleClick
 */
 
-/*! \fn void QCustomPlot::titleDoubleClick(QMouseEvent *event)
+/*! \fn void QCustomPlot::titleDoubleClick(QMouseEvent *event, QCPPlotTitle *title)
 
-  This signal is emitted when the plot title is double clicked.
+  This signal is emitted when a plot title is double clicked.
   
-  \a event is the mouse event that caused the click.
+  \a event is the mouse event that caused the click and \a title is the plot title that received
+  the click.
   
   \see titleClick
 */
@@ -383,13 +396,16 @@
 /*! \fn void QCustomPlot::selectionChangedByUser()
   
   This signal is emitted after the user has changed the selection in the QCustomPlot, e.g. by
-  clicking. It is not emitted, when the selection state of an object has changed programmatically,
-  e.g. by a direct call to setSelected() on a plottable or by calling \ref deselectAll.
+  clicking. It is not emitted when the selection state of an object has changed programmatically by
+  a direct call to setSelected() on an object or by calling \ref deselectAll.
   
-  See the documentation of \ref setInteractions for how to find out which objects are currently
-  selected.
+  In addition to this signal, selectable objects also provide individual signals, for example
+  QCPAxis::selectionChanged or QCPAbstractPlottable::selectionChanged. Note that those signals are
+  emitted even if the selection state is changed programmatically.
   
-  \see setInteractions, QCPAbstractPlottable::selectionChanged, QCPAxis::selectionChanged
+  See the documentation of \ref setInteractions for details about the selection mechanism.
+  
+  \see selectedPlottables, selectedGraphs, selectedItems, selectedAxes, selectedLegends
 */
 
 /*! \fn void QCustomPlot::beforeReplot()
@@ -398,7 +414,7 @@
   replot).
   
   It is safe to mutually connect the replot slot with this signal on two QCustomPlots to make them
-  replot synchronously (i.e. it won't cause an infinite recursion).
+  replot synchronously, it won't cause an infinite recursion.
   
   \see replot, afterReplot
 */
@@ -409,7 +425,7 @@
   replot).
   
   It is safe to mutually connect the replot slot with this signal on two QCustomPlots to make them
-  replot synchronously (i.e. it won't cause an infinite recursion).
+  replot synchronously, it won't cause an infinite recursion.
   
   \see replot, beforeReplot
 */
@@ -418,9 +434,6 @@
 
 /*!
   Constructs a QCustomPlot and sets reasonable default values.
-  Four axes are created at the bottom, left, top and right sides (xAxis, yAxis, xAxis2, yAxis2),
-  however, only the bottom and left axes are set to be visible.
-  The legend is also set to be invisible initially.
 */
 QCustomPlot::QCustomPlot(QWidget *parent) :
   QWidget(parent),
@@ -502,7 +515,7 @@ QCustomPlot::~QCustomPlot()
 }
 
 /*!
-  Sets which elements are forcibly drawn antialiased as an or combination of QCP::AntialiasedElement.
+  Sets which elements are forcibly drawn antialiased as an \a or combination of QCP::AntialiasedElement.
   
   This overrides the antialiasing settings for whole element groups, normally controlled with the
   \a setAntialiasing function on the individual elements. If an element is neither specified in
@@ -512,6 +525,9 @@ QCustomPlot::~QCustomPlot()
   For example, if \a antialiasedElements contains \ref QCP::aePlottables, all plottables will be
   drawn antialiased, no matter what the specific QCPAbstractPlottable::setAntialiased value was set
   to.
+  
+  if an element in \a antialiasedElements is already set in \ref setNotAntialiasedElements, it is
+  removed from there.
   
   \see setNotAntialiasedElements
 */
@@ -527,14 +543,7 @@ void QCustomPlot::setAntialiasedElements(const QCP::AntialiasedElements &antiali
 /*!
   Sets whether the specified \a antialiasedElement is forcibly drawn antialiased.
   
-  This overrides the antialiasing settings for whole element groups, normally controlled with the
-  \a setAntialiasing function on the individual elements. If an element is neither specified in
-  \ref setAntialiasedElements nor in \ref setNotAntialiasedElements, the antialiasing setting on
-  each individual element instance is used.
-  
-  For example, if \a enabled is true and \a antialiasedElement is \ref QCP::aePlottables, all
-  plottables will be drawn antialiased, no matter what the specific
-  QCPAbstractPlottable::setAntialiased value was set to.
+  See \ref setAntialiasedElements for details.
   
   \see setNotAntialiasedElement
 */
@@ -551,7 +560,7 @@ void QCustomPlot::setAntialiasedElement(QCP::AntialiasedElement antialiasedEleme
 }
 
 /*!
-  Sets which elements are forcibly drawn not antialiased as an or combination of
+  Sets which elements are forcibly drawn not antialiased as an \a or combination of
   QCP::AntialiasedElement.
   
   This overrides the antialiasing settings for whole element groups, normally controlled with the
@@ -580,17 +589,7 @@ void QCustomPlot::setNotAntialiasedElements(const QCP::AntialiasedElements &notA
 /*!
   Sets whether the specified \a notAntialiasedElement is forcibly drawn not antialiased.
   
-  This overrides the antialiasing settings for whole element groups, normally controlled with the
-  \a setAntialiasing function on the individual elements. If an element is neither specified in
-  \ref setAntialiasedElements nor in \ref setNotAntialiasedElements, the antialiasing setting on
-  each individual element instance is used.
-  
-  For example, if \a enabled is true and \a notAntialiasedElement is \ref QCP::aePlottables, no
-  plottables will be drawn antialiased, no matter what the specific
-  QCPAbstractPlottable::setAntialiased value was set to.
-  
-  if \a enabled is true and \a notAntialiasedElement is already set with \ref
-  setAntialiasedElement, it is removed from there.
+  See \ref setNotAntialiasedElements for details.
   
   \see setAntialiasedElement
 */
@@ -608,7 +607,7 @@ void QCustomPlot::setNotAntialiasedElement(QCP::AntialiasedElement notAntialiase
 
 /*!
   If set to true, adding a plottable (e.g. a graph) to the QCustomPlot automatically also adds the
-  newly created plottable to the legend.
+  plottable to the legend (QCustomPlot::legend).
   
   \see addPlottable, addGraph, QCPLegend::addItem
 */
@@ -624,44 +623,46 @@ void QCustomPlot::setAutoAddPlottableToLegend(bool on)
   <b>Axis range manipulation</b> is controlled via \ref iRangeDrag and \ref iRangeZoom. When the
   respective interaction is enabled, the user may drag axes ranges and zoom with the mouse wheel.
   For details how to control which axes the user may drag/zoom and in what orientations, see \ref
-  setRangeDrag, \ref setRangeZoom, \ref setRangeDragAxes, \ref setRangeZoomAxes.
+  QCPAxisRect::setRangeDrag, \ref QCPAxisRect::setRangeZoom, \ref QCPAxisRect::setRangeDragAxes,
+  \ref QCPAxisRect::setRangeZoomAxes.
   
   <b>Plottable selection</b> is controlled by \ref iSelectPlottables. If \ref iSelectPlottables is
-  set, the user may select plottables (e.g. graphs, curves, bars,...) by clicking on them or in
-  their vicinity, see \ref setSelectionTolerance. Whether the user can actually select a plottable
-  can further be restricted with the \ref QCPAbstractPlottable::setSelectable function on the
-  specific plottable. To find out whether a specific plottable is selected, call
+  set, the user may select plottables (graphs, curves, bars,...) by clicking on them or in their
+  vicinity (\ref setSelectionTolerance). Whether the user can actually select a plottable can
+  further be restricted with the \ref QCPAbstractPlottable::setSelectable function on the specific
+  plottable. To find out whether a specific plottable is selected, call
   QCPAbstractPlottable::selected(). To retrieve a list of all currently selected plottables, call
   \ref selectedPlottables. If you're only interested in QCPGraphs, you may use the convenience
   function \ref selectedGraphs.
   
   <b>Item selection</b> is controlled by \ref iSelectItems. If \ref iSelectItems is set, the user
-  may select items (e.g. QCPItemLine, QCPItemText,...) by clicking on them or in their vicinity. To
-  find out whether a specific item is selected, call QCPAbstractItem::selected(). To retrieve a
-  list of all currently selected items, call \ref selectedItems.
+  may select items (QCPItemLine, QCPItemText,...) by clicking on them or in their vicinity. To find
+  out whether a specific item is selected, call QCPAbstractItem::selected(). To retrieve a list of
+  all currently selected items, call \ref selectedItems.
   
   <b>Axis selection</b> is controlled with \ref iSelectAxes. If \ref iSelectAxes is set, the user
   may select parts of the axes by clicking on them. What parts exactly (e.g. Axis base line, tick
-  labels, axis label) are selectable can be controlled via \ref QCPAxis::setSelectable for each
-  axis. To retrieve a list of all axes that currently contain selected parts, call \ref
-  selectedAxes. Which parts of an axis are selected, can be retrieved with QCPAxis::selected().
+  labels, axis label) are selectable can be controlled via \ref QCPAxis::setSelectableParts for
+  each axis. To retrieve a list of all axes that currently contain selected parts, call \ref
+  selectedAxes. Which parts of an axis are selected, can be retrieved with QCPAxis::selectedParts().
   
   <b>Legend selection</b> is controlled with \ref iSelectLegend. If this is set, the user may
   select the legend itself or individual items by clicking on them. What parts exactly are
-  selectable can be controlled via \ref QCPLegend::setSelectable. To find out whether the legend or
-  any child items are selected, check the value of QCPLegend::selected. To find out which child
-  items are selected, call \ref QCPLegend::selectedItems.
+  selectable can be controlled via \ref QCPLegend::setSelectableParts. To find out whether the
+  legend or any of its child items are selected, check the value of QCPLegend::selectedParts. To
+  find out which child items are selected, call \ref QCPLegend::selectedItems.
   
-  <b>Plot title selection</b> is controlled with \ref iSelectTitle. If set, the user may select the
-  plot title by clicking on it. To find out whether the title is currently selected, call
-  QCustomPlot::titleSelected().
+  <b>All other selectable elements</b> The selection of all other selectable objects (e.g.
+  QCPPlotTitle, or your own layerable subclasses) is controlled with \ref iSelectOther. If set, the
+  user may select those objects by clicking on them. To find out which are currently selected, you
+  need to check their selected state explicitly.
   
   If the selection state has changed by user interaction, the \ref selectionChangedByUser signal is
   emitted. Each selectable object additionally emits an individual selectionChanged signal whenever
   their selection state has changed, i.e. not only by user interaction.
   
-  To allow multiple objects to be selected by holding the modifier set with \ref
-  setMultiSelectModifier, set the flag \ref iMultiSelect.
+  To allow multiple objects to be selected by holding the selection modifier (\ref
+  setMultiSelectModifier), set the flag \ref iMultiSelect.
   
   \note In addition to the selection mechanism presented here, QCustomPlot always emits
   corresponding signals, when an object is clicked or double clicked. see \ref plottableClick and
