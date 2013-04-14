@@ -3,7 +3,7 @@ NEXT RELEASE:
 doc review:
    - axis.h
    - axis.cpp
-   > core.cpp at setSelectionTolerance
+   > core.cpp at replot
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between

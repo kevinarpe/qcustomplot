@@ -97,7 +97,7 @@ public:
   bool setLayer(const QString &layerName);
   void setAntialiased(bool enabled);
   
-  // reimplemented virtual methods:
+  // introduced virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   // non-property methods:

@@ -164,7 +164,7 @@ public:
   bool saveJpg(const QString &fileName, int width=0, int height=0, double scale=1.0, int quality=-1);
   bool saveBmp(const QString &fileName, int width=0, int height=0, double scale=1.0);
   bool saveRastered(const QString &fileName, int width, int height, double scale, const char *format, int quality=-1);
-  QPixmap pixmap(int width=0, int height=0, double scale=1.0);
+  QPixmap toPixmap(int width=0, int height=0, double scale=1.0);
   Q_SLOT void replot();
   
   QCPAxis *xAxis, *yAxis, *xAxis2, *yAxis2;
