@@ -1760,12 +1760,17 @@ void QCustomPlot::deselectAll()
 }
 
 /*!
-  Causes a complete replot (axes, labels, graphs, etc.) into the internal buffer. Finally, update()
-  is called, to redraw the buffer on the QCustomPlot widget surface.
+  Causes a complete replot into the internal buffer. Finally, update() is called, to redraw the
+  buffer on the QCustomPlot widget surface. This is the method that must be called to make changes,
+  for example on the axis ranges or data points of graphs, visible.
   
-  Before the replot happens, the signal \ref beforeReplot is emitted. After the replot, \ref afterReplot is
-  emitted. It is safe to mutually connect the replot slot with any of those two signals on two QCustomPlots
-  to make them replot synchronously (i.e. it won't cause an infinite recursion).
+  Under a few circumstances, QCustomPlot causes a replot by itself. Those are resize events of the
+  QCustomPlot widget and user interactions (object selection and range dragging/zooming).
+  
+  Before the replot happens, the signal \ref beforeReplot is emitted. After the replot, \ref
+  afterReplot is emitted. It is safe to mutually connect the replot slot with any of those two
+  signals on two QCustomPlots to make them replot synchronously, it won't cause an infinite
+  recursion.
 */
 void QCustomPlot::replot()
 {
@@ -1794,8 +1799,11 @@ void QCustomPlot::replot()
 }
 
 /*!
-  Rescales the axes such that all plottables (e.g. graphs) in the plot are fully visible.
-  It does this by calling \ref QCPAbstractPlottable::rescaleAxes on all plottables.
+  Rescales the axes such that all plottables (like graphs) in the plot are fully visible. It does
+  this by calling \ref QCPAbstractPlottable::rescaleAxes on all plottables.
+  
+  if \a onlyVisible is set to true, only the plottables that have their visibility set to true
+  (QCPLayerable::setVisible), will be used to rescale the axes.
   
   \see QCPAbstractPlottable::rescaleAxes
 */
@@ -1818,16 +1826,16 @@ void QCustomPlot::rescaleAxes(bool onlyVisible)
   Saves a PDF with the vectorized plot to the file \a fileName. The axis ratio as well as the scale
   of texts and lines will be derived from the specified \a width and \a height. This means, the
   output will look like the normal on-screen output of a QCustomPlot widget with the corresponding
-  pixel width and height. If either \a width or \a height is zero, the exported image will have
-  the same dimensions as the QCustomPlot widget currently has.
+  pixel width and height. If either \a width or \a height is zero, the exported image will have the
+  same dimensions as the QCustomPlot widget currently has.
 
   \a noCosmeticPen disables the use of cosmetic pens when drawing to the PDF file. Cosmetic pens
   are pens with numerical width 0, which are always drawn as a one pixel wide line, no matter what
-  zoom factor is set in the PDF-Viewer. For more information about cosmetic pens, see QPainter and
-  QPen documentation.
+  zoom factor is set in the PDF-Viewer. For more information about cosmetic pens, see the QPainter
+  and QPen documentation.
   
-  The objects of the plot will appear in the current selection state. So when you don't want e.g.
-  selected axes to be painted in their selected look, deselect everything with \ref deselectAll
+  The objects of the plot will appear in the current selection state. If you don't want any
+  selected objects to be painted in their selected look, deselect everything with \ref deselectAll
   before calling this function.
 
   Returns true on success.
@@ -1893,13 +1901,13 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   corresponding pixel width and height. If either \a width or \a height is zero, the exported image
   will have the same dimensions as the QCustomPlot widget currently has.
 
-  \a noCosmeticPen disables the use of cosmetic pens when drawing to the Postscript file. Cosmetic pens
-  are pens with numerical width 0, which are always drawn as a one pixel wide line, no matter what
-  zoom factor is set in the Postscript-Viewer. For more information about cosmetic pens, see QPainter and
-  QPen documentation.
+  \a noCosmeticPen disables the use of cosmetic pens when drawing to the Postscript file. Cosmetic
+  pens are pens with numerical width 0, which are always drawn as a one pixel wide line, no matter
+  what zoom factor is set in the Postscript-Viewer. For more information about cosmetic pens, see
+  the QPainter and QPen documentation.
   
-  The objects of the plot will appear in the current selection state. So when you don't want e.g.
-  selected axes to be painted in their selected look, deselect everything with \ref deselectAll
+  The objects of the plot will appear in the current selection state. If you don't want any
+  selected objects to be painted in their selected look, deselect everything with \ref deselectAll
   before calling this function.
 
   Returns true on success.
@@ -1980,8 +1988,8 @@ bool QCustomPlot::savePs(const QString &fileName, bool noCosmeticPen, int width,
   objects to be painted in their selected look, deselect everything with \ref deselectAll before calling
   this function.
 
-  If you want the plot to be painted in a PNG with transparent background, call \ref setColor with a
-  transparent color, e.g. Qt::transparent, before saving.
+  If you want the PNG to have a transparent background, call \ref setBackground(const QBrush
+  &brush) with no brush (Qt::NoBrush) or a transparent color (Qt::transparent), before saving.
 
   PNG compression can be controlled with the \a quality parameter which must be between 0 and 100 or
   -1 to use the default setting.
@@ -2066,7 +2074,7 @@ bool QCustomPlot::saveBmp(const QString &fileName, int width, int height, double
 /*! \internal
   
   Returns a minimum size hint that corresponds to the minimum size of the top level layout
-  (plotLayout()). To prevent QCustomPlot from being collapsed to size/width zero, set a minimum
+  (\ref plotLayout). To prevent QCustomPlot from being collapsed to size/width zero, set a minimum
   size (setMinimumSize) either on the whole QCustomPlot or on any layout elements inside the plot.
   This is especially important, when placed in a QLayout where other components try to take in as
   much space as possible (e.g. QMdiArea).
@@ -2078,7 +2086,7 @@ QSize QCustomPlot::minimumSizeHint() const
 
 /*! \internal
   
-  Returns a size hint that is the same as minimumSizeHint().
+  Returns a size hint that is the same as \ref minimumSizeHint.
   
 */
 QSize QCustomPlot::sizeHint() const
@@ -2088,7 +2096,7 @@ QSize QCustomPlot::sizeHint() const
 
 /*! \internal
   
-  Event handler for when the QCustomPlot widget needs repainting. This does not cause a replot, but
+  Event handler for when the QCustomPlot widget needs repainting. This does not cause a \ref replot, but
   draws the internal buffer on the widget surface.
 */
 void QCustomPlot::paintEvent(QPaintEvent *event)
@@ -2102,7 +2110,7 @@ void QCustomPlot::paintEvent(QPaintEvent *event)
   
   Event handler for a resize of the QCustomPlot widget. Causes the internal buffer to be resized to
   the new size. The viewport (which becomes the outer rect of mPlotLayout) is resized
-  appropriately. Finally a replot is performed.
+  appropriately. Finally a \ref replot is performed.
 */
 void QCustomPlot::resizeEvent(QResizeEvent *event)
 {
@@ -2114,9 +2122,10 @@ void QCustomPlot::resizeEvent(QResizeEvent *event)
 
 /*! \internal
   
- Event handler for when a double click occurs. Emits the mouseDoubleClick signal, then emits the
- specialized signals when certain objecs are clicked (e.g. plottableDoubleClick, axisDoubleClick,
- etc.). Finally determines the affected layout element and forwards the event to it.
+ Event handler for when a double click occurs. Emits the \ref mouseDoubleClick signal, then emits
+ the specialized signals when certain objecs are clicked (e.g. \ref plottableDoubleClick, \ref
+ axisDoubleClick, etc.). Finally determines the affected layout element and forwards the event to
+ it.
  
  \see mousePressEvent, mouseReleaseEvent
 */
@@ -2141,11 +2150,11 @@ void QCustomPlot::mouseDoubleClickEvent(QMouseEvent *event)
   else if (QCPPlotTitle *pt = qobject_cast<QCPPlotTitle*>(clickedLayerable))
     emit titleDoubleClick(event, pt);
   
-  // call event of affected layout element:
+  // call double click event of affected layout element:
   if (QCPLayoutElement *el = layoutElementAt(event->pos()))
     el->mouseDoubleClickEvent(event);
   
-  // call event of affected layout element (as in mouseReleaseEvent, since the mouseDoubleClick replaces the second release event in double click case):
+  // call release event of affected layout element (as in mouseReleaseEvent, since the mouseDoubleClick replaces the second release event in double click case):
   if (mMouseEventElement)
   {
     mMouseEventElement->mouseReleaseEvent(event);
@@ -2177,7 +2186,7 @@ void QCustomPlot::mousePressEvent(QMouseEvent *event)
 
 /*! \internal
   
-  Event handler for when the cursor is moved. Emits the mouseMove signal.
+  Event handler for when the cursor is moved. Emits the \ref mouseMove signal.
 
   If a layout element has mouse capture focus (a mousePressEvent happened on top of the layout
   element before), the mouseMoveEvent is forwarded to that element.
@@ -2197,15 +2206,15 @@ void QCustomPlot::mouseMoveEvent(QMouseEvent *event)
 
 /*! \internal
   
-  Event handler for when a mouse button is released. Emits the mouseRelease signal.
+  Event handler for when a mouse button is released. Emits the \ref mouseRelease signal.
   
-  If the mouse was moved less than a certain threshold in any direction since the mousePressEvent,
-  it is considered a click which causes the selection mechanism (if activated via \ref
-  setInteractions) to possibly change selection states accordingly. Further, specialized mouse
-  click signals are emitted (e.g. plottableClick, axesClick, etc.)
+  If the mouse was moved less than a certain threshold in any direction since the \ref
+  mousePressEvent, it is considered a click which causes the selection mechanism (if activated via
+  \ref setInteractions) to possibly change selection states accordingly. Further, specialized mouse
+  click signals are emitted (e.g. \ref plottableClick, \ref axesClick, etc.)
   
-  If a layout element has mouse capture focus (a mousePressEvent happened on top of the layout
-  element before), the mouseReleaseEvent is forwarded to that element.
+  If a layout element has mouse capture focus (a \ref mousePressEvent happened on top of the layout
+  element before), the \ref mouseReleaseEvent is forwarded to that element.
   
   \see mousePressEvent, mouseMoveEvent
 */
@@ -2284,8 +2293,8 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
 
 /*! \internal
   
-  Event handler for mouse wheel events. First, the mouseWheel signal is emitted. Then determines
-  the affected layout element and forwards the event to it.
+  Event handler for mouse wheel events. First, the \ref mouseWheel signal is emitted. Then
+  determines the affected layout element and forwards the event to it.
   
 */
 void QCustomPlot::wheelEvent(QWheelEvent *event)
@@ -2301,9 +2310,10 @@ void QCustomPlot::wheelEvent(QWheelEvent *event)
 
 /*! \internal
   
-  This is the main draw function which first generates the tick vectors of all axes,
-  calculates and applies appropriate margins if autoMargin is true and finally draws
-  all elements with the passed \a painter. (axis background, title, subgrid, grid, axes, plottables)
+  This is the main draw function. It draws the entire plot, including background pixmap, with the
+  specified \a painter. Note that it does not fill the background with the background brush (as the
+  user may specify with \ref setBackground(const QBrush &brush)), this is up to the respective
+  functions calling this method (e.g. \ref replot and \ref toPixmap).
 */
 void QCustomPlot::draw(QCPPainter *painter)
 {
@@ -2344,6 +2354,9 @@ void QCustomPlot::draw(QCPPainter *painter)
   dependant on the \ref setBackgroundScaledMode), or when a differend axis backgroud pixmap was
   set.
   
+  Note that this function does not draw a fill with the background brush (\ref setBackground(const
+  QBrush &brush)) beneath the pixmap.
+  
   \see setBackground, setBackgroundScaled, setBackgroundScaledMode
 */
 void QCustomPlot::drawBackground(QCPPainter *painter)
@@ -2368,6 +2381,12 @@ void QCustomPlot::drawBackground(QCPPainter *painter)
   }
 }
 
+
+/*! \internal
+  
+  This method is used by \ref QCPAxisRect::removeAxis to report removed axes to the QCustomPlot
+  so it may clear its QCustomPlot::xAxis, yAxis, xAxis2 and yAxis2 members accordingly.
+*/
 void QCustomPlot::axisRemoved(QCPAxis *axis)
 {
   if (xAxis == axis)
@@ -2382,18 +2401,41 @@ void QCustomPlot::axisRemoved(QCPAxis *axis)
   // Note: No need to take care of range drag axes and range zoom axes, because they are stored in smart pointers
 }
 
+/*! \internal
+  
+  This method is used by the QCPLegend destructor to report legend removal to the QCustomPlot so
+  it may clear its QCustomPlot::legend member accordingly.
+*/
 void QCustomPlot::legendRemoved(QCPLegend *legend)
 {
   if (this->legend == legend)
     this->legend = 0;
 }
 
+/*! \internal
+  
+  Assigns all layers their index (QCPLayer::mIndex) in the mLayers list. This method is thus called
+  after every operation that changes the layer indices, like layer removal, layer creation, layer
+  moving.
+*/
 void QCustomPlot::updateLayerIndices() const
 {
   for (int i=0; i<mLayers.size(); ++i)
     mLayers.at(i)->mIndex = i;
 }
 
+/*! \internal
+  
+  Returns the layerable at pixel position \a pos. If \a onlySelectable is set to true, only those
+  layerables that are selectable will be considered. (Layerable subclasses communicate their
+  selectability via the QCPLayerable::selectTest method, by returning -1.)
+
+  \a selectionDetails is an output parameter that contains selection specifics of the affected
+  layerable. This is useful if the respective layerable shall be given a subsequent
+  QCPLayerable::selectEvent (like in \ref mouseReleaseEvent). \a selectionDetails usually contains
+  information about which part of the layerable was hit, in multi-part layerables (e.g.
+  QCPAxis::SelectablePart).
+*/
 QCPLayerable *QCustomPlot::layerableAt(const QPointF &pos, bool onlySelectable, QVariant *selectionDetails) const
 {
   for (int layerIndex=mLayers.size()-1; layerIndex>=0; --layerIndex)
@@ -2421,11 +2463,10 @@ QCPLayerable *QCustomPlot::layerableAt(const QPointF &pos, bool onlySelectable, 
 }
 
 /*!
-  Saves the plot to a rastered image file \a fileName in the image format \a
-  format. The plot is sized to \a width and \a height in pixels and scaled with
-  \a scale. (width 100 and scale 2.0 lead to a full resolution file with width
-  200.) If the \a format supports compression, \a quality may be between 0 and
-  100 to control it.
+  Saves the plot to a rastered image file \a fileName in the image format \a format. The plot is
+  sized to \a width and \a height in pixels and scaled with \a scale. (width 100 and scale 2.0 lead
+  to a full resolution file with width 200.) If the \a format supports compression, \a quality may
+  be between 0 and 100 to control it.
   
   Returns true on success. If this function fails, most likely the given \a format isn't supported
   by the system, see Qt docs about QImageWriter::supportedImageFormats().
@@ -2465,7 +2506,7 @@ QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
   int scaledHeight = qRound(scale*newHeight);
 
   QPixmap result(scaledWidth, scaledHeight);
-  result.fill(mBackgroundBrush.style() == Qt::SolidPattern ? mBackgroundBrush.color() : Qt::transparent);
+  result.fill(mBackgroundBrush.style() == Qt::SolidPattern ? mBackgroundBrush.color() : Qt::transparent); // if using non-solid pattern, make transparent now and draw brush pattern later
   QCPPainter painter;
   painter.begin(&result);
   if (painter.isActive())

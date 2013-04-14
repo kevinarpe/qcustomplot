@@ -1,9 +1,11 @@
 NEXT RELEASE:
 
 doc review:
-   - axis.h
-   - axis.cpp
-   > core.cpp at replot
+   - axis.h, axis.cpp
+   - core.h, core.cpp
+   - global.h
+   - item.h
+   > item.cpp at beginning
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between

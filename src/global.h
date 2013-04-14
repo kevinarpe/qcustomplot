@@ -64,20 +64,19 @@ namespace QCP
   
   \see QCPLayoutElement::setAutoMargins, QCPAxisRect::setAutoMargins
 */
-enum MarginSide { msNone     = 0x00 ///< <tt>0x00</tt> no margin
-                  ,msLeft    = 0x01 ///< <tt>0x01</tt> left margin
+enum MarginSide { msLeft     = 0x01 ///< <tt>0x01</tt> left margin
                   ,msRight   = 0x02 ///< <tt>0x02</tt> right margin
                   ,msTop     = 0x04 ///< <tt>0x04</tt> top margin
                   ,msBottom  = 0x08 ///< <tt>0x08</tt> bottom margin
                   ,msAll     = 0xFF ///< <tt>0xFF</tt> all margins
+                  ,msNone    = 0x00 ///< <tt>0x00</tt> no margin
                 };
 Q_DECLARE_FLAGS(MarginSides, MarginSide)
 
 /*!
-  Defines what elements of a plot can be forcibly drawn antialiased/not antialiased. If an
-  element is neither forcibly drawn antialiased nor forcibly drawn not antialiased, it is up to
-  the respective element how it is drawn. Typically it provides a \a setAntialiased function for
-  this.
+  Defines what objects of a plot can be forcibly drawn antialiased/not antialiased. If an object is
+  neither forcibly drawn antialiased nor forcibly drawn not antialiased, it is up to the respective
+  element how it is drawn. Typically it provides a \a setAntialiased function for this.
   
   \c AntialiasedElements is a flag of or-combined elements of this enum type.
   
@@ -93,7 +92,7 @@ enum AntialiasedElement { aeAxes           = 0x0001 ///< <tt>0x0001</tt> Axis ba
                           ,aeScatters      = 0x0080 ///< <tt>0x0080</tt> Scatter symbols of plottables (excluding scatter symbols of type ssPixmap)
                           ,aeErrorBars     = 0x0100 ///< <tt>0x0100</tt> Error bars
                           ,aeFills         = 0x0200 ///< <tt>0x0200</tt> Borders of fills (e.g. under or between graphs)
-                          ,aeZeroLine      = 0x0400 ///< <tt>0x0400</tt> Zero-lines, see \ref QCPAxis::setZeroLinePen
+                          ,aeZeroLine      = 0x0400 ///< <tt>0x0400</tt> Zero-lines, see \ref QCPGrid::setZeroLinePen
                           ,aeAll           = 0xFFFF ///< <tt>0xFFFF</tt> All elements
                           ,aeNone          = 0x0000 ///< <tt>0x0000</tt> No elements
                         }; 
@@ -101,11 +100,12 @@ Q_DECLARE_FLAGS(AntialiasedElements, AntialiasedElement)
 
 /*!
   Defines plotting hints that control various aspects of the quality and speed of plotting.
+  
   \see QCustomPlot::setPlottingHints
 */
 enum PlottingHint { phNone            = 0x000 ///< <tt>0x000</tt> No hints are set
                     ,phFastPolylines  = 0x001 ///< <tt>0x001</tt> Graph/Curve lines are drawn with a faster method. This reduces the quality
-                                              ///<                especially of the line segment joins. (Only used for solid line pens.)
+                                              ///<                especially of the line segment joins. (Only relevant for solid line pens.)
                     ,phForceRepaint   = 0x002 ///< <tt>0x002</tt> causes an immediate repaint() instead of a soft update() when QCustomPlot::replot() is called. This is set by default
                                               ///<                on Windows-Systems to prevent the plot from freezing on fast consecutive replots (e.g. user drags ranges with mouse).
                     ,phCacheLabels    = 0x004 ///< <tt>0x004</tt> axis (tick) labels will be cached as pixmaps, increasing replot performance.
@@ -113,26 +113,28 @@ enum PlottingHint { phNone            = 0x000 ///< <tt>0x000</tt> No hints are s
 Q_DECLARE_FLAGS(PlottingHints, PlottingHint)
 
 /*!
-  Defines the mouse interactions possible with QCustomPlot
+  Defines the mouse interactions possible with QCustomPlot.
   
   \c Interactions is a flag of or-combined elements of this enum type.
+  
   \see QCustomPlot::setInteractions
 */
-enum Interaction { iRangeDrag         = 0x001 ///< <tt>0x001</tt> Axis ranges are draggable (see \ref setRangeDrag, \ref setRangeDragAxes)
-                   ,iRangeZoom        = 0x002 ///< <tt>0x002</tt> Axis ranges are zoomable with the mouse wheel (see \ref setRangeZoom, \ref setRangeZoomAxes)
-                   ,iMultiSelect      = 0x004 ///< <tt>0x004</tt> The user can select multiple objects by holding the modifier set by \ref setMultiSelectModifier while clicking
+enum Interaction { iRangeDrag         = 0x001 ///< <tt>0x001</tt> Axis ranges are draggable (see \ref QCPAxisRect::setRangeDrag, \ref QCPAxisRect::setRangeDragAxes)
+                   ,iRangeZoom        = 0x002 ///< <tt>0x002</tt> Axis ranges are zoomable with the mouse wheel (see \ref QCPAxisRect::setRangeZoom, \ref QCPAxisRect::setRangeZoomAxes)
+                   ,iMultiSelect      = 0x004 ///< <tt>0x004</tt> The user can select multiple objects by holding the modifier set by \ref QCustomPlot::setMultiSelectModifier while clicking
                    ,iSelectPlottables = 0x008 ///< <tt>0x008</tt> Plottables are selectable
-                   ,iSelectAxes       = 0x010 ///< <tt>0x010</tt> Axes are selectable (or parts of them, see QCPAxis::setSelectable)
-                   ,iSelectLegend     = 0x020 ///< <tt>0x020</tt> Legends are selectable (or their child items, see QCPLegend::setSelectable)
+                   ,iSelectAxes       = 0x010 ///< <tt>0x010</tt> Axes are selectable (or parts of them, see QCPAxis::setSelectableParts)
+                   ,iSelectLegend     = 0x020 ///< <tt>0x020</tt> Legends are selectable (or their child items, see QCPLegend::setSelectableParts)
                    ,iSelectItems      = 0x040 ///< <tt>0x040</tt> Items are selectable (Rectangles, Arrows, Textitems, etc. see \ref QCPAbstractItem)
                    ,iSelectOther      = 0x080 ///< <tt>0x080</tt> All other objects are selectable (e.g. your own derived layerables, the plot title,...)
                  };
 Q_DECLARE_FLAGS(Interactions, Interaction)
 
 /*! \internal
-  Returns whether the specified \a value is considered an invalid data value for plottables (i.e. is \e nan or \e +/-inf). This
-  function is used to check data validity upon replots, when the compiler flag \c
-  QCUSTOMPLOT_CHECK_DATA is set.
+  
+  Returns whether the specified \a value is considered an invalid data value for plottables (i.e.
+  is \e nan or \e +/-inf). This function is used to check data validity upon replots, when the
+  compiler flag \c QCUSTOMPLOT_CHECK_DATA is set.
 */
 inline bool isInvalidData(double value)
 {
