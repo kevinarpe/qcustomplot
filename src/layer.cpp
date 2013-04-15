@@ -322,6 +322,40 @@ bool QCPLayerable::realVisibility() const
   return mVisible && (!mParentLayerable || mParentLayerable.data()->realVisibility());
 }
 
+/*!
+  This function is used to decide whether a click hits a layerable object or not.
+
+  \a pos is a point in pixel coordinates on the QCustomPlot surface. This function returns the
+  shortest pixel distance of this point to the object. If the object is either invisible or the
+  distance couldn't be determined, -1.0 is returned. Further, if \a onlySelectable is true and the
+  object is not selectable, -1.0 is returned, too.
+
+  If the item is represented not by single lines but by an area like QCPItemRect or QCPItemText, a
+  click inside the area returns a constant value greater zero (typically the selectionTolerance of
+  the parent QCustomPlot multiplied by 0.99). If the click lies outside the area, this function
+  returns -1.0.
+  
+  Providing a constant value for area objects allows selecting line objects even when they are
+  obscured by such area objects, by clicking close to the lines (i.e. closer than
+  0.99*selectionTolerance).
+  
+  The actual setting of the selection state is not done by this function. This is handled by the
+  parent QCustomPlot when the mouseReleaseEvent occurs, and the finally selected object is notified
+  via the selectEvent/deselectEvent methods.
+  
+  \ref details is an optional output parameter. Every layerable subclass may place any information
+  in \a details. This information will be passed to \ref selectEvent when the parent QCustomPlot
+  decides on the basis of this selectTest call, that the object was successfully selected. The
+  subsequent call to \ref selectEvent will carry the \a details. This is useful for multi-part
+  objects (like QCPAxis). This way, a possibly complex calculation to decide which part was clicked
+  is only done once in \ref selectTest. The result (i.e. the actually clicked part) can then be
+  placed in \ref details. So in the subsequent \ref selectEvent, the decision which part was
+  selected doesn't have to be done a second time for a single selection operation.
+  
+  You may pass 0 as \a details to indicate that you are not interested in those selection details.
+  
+  \see selectEvent, deselectEvent, QCustomPlot::setInteractions
+*/
 double QCPLayerable::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   Q_UNUSED(pos)

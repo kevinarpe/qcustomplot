@@ -129,8 +129,9 @@ void QCPGrid::setZeroLinePen(const QPen &pen)
 
   This is the antialiasing state the painter passed to the \ref draw method is in by default.
   
-  This function takes into account the local setting of the antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased
 */
@@ -2445,8 +2446,9 @@ void QCPAxis::deselectEvent(bool *selectionStateChanged)
 
   This is the antialiasing state the painter passed to the \ref draw method is in by default.
   
-  This function takes into account the local setting of the antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased
 */

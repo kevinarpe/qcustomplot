@@ -176,7 +176,7 @@ QCPItemPosition::~QCPItemPosition()
 {
   // unregister as parent at children:
   // Note: this is done in ~QCPItemAnchor again, but it's important QCPItemPosition does it itself, because only then
-  //       the setParentAnchor(0) call the correct QCPItemPosition::pixelPos function instead of QCPItemAnchor::pixelPos
+  //       the setParentAnchor(0) call the correct QCPItemPosition::pixelPoint function instead of QCPItemAnchor::pixelPoint
   QList<QCPItemPosition*> currentChildren(mChildren.toList());
   for (int i=0; i<currentChildren.size(); ++i)
     currentChildren.at(i)->setParentAnchor(0); // this acts back on this anchor and child removes itself from mChildren
@@ -187,9 +187,7 @@ QCPItemPosition::~QCPItemPosition()
 
 /*!
   Sets the type of the position. The type defines how the coordinates passed to \ref setCoords
-  should be handled and how the QCPItemPosition should behave in the plot. Note that the position
-  type \ref ptPlotCoords is only available (and sensible) when the position has no parent anchor
-  (\ref setParentAnchor).
+  should be handled and how the QCPItemPosition should behave in the plot.
   
   The possible values for \a type can be separated in two main categories:
 
@@ -203,7 +201,10 @@ QCPItemPosition::~QCPItemPosition()
   documentation of PositionType for details. For \ref ptAxisRectRatio, note that you can specify
   the axis rect with \ref setAxisRect. By default this is set to the main axis rect.
   
-  \note If the type is changed, the apparent pixel position on the plot is preserved. This means
+  Note that the position type \ref ptPlotCoords is only available (and sensible) when the position
+  has no parent anchor (\ref setParentAnchor).
+  
+  If the type is changed, the apparent pixel position on the plot is preserved. This means
   the coordinates as retrieved with coords() and set with \ref setCoords may change in the process.
 */
 void QCPItemPosition::setType(QCPItemPosition::PositionType type)
@@ -228,8 +229,8 @@ void QCPItemPosition::setType(QCPItemPosition::PositionType type)
   
   To remove this QCPItemPosition from any parent anchor, set \a parentAnchor to 0.
   
-  \note If the QCPItemPosition previously had no parent and the type is \ref ptPlotCoords, the type
-  is set to \ref ptAbsolute, to keep the position in a valid state.
+  If the QCPItemPosition previously had no parent and the type is \ref ptPlotCoords, the type is
+  set to \ref ptAbsolute, to keep the position in a valid state.
 */
 bool QCPItemPosition::setParentAnchor(QCPItemAnchor *parentAnchor, bool keepPixelPosition)
 {
@@ -292,10 +293,11 @@ bool QCPItemPosition::setParentAnchor(QCPItemAnchor *parentAnchor, bool keepPixe
   (\ref setType).
   
   For example, if the type is \ref ptAbsolute, \a key and \a value mean the x and y pixel position
-  on the QCustomPlot surface where the origin (0, 0) is in the top left corner of the QCustomPlot
-  viewport. If the type is \ref ptPlotCoords, \a key and \a value mean a point in the plot
-  coordinate system defined by the axes set by \ref setAxes. (By default the QCustomPlot's x- and
-  yAxis.)
+  on the QCustomPlot surface. In that case the origin (0, 0) is in the top left corner of the
+  QCustomPlot viewport. If the type is \ref ptPlotCoords, \a key and \a value mean a point in the
+  plot coordinate system defined by the axes set by \ref setAxes. By default those are the
+  QCustomPlot's xAxis and yAxis. See the documentation of \ref setType for other available
+  coordinate types and their meaning.
 
   \see setPixelPoint
 */
@@ -308,7 +310,7 @@ void QCPItemPosition::setCoords(double key, double value)
 /*! \overload
 
   Sets the coordinates as a QPointF \a pos where pos.x has the meaning of \a key and pos.y the
-  meaning of \a value of the \ref setCoords(double key, double value) function.
+  meaning of \a value of the \ref setCoords(double key, double value) method.
 */
 void QCPItemPosition::setCoords(const QPointF &pos)
 {
@@ -419,9 +421,9 @@ QPointF QCPItemPosition::pixelPoint() const
 }
 
 /*!
-  When \ref setType is ptPlotCoords, this function may be used to specify the axes the coordinates
-  set with \ref setCoords relate to. By default they are set to the initial x- and y- axes of the
-  QCustomPlot.
+  When \ref setType is \ref ptPlotCoords, this function may be used to specify the axes the
+  coordinates set with \ref setCoords relate to. By default they are set to the initial xAxis and
+  yAxis of the QCustomPlot.
 */
 void QCPItemPosition::setAxes(QCPAxis *keyAxis, QCPAxis *valueAxis)
 {
@@ -430,9 +432,9 @@ void QCPItemPosition::setAxes(QCPAxis *keyAxis, QCPAxis *valueAxis)
 }
 
 /*!
-  When \ref setType is ptAxisRectRatio, this function may be used to specify the axis rect the
-  coordinates set with \ref setCoords relate to. By default this is the main axis rect of the
-  QCustomPlot.
+  When \ref setType is \ref ptAxisRectRatio, this function may be used to specify the axis rect the
+  coordinates set with \ref setCoords relate to. By default this is set to the main axis rect of
+  the QCustomPlot.
 */
 void QCPItemPosition::setAxisRect(QCPAxisRect *axisRect)
 {
@@ -440,14 +442,14 @@ void QCPItemPosition::setAxisRect(QCPAxisRect *axisRect)
 }
 
 /*!
-  Sets the apparent pixel position. This works no matter what type this QCPItemPosition is or what
-  parent-child situation it is in, as \ref setPixelPoint transforms the coordinates appropriately, to
-  make the position appear at the specified pixel values.
+  Sets the apparent pixel position. This works no matter what type (\ref setType) this
+  QCPItemPosition is or what parent-child situation it is in, as coordinates are transformed
+  appropriately, to make the position finally appear at the specified pixel values.
 
-  Only if the type is \ref ptAbsolute and no parent anchor is set, this function is identical to \ref
-  setCoords.
+  Only if the type is \ref ptAbsolute and no parent anchor is set, this function's effect is
+  identical to that of \ref setCoords.
 
-  \see setCoords
+  \see pixelPoint, setCoords
 */
 void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
 {
@@ -602,9 +604,8 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
   line->start->setCoords(-0.1, 0.8);
   line->end->setCoords(1.1, 0.2);
   \endcode
-  If we wanted the line to be positioned not in plot coordinates but a different coordinate system,
-  e.g. absolute pixel positions on the QCustomPlot surface, we would have changed the position type
-  like this:
+  If we don't want the line to be positioned in plot coordinates but a different coordinate system,
+  e.g. absolute pixel positions on the QCustomPlot surface, we need to change the position type like this:
   \code
   line->start->setType(QCPItemPosition::ptAbsolute);
   line->end->setType(QCPItemPosition::ptAbsolute);
@@ -650,9 +651,9 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
   
   \subsection items-drawing The draw function
   
-  Your implementation of the draw function should check whether the item is visible (\a mVisible)
-  and then draw the item. You can retrieve its position in pixel coordinates from the position
-  member(s) via \ref QCPItemPosition::pixelPoint.
+  To give your item a visual representation, reimplement the \ref draw function and use the passed
+  QCPPainter to draw the item. You can retrieve the item position in pixel coordinates from the
+  position member(s) via \ref QCPItemPosition::pixelPoint.
 
   To optimize performance you should calculate a bounding rect first (don't forget to take the pen
   width into account), check whether it intersects the \ref clipRect, and only draw the item at all
@@ -662,7 +663,8 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
   
   Your implementation of the \ref selectTest function may use the helpers \ref distSqrToLine and
   \ref rectSelectTest. With these, the implementation of the selection test becomes significantly
-  simpler for most items.
+  simpler for most items. See the documentation of \ref selectTest for what the function parameters
+  mean and what the function should return.
   
   \subsection anchors Providing anchors
   
@@ -701,38 +703,13 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
 /* end of documentation of inline functions */
 /* start documentation of pure virtual functions */
 
-/*! \fn double QCPAbstractItem::selectTest(const QPointF &pos) const = 0
-  
-  This function is used to decide whether a click hits an item or not.
-
-  \a pos is a point in pixel coordinates on the QCustomPlot surface. This function returns the
-  shortest pixel distance of this point to the item. If the item is either invisible or the
-  distance couldn't be determined, -1.0 is returned. \ref setSelectable has no influence on the
-  return value of this function.
-
-  If the item is represented not by single lines but by an area like QCPItemRect or QCPItemText, a
-  click inside the area returns a constant value greater zero (typically 99% of the
-  selectionTolerance of the parent QCustomPlot). If the click lies outside the area, this function
-  returns -1.0.
-  
-  Providing a constant value for area objects allows selecting line objects even when they are
-  obscured by such area objects, by clicking close to the lines (i.e. closer than
-  0.99*selectionTolerance).
-  
-  The actual setting of the selection state is not done by this function. This is handled by the
-  parent QCustomPlot when the mouseReleaseEvent occurs.
-  
-  \see setSelected, QCustomPlot::setInteractions
-*/
-
 /*! \fn void QCPAbstractItem::draw(QCPPainter *painter) = 0
   \internal
   
-  Draws this item with the provided \a painter. Called by \ref QCustomPlot::draw on all its
-  visible items.
+  Draws this item with the provided \a painter.
   
   The cliprect of the provided painter is set to the rect returned by \ref clipRect before this
-  function is called. For items this depends on the clipping settings defined by \ref
+  function is called. The clipRect depends on the clipping settings defined by \ref
   setClipToAxisRect and \ref setClipAxisRect.
 */
 
@@ -770,9 +747,10 @@ QCPAbstractItem::~QCPAbstractItem()
 }
 
 /*!
-  Sets whether the item shall be clipped to the axis rect or whether it shall be visible on the
-  entire QCustomPlot. The axis rect is defined by the clip axes which can be set via \ref
-  setClipAxes or individually with \ref setClipKeyAxis and \ref setClipValueAxis.
+  Sets whether the item shall be clipped to an axis rect or whether it shall be visible on the
+  entire QCustomPlot. The axis rect can be set with \ref setClipAxisRect.
+  
+  \see setClipAxisRect
 */
 void QCPAbstractItem::setClipToAxisRect(bool clip)
 {
@@ -800,7 +778,7 @@ void QCPAbstractItem::setClipAxisRect(QCPAxisRect *rect)
   (When \ref QCustomPlot::setInteractions contains QCustomPlot::iSelectItems.)
   
   However, even when \a selectable was set to false, it is possible to set the selection manually,
-  by calling \ref setSelected directly.
+  by calling \ref setSelected.
   
   \see QCustomPlot::setInteractions, setSelected
 */
@@ -811,11 +789,11 @@ void QCPAbstractItem::setSelectable(bool selectable)
 
 /*!
   Sets whether this item is selected or not. When selected, it might use a different visual
-  appearance (e.g. pen and brush), this depends on the specific item, though.
+  appearance (e.g. pen and brush), this depends on the specific item though.
 
   The entire selection mechanism for items is handled automatically when \ref
-  QCustomPlot::setInteractions contains QCustomPlot::iSelectItems. You only need to call this function when you
-  wish to change the selection state manually.
+  QCustomPlot::setInteractions contains QCustomPlot::iSelectItems. You only need to call this
+  function when you wish to change the selection state manually.
   
   This function can change the selection state even when \ref setSelectable was set to false.
   
@@ -877,8 +855,8 @@ QCPItemAnchor *QCPAbstractItem::anchor(const QString &name) const
 /*!
   Returns whether this item has an anchor with the specified \a name.
   
-  Note that you can check for positions with this function, too, because every position is also an
-  anchor (QCPItemPosition inherits from QCPItemAnchor).
+  Note that you can check for positions with this function, too. This is because every position is
+  also an anchor (QCPItemPosition inherits from QCPItemAnchor).
   
   \see anchor, position 
 */
@@ -916,8 +894,9 @@ QRect QCPAbstractItem::clipRect() const
 
   This is the antialiasing state the painter passed to the \ref draw method is in by default.
   
-  This function takes into account the local setting of the antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased
 */
@@ -1075,6 +1054,7 @@ QCPItemAnchor *QCPAbstractItem::createAnchor(const QString &name, int anchorId)
   return newAnchor;
 }
 
+/* inherits documentation from base class */
 void QCPAbstractItem::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
@@ -1088,6 +1068,7 @@ void QCPAbstractItem::selectEvent(QMouseEvent *event, bool additive, const QVari
   }
 }
 
+/* inherits documentation from base class */
 void QCPAbstractItem::deselectEvent(bool *selectionStateChanged)
 {
   if (mSelectable)
@@ -1099,6 +1080,7 @@ void QCPAbstractItem::deselectEvent(bool *selectionStateChanged)
   }
 }
 
+/* inherits documentation from base class */
 QCP::Interaction QCPAbstractItem::selectionCategory() const
 {
   return QCP::iSelectItems;

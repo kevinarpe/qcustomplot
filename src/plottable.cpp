@@ -628,8 +628,9 @@ QBrush QCPAbstractPlottable::mainBrush() const
 
   This is the antialiasing state the painter passed to the \ref draw method is in by default.
   
-  This function takes into account the local setting of the antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased, applyFillAntialiasingHint, applyScattersAntialiasingHint, applyErrorBarsAntialiasingHint
 */
@@ -643,8 +644,9 @@ void QCPAbstractPlottable::applyDefaultAntialiasingHint(QCPPainter *painter) con
   A convenience function to easily set the QPainter::Antialiased hint on the provided \a painter
   before drawing plottable fills.
   
-  This function takes into account the local setting of the fill antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased, applyDefaultAntialiasingHint, applyScattersAntialiasingHint, applyErrorBarsAntialiasingHint
 */
@@ -658,8 +660,9 @@ void QCPAbstractPlottable::applyFillAntialiasingHint(QCPPainter *painter) const
   A convenience function to easily set the QPainter::Antialiased hint on the provided \a painter
   before drawing plottable scatter points.
   
-  This function takes into account the local setting of the scatters antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased, applyFillAntialiasingHint, applyDefaultAntialiasingHint, applyErrorBarsAntialiasingHint
 */
@@ -673,8 +676,9 @@ void QCPAbstractPlottable::applyScattersAntialiasingHint(QCPPainter *painter) co
   A convenience function to easily set the QPainter::Antialiased hint on the provided \a painter
   before drawing plottable error bars.
   
-  This function takes into account the local setting of the error bars antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased, applyFillAntialiasingHint, applyScattersAntialiasingHint, applyDefaultAntialiasingHint
 */
