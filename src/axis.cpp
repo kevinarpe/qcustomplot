@@ -1797,8 +1797,11 @@ void QCPAxis::generateAutoTicks()
     if (mAutoSubTicks)
       mSubTickCount = calculateAutoSubTickCount(mTickStep);
     // Generate tick positions according to mTickStep:
-    int firstStep = floor(mRange.lower/mTickStep);
-    int lastStep = ceil(mRange.upper/mTickStep);
+    // TODO: replace (firstStep+i)*mTickStep with mRange.lower-fmod(mRange.lower, mTickStep)+i*mTickStep (buffer first summand)
+    //       and test that it gives same results. Then get rid of firstStep and lastStep calculation
+    //       tickcount must then be set to ceil((mRange.upper-mRange.lower+fmod(mRange.lower, mTickStep)/mTickStep)+1 (re-use buffered summand from before)
+    qint64 firstStep = floor(mRange.lower/mTickStep);
+    qint64 lastStep = ceil(mRange.upper/mTickStep);
     int tickcount = lastStep-firstStep+1;
     if (tickcount < 0) tickcount = 0;
     mTickVector.resize(tickcount);
