@@ -243,7 +243,7 @@ double QCPItemText::selectTest(const QPointF &pos, bool onlySelectable, QVariant
 void QCPItemText::draw(QCPPainter *painter)
 {
   QPointF pos(position->pixelPoint());
-  QTransform transform;
+  QTransform transform = painter->transform();
   transform.translate(pos.x(), pos.y());
   if (!qFuzzyIsNull(mRotation))
     transform.rotate(mRotation);
@@ -255,7 +255,7 @@ void QCPItemText::draw(QCPPainter *painter)
   textBoxRect.moveTopLeft(textPos.toPoint());
   double clipPad = mainPen().widthF();
   QRect boundingRect = textBoxRect.adjusted(-clipPad, -clipPad, clipPad, clipPad);
-  if (transform.mapRect(boundingRect).intersects(clipRect()))
+  if (transform.mapRect(boundingRect).intersects(painter->transform().mapRect(clipRect())))
   {
     painter->setTransform(transform);
     if ((mainBrush().style() != Qt::NoBrush && mainBrush().color().alpha() != 0) ||
