@@ -34,6 +34,8 @@ public:
   void setupInsetLayoutTest(QCustomPlot* customPlot);
   void setupLegendTest(QCustomPlot *customPlot);
   void setupMultiAxisRectInteractions(QCustomPlot *customPlot);
+  // testbed:
+  void setupTestbed(QCustomPlot *customPlot);
   
   // presets:
   void presetInteractive(QCustomPlot *customPlot);
@@ -42,8 +44,6 @@ public:
   void labelItemAnchors(QCPAbstractItem *item, double fontSize=8, bool circle=true, bool labelBelow=true);
   void showSelectTestColorMap(QCustomPlot *customPlot);
   
-  // testbed:
-  void setupTestbed(QCustomPlot *customPlot);
   
   // special use cases test:
   void setupIntegerTickStepCase(QCustomPlot *customPlot);

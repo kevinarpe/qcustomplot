@@ -5,8 +5,9 @@ doc review:
    - core.h, core.cpp
    - global.h
    - item.h, item.cpp
-   - layer.h
-   > layer.cpp at beginning
+   - layer.h, layer.cpp
+   - layout.h
+   > layout.cpp at beginning
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between

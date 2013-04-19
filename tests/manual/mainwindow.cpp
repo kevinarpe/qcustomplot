@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupItemTracerTest(mCustomPlot);
   //setupGraphTest(mCustomPlot);
   //setupExportTest(mCustomPlot);
-  setupLogErrorsTest(mCustomPlot);
+  //setupLogErrorsTest(mCustomPlot);
   //setupSelectTest(mCustomPlot);
   //setupDateTest(mCustomPlot);
   //setupIntegerTickStepCase(mCustomPlot);
@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupInsetLayoutTest(mCustomPlot);
   //setupLegendTest(mCustomPlot);
   //setupMultiAxisRectInteractions(mCustomPlot);
-  
+  setupTestbed(mCustomPlot);
 }
 
 MainWindow::~MainWindow()
@@ -623,7 +623,6 @@ void MainWindow::setupMultiAxisRectInteractions(QCustomPlot *customPlot)
   
   connect(mCustomPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(setupMultiAxisRectInteractionsMouseMove(QMouseEvent*)));
 }
-
 
 void MainWindow::presetInteractive(QCustomPlot *customPlot)
 {
