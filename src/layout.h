@@ -118,10 +118,7 @@ protected:
   QCP::MarginSides mAutoMargins;
   QHash<QCP::MarginSide, QCPMarginGroup*> mMarginGroups;
   
-  // reimplemented virtual methods:
-  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const { Q_UNUSED(painter) }
-  virtual void draw(QCPPainter *painter) { Q_UNUSED(painter) }
-  virtual void parentPlotInitialized(QCustomPlot *parentPlot);
+  // introduced virtual methods:
   virtual int calculateAutoMargin(QCP::MarginSide side);
   // events:
   virtual void mousePressEvent(QMouseEvent *event) {Q_UNUSED(event)}
@@ -129,6 +126,11 @@ protected:
   virtual void mouseReleaseEvent(QMouseEvent *event) {Q_UNUSED(event)}
   virtual void mouseDoubleClickEvent(QMouseEvent *event) {Q_UNUSED(event)}
   virtual void wheelEvent(QWheelEvent *event) {Q_UNUSED(event)}
+  
+  // reimplemented virtual methods:
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const { Q_UNUSED(painter) }
+  virtual void draw(QCPPainter *painter) { Q_UNUSED(painter) }
+  virtual void parentPlotInitialized(QCustomPlot *parentPlot);
 
 private:
   Q_DISABLE_COPY(QCPLayoutElement)

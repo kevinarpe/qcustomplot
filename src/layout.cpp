@@ -122,6 +122,8 @@ QCPLayoutElement::QCPLayoutElement(QCustomPlot *parentPlot) :
 QCPLayoutElement::~QCPLayoutElement()
 {
   setMarginGroup(QCP::msAll, 0); // unregister at margin groups, if there are any
+  if (mParentLayout) // unregister at layout
+    mParentLayout->take(this);
 }
 
 void QCPLayoutElement::setOuterRect(const QRect &rect)
