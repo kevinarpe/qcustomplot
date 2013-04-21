@@ -30,7 +30,51 @@
 //////////////////// QCPMarginGroup
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*! \class QCPMarginGroup
+  \brief A margin group allows synchronization of margin sides if working with multiple layout elements.
+  
+  QCPMarginGroup allows you to tie a margin side of two or more layout elements together, such that
+  they will all have the same size, based on the largest required margin in the group.
+  
+  In certain situations it is desirable that margins at specific sides are synchronized across
+  layout elements. For example, if one QCPAxisRect is below another one in a grid layout, it will
+  provide a cleaner look to the user if the left and right margins of the two axis rects are of the
+  same size. The left axis of the top axis rect will then be at the same horizontal position as the
+  left axis of the lower axis rect, making them appear aligned. The same applies for the right
+  axes. This is what QCPMarginGroup makes possible.
+  
+  To add/remove a specific side of a layout element to/from a margin group, use the \ref
+  QCPLayoutElement::setMarginGroup method. To completely break apart the margin group, either call
+  \ref clear, or just delete the margin group.
+  
+  \section QCPMarginGroup-example Example
+  
+  First create a margin group:
+  \code 
+  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
+  \endcode
+  Then set this group on the layout element sides:
+  \code
+  customPlot->axisRect(0)->setMarginGroup(QCP::msLeft|QCP::msRight, group);
+  customPlot->axisRect(1)->setMarginGroup(QCP::msLeft|QCP::msRight, group);
+  \endcode
+  Here, we've used the first two axis rects of the plot and synchronized their left margins with
+  each other and their right margins with each other.
+*/
 
+/* start documentation of inline functions */
+
+/*! \fn QList<QCPLayoutElement*> QCPMarginGroup::elements(QCP::MarginSide side) const
+  
+  Returns a list of all layout elements that have their margin \a side associated with this margin
+  group.
+*/
+
+/* end documentation of inline functions */
+
+/*!
+  Creates a new QCPMarginGroup instance in \a parentPlot.
+*/
 QCPMarginGroup::QCPMarginGroup(QCustomPlot *parentPlot) :
   QObject(parentPlot),
   mParentPlot(parentPlot)
@@ -46,6 +90,10 @@ QCPMarginGroup::~QCPMarginGroup()
   clear();
 }
 
+/*!
+  Returns whether this margin group is empty. If this function returns true, no layout elements use
+  this margin group to synchronize margin sides.
+*/
 bool QCPMarginGroup::isEmpty() const
 {
   QHashIterator<QCP::MarginSide, QList<QCPLayoutElement*> > it(mChildren);
@@ -58,6 +106,10 @@ bool QCPMarginGroup::isEmpty() const
   return true;
 }
 
+/*!
+  Clears this margin group. The synchronization of the margin sides that use this margin group is
+  lifted and they will use their individual margin sizes again.
+*/
 void QCPMarginGroup::clear()
 {
   // make all children remove themselves from this margin group:
@@ -71,6 +123,16 @@ void QCPMarginGroup::clear()
   }
 }
 
+/*! \internal
+  
+  Returns the synchronized common margin for \a side. This is the margin value that will be used by
+  the layout element on the respective side, if it is part of this margin group.
+  
+  The common margin is calculated by requesting the automatic margin (\ref
+  QCPLayoutElement::calculateAutoMargin) of each element associated with \a side in this margin
+  group, and choosing the largest returned value. (QCPLayoutElement::minimumMargins is taken into
+  account, too.)
+*/
 int QCPMarginGroup::commonMargin(QCP::MarginSide side) const
 {
   // query all automatic margins of the layout elements in this margin group side and find maximum:
@@ -87,6 +149,12 @@ int QCPMarginGroup::commonMargin(QCP::MarginSide side) const
   return result;
 }
 
+/*! \internal
+  
+  Adds \a element to the internal list of child elements, for the margin \a side.
+  
+  This function does not modify the margin group property of \a element.
+*/
 void QCPMarginGroup::addChild(QCP::MarginSide side, QCPLayoutElement *element)
 {
   if (!mChildren[side].contains(element))
@@ -95,6 +163,12 @@ void QCPMarginGroup::addChild(QCP::MarginSide side, QCPLayoutElement *element)
     qDebug() << Q_FUNC_INFO << "element is already child of this margin group side" << reinterpret_cast<quintptr>(element);
 }
 
+/*! \internal
+  
+  Removes \a element from the internal list of child elements, for the margin \a side.
+  
+  This function does not modify the margin group property of \a element.
+*/
 void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element)
 {
   if (!mChildren[side].removeOne(element))
@@ -106,6 +180,40 @@ void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element
 //////////////////// QCPLayoutElement
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*! \class QCPLayoutElement
+  \brief The abstract base class for all objects that form the layout system
+  
+  This is an abstract base class. As such, it can't be instantiated directly, rather use one of its subclasses.
+  
+  A Layout element is a rectangular object which can be placed in layouts. It has an outer rect
+  (\ref outerRect) and an inner rect (\ref rect). The difference between outer and inner rect is
+  called its margin. The margin can either be set to automatic or manual (\ref setAutoMargin) on a
+  per-side basis. If a side is set to manual, that margin can be set explicitly with \ref setMargin
+  and will stay fixed at that value. If it's set to automatic, the layout element subclass will
+  control the value itself (via \ref calculateAutoMargin).
+  
+  Layout elements can be placed in layouts (base class QCPLayout) like QCPLayoutGrid. The top level
+  layout is reachable via QCustomPlot::plotLayout, and is a QCPLayoutGrid. Since QCPLayout itself
+  derives from QCPLayoutElement, layouts can be nested.
+  
+  Thus in QCustomPlot one can divide layout elements into two categories: The ones that are
+  invisible by themselves, because they don't draw anything. Their only purpose is to manage the
+  position and size of other layout elements. This category of layout elements usually use
+  QCPLayout as base class. Then there is the category of layout elements which actually draw
+  something. For example, QCPAxisRect, QCPLegend and QCPPlotTitle are of this category. This does
+  not necessarily mean that the latter category can't have child layout elements. QCPLegend for
+  instance, actually derives from QCPLayoutGrid and the individual legend items are child layout
+  elements in the grid layout.
+*/
+
+/* start documentation of inline functions */
+
+/* end documentation of inline functions */
+
+/*!
+  Creates an instance of QCPLayoutElement and sets default values. Note that since QCPLayoutElement
+  is an abstract base class, it can't be instantiated directly.
+*/
 QCPLayoutElement::QCPLayoutElement(QCustomPlot *parentPlot) :
   QCPLayerable(parentPlot), // parenthood is changed as soon as layout element gets inserted into a layout (except for top level layout)
   mParentLayout(0),
@@ -126,6 +234,15 @@ QCPLayoutElement::~QCPLayoutElement()
     mParentLayout->take(this);
 }
 
+/*!
+  Sets the outer rect of this layout element. If the layout element is inside a layout, the layout
+  sets the position and size of this layout element using this function.
+  
+  Calling this function externally has no effect, since the layout will overwrite any changes to
+  the outer rect upon the next replot.
+  
+  The layout element will adapt its inner \ref rect by subtracting the margin from the outer rect.
+*/
 void QCPLayoutElement::setOuterRect(const QRect &rect)
 {
   if (mOuterRect != rect)
@@ -135,6 +252,16 @@ void QCPLayoutElement::setOuterRect(const QRect &rect)
   }
 }
 
+/*!
+  Sets the margins of this layout element. If \ref setAutoMargins is disabled for some or all
+  sides, this function is used to manually set the margin on those sides. Sides that are still set
+  to be handled automatically are ignored and may have any value in \a margins.
+  
+  The margin is the distance between the \ref outerRect (controlled by the parent layout) and the
+  inner \ref rect (which usually contains the main content of this layout element).
+  
+  \see setAutoMargins
+*/
 void QCPLayoutElement::setMargins(const QMargins &margins)
 {
   if (mMargins != margins)
@@ -144,7 +271,15 @@ void QCPLayoutElement::setMargins(const QMargins &margins)
   }
 }
 
-// doc: only has effect on auto margins
+/*!
+  If \ref setAutoMargins is enabled on some or all margins, this function is used to provide
+  minimum values for those margins.
+  
+  The minimum values are not enforced on margin sides that were set to be under manual control via
+  \ref setAutoMargins.
+  
+  \see setAutoMargins
+*/
 void QCPLayoutElement::setMinimumMargins(const QMargins &margins)
 {
   if (mMinimumMargins != margins)
@@ -153,11 +288,30 @@ void QCPLayoutElement::setMinimumMargins(const QMargins &margins)
   }
 }
 
+/*!
+  Sets on which sides the margin shall be calculated automatically. If a side is calculated
+  automatically, a minimum margin value may be provided with \ref setMinimumMargins. If a side is
+  set to be controlled manually, the value may be specified with \ref setMargins.
+  
+  Margin sides that are under automatic control may participate in a \ref QCPMarginGroup (see \ref
+  setMarginGroup), to synchronize (align) it with other layout elements in the plot.
+  
+  \ref setMinimumMargins, setMargins
+*/
 void QCPLayoutElement::setAutoMargins(QCP::MarginSides sides)
 {
   mAutoMargins = sides;
 }
 
+/*!
+  Sets the minimum size for the inner \ref rect of this layout element. A parent layout tries to
+  respect the \ref size here by changing row/column sizes in the layout accordingly.
+  
+  If the parent layout size is not sufficient to satisfy all minimum size constraints of its child
+  layout elements, the layout may set a size that is actually smaller than \a size. QCustomPlot
+  propagates the layout's size constraints to the outside by setting its own minimum QWidget size
+  accordingly, so violations of \a size should be exceptions.
+*/
 void QCPLayoutElement::setMinimumSize(const QSize &size)
 {
   if (mMinimumSize != size)
@@ -168,11 +322,19 @@ void QCPLayoutElement::setMinimumSize(const QSize &size)
   }
 }
 
+/*! \overload
+  
+  Sets the minimum size for the inner \ref rect of this layout element.
+*/
 void QCPLayoutElement::setMinimumSize(int width, int height)
 {
   setMinimumSize(QSize(width, height));
 }
 
+/*!
+  Sets the maximum size for the inner \ref rect of this layout element. A parent layout tries to
+  respect the \ref size here by changing row/column sizes in the layout accordingly.
+*/
 void QCPLayoutElement::setMaximumSize(const QSize &size)
 {
   if (mMaximumSize != size)
@@ -183,11 +345,26 @@ void QCPLayoutElement::setMaximumSize(const QSize &size)
   }
 }
 
+/*! \overload
+  
+  Sets the maximum size for the inner \ref rect of this layout element.
+*/
 void QCPLayoutElement::setMaximumSize(int width, int height)
 {
   setMaximumSize(QSize(width, height));
 }
 
+/*!
+  Sets the margin \a group of the specified margin \a sides.
+  
+  Margin groups allow synchronizing specified margins across layout elements, see the documentation
+  of \ref QCPMarginGroup.
+  
+  To unset the margin group of \a sides, set \a group to 0.
+  
+  Note that margin groups only work for margin sides that are set to automatic (\ref
+  setAutoMargins).
+*/
 void QCPLayoutElement::setMarginGroup(QCP::MarginSides sides, QCPMarginGroup *group)
 {
   QVector<QCP::MarginSide> sideVector;
@@ -217,6 +394,16 @@ void QCPLayoutElement::setMarginGroup(QCP::MarginSides sides, QCPMarginGroup *gr
   }
 }
 
+/*!
+  Updates the layout element and sub-elements. This function is called upon replot by the parent
+  layout element.
+  
+  Layout elements that have child elements should call the \ref update method of their child
+  elements.
+  
+  The default implementation executes the automatic margin mechanism, so subclasses should make
+  sure to call the base class implementation.
+*/
 void QCPLayoutElement::update()
 {
   if (mAutoMargins != QCP::msNone)
@@ -242,21 +429,39 @@ void QCPLayoutElement::update()
   }
 }
 
+/*!
+  Returns the minimum size this layout element (the inner \ref rect) may be compressed to.
+  
+  if a minimum size (\ref setMinimumSize) was not set manually, parent layouts consult this
+  function to determine the minimum allowed size of this layout element. (A manual minimum size is
+  considered set if it is non-zero.)
+*/
 QSize QCPLayoutElement::minimumSizeHint() const
 {
   return mMinimumSize;
 }
 
+/*!
+  Returns the maximum size this layout element (the inner \ref rect) may be expanded to.
+  
+  if a maximum size (\ref setMaximumSize) was not set manually, parent layouts consult this
+  function to determine the maximum allowed size of this layout element. (A manual maximum size is
+  considered set if it is smaller than Qt's QWIDGETSIZE_MAX.)
+*/
 QSize QCPLayoutElement::maximumSizeHint() const
 {
   return mMaximumSize;
 }
 
+/*!
+  Returns a list of all the child elements in this layout element.
+*/
 QList<QCPLayoutElement*> QCPLayoutElement::elements() const
 {
   return QList<QCPLayoutElement*>();
 }
 
+/* inherits documentation from base class */
 double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   Q_UNUSED(details)
@@ -270,6 +475,11 @@ double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVa
     return -1;
 }
 
+/*! \internal 
+  
+  propagates the parent plot initialization to all child elements, by calling \ref
+  QCPLayerable::initializeParentPlot on them.
+*/
 void QCPLayoutElement::parentPlotInitialized(QCustomPlot *parentPlot)
 {
   QList<QCPLayoutElement*> els = elements();
@@ -280,6 +490,13 @@ void QCPLayoutElement::parentPlotInitialized(QCustomPlot *parentPlot)
   }
 }
 
+/*! \internal 
+  
+  Returns the margin size for this \a side. It is used if automatic margins is enabled for this \a
+  side (see \ref setAutoMargins).
+  
+  The default implementation just returns the respective manual margin (\ref setMargins).
+*/
 int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
 {
   return QCP::getMarginValue(mMargins, side);
@@ -289,10 +506,88 @@ int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
 //////////////////// QCPLayout
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*! \class QCPLayout
+  \brief The abstract base class for layouts
+  
+  This is an abstract base class for layout elements whose main purpose is to define the position
+  and size of other child layout elements. In most cases, layouts don't draw anything themselves
+  (but there are exceptions to this, e.g. QCPLegend).
+  
+  QCPLayout derives from QCPLayoutElement, and thus can itself be nested in other layouts.
+  
+  QCPLayout introduces a common interface for accessing and manipulating the child elements. Those
+  functions are most notably \ref elementCount, \ref elementAt, \ref takeAt, \ref take, \ref
+  simplify, \ref removeAt, \ref remove and \ref clear. Individual subclasses may add more functions
+  to this interface which are more specialized to the form of the layout. For example, \ref
+  QCPLayoutGrid adds functions that take row and column indices to access cells of the layout grid
+  more conveniently.
+  
+  Since this is an abstract base class, you can't instantiate it directly. Rather use one of its
+  subclasses like QCPLayoutGrid or QCPLayoutInset.
+*/
+
+/* start documentation of pure virtual functions */
+
+/*! \fn virtual int QCPLayout::elementCount() const = 0
+  
+  Returns the number of elements/cells in the layout.
+  
+  \see elements, elementAt
+*/
+
+/*! \fn virtual QCPLayoutElement* QCPLayout::elementAt(int index) const = 0
+  
+  Returns the element in the cell with the given \a index. If \a index is invalid, returns 0.
+  
+  Note that even if \a index is valid, the respective cell may be empty in some layouts (e.g.
+  QCPLayoutGrid), so this function may return 0 in those cases. You may use this function to check
+  whether a cell is empty or not.
+  
+  \see elements, elementCount, takeAt
+*/
+
+/*! \fn virtual QCPLayoutElement* QCPLayout::takeAt(int index) = 0
+  
+  Removes the element with the given \a index from the layout and returns it.
+  
+  If the \a index is invalid or the cell with that index is empty, returns 0.
+  
+  Note that some layouts don't remove the respective cell right away but leave an empty cell after
+  successful removal of the layout element. To collapse empty cells, use \ref simplify.
+  
+  \see elementAt, take
+*/
+
+/*! \fn virtual bool QCPLayout::take(QCPLayoutElement* element) = 0
+  
+  Removes the specified \a element from the layout and returns true on success.
+  
+  If the \a element isn't in this layout, returns false.
+  
+  Note that some layouts don't remove the respective cell right away but leave an empty cell after
+  successful removal of the layout element. To collapse empty cells, use \ref simplify.
+  
+  \see takeAt
+*/
+
+/* end documentation of pure virtual functions */
+
+/*!
+  Creates an instance of QCPLayoutElement and sets default values. Note that since QCPLayoutElement
+  is an abstract base class, it can't be instantiated directly.
+*/
 QCPLayout::QCPLayout()
 {
 }
 
+/*!
+  First calls the QCPLayoutElement::update base class implementation to update the margins on this
+  layout.
+  
+  Then calls \ref updateLayout which subclasses reimplement to reposition and resize their cells.
+  
+  Finally, \ref update is called on all child elements.
+*/
 void QCPLayout::update()
 {
   QCPLayoutElement::update(); // recalculates (auto-)margins
@@ -308,6 +603,7 @@ void QCPLayout::update()
   }
 }
 
+/* inherits documentation from base class */
 QList<QCPLayoutElement*> QCPLayout::elements() const
 {
   int c = elementCount();
@@ -318,11 +614,27 @@ QList<QCPLayoutElement*> QCPLayout::elements() const
   return result;
 }
 
+/*!
+  Simplifies the layout by collapsing empty cells. The exact behavior depends on subclasses, the
+  default implementation does nothing.
+  
+  Not all layouts need simplification. For example, QCPLayoutInset doesn't use explicit
+  simplification while QCPLayoutGrid does.
+*/
 void QCPLayout::simplify()
 {
   qDebug() << Q_FUNC_INFO << "This layout does not support/need simplification";
 }
 
+/*!
+  Removes and deletes the element at the provided \a index. Returns true on success. If \a index is
+  invalid or points to an empty cell, returns false.
+  
+  This function internally uses \ref takeAt to remove the element from the layout and then deletes
+  the returned element.
+  
+  \see remove, takeAt
+*/
 bool QCPLayout::removeAt(int index)
 {
   if (QCPLayoutElement *el = takeAt(index))
@@ -333,6 +645,15 @@ bool QCPLayout::removeAt(int index)
     return false;
 }
 
+/*!
+  Removes and deletes the provided \a element. Returns true on success. If \a element is not in the
+  layout, returns false.
+  
+  This function internally uses \ref takeAt to remove the element from the layout and then deletes
+  the element.
+  
+  \see removeAt, take
+*/
 bool QCPLayout::remove(QCPLayoutElement *element)
 {
   if (take(element))
@@ -343,6 +664,11 @@ bool QCPLayout::remove(QCPLayoutElement *element)
     return false;
 }
 
+/*!
+  Removes and deletes all layout elements in this layout.
+  
+  \see remove, removeAt
+*/
 void QCPLayout::clear()
 {
   for (int i=elementCount()-1; i>=0; --i)
@@ -353,6 +679,14 @@ void QCPLayout::clear()
   simplify();
 }
 
+/*!
+  Subclasses call this method to report changed (minimum/maximum) size constraints.
+  
+  If the parent of this layout is again a QCPLayout, forwards the call to the parent's \ref
+  sizeConstraintsChanged. If the parent is a QWidget (i.e. is the \ref QCustomPlot::plotLayout of
+  QCustomPlot), calls QWidget::updateGeometry, so if the QCustomPlot widget is inside a Qt QLayout,
+  it may update itself and resize cells accordingly.
+*/
 void QCPLayout::sizeConstraintsChanged() const
 {
   if (QWidget *w = qobject_cast<QWidget*>(parent()))
@@ -361,10 +695,35 @@ void QCPLayout::sizeConstraintsChanged() const
     l->sizeConstraintsChanged();
 }
 
+/*! \internal
+  
+  Subclasses reimplement this method to update the position and sizes of the child elements/cells
+  via calling their \ref QCPLayoutElement::setOuterRect. The default implementation does nothing.
+  
+  The geometry used as a reference is the inner \rect of this layout. Child elements should stay
+  within that rect.
+  
+  \ref getSectionSizes may help with the reimplementation of this function.
+  
+  \see update
+*/
 void QCPLayout::updateLayout()
 {
 }
 
+
+/*! \internal
+  
+  Associates \a el with this layout. This is done by setting the \ref QCPLayoutElement::layout, the
+  \ref QCPLayerable::parentLayerable and the QObject parent to this layout.
+  
+  Further, if \a el didn't previously have a parent plot, calls \ref
+  QCPLayerable::initializeParentPlot on \a el to set the paret plot.
+  
+  This method is used by subclass specific methods that add elements to the layout. Note that this
+  method only changes properties in \a el. The removal from the old layout and the insertion into
+  the new layout must be done additionally.
+*/
 void QCPLayout::adoptElement(QCPLayoutElement *el)
 {
   if (el)
@@ -378,6 +737,16 @@ void QCPLayout::adoptElement(QCPLayoutElement *el)
     qDebug() << Q_FUNC_INFO << "Null element passed";
 }
 
+/*! \internal
+  
+  Disassociates \a el from this layout. This is done by setting the \ref QCPLayoutElement::layout
+  and the \ref QCPLayerable::parentLayerable to zero. The QObject parent is set to the parent
+  QCustomPlot.
+  
+  This method is used by subclass specific methods that remove elements from the layout (e.g. \ref
+  take or \ref takeAt). Note that this method only changes properties in \a el. The removal from
+  the old layout must be done additionally.
+*/
 void QCPLayout::releaseElement(QCPLayoutElement *el)
 {
   if (el)
@@ -390,6 +759,35 @@ void QCPLayout::releaseElement(QCPLayoutElement *el)
     qDebug() << Q_FUNC_INFO << "Null element passed";
 }
 
+/*! \internal
+  
+  This is a helper function for the implementation of \ref updateLayout in subclasses.
+  
+  It calculates the sizes of one-dimensional sections with provided constraints on maximum section
+  sizes, minimum section sizes, relative stretch factors and the final total size of all sections.
+  
+  The QVector entries refer to the sections. Thus all QVectors must have the same size.
+  
+  \a maxSizes gives the maximum allowed size of each section. If there shall be no maximum size
+  imposed, set all vector values to Qt's QWIDGETSIZE_MAX.
+  
+  \a minSizes gives the minimum allowed size of each section. If there shall be no minimum size
+  imposed, set all vector values to zero. If the \a minSizes entries add up to a value greater than
+  \a totalSize, sections will be scaled smaller than the proposed minimum sizes. (In other words,
+  not exceeding the allowed total size is taken to be more important than not going below minimum
+  section sizes.)
+  
+  \a stretchFactors give the relative proportions of the sections to each other. If all sections
+  shall be scaled equally, set all values equal. If the first section shall be double the size of
+  each individual other section, set the first number of \a stretchFactors to double the value of
+  the other individual values (e.g. {2, 1, 1, 1}).
+  
+  \a totalSize is the value that the final section sizes will add up to. Due to rounding, the
+  actual sum may differ slightly. If you want the section sizes to sum up to exactly that value,
+  you could distribute the remaining difference on the sections.
+  
+  The return value is a QVector containing the section sizes.
+*/
 QVector<int> QCPLayout::getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const
 {
   if (maxSizes.size() != minSizes.size() || minSizes.size() != stretchFactors.size())
@@ -508,13 +906,38 @@ QVector<int> QCPLayout::getSectionSizes(QVector<int> maxSizes, QVector<int> minS
 //////////////////// QCPLayoutGrid
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*! \class QCPLayoutGrid
+  \brief A layout that arranges child elements in a grid
+  
+  Elements are laid out in a grid with configurable stretch factors (\ref setColumnStretchFactor,
+  \ref setRowStretchFactor) and spacing (\ref setColumnSpacing, \ref setRowSpacing).
+  
+  Elements can be added to cells via \ref addElement. The grid is expanded if the specified row or
+  column doesn't exist yet. Whether a cell contains a valid layout element can be checked with \ref
+  hasElement, that element can be retrieved with \ref element. If rows and columns that only have
+  empty cells shall be removed, call \ref simplify. Removal of elements is either done by just
+  adding the element to a different layout or by using the QCPLayout interface \ref take or \ref
+  remove.
+  
+  Row and column insertion can be performed with \ref insertRow and \ref insertColumn.
+*/
 
+/*!
+  Creates an instance of QCPLayoutGrid and sets default values.
+*/
 QCPLayoutGrid::QCPLayoutGrid() :
   mColumnSpacing(5),
   mRowSpacing(5)
 {
 }
 
+/*!
+  Returns the element in the cell in \a row and \a column.
+  
+  Returns 0 if either the row/column is invalid or if the cell is empty.
+  
+  \see addElement, hasElement
+*/
 QCPLayoutElement *QCPLayoutGrid::element(int row, int column) const
 {
   if (row >= 0 && row < mElements.size())
@@ -529,11 +952,21 @@ QCPLayoutElement *QCPLayoutGrid::element(int row, int column) const
   return 0;
 }
 
+/*!
+  Returns the number of rows in the layout.
+  
+  \see columnCount
+*/
 int QCPLayoutGrid::rowCount() const
 {
   return mElements.size();
 }
 
+/*!
+  Returns the number of columns in the layout.
+  
+  \see rowCount
+*/
 int QCPLayoutGrid::columnCount() const
 {
   if (mElements.size() > 0)
@@ -542,6 +975,16 @@ int QCPLayoutGrid::columnCount() const
     return 0;
 }
 
+/*!
+  Adds the \a element to cell with \a row and \a column. If \a element is already in a layout, it
+  is first removed from there. If \a row or \a column don't exist yet, the layout is expanded
+  accordingly.
+  
+  Returns true if the element was added successfully, i.e. if the cell at \a row and \a column
+  didn't already have an element.
+  
+  \see element, hasElement, take, remove
+*/
 bool QCPLayoutGrid::addElement(int row, int column, QCPLayoutElement *element)
 {
   if (element)
@@ -561,6 +1004,12 @@ bool QCPLayoutGrid::addElement(int row, int column, QCPLayoutElement *element)
   return false;
 }
 
+/*!
+  Returns whether the cell at \a row and \a column exists and contains a valid element, i.e. isn't
+  empty.
+  
+  \see element
+*/
 bool QCPLayoutGrid::hasElement(int row, int column)
 {
   if (row >= 0 && row < rowCount() && column >= 0 && column < columnCount())
@@ -569,6 +1018,17 @@ bool QCPLayoutGrid::hasElement(int row, int column)
     return false;
 }
 
+/*!
+  Sets the stretch \a factor of \a column.
+  
+  Stretch factors control the relative sizes of rows and columns. Cells will not be resized beyond
+  their minimum and maximum widths/heights (\ref QCPLayoutElement::setMinimumSize, \ref
+  QCPLayoutElement::setMaximumSize), regardless of the stretch factor.
+  
+  The default stretch factor of newly created rows/columns is 1.
+  
+  \see setColumnStretchFactors, setRowStretchFactor
+*/
 void QCPLayoutGrid::setColumnStretchFactor(int column, double factor)
 {
   if (column >= 0 && column < columnCount())
@@ -581,6 +1041,17 @@ void QCPLayoutGrid::setColumnStretchFactor(int column, double factor)
     qDebug() << Q_FUNC_INFO << "Invalid column:" << column;
 }
 
+/*!
+  Sets the stretch \a factors of all columns. \a factors must have the size \ref columnCount.
+  
+  Stretch factors control the relative sizes of rows and columns. Cells will not be resized beyond
+  their minimum and maximum widths/heights (\ref QCPLayoutElement::setMinimumSize, \ref
+  QCPLayoutElement::setMaximumSize), regardless of the stretch factor.
+  
+  The default stretch factor of newly created rows/columns is 1.
+  
+  \see setColumnStretchFactor, setRowStretchFactors
+*/
 void QCPLayoutGrid::setColumnStretchFactors(const QList<double> &factors)
 {
   if (factors.size() == mColumnStretchFactors.size())
@@ -598,6 +1069,17 @@ void QCPLayoutGrid::setColumnStretchFactors(const QList<double> &factors)
     qDebug() << Q_FUNC_INFO << "Column count not equal to passed stretch factor count:" << factors;
 }
 
+/*!
+  Sets the stretch \a factor of \a row.
+  
+  Stretch factors control the relative sizes of rows and columns. Cells will not be resized beyond
+  their minimum and maximum widths/heights (\ref QCPLayoutElement::setMinimumSize, \ref
+  QCPLayoutElement::setMaximumSize), regardless of the stretch factor.
+  
+  The default stretch factor of newly created rows/columns is 1.
+  
+  \see setColumnStretchFactors, setRowStretchFactor
+*/
 void QCPLayoutGrid::setRowStretchFactor(int row, double factor)
 {
   if (row >= 0 && row < rowCount())
@@ -610,6 +1092,17 @@ void QCPLayoutGrid::setRowStretchFactor(int row, double factor)
     qDebug() << Q_FUNC_INFO << "Invalid row:" << row;
 }
 
+/*!
+  Sets the stretch \a factors of all rows. \a factors must have the size \ref rowCount.
+  
+  Stretch factors control the relative sizes of rows and columns. Cells will not be resized beyond
+  their minimum and maximum widths/heights (\ref QCPLayoutElement::setMinimumSize, \ref
+  QCPLayoutElement::setMaximumSize), regardless of the stretch factor.
+  
+  The default stretch factor of newly created rows/columns is 1.
+  
+  \see setRowStretchFactor, setColumnStretchFactors
+*/
 void QCPLayoutGrid::setRowStretchFactors(const QList<double> &factors)
 {
   if (factors.size() == mRowStretchFactors.size())
@@ -627,16 +1120,40 @@ void QCPLayoutGrid::setRowStretchFactors(const QList<double> &factors)
     qDebug() << Q_FUNC_INFO << "Row count not equal to passed stretch factor count:" << factors;
 }
 
+/*!
+  Sets the gap that is left blank between columns to \a pixels.
+  
+  \see setRowSpacing
+*/
 void QCPLayoutGrid::setColumnSpacing(int pixels)
 {
   mColumnSpacing = pixels;
 }
 
+/*!
+  Sets the gap that is left blank between rows to \a pixels.
+  
+  \see setColumnSpacing
+*/
 void QCPLayoutGrid::setRowSpacing(int pixels)
 {
   mRowSpacing = pixels;
 }
 
+/*!
+  Expands the layout to have \a newRowCount rows and \a newColumnCount columns. So the last valid
+  row index will be \a newRowCount-1, the last valid column index will be \a newColumnCount-1.
+  
+  If the current column/row count is already larger or equal to \a newColumnCount/\a newRowCount,
+  this function does nothing in that dimension.
+  
+  Newly created cells are empty, new rows and columns have the stretch factor 1.
+  
+  Note that upon a call to \ref addElement, the layout is expanded automatically to contain the
+  specified row and column, using this function.
+  
+  \see simplify
+*/
 void QCPLayoutGrid::expandTo(int newRowCount, int newColumnCount)
 {
   // add rows as necessary:
@@ -656,6 +1173,12 @@ void QCPLayoutGrid::expandTo(int newRowCount, int newColumnCount)
     mColumnStretchFactors.append(1);
 }
 
+/*!
+  Inserts a new row with empty cells at the row index \a newIndex. Valid values for \a newIndex
+  range from 0 (inserts a row at the top) to \a rowCount (appends a row at the bottom).
+  
+  \see insertColumn
+*/
 void QCPLayoutGrid::insertRow(int newIndex)
 {
   if (mElements.isEmpty() || mElements.first().isEmpty()) // if grid is completely empty, add first cell
@@ -676,6 +1199,12 @@ void QCPLayoutGrid::insertRow(int newIndex)
   mElements.insert(newIndex, newRow);
 }
 
+/*!
+  Inserts a new column with empty cells at the column index \a newIndex. Valid values for \a
+  newIndex range from 0 (inserts a row at the left) to \a rowCount (appends a row at the right).
+  
+  \see insertRow
+*/
 void QCPLayoutGrid::insertColumn(int newIndex)
 {
   if (mElements.isEmpty() || mElements.first().isEmpty()) // if grid is completely empty, add first cell
@@ -694,6 +1223,7 @@ void QCPLayoutGrid::insertColumn(int newIndex)
     mElements[row].insert(newIndex, (QCPLayoutElement*)0);
 }
 
+/* inherits documentation from base class */
 void QCPLayoutGrid::updateLayout()
 {
   QVector<int> minColWidths, minRowHeights, maxColWidths, maxRowHeights;
@@ -722,11 +1252,13 @@ void QCPLayoutGrid::updateLayout()
   }
 }
 
+/* inherits documentation from base class */
 int QCPLayoutGrid::elementCount() const
 {
   return rowCount()*columnCount();
 }
 
+/* inherits documentation from base class */
 QCPLayoutElement *QCPLayoutGrid::elementAt(int index) const
 {
   if (index >= 0 && index < elementCount())
@@ -735,6 +1267,7 @@ QCPLayoutElement *QCPLayoutGrid::elementAt(int index) const
     return 0;
 }
 
+/* inherits documentation from base class */
 QCPLayoutElement *QCPLayoutGrid::takeAt(int index)
 {
   if (QCPLayoutElement *el = elementAt(index))
@@ -749,6 +1282,7 @@ QCPLayoutElement *QCPLayoutGrid::takeAt(int index)
   }
 }
 
+/* inherits documentation from base class */
 bool QCPLayoutGrid::take(QCPLayoutElement *element)
 {
   if (element)
@@ -767,6 +1301,7 @@ bool QCPLayoutGrid::take(QCPLayoutElement *element)
   return false;
 }
 
+/* inherits documentation from base class */
 QList<QCPLayoutElement*> QCPLayoutGrid::elements() const
 {
   QList<QCPLayoutElement*> result;
@@ -783,6 +1318,7 @@ QList<QCPLayoutElement*> QCPLayoutGrid::elements() const
   return result;
 }
 
+/* inherits documentation from base class */
 void QCPLayoutGrid::simplify()
 {
   // remove rows with only empty cells:
@@ -827,6 +1363,7 @@ void QCPLayoutGrid::simplify()
   }
 }
 
+/* inherits documentation from base class */
 QSize QCPLayoutGrid::minimumSizeHint() const
 {
   QVector<int> minColWidths, minRowHeights;
@@ -841,6 +1378,7 @@ QSize QCPLayoutGrid::minimumSizeHint() const
   return result;
 }
 
+/* inherits documentation from base class */
 QSize QCPLayoutGrid::maximumSizeHint() const
 {
   QVector<int> maxColWidths, maxRowHeights;
@@ -856,6 +1394,18 @@ QSize QCPLayoutGrid::maximumSizeHint() const
   return result;
 }
 
+/*! \internal
+  
+  Places the minimum column widths and row heights into \a minColWidths and \a minRowHeights
+  respectively.
+  
+  The minimum height of a row is the largest minimum height of any element in that row. The minimum
+  width of a column is the largest minimum width of any element in that column.
+  
+  This is a helper function for \ref updateLayout.
+  
+  \see getMaximumRowColSizes
+*/
 void QCPLayoutGrid::getMinimumRowColSizes(QVector<int> *minColWidths, QVector<int> *minRowHeights) const
 {
   *minColWidths = QVector<int>(columnCount(), 0);
@@ -878,6 +1428,18 @@ void QCPLayoutGrid::getMinimumRowColSizes(QVector<int> *minColWidths, QVector<in
   }
 }
 
+/*! \internal
+  
+  Places the maximum column widths and row heights into \a maxColWidths and \a maxRowHeights
+  respectively.
+  
+  The maximum height of a row is the smallest maximum height of any element in that row. The
+  maximum width of a column is the smallest maximum width of any element in that column.
+  
+  This is a helper function for \ref updateLayout.
+  
+  \see getMinimumRowColSizes
+*/
 void QCPLayoutGrid::getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<int> *maxRowHeights) const
 {
   *maxColWidths = QVector<int>(columnCount(), QWIDGETSIZE_MAX);

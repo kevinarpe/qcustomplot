@@ -7,7 +7,7 @@ doc review:
    - item.h, item.cpp
    - layer.h, layer.cpp
    - layout.h
-   > layout.cpp at beginning
+   > layout.cpp at QCPLayoutInset beginning
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between
@@ -15,8 +15,11 @@ doc:
 - add doc-note and qDebug output for case when addToLegend (QCPGraph/QCPAbstractPlottable) is called without the plottable being in the plot. 
 - explain ltDateTime mode on axes better. Probably give examples with numbers
 - QCPLayoutElement::calculateAutoMargin: note it must be taken care to respect minimumMargins value when using the auto margin
-- make margins/padding overview picture in doc-image-generator and insert in doc where appropriate – possibly make an own doc page with this
 - make own doc page which explains the layout system with images from doc-image-generator
+
+doc pictures:
+  - QCPMarginGroup
+  - make margins/padding overview picture in doc-image-generator and insert in doc where appropriate – possibly make an own doc page with this
 
 Migration FAQ:
 - setPlotTitle is gone, how do I set a plot title now?
@@ -42,8 +45,9 @@ FUTURE RELEASE:
 - more options for tick-generation algorithm (integers, other stepping, range end only at ticks, date/time specific steps...)
 - Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs
 - alternating axis section backgrounds
+- Gaps in QCPGraph
+- possibly setLodFactor/setAutoLod in QCPGraph (or rather only QCPPerformanceGraph?)
 - Item class based on tracer which adds tag-like labels to points. With option to show x/y values via formatting strings (%key and %value).
-- Range navigation via selection rectangle
 - QCPTheme for assigning colors/styles/colorwheels easily
 - optimize QCPGraph (and QCPCurve) with improved intersection clip algorithm (keep old algo for timing). QCPGraph will need clipping on left and right
   only for first and last segment due to the sorted underlying QCPDataMap. Watch out for regression for lsImpulse... (shouldn't happen since we work on raw line data)
@@ -54,16 +58,15 @@ FUTURE RELEASE:
 - make demo with TeXGyreTermes axis fonts/text/arrows etc.
 - make type and parent of QCPItemPosition individual for key and value, but keep interface that sets them simultaneously
 - QCPItemPolygon // hide the QCPItemPosition list behind QCPItemPosition &point(i), pointCount(), setPointCount(c) interface.
+- Data fetcher (model/view)
 - layer visibility
 - maybe adjust getKeyRange on QCPGraph in sdBoth mode to actually use the sorted fashion of map (just look at first and last)
 - think about how to realize splitted axes in the future
 - QCPCandlesticks (http://en.wikipedia.org/wiki/Candlestick_chart)
 - QCPBubbles (x, y, area)
-
 - QCPBars value error bars, print values above bars, maybe print per bar text inside bar (rotated)
 - somehow, range checks must be aware of the scale type used (if that's done, fix the validRange function for log plot 1e-300-1e300)
 - provide a way to set axes ranges with 1:1 ratio (via signals/slots? review setScaleRatio)
-- Data fetcher
 - make drawScatterPlot more efficient
   In total, we calculate the coordToPixel transformation for the .key and .value
   three times (for polygon line, for error and for scatter). Maybe provide the
