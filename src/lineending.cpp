@@ -148,6 +148,17 @@ double QCPLineEnding::boundingDistance() const
   return 0;
 }
 
+/*!
+  Starting from the origin of this line ending (which is style specific), returns the length
+  covered by the line ending symbol, in backward direction.
+  
+  For example, the \ref esSpikeArrow has a shorter real length than a \ref esFlatArrow, even if
+  both have the same \ref setLength value, because the spike arrow has an inward curved back, which
+  reduces the length along its center axis (the drawing origin for arrows is at the tip).
+  
+  This function is used for precise, style specific placement of line endings, for example in
+  QCPAxes.
+*/
 double QCPLineEnding::realLength() const
 {
   switch (mStyle)

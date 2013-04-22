@@ -6,8 +6,9 @@ doc review:
    - global.h
    - item.h, item.cpp
    - layer.h, layer.cpp
-   - layout.h
-   > layout.cpp at QCPLayoutInset beginning
+   - layout.h, layout.cpp
+   - lineending.h, lineending.cpp
+   > painter.h at beginning
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between
@@ -20,6 +21,7 @@ doc:
 doc pictures:
   - QCPMarginGroup
   - make margins/padding overview picture in doc-image-generator and insert in doc where appropriate – possibly make an own doc page with this
+  - update QCPLineEnding pictures to include halfbar/skewedbar
 
 Migration FAQ:
 - setPlotTitle is gone, how do I set a plot title now?

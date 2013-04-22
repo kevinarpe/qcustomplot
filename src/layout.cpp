@@ -1466,12 +1466,34 @@ void QCPLayoutGrid::getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<in
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPLayoutInset
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+/*! \class QCPLayoutInset
+  \brief A layout that places child elements aligned to the border or arbitrarily positioned
+  
+  Elements are placed either aligned to the border or at arbitrary position in the area of the
+  layout. Which placement applies is controlled with the \ref InsetPlacement (\ref
+  setInsetPlacement).
 
+  Elements are added via \ref addElement(QCPLayoutElement *element, Qt::Alignment alignment) or
+  addElement(QCPLayoutElement *element, const QRectF &rect). If the first method is used, the inset
+  placement will default to \ref ipBorderAligned and the element will be aligned according to the
+  \a alignment parameter. The second method defaults to \ref ipFree and allows placing elements at
+  arbitrary position and size, defined by \a rect.
+  
+  The alignment or rect can be set via \ref setInsetAlignment or \ref setInsetRect, respectively.
+  
+  This is the layout that every QCPAxisRect has as \ref QCPAxisRect::insetLayout.
+*/
 
+/*!
+  Creates an instance of QCPLayoutInset and sets default values.
+*/
 QCPLayoutInset::QCPLayoutInset()
 {
 }
 
+/*!
+  Returns the placement type of the element with the specified \a index.
+*/
 QCPLayoutInset::InsetPlacement QCPLayoutInset::insetPlacement(int index) const
 {
   if (elementAt(index))
@@ -1483,6 +1505,10 @@ QCPLayoutInset::InsetPlacement QCPLayoutInset::insetPlacement(int index) const
   }
 }
 
+/*!
+  Returns the alignment of the element with the specified \a index. The alignment only has a
+  meaning, if the inset placement (\ref setInsetPlacement) is \ref ipBorderAligned.
+*/
 Qt::Alignment QCPLayoutInset::insetAlignment(int index) const
 {
   if (elementAt(index))
@@ -1494,6 +1520,10 @@ Qt::Alignment QCPLayoutInset::insetAlignment(int index) const
   }
 }
 
+/*!
+  Returns the rect of the element with the specified \a index. The rect only has a
+  meaning, if the inset placement (\ref setInsetPlacement) is \ref ipFree.
+*/
 QRectF QCPLayoutInset::insetRect(int index) const
 {
   if (elementAt(index))
@@ -1505,6 +1535,11 @@ QRectF QCPLayoutInset::insetRect(int index) const
   }
 }
 
+/*!
+  Sets the inset placement type of the element with the specified \a index to \a placement.
+  
+  \see InsetPlacement
+*/
 void QCPLayoutInset::setInsetPlacement(int index, QCPLayoutInset::InsetPlacement placement)
 {
   if (elementAt(index))
@@ -1513,6 +1548,14 @@ void QCPLayoutInset::setInsetPlacement(int index, QCPLayoutInset::InsetPlacement
     qDebug() << Q_FUNC_INFO << "Invalid element index:" << index;
 }
 
+/*!
+  If the inset placement (\ref setInsetPlacement) is \ref ipBorderAligned, this function
+  is used to set the alignment of the element with the specified \a index to \a alignment.
+  
+  \a alignment is an or combination of the following alignment flags: Qt::AlignLeft,
+  Qt::AlignHCenter, Qt::AlighRight, Qt::AlignTop, Qt::AlignVCenter, Qt::AlignBottom. Any other
+  alignment flags will be ignored.
+*/
 void QCPLayoutInset::setInsetAlignment(int index, Qt::Alignment alignment)
 {
   if (elementAt(index))
@@ -1521,6 +1564,17 @@ void QCPLayoutInset::setInsetAlignment(int index, Qt::Alignment alignment)
     qDebug() << Q_FUNC_INFO << "Invalid element index:" << index;
 }
 
+/*!
+  If the inset placement (\ref setInsetPlacement) is \ref ipFree, this function is used to set the
+  position and size of the element with the specified \a index to \a rect.
+  
+  \a rect is given in fractions of the whole inset layout rect. So an inset with rect (0, 0, 1, 1)
+  will span the entire layout. An inset with rect (0.6, 0.1, 0.35, 0.35) will be in the top right
+  corner of the layout, with 35% width and height of the parent layout.
+  
+  Note that the minimum and maximum sizes of the embedded element (\ref
+  QCPLayoutElement::setMinimumSize/QCPLayoutElement::setMaximumSize) are enforced.
+*/
 void QCPLayoutInset::setInsetRect(int index, const QRectF &rect)
 {
   if (elementAt(index))
@@ -1570,11 +1624,13 @@ void QCPLayoutInset::updateLayout()
   }
 }
 
+/* inherits documentation from base class */
 int QCPLayoutInset::elementCount() const
 {
   return mElements.size();
 }
 
+/* inherits documentation from base class */
 QCPLayoutElement *QCPLayoutInset::elementAt(int index) const
 {
   if (index >= 0 && index < mElements.size())
@@ -1583,6 +1639,7 @@ QCPLayoutElement *QCPLayoutInset::elementAt(int index) const
     return 0;
 }
 
+/* inherits documentation from base class */
 QCPLayoutElement *QCPLayoutInset::takeAt(int index)
 {
   if (QCPLayoutElement *el = elementAt(index))
@@ -1600,6 +1657,7 @@ QCPLayoutElement *QCPLayoutInset::takeAt(int index)
   }
 }
 
+/* inherits documentation from base class */
 bool QCPLayoutInset::take(QCPLayoutElement *element)
 {
   if (element)
@@ -1618,6 +1676,17 @@ bool QCPLayoutInset::take(QCPLayoutElement *element)
   return false;
 }
 
+/*!
+  Adds the specified \a element to the layout as an inset aligned at the border (\ref
+  setInsetAlignment is initialized with \ref ipBorderAligned). The alignment is set to \a
+  alignment.
+  
+  \a alignment is an or combination of the following alignment flags: Qt::AlignLeft,
+  Qt::AlignHCenter, Qt::AlighRight, Qt::AlignTop, Qt::AlignVCenter, Qt::AlignBottom. Any other
+  alignment flags will be ignored.
+  
+  \see addElement(QCPLayoutElement *element, const QRectF &rect)
+*/
 void QCPLayoutInset::addElement(QCPLayoutElement *element, Qt::Alignment alignment)
 {
   if (element)
@@ -1633,6 +1702,17 @@ void QCPLayoutInset::addElement(QCPLayoutElement *element, Qt::Alignment alignme
     qDebug() << Q_FUNC_INFO << "Can't add null element";
 }
 
+/*!
+  Adds the specified \a element to the layout as an inset with free positioning/sizing (\ref
+  setInsetAlignment is initialized with \ref ipFree). The position and size is set to \a
+  rect.
+  
+  \a rect is given in fractions of the whole inset layout rect. So an inset with rect (0, 0, 1, 1)
+  will span the entire layout. An inset with rect (0.6, 0.1, 0.35, 0.35) will be in the top right
+  corner of the layout, with 35% width and height of the parent layout.
+  
+  \see addElement(QCPLayoutElement *element, Qt::Alignment alignment)
+*/
 void QCPLayoutInset::addElement(QCPLayoutElement *element, const QRectF &rect)
 {
   if (element)
