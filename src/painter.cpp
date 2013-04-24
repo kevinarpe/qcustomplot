@@ -298,6 +298,7 @@ void QCPScatterStyle::setShape(QCPScatterStyle::ScatterShape shape)
 
 void QCPScatterStyle::setPen(const QPen &pen)
 {
+  mPenDefined = true;
   mPen = pen;
 }
 
@@ -308,11 +309,13 @@ void QCPScatterStyle::setBrush(const QBrush &brush)
 
 void QCPScatterStyle::setPixmap(const QPixmap &pixmap)
 {
+  setShape(ssPixmap);
   mPixmap = pixmap;
 }
 
 void QCPScatterStyle::setCustomPath(const QPainterPath &customPath)
 {
+  setShape(ssCustom);
   mCustomPath = customPath;
 }
 
