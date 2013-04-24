@@ -36,17 +36,15 @@ public:
     Defines the shape used for scatter points.
 
     On plottables/items that draw scatters, the sizes of these visualizations (with exception of
-    \ref sDot and \ref sPixmap) can be controlled with the \a setSize function. Scatters are drawn
+    \ref sDot and \ref sPixmap) can be controlled with the \ref setSize function. Scatters are drawn
     with the pen and brush specified with \ref setPen and \ref setBrush.
-
-    \see QCPGraph::setScatterStyle, QCPStatisticalBox::setOutlierStyle
   */
   enum ScatterShape { ssNone       ///< \enumimage{ssNone.png} no scatter symbols are drawn (e.g. in QCPGraph, data only represented with lines)
                       ,ssDot       ///< \enumimage{ssDot.png} a single pixel (use \ref ssDisc or \ref ssCircle if you want a round shape with a certain radius)
                       ,ssCross     ///< \enumimage{ssCross.png} a cross
                       ,ssPlus      ///< \enumimage{ssPlus.png} a plus
                       ,ssCircle    ///< \enumimage{ssCircle.png} a circle
-                      ,ssDisc      ///< \enumimage{ssDisc.png} a circle which is filled with the pen (not the brush as ssCircle)
+                      ,ssDisc      ///< \enumimage{ssDisc.png} a circle which is filled with the pen (not the brush as with ssCircle)
                       ,ssSquare    ///< \enumimage{ssSquare.png} a square
                       ,ssDiamond   ///< \enumimage{ssDiamond.png} a diamond
                       ,ssStar      ///< \enumimage{ssStar.png} a star with eight arms, i.e. a combination of cross and plus

@@ -219,7 +219,96 @@ void QCPPainter::fixScaledPen()
 //////////////////// QCPScatterStyle
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*! \class QCPScatterStyle
+  \brief Represents the visual appearance of scatter points
+  
+  This class holds information about shape, color and size of scatter points. In plottables like
+  QCPGraph it is used to store how scatter points shall be drawn. For example, \ref
+  QCPGraph::setScatterStyle takes a QCPScatterStyle instance.
+  
+  A scatter style consists of a shape (\ref setShape), a line color (\ref setPen) and possibly a
+  fill (\ref setBrush), if the shape provides a fillable area. Further, the size of the shape can
+  be controlled with \ref setSize.
 
+  \section QCPScatterStyle-defining Specifying a scatter style
+  
+  You can set all these configurations either by calling the respective functions on an instance:
+  \code
+  QCPScatterStyle myScatter;
+  myScatter.setShape(QCPScatterStyle::ssCircle);
+  myScatter.setPen(Qt::blue);
+  myScatter.setBrush(Qt::white);
+  myScatter.setSize(5);
+  customPlot->graph(0)->setScatterStyle(myScatter);
+  \endcode
+  
+  Or you can use one of the various constructors that take different parameter combinations, making
+  it easy to specify a scatter style in a single call, like so:
+  \code
+  customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::white, 5));
+  \endcode
+  
+  \section QCPScatterStyle-undefinedpen Leaving the color/pen up to the plottable
+  
+  There are two constructors which leave the pen undefined: \ref QCPScatterStyle() and \ref
+  QCPScatterStyle(ScatterShape shape, double size). If those constructors are used, a call to \ref
+  isPenDefined will return false, which will lead to scatter points that inherits the pen from the
+  plottable that uses the scatter style. Thus, if such a scatter style is passed to QCPGraph, the line
+  color of the graph (\ref QCPGraph::setLineColor) will be used by the scatter points. This makes
+  it very convenient to set up typical scatter settings:
+  
+  \code
+  customPlot->graph(0)->setScatterStyle(QCPScatterStyle::ssPlus);
+  \endcode
+
+  Notice that it wasn't even necessary to explicitly call a QCPScatterStyle constructor. This works
+  because QCPScatterStyle provides a constructor that can transform a \ref ScatterShape directly
+  into a QCPScatterStyle instance (that's the \ref QCPScatterStyle(ScatterShape shape, double size)
+  constructor with a default for \a size). In those cases, C++ allows directly supplying a \ref
+  ScatterShape, where actually a QCPScatterStyle is expected.
+  
+  \section QCPScatterStyle-custompath-and-pixmap Custom shapes and pixmaps
+  
+  QCPScatterShape supports drawing custom shapes and arbitrary pixmaps as scatter points.
+
+  For custom shapes, you can provide a QPainterPath with the desired shape to the \ref
+  setCustomPath function or call the constructor that takes a painter path. The scatter shape will
+  automatically be set to \ref ssCustom.
+  
+  For pixmaps, you call \ref setPixmap with the desired QPixmap. Alternatively you can use the
+  constructor that takes a QPixmap. The scatter shape will automatically be set to \ref ssPixmap.
+  Note that \ref setSize does not influence the appearance of the pixmap.
+*/
+
+/* start documentation of inline functions */
+
+/*! \fn bool QCPScatterStyle::isNone() const
+  
+  Returns whether the scatter shape is \ref ssNone.
+  
+  \see setShape
+*/
+
+/*! \fn bool QCPScatterStyle::isPenDefined() const
+  
+  Returns whether a pen has been defined for this scatter style.
+  
+  The pen is undefined if a constructor is called that does not carry \a pen as parameter. Those are
+  \ref QCPScatterStyle() and \ref QCPScatterStyle(ScatterShape shape, double size). If the pen is
+  left undefined, the scatter color will be inherited from the plottable that uses this scatter
+  style.
+  
+  \see setPen
+*/
+
+/* end documentation of inline functions */
+
+/*!
+  Creates a new QCPScatterStyle instance with size set to 6. No shape, pen or brush is defined.
+  
+  Since the pen is undefined (\ref isPenDefined returns false), the scatter color will be inherited
+  from the plottable that uses this scatter style.
+*/
 QCPScatterStyle::QCPScatterStyle() :
   mSize(6),
   mShape(ssNone),
@@ -229,6 +318,13 @@ QCPScatterStyle::QCPScatterStyle() :
 {
 }
 
+/*!
+  Creates a new QCPScatterStyle instance with shape set to \a shape and size to \a size. No pen or
+  brush is defined.
+  
+  Since the pen is undefined (\ref isPenDefined returns false), the scatter color will be inherited
+  from the plottable that uses this scatter style.
+*/
 QCPScatterStyle::QCPScatterStyle(ScatterShape shape, double size) :
   mSize(size),
   mShape(shape),
@@ -238,6 +334,10 @@ QCPScatterStyle::QCPScatterStyle(ScatterShape shape, double size) :
 {
 }
 
+/*!
+  Creates a new QCPScatterStyle instance with shape set to \a shape, the pen color set to \a color,
+  and size to \a size. No brush is defined, i.e. the scatter point will not be filled.
+*/
 QCPScatterStyle::QCPScatterStyle(ScatterShape shape, const QColor &color, double size) :
   mSize(size),
   mShape(shape),
@@ -247,6 +347,10 @@ QCPScatterStyle::QCPScatterStyle(ScatterShape shape, const QColor &color, double
 {
 }
 
+/*!
+  Creates a new QCPScatterStyle instance with shape set to \a shape, the pen color set to \a color,
+  the brush color to \a fill (with a solid pattern), and size to \a size.
+*/
 QCPScatterStyle::QCPScatterStyle(ScatterShape shape, const QColor &color, const QColor &fill, double size) :
   mSize(size),
   mShape(shape),
@@ -256,7 +360,21 @@ QCPScatterStyle::QCPScatterStyle(ScatterShape shape, const QColor &color, const 
 {
 }
 
-// doc: maybe warn that ..., Qt::NoPen, Qt::blue,... will call other overload, use QBrush(Qt::blue)
+/*!
+  Creates a new QCPScatterStyle instance with shape set to \a shape, the pen set to \a pen, the
+  brush to \a brush, and size to \a size.
+  
+  \warning In some cases it might be tempting to directly use a pen style like <tt>Qt::NoPen</tt> as \a pen
+  and a color like <tt>Qt::blue</tt> as \a brush. Notice however, that the corresponding call\n
+  <tt>QCPScatterStyle(QCPScatterShape::ssCircle, Qt::NoPen, Qt::blue, 5)</tt>\n
+  has shown to not necessarily lead C++ to use this constructor but might mistake
+  <tt>Qt::NoPen</tt> for a QColor and use the
+  \ref QCPScatterStyle(ScatterShape shape, const QColor &color, const QColor &fill, double size)
+  constructor instead (which will lead to an unexpected look of the scatter points). To prevent
+  this, be more explicit with the parameter types. For example, use <tt>QBrush(Qt::blue)</tt>
+  instead of just <tt>Qt::blue</tt>, to clearly point out to the compiler that this constructor is
+  wanted.
+*/
 QCPScatterStyle::QCPScatterStyle(ScatterShape shape, const QPen &pen, const QBrush &brush, double size) :
   mSize(size),
   mShape(shape),
@@ -266,6 +384,10 @@ QCPScatterStyle::QCPScatterStyle(ScatterShape shape, const QPen &pen, const QBru
 {
 }
 
+/*!
+  Creates a new QCPScatterStyle instance which will show the specified \a pixmap. The scatter shape
+  is set to \ref ssPixmap.
+*/
 QCPScatterStyle::QCPScatterStyle(const QPixmap &pixmap) :
   mSize(5),
   mShape(ssPixmap),
@@ -276,6 +398,15 @@ QCPScatterStyle::QCPScatterStyle(const QPixmap &pixmap) :
 {
 }
 
+/*!
+  Creates a new QCPScatterStyle instance with a custom shape that is defined via \a customPath. The
+  scatter shape is set to \ref ssCustom.
+  
+  The custom shape line will be drawn with \a pen and filled with \a brush. The size has a slightly
+  different meaning than for built-in scatter points: The custom path will be drawn scaled by a
+  factor of \a size/6.0. Since the default \a size is 6, the custom path will appear at a its
+  natural size by default. To double the size of the path for example, set \a size to 12.
+*/
 QCPScatterStyle::QCPScatterStyle(const QPainterPath &customPath, const QPen &pen, const QBrush &brush, double size) :
   mSize(size),
   mShape(ssCustom),
@@ -286,50 +417,109 @@ QCPScatterStyle::QCPScatterStyle(const QPainterPath &customPath, const QPen &pen
 {
 }
 
+/*!
+  Sets the size (pixel diameter) of the drawn scatter points to \a size.
+  
+  \see setShape
+*/
 void QCPScatterStyle::setSize(double size)
 {
   mSize = size;
 }
 
+/*!
+  Sets the shape to \a shape.
+  
+  Note that the calls \ref setPixmap and \ref setCustomPath automatically set the shape to \ref
+  ssPixmap and \ref ssCustom, respectively.
+  
+  \see setSize
+*/
 void QCPScatterStyle::setShape(QCPScatterStyle::ScatterShape shape)
 {
   mShape = shape;
 }
 
+/*!
+  Sets the pen that will be used to draw scatter points to \a pen.
+  
+  If the pen was previously undefined (see \ref isPenDefined), the pen is considered defined after
+  a call to this function, even if \a pen is <tt>Qt::NoPen</tt>.
+  
+  \see setBrush
+*/
 void QCPScatterStyle::setPen(const QPen &pen)
 {
   mPenDefined = true;
   mPen = pen;
 }
 
+/*!
+  Sets the brush that will be used to fill scatter points to \a brush. Note that not all scatter
+  shapes have fillable areas. For example, \ref ssPlus does not while \ref ssCircle does.
+  
+  \see setPen
+*/
 void QCPScatterStyle::setBrush(const QBrush &brush)
 {
   mBrush = brush;
 }
 
+/*!
+  Sets the pixmap that will be drawn as scatter point to \a pixmap.
+  
+  Note that \ref setSize does not influence the appearance of the pixmap.
+  
+  The scatter shape is automatically set to \ref ssPixmap.
+*/
 void QCPScatterStyle::setPixmap(const QPixmap &pixmap)
 {
   setShape(ssPixmap);
   mPixmap = pixmap;
 }
 
+/*!
+  Sets the custom shape that will be drawn as scatter point to \a customPath.
+  
+  The scatter shape is automatically set to \ref ssCustom.
+*/
 void QCPScatterStyle::setCustomPath(const QPainterPath &customPath)
 {
   setShape(ssCustom);
   mCustomPath = customPath;
 }
 
+/*!
+  Applies the pen and the brush of this scatter style to \a painter. If this scatter style has an
+  undefined pen (\ref isPenDefined), sets the pen of \a painter to \a defaultPen instead.
+  
+  This function is used by plottables (or any class that wants to draw scatters) just before a
+  number of scatters with this style shall be drawn with the \a painter.
+  
+  \see drawShape
+*/
 void QCPScatterStyle::applyTo(QCPPainter *painter, const QPen &defaultPen) const
 {
   painter->setPen(mPenDefined ? mPen : defaultPen);
   painter->setBrush(mBrush);
 }
 
+/*!
+  Draws the scatter shape with \a painter at position \a pos.
+  
+  This function does not modify the pen or the brush on the painter, as \ref applyTo is meant to be
+  called before scatter points are drawn with \ref drawShape.
+  
+  \see applyTo
+*/
 void QCPScatterStyle::drawShape(QCPPainter *painter, QPointF pos) const
 {
   drawShape(painter, pos.x(), pos.y());
 }
 
+/*! \overload
+  Draws the scatter shape with \a painter at position \a x and \a y.
+*/
 void QCPScatterStyle::drawShape(QCPPainter *painter, double x, double y) const
 {
   double w = mSize/2.0;
