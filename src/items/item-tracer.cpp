@@ -40,11 +40,12 @@
   The tracer can be connected with a QCPGraph via \ref setGraph. Then it will automatically adopt
   the coordinate axes of the graph and update its \a position to be on the graph's data. This means
   the key stays controllable via \ref setGraphKey, but the value will follow the graph data. If a
-  QCPGraph is connected, note that setting the coordinates directly via \a position will have no
-  effect, i.e. be overriden in the next redraw (this is when the coodinate update happens).
+  QCPGraph is connected, note that setting the coordinates of the tracer item directly via \a
+  position will have no effect because they will be overriden in the next redraw (this is when the
+  coordinate update happens).
   
   If the specified key in \ref setGraphKey is outside the key bounds of the graph, the tracer will
-  stay at the respective end of the graph.
+  stay at the corresponding end of the graph.
   
   With \ref setInterpolating you may specify whether the tracer may only stay exactly on data
   points or whether it interpolates data points linearly, if given a key that lies between two data
@@ -55,10 +56,10 @@
   positions to the tracer \a position (used as an anchor) via \ref
   QCPItemPosition::setParentAnchor.
   
-  \note The tracer position is only automatically updated upon redraws. This means when, for
-  example, the data of the graph changes and you immediately afterwards (without a redraw) read the
-  \a position coordinates of the tracer, they will not reflect the updated data of the graph. In
-  this case you should call \ref updatePosition manually, prior to reading the tracer coordinates.
+  \note The tracer position is only automatically updated upon redraws. So when the data of the
+  graph changes and immediately afterwards (without a redraw) the a position coordinates of the
+  tracer are retrieved, they will not reflect the updated data of the graph. In this case \ref
+  updatePosition must be called manually, prior to reading the tracer coordinates.
 */
 
 /*!

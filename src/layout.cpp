@@ -208,6 +208,53 @@ void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element
 
 /* start documentation of inline functions */
 
+/*! \fn QCPLayout *QCPLayoutElement::layout() const
+  
+  Returns the parent layout of this layout element.
+*/
+
+/*! \fn QRect QCPLayoutElement::rect() const
+  
+  Returns the inner rect of this layout element. The inner rect is the outer rect (\ref
+  setOuterRect) minus the margins (\ref setMargins, \ref setAutoMargins).
+  
+  In some cases, the area between outer and inner rect is left blank. In other cases the margin
+  area is used to display peripheral graphics while the main content is in the inner rect. This is
+  where automatic margin calculation becomes interesting because it allows the layout element to
+  adapt the margins to the peripheral graphics it wants to draw. For example, \ref QCPAxisRect
+  draws the axis labels and tick labels in the margin area, thus needs to adjust the margins (if
+  \ref setAutoMargins is enabled) according to the space required by the labels of the axes.
+*/
+
+/*! \fn virtual void QCPLayoutElement::mousePressEvent(QMouseEvent *event)
+  
+  This event is called, if the mouse was pressed while being inside the outer rect of this layout
+  element.
+*/
+
+/*! \fn virtual void QCPLayoutElement::mouseMoveEvent(QMouseEvent *event)
+  
+  This event is called, if the mouse is moved inside the outer rect of this layout element.
+*/
+
+/*! \fn virtual void QCPLayoutElement::mouseReleaseEvent(QMouseEvent *event)
+  
+  This event is called, if the mouse was previously pressed inside the outer rect of this layout
+  element and is now released.
+*/
+
+/*! \fn virtual void QCPLayoutElement::mouseDoubleClickEvent(QMouseEvent *event)
+  
+  This event is called, if the mouse is double-clicked inside the outer rect of this layout
+  element.
+*/
+
+/*! \fn virtual void QCPLayoutElement::wheelEvent(QWheelEvent *event)
+  
+  This event is called, if the mouse wheel is scrolled while the cursor is inside the rect of this
+  layout element.
+*/
+
 /* end documentation of inline functions */
 
 /*!
@@ -242,6 +289,8 @@ QCPLayoutElement::~QCPLayoutElement()
   the outer rect upon the next replot.
   
   The layout element will adapt its inner \ref rect by subtracting the margin from the outer rect.
+  
+  \see rect
 */
 void QCPLayoutElement::setOuterRect(const QRect &rect)
 {
@@ -296,7 +345,7 @@ void QCPLayoutElement::setMinimumMargins(const QMargins &margins)
   Margin sides that are under automatic control may participate in a \ref QCPMarginGroup (see \ref
   setMarginGroup), to synchronize (align) it with other layout elements in the plot.
   
-  \ref setMinimumMargins, setMargins
+  \see setMinimumMargins, setMargins
 */
 void QCPLayoutElement::setAutoMargins(QCP::MarginSides sides)
 {
@@ -395,8 +444,8 @@ void QCPLayoutElement::setMarginGroup(QCP::MarginSides sides, QCPMarginGroup *gr
 }
 
 /*!
-  Updates the layout element and sub-elements. This function is called upon replot by the parent
-  layout element.
+  Updates the layout element and sub-elements. This function is automatically called upon replot by
+  the parent layout element.
   
   Layout elements that have child elements should call the \ref update method of their child
   elements.

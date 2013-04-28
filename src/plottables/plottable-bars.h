@@ -69,7 +69,7 @@ public:
   double width() const { return mWidth; }
   QCPBars *barBelow() const { return mBarBelow.data(); }
   QCPBars *barAbove() const { return mBarAbove.data(); }
-  const QCPBarDataMap *data() const { return mData; }
+  QCPBarDataMap *data() const { return mData; }
   
   // setters:
   void setWidth(double width);

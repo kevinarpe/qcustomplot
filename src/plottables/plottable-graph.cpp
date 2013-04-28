@@ -81,10 +81,14 @@ QCPData::QCPData(double key, double value) :
 /*! \class QCPGraph
   \brief A plottable representing a graph in a plot.
 
-  Usually QCustomPlot creates it internally via QCustomPlot::addGraph and the resulting instance is
-  accessed via QCustomPlot::graph.
+  Usually QCustomPlot creates graphs internally via QCustomPlot::addGraph and the resulting
+  instance is accessed via QCustomPlot::graph.
 
   To plot data, assign it with the \ref setData or \ref addData functions.
+  
+  Graphs are used to display single-valued data. Single-valued means that there should only be one
+  data point per unique key coordinate. In other words, the graph can't have \a loops. If you do
+  want to plot non-single-valued curves, rather use the QCPCurve plottable.
   
   \section appearance Changing the appearance
   
@@ -345,9 +349,8 @@ void QCPGraph::setDataBothError(const QVector<double> &key, const QVector<double
 
 
 /*!
-  Sets how the single data points are connected in the plot or how they are represented visually
-  apart from the scatter symbol. For scatter-only plots, set \a ls to \ref lsNone and \ref
-  setScatterStyle to the desired scatter style.
+  Sets how the single data points are connected in the plot. For scatter-only plots, set \a ls to
+  \ref lsNone and \ref setScatterStyle to the desired scatter style.
   
   \see setScatterStyle
 */
@@ -401,10 +404,12 @@ void QCPGraph::setErrorBarSize(double size)
   If \a enabled is set to true, the error bar will not be drawn as a solid line under the scatter symbol but
   leave some free space around the symbol.
   
-  This feature uses the current scatter size (\ref setScatterSize) to determine the size of the
+  This feature uses the current scatter size (\ref QCPScatterStyle::setSize) to determine the size of the
   area to leave blank. So when drawing Pixmaps as scatter points (\ref QCP::ssPixmap), the scatter size
   must be set manually to a value corresponding to the size of the Pixmap, if the error bars should
   leave gaps to its boundaries.
+  
+  \ref setErrorType, setErrorBarSize, setScatterStyle
 */
 void QCPGraph::setErrorBarSkipSymbol(bool enabled)
 {
@@ -415,9 +420,9 @@ void QCPGraph::setErrorBarSkipSymbol(bool enabled)
   Sets the target graph for filling the area between this graph and \a targetGraph with the current
   brush (\ref setBrush).
   
-  When \a targetGraph is set to 0, a normal graph fill will be produced. This means, when the brush
-  is not Qt::NoBrush or fully transparent, a fill all the way to the zero-value-line parallel to
-  the key axis of this graph will be drawn. To disable any filling, set the brush to Qt::NoBrush.
+  When \a targetGraph is set to 0, a normal graph fill to the zero-value-line will be shown. To
+  disable any filling, set the brush to Qt::NoBrush.
+
   \see setBrush
 */
 void QCPGraph::setChannelFillGraph(QCPGraph *targetGraph)
@@ -718,17 +723,23 @@ void QCPGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
   }
 }
 
-/*! 
-  \internal
-  This function branches out to the line style specific "get(...)PlotData" functions, according to the
-  line style of the graph.
-  \param lineData will be filled with raw points that will be drawn with the according draw functions, e.g. \ref drawLinePlot and \ref drawImpulsePlot.
-  These aren't necessarily the original data points, since for step plots for example, additional points are needed for drawing lines that make up steps.
-  If the line style of the graph is \ref lsNone, the \a lineData vector will be left untouched.
-  \param pointData will be filled with the original data points so \ref drawScatterPlot can draw the scatter symbols accordingly. If no scatters need to be
-  drawn, i.e. scatter style is \ref QCP::ssNone, pass 0 as \a pointData, and this step will be skipped.
+/*! \internal
+
+  This function branches out to the line style specific "get(...)PlotData" functions, according to
+  the line style of the graph.
   
-  \see getScatterPlotData, getLinePlotData, getStepLeftPlotData, getStepRightPlotData, getStepCenterPlotData, getImpulsePlotData
+  \a lineData will be filled with raw points that will be drawn with the according draw functions,
+  e.g. \ref drawLinePlot and \ref drawImpulsePlot. These aren't necessarily the original data
+  points, since for step plots for example, additional points are needed for drawing lines that
+  make up steps. If the line style of the graph is \ref lsNone, the \a lineData vector will be left
+  untouched.
+  
+  \a pointData will be filled with the original data points so \ref drawScatterPlot can draw the
+  scatter symbols accordingly. If no scatters need to be drawn, i.e. the scatter style's shape is
+  \ref QCPScatterStyle::ssNone, pass 0 as \a pointData, and this step will be skipped.
+  
+  \see getScatterPlotData, getLinePlotData, getStepLeftPlotData, getStepRightPlotData,
+  getStepCenterPlotData, getImpulsePlotData
 */
 void QCPGraph::getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
 {
@@ -743,14 +754,15 @@ void QCPGraph::getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointDa
   }
 }
 
-/*! 
-  \internal
-  If line style is \ref lsNone and scatter style is not \ref QCP::ssNone, this function serves at providing the
-  visible data points in \a pointData, so the \ref drawScatterPlot function can draw the scatter points
-  accordingly.
+/*! \internal
+  
+  If line style is \ref lsNone and the scatter style's shape is not \ref QCPScatterStyle::ssNone,
+  this function serves at providing the visible data points in \a pointData, so the \ref
+  drawScatterPlot function can draw the scatter points accordingly.
   
   If line style is not \ref lsNone, this function is not called and the data for the scatter points
   are (if needed) calculated inside the corresponding other "get(...)PlotData" functions.
+  
   \see drawScatterPlot
 */
 void QCPGraph::getScatterPlotData(QVector<QCPData> *pointData) const
@@ -792,14 +804,15 @@ void QCPGraph::getScatterPlotData(QVector<QCPData> *pointData) const
   }
 }
 
-/*! 
-  \internal
-  Places the raw data points needed for a normal linearly connected plot in \a lineData.
+/*! \internal
+  
+  Places the raw data points needed for a normal linearly connected graph in \a lineData.
 
   As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
-  points that are visible, for drawing scatter points, if necessary. If drawing scatter points is
-  disabled (i.e. scatter style \ref QCP::ssNone), pass 0 as \a pointData, and the function will skip
-  filling the vector.
+  points that are visible for drawing scatter points, if necessary. If drawing scatter points is
+  disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
+  pointData, and the function will skip filling the vector.
+  
   \see drawLinePlot
 */
 void QCPGraph::getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
@@ -855,9 +868,10 @@ void QCPGraph::getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *poi
   Places the raw data points needed for a step plot with left oriented steps in \a lineData.
 
   As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
-  points that are visible, for drawing scatter points, if necessary. If drawing scatter points is
-  disabled (i.e. scatter style \ref QCP::ssNone), pass 0 as \a pointData, and the function will skip
-  filling the vector.
+  points that are visible for drawing scatter points, if necessary. If drawing scatter points is
+  disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
+  pointData, and the function will skip filling the vector.
+  
   \see drawLinePlot
 */
 void QCPGraph::getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
@@ -934,9 +948,10 @@ void QCPGraph::getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> 
   Places the raw data points needed for a step plot with right oriented steps in \a lineData.
 
   As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
-  points that are visible, for drawing scatter points, if necessary. If drawing scatter points is
-  disabled (i.e. scatter style \ref QCP::ssNone), pass 0 as \a pointData, and the function will skip
-  filling the vector.
+  points that are visible for drawing scatter points, if necessary. If drawing scatter points is
+  disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
+  pointData, and the function will skip filling the vector.
+  
   \see drawLinePlot
 */
 void QCPGraph::getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
@@ -1013,9 +1028,10 @@ void QCPGraph::getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData>
   Places the raw data points needed for a step plot with centered steps in \a lineData.
 
   As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
-  points that are visible, for drawing scatter points, if necessary. If drawing scatter points is
-  disabled (i.e. scatter style \ref QCP::ssNone), pass 0 as \a pointData, and the function will skip
-  filling the vector.
+  points that are visible for drawing scatter points, if necessary. If drawing scatter points is
+  disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
+  pointData, and the function will skip filling the vector.
+  
   \see drawLinePlot
 */
 void QCPGraph::getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
@@ -1120,9 +1136,10 @@ void QCPGraph::getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData
   Places the raw data points needed for an impulse plot in \a lineData.
 
   As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
-  points that are visible, for drawing scatter points, if necessary. If drawing scatter points is
-  disabled (i.e. scatter style \ref QCP::ssNone), pass 0 as \a pointData, and the function will skip
-  filling the vector.
+  points that are visible for drawing scatter points, if necessary. If drawing scatter points is
+  disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
+  pointData, and the function will skip filling the vector.
+  
   \see drawImpulsePlot
 */
 void QCPGraph::getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
@@ -1191,15 +1208,17 @@ void QCPGraph::getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *
   }
 }
 
-/*! 
-  \internal
-  Draws the fill of the graph with the specified brush. If the fill is a normal "base" fill, i.e.
-  under the graph toward the zero-value-line, only the \a lineData is required (and two extra points
-  at the zero-value-line, which are added by \ref addFillBasePoints and removed by \ref removeFillBasePoints
-  after the fill drawing is done).
+/*! \internal
   
-  If the fill is a channel fill between this graph and another graph (mChannelFillGraph), the more complex
-  polygon is calculated with the \ref getChannelFillPolygon function.
+  Draws the fill of the graph with the specified brush.
+
+  If the fill is a normal fill towards the zero-value-line, only the \a lineData is required (and
+  two extra points at the zero-value-line, which are added by \ref addFillBasePoints and removed by
+  \ref removeFillBasePoints after the fill drawing is done).
+  
+  If the fill is a channel fill between this QCPGraph and another QCPGraph (mChannelFillGraph), the
+  more complex polygon is calculated with the \ref getChannelFillPolygon function.
+  
   \see drawLinePlot
 */
 void QCPGraph::drawFill(QCPPainter *painter, QVector<QPointF> *lineData) const
@@ -1227,9 +1246,11 @@ void QCPGraph::drawFill(QCPPainter *painter, QVector<QPointF> *lineData) const
 
 /*! \internal
   
-  Draws scatter symbols at every data point passed in \a pointData. scatter symbols are independent of
-  the line style and are always drawn if scatter style is not \ref QCP::ssNone. Hence, the \a pointData vector
-  is outputted by all "get(...)PlotData" functions, together with the (line style dependent) line data.
+  Draws scatter symbols at every data point passed in \a pointData. scatter symbols are independent
+  of the line style and are always drawn if the scatter style's shape is not \ref
+  QCPScatterStyle::ssNone. Hence, the \a pointData vector is outputted by all "get(...)PlotData"
+  functions, together with the (line style dependent) line data.
+  
   \see drawLinePlot, drawImpulsePlot
 */
 void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData) const
@@ -1268,12 +1289,13 @@ void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData)
   }
 }
 
-/*! 
-  \internal
-  Draws line graphs from the provided data. It connects all points in \a lineData, which
-  was created by one of the "get(...)PlotData" functions for line styles that require simple line
-  connections between the point vector they create. These are for example \ref getLinePlotData, \ref
-  getStepLeftPlotData, \ref getStepRightPlotData and \ref getStepCenterPlotData.
+/*!  \internal
+  
+  Draws line graphs from the provided data. It connects all points in \a lineData, which was
+  created by one of the "get(...)PlotData" functions for line styles that require simple line
+  connections between the point vector they create. These are for example \ref getLinePlotData,
+  \ref getStepLeftPlotData, \ref getStepRightPlotData and \ref getStepCenterPlotData.
+  
   \see drawScatterPlot, drawImpulsePlot
 */
 void QCPGraph::drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) const
@@ -1315,10 +1337,11 @@ void QCPGraph::drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) con
   }
 }
 
-/*! 
-  \internal
-  Draws impulses graphs from the provided data, i.e. it connects all line pairs in \a lineData, which was
+/*! \internal
+  
+  Draws impulses from the provided data, i.e. it connects all line pairs in \a lineData, which was
   created by \ref getImpulsePlotData.
+  
   \see drawScatterPlot, drawLinePlot
 */
 void QCPGraph::drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) const
@@ -1335,8 +1358,8 @@ void QCPGraph::drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) 
   }
 }
 
-/*! 
-  \internal
+/*!  \internal
+  
   called by the scatter drawing function (\ref drawScatterPlot) to draw the error bars on one data
   point. \a x and \a y pixel positions of the data point are passed since they are already known in
   pixel coordinates in the drawing function, so we save some extra coordToPixel transforms here. \a
@@ -1437,18 +1460,23 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
   }
 }
 
-/*! 
-  \internal
-  called by the specific plot data generating functions "get(...)PlotData" to determine
-  which data range is visible, so only that needs to be processed.
+/*!  \internal
   
-  \param[out] lower returns an iterator to the lowest data point that needs to be taken into account
-  when plotting. Note that in order to get a clean plot all the way to the edge of the axes, \a lower
+  called by the specific plot data generating functions "get(...)PlotData" to determine which data
+  range is visible, so only that needs to be processed.
+  
+  \a lower returns an iterator to the lowest data point that needs to be taken into account when
+  plotting. Note that in order to get a clean plot all the way to the edge of the axes, \a lower
   may still be outside the visible range.
-  \param[out] upper returns an iterator to the highest data point. Same as before, \a upper may also
-  lie outside of the visible range.
-  \param[out] count number of data points that need plotting, i.e. points between \a lower and \a upper,
-  including them. This is useful for allocating the array of QPointFs in the specific drawing functions.
+  
+  \a upper returns an iterator to the highest data point. Same as before, \a upper may also lie
+  outside of the visible range.
+  
+  \a count number of data points that need plotting, i.e. points between \a lower and \a upper,
+  including them. This is useful for allocating the array of <tt>QPointF</tt>s in the specific
+  drawing functions.
+  
+  if the graph contains no data, \a count is zero and both \a lower and \a upper point to constEnd.
 */
 void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper, int &count) const
 {
@@ -1490,8 +1518,9 @@ void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMa
   removeFillBasePoints function.
   
   The expanding of \a lineData by two points will not cause unnecessary memory reallocations,
-  because the data vector generation functions (getLinePlotData etc.) reserve two extra points
-  when they allocate memory for \a lineData.
+  because the data vector generation functions (getLinePlotData etc.) reserve two extra points when
+  they allocate memory for \a lineData.
+  
   \see removeFillBasePoints, lowerFillBasePoint, upperFillBasePoint
 */
 void QCPGraph::addFillBasePoints(QVector<QPointF> *lineData) const
@@ -1510,9 +1539,10 @@ void QCPGraph::addFillBasePoints(QVector<QPointF> *lineData) const
   }
 }
 
-/*! 
-  \internal
-  removes the two points from \a lineData that were added by addFillBasePoints.
+/*! \internal
+  
+  removes the two points from \a lineData that were added by \ref addFillBasePoints.
+  
   \see addFillBasePoints, lowerFillBasePoint, upperFillBasePoint
 */
 void QCPGraph::removeFillBasePoints(QVector<QPointF> *lineData) const
@@ -1520,17 +1550,18 @@ void QCPGraph::removeFillBasePoints(QVector<QPointF> *lineData) const
   lineData->remove(lineData->size()-2, 2);
 }
 
-/*! 
-  \internal
-  called by addFillBasePoints to conveniently assign the point which closes the fill
-  polygon on the lower side of the zero-value-line parallel to the key axis.
-  The logarithmic axis scale case is a bit special, since the zero-value-line in pixel coordinates
-  is in positive or negative infinity. So this case is handled separately by just closing the
-  fill polygon on the axis which lies in the direction towards the zero value.
+/*! \internal
   
-  \param lowerKey pixel position of the lower key of the point. Depending on whether the key axis
-  is horizontal or vertical, \a lowerKey will end up as the x or y value of the returned point,
-  respectively.
+  called by \ref addFillBasePoints to conveniently assign the point which closes the fill polygon
+  on the lower side of the zero-value-line parallel to the key axis. The logarithmic axis scale
+  case is a bit special, since the zero-value-line in pixel coordinates is in positive or negative
+  infinity. So this case is handled separately by just closing the fill polygon on the axis which
+  lies in the direction towards the zero value.
+  
+  \a lowerKey will be the the key (in pixels) of the returned point. Depending on whether the key
+  axis is horizontal or vertical, \a lowerKey will end up as the x or y value of the returned
+  point, respectively.
+  
   \see upperFillBasePoint, addFillBasePoints
 */
 QPointF QCPGraph::lowerFillBasePoint(double lowerKey) const
@@ -1584,17 +1615,18 @@ QPointF QCPGraph::lowerFillBasePoint(double lowerKey) const
   return point;
 }
 
-/*! 
-  \internal
-  called by addFillBasePoints to conveniently assign the point which closes the fill
+/*! \internal
+  
+  called by \ref addFillBasePoints to conveniently assign the point which closes the fill
   polygon on the upper side of the zero-value-line parallel to the key axis. The logarithmic axis
   scale case is a bit special, since the zero-value-line in pixel coordinates is in positive or
   negative infinity. So this case is handled separately by just closing the fill polygon on the
   axis which lies in the direction towards the zero value.
+
+  \a upperKey will be the the key (in pixels) of the returned point. Depending on whether the key
+  axis is horizontal or vertical, \a upperKey will end up as the x or y value of the returned
+  point, respectively.
   
-  \param upperKey pixel position of the upper key of the point. Depending on whether the key axis
-  is horizontal or vertical, \a upperKey will end up as the x or y value of the returned point,
-  respectively.
   \see lowerFillBasePoint, addFillBasePoints
 */
 QPointF QCPGraph::upperFillBasePoint(double upperKey) const
@@ -1654,8 +1686,8 @@ QPointF QCPGraph::upperFillBasePoint(double upperKey) const
   lineData) and the graph specified by mChannelFillGraph (data generated by calling its \ref
   getPlotData function). May return an empty polygon if the key ranges have no overlap or fill
   target graph and this graph don't have same orientation (i.e. both key axes horizontal or both
-  key axes vertical). For increased performance (due to implicit sharing), keep the returned QPolygonF
-  const.
+  key axes vertical). For increased performance (due to implicit sharing), keep the returned
+  QPolygonF const.
 */
 const QPolygonF QCPGraph::getChannelFillPolygon(const QVector<QPointF> *lineData) const
 {
@@ -1794,9 +1826,9 @@ const QPolygonF QCPGraph::getChannelFillPolygon(const QVector<QPointF> *lineData
 
 /*! \internal
   
-  Finds the smallest index of \a data, whose points x value is just above \a x.
-  Assumes x values in \a data points are ordered ascending, as is the case
-  when plotting with horizontal key axis.
+  Finds the smallest index of \a data, whose points x value is just above \a x. Assumes x values in
+  \a data points are ordered ascending, as is the case when plotting with horizontal key axis.
+
   Used to calculate the channel fill polygon, see \ref getChannelFillPolygon.
 */
 int QCPGraph::findIndexAboveX(const QVector<QPointF> *data, double x) const
@@ -1816,9 +1848,9 @@ int QCPGraph::findIndexAboveX(const QVector<QPointF> *data, double x) const
 
 /*! \internal
   
-  Finds the greatest index of \a data, whose points x value is just below \a x.
-  Assumes x values in \a data points are ordered ascending, as is the case
-  when plotting with horizontal key axis.
+  Finds the highest index of \a data, whose points x value is just below \a x. Assumes x values in
+  \a data points are ordered ascending, as is the case when plotting with horizontal key axis.
+  
   Used to calculate the channel fill polygon, see \ref getChannelFillPolygon.
 */
 int QCPGraph::findIndexBelowX(const QVector<QPointF> *data, double x) const
@@ -1838,9 +1870,9 @@ int QCPGraph::findIndexBelowX(const QVector<QPointF> *data, double x) const
 
 /*! \internal
   
-  Finds the smallest index of \a data, whose points y value is just above \a y.
-  Assumes y values in \a data points are ordered descending, as is the case
-  when plotting with vertical key axis.
+  Finds the smallest index of \a data, whose points y value is just above \a y. Assumes y values in
+  \a data points are ordered descending, as is the case when plotting with vertical key axis.
+  
   Used to calculate the channel fill polygon, see \ref getChannelFillPolygon.
 */
 int QCPGraph::findIndexAboveY(const QVector<QPointF> *data, double y) const
@@ -1863,6 +1895,10 @@ int QCPGraph::findIndexAboveY(const QVector<QPointF> *data, double y) const
   Calculates the (minimum) distance (in pixels) the graph's representation has from the given \a
   pixelPoint in pixels. This is used to determine whether the graph was clicked or not, e.g. in
   \ref selectTest.
+  
+  If either the graph has no data or if the line style is \ref lsNone and the scatter style's shape
+  is \ref QCPScatterStyle::ssNone (i.e. there is no visual representation of the graph), returns
+  500.
 */
 double QCPGraph::pointDistance(const QPointF &pixelPoint) const
 {
@@ -1931,9 +1967,10 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
 
 /*! \internal
   
-  Finds the greatest index of \a data, whose points y value is just below \a y.
-  Assumes y values in \a data points are ordered descending, as is the case
-  when plotting with vertical key axis (since keys are ordered ascending).
+  Finds the highest index of \a data, whose points y value is just below \a y. Assumes y values in
+  \a data points are ordered descending, as is the case when plotting with vertical key axis (since
+  keys are ordered ascending).
+
   Used to calculate the channel fill polygon, see \ref getChannelFillPolygon.
 */
 int QCPGraph::findIndexBelowY(const QVector<QPointF> *data, double y) const
@@ -1968,6 +2005,7 @@ QCPRange QCPGraph::getValueRange(bool &validRange, SignDomain inSignDomain) cons
 }
 
 /*! \overload
+  
   Allows to specify whether the error bars should be included in the range calculation.
   
   \see getKeyRange(bool &validRange, SignDomain inSignDomain)
@@ -2073,6 +2111,7 @@ QCPRange QCPGraph::getKeyRange(bool &validRange, SignDomain inSignDomain, bool i
 }
 
 /*! \overload
+  
   Allows to specify whether the error bars should be included in the range calculation.
   
   \see getValueRange(bool &validRange, SignDomain inSignDomain)

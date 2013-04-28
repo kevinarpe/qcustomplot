@@ -7,15 +7,10 @@ todo:
  - make QCustomPlot Qt5 compatible (basically some defines in .pro)
 
 doc review:
-   - axis.h, axis.cpp
-   - core.h, core.cpp
-   - global.h
-   - item.h, item.cpp
-   - layer.h, layer.cpp
-   - layout.h, layout.cpp
-   - lineending.h, lineending.cpp
-   - painter.h, painter.cpp
-   > plottable.h at beginning
+   - have all main source files
+   - have all items
+   - have all plottables
+   - layoutelement-legend.h at beginning
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between

@@ -75,7 +75,7 @@ public:
   virtual ~QCPCurve();
   
   // getters:
-  const QCPCurveDataMap *data() const { return mData; }
+  QCPCurveDataMap *data() const { return mData; }
   QCPScatterStyle scatterStyle() const { return mScatterStyle; }
   LineStyle lineStyle() const { return mLineStyle; }
   

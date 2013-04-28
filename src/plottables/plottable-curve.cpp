@@ -71,6 +71,10 @@ QCPCurveData::QCPCurveData(double t, double key, double value) :
 
 /*! \class QCPCurve
   \brief A plottable representing a parametric curve in a plot.
+  
+  Unlike QCPGraph, plottables of this type may have multiple points with the same key value, their
+  visual representation can have \a loops. This is realized by introducing a third coordinate \a t,
+  which defines the order of the points described by the other two coordinates \a x and \a y.
 
   To plot data, assign it with the \ref setData or \ref addData functions.
   
@@ -187,8 +191,10 @@ void QCPCurve::setData(const QVector<double> &key, const QVector<double> &value)
 }
 
 /*! 
-  Sets the visual appearance of single data points in the plot. If set to \ref QCPScatterStyle::ssNone, no scatter points
-  are drawn (e.g. for line-only-plots with appropriate line style).
+  Sets the visual appearance of single data points in the plot. If set to \ref
+  QCPScatterStyle::ssNone, no scatter points are drawn (e.g. for line-only plots with appropriate
+  line style).
+  
   \see QCPScatterStyle, setLineStyle
 */
 void QCPCurve::setScatterStyle(const QCPScatterStyle &style)
@@ -447,7 +453,7 @@ void QCPCurve::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 /*! \internal
   
   Draws scatter symbols at every data point passed in \a pointData. scatter symbols are independent of
-  the line style and are always drawn if scatter style is not \ref QCP::ssNone.
+  the line style and are always drawn if scatter shape is not \ref QCPScatterStyle::ssNone.
 */
 void QCPCurve::drawScatterPlot(QCPPainter *painter, const QVector<QPointF> *pointData) const
 {

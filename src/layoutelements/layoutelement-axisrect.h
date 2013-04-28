@@ -127,14 +127,16 @@ protected:
   // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
-  void drawBackground(QCPPainter *painter);
-  void updateAxesOffset(QCPAxis::AxisType type);
   virtual int calculateAutoMargin(QCP::MarginSide side);
   // events:
   virtual void mousePressEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
+  
+  // non-property methods:
+  void drawBackground(QCPPainter *painter);
+  void updateAxesOffset(QCPAxis::AxisType type);
   
 private:
   Q_DISABLE_COPY(QCPAxisRect)

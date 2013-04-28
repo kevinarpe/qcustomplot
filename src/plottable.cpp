@@ -38,8 +38,8 @@
   \brief The abstract base class for all data representing objects in a plot.
 
   It defines a very basic interface like name, pen, brush, visibility etc. Since this class is
-  abstract, it can't be instantiated. Use one of the subclasses or create a subclass yourself (see
-  below), to create new ways of displaying data.
+  abstract, it can't be instantiated. Use one of the subclasses or create a subclass yourself to
+  create new ways of displaying data (see "Creating own plottables" below).
   
   All further specifics are in the subclasses, for example:
   \li A normal graph with possibly a line, scatter points and error bars is displayed by \ref QCPGraph
@@ -69,17 +69,14 @@
   QCPAxis::coordToPixel. However, you must then take care about the orientation of the axis
   yourself.
   
-  From QCPAbstractPlottable you inherit the following members you may use:
+  Here are some important membery you inherit from QCPAbstractPlottable:
   <table>
   <tr>
     <td>QCustomPlot *\b mParentPlot</td>
-    <td>A pointer to the parent QCustomPlot instance. This is adopted from the axes that are passed in the constructor.</td>
+    <td>A pointer to the parent QCustomPlot instance. The parent plot is inferred from the axes that are passed in the constructor.</td>
   </tr><tr>
     <td>QString \b mName</td>
     <td>The name of the plottable.</td>
-  </tr><tr>
-    <td>bool \b mVisible</td>
-    <td>Whether the plot is visible or not. When this is false, you shouldn't draw the data in the \ref draw function (\ref draw is always called, no matter what mVisible is).</td>
   </tr><tr>
     <td>QPen \b mPen</td>
     <td>The generic pen of the plottable. You should use this pen for the most prominent data representing lines in the plottable (e.g QCPGraph uses this pen for its graph lines and scatters)</td>
@@ -95,7 +92,7 @@
   </tr><tr>
     <td>QWeakPointer<QCPAxis>\b mKeyAxis, \b mValueAxis</td>
     <td>The key and value axes this plottable is attached to. Call their QCPAxis::coordToPixel functions to translate coordinates to pixels in either the key or value dimension.
-        Make sure to check whether the weak pointer is null before using it. (In that case don't draw the plottable.)</td>
+        Make sure to check whether the weak pointer is null before using it. If one of the axes is null, don't draw the plottable.</td>
   </tr><tr>
     <td>bool \b mSelected</td>
     <td>indicates whether the plottable is selected or not.</td>
@@ -107,40 +104,6 @@
 
 /*! \fn void QCPAbstractPlottable::clearData() = 0
   Clears all data in the plottable.
-*/
-
-/*! \fn double QCPAbstractPlottable::selectTest(const QPointF &pos) const = 0
-  
-  This function is used to decide whether a click hits a plottable or not.
-
-  \a pos is a point in pixel coordinates on the QCustomPlot surface. This function returns the
-  shortest pixel distance of this point to the plottable (e.g. to the scatters/lines of a graph).
-  If the plottable is either invisible, contains no data or the distance couldn't be determined,
-  -1.0 is returned. \ref setSelectable has no influence on the return value of this function.
-
-  If the plottable is represented not by single lines but by an area like QCPBars or
-  QCPStatisticalBox, a click inside the area returns a constant value greater zero (typically 99%
-  of the selectionTolerance of the parent QCustomPlot). If the click lies outside the area, this
-  function returns -1.0.
-  
-  Providing a constant value for area objects allows selecting line objects even when they are
-  obscured by such area objects, by clicking close to the lines (i.e. closer than
-  0.99*selectionTolerance).
-  
-  The actual setting of the selection state is not done by this function. This is handled by the
-  parent QCustomPlot when the mouseReleaseEvent occurs.
-  
-  \see setSelected, QCustomPlot::setInteractions
-*/
-
-/*! \fn void QCPAbstractPlottable::draw(QCPPainter *painter) = 0
-  \internal
-  
-  Draws this plottable with the provided \a painter. Called by \ref QCustomPlot::draw on all its
-  visible plottables.
-  
-  The cliprect of the provided painter is set to the axis rect of this plottable (what \ref
-  clipRect returns), before this function is called.
 */
 
 /*! \fn void QCPAbstractPlottable::drawLegendIcon(QCPPainter *painter, const QRect &rect) const = 0
@@ -191,15 +154,13 @@
 /*!
   Constructs an abstract plottable which uses \a keyAxis as its key axis ("x") and \a valueAxis as
   its value axis ("y"). \a keyAxis and \a valueAxis must reside in the same QCustomPlot instance
-  and not have the same orientation. If either of these restrictions is violated, a corresponding
+  and have perpendicular orientations. If either of these restrictions is violated, a corresponding
   message is printed to the debug output (qDebug), the construction is not aborted, though.
   
-  Since QCPAbstractPlottable is an abstract class that defines the basic interface to plottables
-  (i.e. any form of data representation inside a plot, like graphs, curves etc.), it can't be
-  directly instantiated.
+  Since QCPAbstractPlottable is an abstract class that defines the basic interface to plottables,
+  it can't be directly instantiated.
   
-  You probably want one of the subclasses like \ref QCPGraph and \ref QCPCurve instead.
-  \see setKeyAxis, setValueAxis
+  You probably want one of the subclasses like \ref QCPGraph or \ref QCPCurve instead.
 */
 QCPAbstractPlottable::QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   QCPLayerable(keyAxis->parentPlot(), "", keyAxis->axisRect()),
@@ -223,8 +184,8 @@ QCPAbstractPlottable::QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis)
 }
 
 /*!
-   The name is the textual representation of this plottable as it is displayed in the QCPLegend of
-   the parent QCustomPlot. It may contain any utf-8 characters, including newlines.
+   The name is the textual representation of this plottable as it is displayed in the legend
+   (\ref QCPLegend). It may contain any UTF-8 characters, including newlines.
 */
 void QCPAbstractPlottable::setName(const QString &name)
 {
@@ -461,7 +422,7 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
 }
 
 /*!
-  Adds this plottable to the legend of the parent QCustomPlot.
+  Adds this plottable to the legend of the parent QCustomPlot (\ref QCustomPlot::legend).
     
   Normally, a QCPPlottableLegendItem is created and inserted into the legend. If the plottable
   needs a more specialized representation in the legend, this function will take this into account
@@ -490,8 +451,8 @@ bool QCPAbstractPlottable::addToLegend()
   QCPAbstractLegendItem (usually a QCPPlottableLegendItem) that is associated with this plottable
   is removed.
     
-  Returns true on success, i.e. if the legend exists and a legend item associated with this plottable was found and
-  removed.
+  Returns true on success, i.e. if the legend exists and a legend item associated with this
+  plottable was found and removed.
     
   \see addToLegend, QCPLegend::removeItem
 */
@@ -718,6 +679,7 @@ double QCPAbstractPlottable::distSqrToLine(const QPointF &start, const QPointF &
     return (a-p).lengthSquared();
 }
 
+/* inherits documentation from base class */
 void QCPAbstractPlottable::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
@@ -731,6 +693,7 @@ void QCPAbstractPlottable::selectEvent(QMouseEvent *event, bool additive, const 
   }
 }
 
+/* inherits documentation from base class */
 void QCPAbstractPlottable::deselectEvent(bool *selectionStateChanged)
 {
   if (mSelectable)

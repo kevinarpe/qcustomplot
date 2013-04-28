@@ -47,22 +47,21 @@
   
   \section appearance Changing the appearance
   
-  The appearance of the box itself is controlled via \ref setPen and \ref setBrush. You
-  may change the width of the box with \ref setWidth in plot coordinates (not pixels).
+  The appearance of the box itself is controlled via \ref setPen and \ref setBrush. You may change
+  the width of the box with \ref setWidth in plot coordinates (not pixels).
 
   Analog functions exist for the minimum/maximum-whiskers: \ref setWhiskerPen, \ref
   setWhiskerBarPen, \ref setWhiskerWidth. The whisker width is the width of the bar at the top
-  (maximum) or bottom (minimum).
+  (maximum) and bottom (minimum).
   
   The median indicator line has its own pen, \ref setMedianPen.
   
-  If the pens are changed, especially the whisker pen, make sure to set the capStyle to
-  Qt::FlatCap. Else, e.g. the whisker line might exceed the bar line by a few pixels due to the pen
-  cap being not perfectly flat.
+  If the whisker backbone pen is changed, make sure to set the capStyle to Qt::FlatCap. Else, the
+  backbone line might exceed the whisker bars by a few pixels due to the pen cap being not
+  perfectly flat.
   
-  The Outlier data points are drawn normal scatter points. Their look can be controlled with \ref
-  setOutlierStyle and \ref setOutlierPen. The size (diameter) can be set with \ref setOutlierSize
-  in pixels.
+  The Outlier data points are drawn as normal scatter points. Their look can be controlled with
+  \ref setOutlierStyle
   
   \section usage Usage
   
@@ -185,7 +184,7 @@ void QCPStatisticalBox::setMaximum(double value)
   are not within the whiskers (\ref setMinimum, \ref setMaximum) should be considered outliers and
   displayed as such.
   
-  \see setOutlierPen, setOutlierBrush, setOutlierSize
+  \see setOutlierStyle
 */
 void QCPStatisticalBox::setOutliers(const QVector<double> &values)
 {
@@ -230,8 +229,8 @@ void QCPStatisticalBox::setWhiskerWidth(double width)
 /*!
   Sets the pen used for drawing the whisker backbone (That's the line parallel to the value axis).
   
-  Make sure to set the \a pen capStyle to Qt::FlatCap to prevent the backbone from reaching a few
-  pixels past the bars, when using a non-zero pen width.
+  Make sure to set the \a pen capStyle to Qt::FlatCap to prevent the whisker backbone from reaching
+  a few pixels past the whisker bars, when using a non-zero pen width.
   
   \see setWhiskerBarPen
 */
@@ -242,7 +241,7 @@ void QCPStatisticalBox::setWhiskerPen(const QPen &pen)
 
 /*!
   Sets the pen used for drawing the whisker bars (Those are the lines parallel to the key axis at
-  each end of the backbone).
+  each end of the whisker backbone).
   
   \see setWhiskerPen
 */
@@ -253,9 +252,6 @@ void QCPStatisticalBox::setWhiskerBarPen(const QPen &pen)
 
 /*!
   Sets the pen used for drawing the median indicator line inside the statistical box.
-  
-  Make sure to set the \a pen capStyle to Qt::FlatCap to prevent the median line from reaching a
-  few pixels outside the box, when using a non-zero pen width.
 */
 void QCPStatisticalBox::setMedianPen(const QPen &pen)
 {
@@ -263,9 +259,9 @@ void QCPStatisticalBox::setMedianPen(const QPen &pen)
 }
 
 /*!
-  Sets the scatter style of the outlier data points.
+  Sets the appearance of the outlier data points.
   
-  \see setOutlierSize, setOutlierPen, setOutliers
+  \see setOutliers
 */
 void QCPStatisticalBox::setOutlierStyle(const QCPScatterStyle &style)
 {
@@ -402,7 +398,7 @@ void QCPStatisticalBox::drawWhiskers(QCPPainter *painter) const
 
 /*! \internal
   
-  Draws the outlier circles.
+  Draws the outlier scatter points.
 */
 void QCPStatisticalBox::drawOutliers(QCPPainter *painter) const
 {

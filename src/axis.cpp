@@ -1372,7 +1372,7 @@ void QCPAxis::setLowerEnding(const QCPLineEnding &ending)
   Note that this meaning does not change when the axis range is reversed with \ref
   setRangeReversed.
   
-  \see setUpperEnding
+  \see setLowerEnding
 */
 void QCPAxis::setUpperEnding(const QCPLineEnding &ending)
 {

@@ -36,7 +36,127 @@
 //////////////////// QCPAxisRect
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*! \class QCPAxisRect
+  \brief Holds multiple axes and arranges them in a rectangular shape.
+  
+  This class represents an axis rect, a rectangular area that is bounded on all sides with an
+  arbitrary number of axes.
+  
+  Initially QCustomPlot has one axis rect, accessible via QCustomPlot::axisRect(). However, the
+  layout system allows to have multiple axis rects, e.g. arranged in a grid layout
+  (QCustomPlot::plotLayout).
+  
+  By default, QCPAxisRect comes with four axes, at bottom, top, left and right. They can be
+  accessed via \ref axis by providing the respective axis type (\ref QCPAxis::AxisType) and index.
+  If you need all axes in the axis rect, use \ref axes. The top and right axes are set to be
+  invisible initially (QCPAxis::setVisible). To add more axes to a side, use \ref addAxis or \ref
+  addAxes, to remove an axis, use \ref removeAxis.
+  
+  The axis rect layerable itself only draws a background pixmap or color, if specified (\ref
+  setBackground). It is placed on the "background" layer initially (see \ref QCPLayer for an
+  explanation of the QCustomPlot layer system). The axes that are held by the axis rect can be
+  placed on other layers, independently of the axis rect.
+  
+  Every axis rect has a child layout of type \ref QCPLayoutInset. It is accessible via \ref
+  insetLayout and can be used to have other layout elements (or even other layouts with multiple
+  elements) hovering inside the axis rect.
+  
+  If an axis rect is clicked and dragged, it processes this by moving certain axis ranges. The
+  behaviour can be controlled with \ref setRangeDrag and \ref setRangeDragAxes. If the mouse wheel
+  is scrolled while the cursor is on the axis rect, certain axes are scaled. This is controllable
+  via \ref setRangeZoom, \ref setRangeZoomAxes and \ref setRangeZoomFactor. These interactions are
+  only enabled if \ref QCustomPlot::setInteractions contains \ref QCP::iRangeDrag and \ref
+  QCP::iRangeZoom.
+*/
 
+/* start documentation of inline functions */
+
+/*! \fn QCPLayoutInset *QCPAxisRect::insetLayout() const
+  
+  Returns the inset layout of this axis rect. It can be used to place other layout elements (or
+  even layouts with multiple other elements) inside/on top of an axis rect.
+  
+  \see QCPLayoutInset
+*/
+
+/*! \fn int QCPAxisRect::left() const
+  
+  Returns the pixel position of the left border of this axis rect. Margins are not taken into
+  account here, so the returned value is with respect to the inner \ref rect.
+*/
+
+/*! \fn int QCPAxisRect::right() const
+  
+  Returns the pixel position of the right border of this axis rect. Margins are not taken into
+  account here, so the returned value is with respect to the inner \ref rect.
+*/
+
+/*! \fn int QCPAxisRect::top() const
+  
+  Returns the pixel position of the top border of this axis rect. Margins are not taken into
+  account here, so the returned value is with respect to the inner \ref rect.
+*/
+
+/*! \fn int QCPAxisRect::bottom() const
+  
+  Returns the pixel position of the bottom border of this axis rect. Margins are not taken into
+  account here, so the returned value is with respect to the inner \ref rect.
+*/
+
+/*! \fn int QCPAxisRect::width() const
+  
+  Returns the pixel width of this axis rect. Margins are not taken into account here, so the
+  returned value is with respect to the inner \ref rect.
+*/
+
+/*! \fn int QCPAxisRect::height() const
+  
+  Returns the pixel height of this axis rect. Margins are not taken into account here, so the
+  returned value is with respect to the inner \ref rect.
+*/
+
+/*! \fn QSize QCPAxisRect::size() const
+  
+  Returns the pixel size of this axis rect. Margins are not taken into account here, so the
+  returned value is with respect to the inner \ref rect.
+*/
+
+/*! \fn QPoint QCPAxisRect::topLeft() const
+  
+  Returns the top left corner of this axis rect in pixels. Margins are not taken into account here,
+  so the returned value is with respect to the inner \ref rect.
+*/
+
+/*! \fn QPoint QCPAxisRect::topRight() const
+  
+  Returns the top right corner of this axis rect in pixels. Margins are not taken into account
+  here, so the returned value is with respect to the inner \ref rect.
+*/
+
+/*! \fn QPoint QCPAxisRect::bottomLeft() const
+  
+  Returns the bottom left corner of this axis rect in pixels. Margins are not taken into account
+  here, so the returned value is with respect to the inner \ref rect.
+*/
+
+/*! \fn QPoint QCPAxisRect::bottomRight() const
+  
+  Returns the bottom right corner of this axis rect in pixels. Margins are not taken into account
+  here, so the returned value is with respect to the inner \ref rect.
+*/
+
+/*! \fn QPoint QCPAxisRect::center() const
+  
+  Returns the center of this axis rect in pixels. Margins are not taken into account here, so the
+  returned value is with respect to the inner \ref rect.
+*/
+
+/* end documentation of inline functions */
+
+/*!
+  Creates a QCPAxisRect instance and sets default values. An axis is added for each of the four
+  sides, the top and right axes are set invisible initially.
+*/
 QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot, bool setupDefaultAxes) :
   QCPLayoutElement(parentPlot),
   mBackgroundBrush(Qt::NoBrush),
@@ -92,11 +212,21 @@ QCPAxisRect::~QCPAxisRect()
     removeAxis(axesList.at(i));
 }
 
+/*!
+  Returns the number of axes on the axis rect side specified with \a type.
+  
+  \see axis
+*/
 int QCPAxisRect::axisCount(QCPAxis::AxisType type) const
 {
   return mAxes.value(type).size();
 }
 
+/*!
+  Returns the axis with the given \a index on the axis rect side specified with \a type.
+  
+  \see axisCount, axes
+*/
 QCPAxis *QCPAxisRect::axis(QCPAxis::AxisType type, int index) const
 {
   QList<QCPAxis*> ax(mAxes.value(type));
@@ -110,6 +240,14 @@ QCPAxis *QCPAxisRect::axis(QCPAxis::AxisType type, int index) const
   }
 }
 
+/*!
+  Returns all axes on the axis rect sides specified with \a types.
+  
+  \a types may be a single \ref QCPAxis::AxisType or an <tt>or</tt>-combination, to get the axes of
+  multiple sides.
+  
+  \see axis
+*/
 QList<QCPAxis*> QCPAxisRect::axes(QCPAxis::AxisTypes types) const
 {
   QList<QCPAxis*> result;
@@ -124,6 +262,10 @@ QList<QCPAxis*> QCPAxisRect::axes(QCPAxis::AxisTypes types) const
   return result;
 }
 
+/*! \overload
+  
+  Returns all axes of this axis rect.
+*/
 QList<QCPAxis*> QCPAxisRect::axes() const
 {
   QList<QCPAxis*> result;
@@ -136,6 +278,15 @@ QList<QCPAxis*> QCPAxisRect::axes() const
   return result;
 }
 
+/*!
+  Adds a new axis to the axis rect side specified with \a type, and returns it.
+  
+  If an axis rect side already contains one or more axes, the lower and upper endings of the new
+  axis (\ref QCPAxis::setLowerEnding, \ref QCPAxis::setUpperEnding) are initialized to \ref
+  QCPLineEnding::esHalfBar.
+  
+  \see addAxes, setupFullAxesBox
+*/
 QCPAxis *QCPAxisRect::addAxis(QCPAxis::AxisType type)
 {
   QCPAxis *newAxis = new QCPAxis(this, type);
@@ -149,6 +300,12 @@ QCPAxis *QCPAxisRect::addAxis(QCPAxis::AxisType type)
   return newAxis;
 }
 
+/*!
+  Adds a new axis with \ref addAxis to each axis rect side specified in \a types. This may be an
+  <tt>or</tt>-combination of QCPAxis::AxisType, so axes can be added to multiple sides at once.
+  
+  \see addAxis, setupFullAxesBox
+*/
 QList<QCPAxis*> QCPAxisRect::addAxes(QCPAxis::AxisTypes types)
 {
   QList<QCPAxis*> result;
@@ -163,6 +320,13 @@ QList<QCPAxis*> QCPAxisRect::addAxes(QCPAxis::AxisTypes types)
   return result;
 }
 
+/*!
+  Removes the specified \a axis from the axis rect and deletes it.
+  
+  Returns true on success, i.e. if \a axis was a valid axis in this axis rect.
+  
+  \see addAxis
+*/
 bool QCPAxisRect::removeAxis(QCPAxis *axis)
 {
   // don't access axis->axisType() to provide safety when axis is an invalid pointer, rather go through all axis containers:
@@ -183,8 +347,9 @@ bool QCPAxisRect::removeAxis(QCPAxis *axis)
 }
 
 /*!
-  Convenience function to create an axis on each side, if non-existent, and assign the top and
-  right axes the following properties from the bottom/left axes:
+  Convenience function to create an axis on each side that doesn't have any axes yet, and assign
+  the top/right axes the following properties of the bottom/left axes (even if they already existed
+  and weren't created by this function):
   
   \li range (\ref QCPAxis::setRange)
   \li range reversed (\ref QCPAxis::setRangeReversed)
@@ -197,11 +362,10 @@ bool QCPAxisRect::removeAxis(QCPAxis *axis)
   \li tick step (\ref QCPAxis::setTickStep)
   \li auto tick step (\ref QCPAxis::setAutoTickStep)
   
-  Tick labels (\ref QCPAxis::setTickLabels) however, is always set to false.
+  Tick labels (\ref QCPAxis::setTickLabels) of the right and top axes are set to false.
 
-  If \a connectRanges is true, this function additionally connects the rangeChanged signals of the
-  bottom and left axes to the \ref QCPAxis::setRange slots of the top and right axes in order to
-  synchronize the ranges permanently.
+  If \a connectRanges is true, the rangeChanged signals of the bottom and left axes are connected
+  to the \ref QCPAxis::setRange slots of the top and right axes.
 */
 void QCPAxisRect::setupFullAxesBox(bool connectRanges)
 {
@@ -265,6 +429,14 @@ void QCPAxisRect::setupFullAxesBox(bool connectRanges)
   }
 }
 
+/*!
+  Returns a list of all the plottables that are associated with this axis rect.
+  
+  A plottable is considered associated with an axis rect if its key or value axis (or both) is in
+  this axis rect.
+  
+  \see graphs, items
+*/
 QList<QCPAbstractPlottable*> QCPAxisRect::plottables() const
 {
   // Note: don't append all QCPAxis::plottables() into a list, because we might get duplicate entries
@@ -277,6 +449,14 @@ QList<QCPAbstractPlottable*> QCPAxisRect::plottables() const
   return result;
 }
 
+/*!
+  Returns a list of all the graphs that are associated with this axis rect.
+  
+  A graph is considered associated with an axis rect if its key or value axis (or both) is in
+  this axis rect.
+  
+  \see plottables, items
+*/
 QList<QCPGraph*> QCPAxisRect::graphs() const
 {
   // Note: don't append all QCPAxis::graphs() into a list, because we might get duplicate entries
@@ -289,6 +469,16 @@ QList<QCPGraph*> QCPAxisRect::graphs() const
   return result;
 }
 
+/*!
+  Returns a list of all the items that are associated with this axis rect.
+  
+  An item is considered associated with an axis rect if any of its positions has key or value axis
+  set to an axis that is in this axis rect, or if any of its positions has \ref
+  QCPItemPosition::setAxisRect set to the axis rect, or if the clip axis rect (\ref
+  QCPAbstractItem::setClipAxisRect) is set to this axis rect.
+  
+  \see plottables, graphs
+*/
 QList<QCPAbstractItem *> QCPAxisRect::items() const
 {
   // Note: don't just append all QCPAxis::items() into a list, because we might get duplicate entries
@@ -316,6 +506,15 @@ QList<QCPAbstractItem *> QCPAxisRect::items() const
   return result;
 }
 
+/*!
+  This method is called automatically upon replot and doesn't need to be called by users of
+  QCPAxisRect.
+  
+  Sets up the axis tick vectors by calling \ref QCPAxis::setupTickVectors. Then calls the base
+  class implementation to update the margins (see \ref QCPLayoutElement::update), and finally
+  passes the \ref rect to the inset layout (\ref insetLayout) and calls its QCPInsetLayout::update
+  function.
+*/
 void QCPAxisRect::update()
 {
   // update axis tick vectors:
@@ -334,6 +533,7 @@ void QCPAxisRect::update()
   mInsetLayout->update();
 }
 
+/* inherits documentation from base class */
 QList<QCPLayoutElement*> QCPAxisRect::elements() const
 {
   if (mInsetLayout)
@@ -342,11 +542,13 @@ QList<QCPLayoutElement*> QCPAxisRect::elements() const
     return QList<QCPLayoutElement*>();
 }
 
+/* inherits documentation from base class */
 void QCPAxisRect::applyDefaultAntialiasingHint(QCPPainter *painter) const
 {
   painter->setAntialiasing(false);
 }
 
+/* inherits documentation from base class */
 void QCPAxisRect::draw(QCPPainter *painter)
 {
   drawBackground(painter);
@@ -362,7 +564,10 @@ void QCPAxisRect::draw(QCPPainter *painter)
   is preserved) can be set with \ref setBackgroundScaledMode. To set all these options in one call,
   consider using the overloaded version of this function.
 
-  \see setBackgroundScaled, setBackgroundScaledMode
+  Below the pixmap, the axis rect may be optionally filled with a brush, if specified with \ref
+  setBackground(const QBrush &brush).
+  
+  \see setBackgroundScaled, setBackgroundScaledMode, setBackground(const QBrush &brush)
 */
 void QCPAxisRect::setBackground(const QPixmap &pm)
 {
@@ -370,6 +575,19 @@ void QCPAxisRect::setBackground(const QPixmap &pm)
   mScaledBackgroundPixmap = QPixmap();
 }
 
+/*! \overload
+  
+  Sets \a brush as the background brush. The axis rect background will be filled with this brush.
+  Since axis rects place themselves on the "background" layer by default, the axis rect backgrounds
+  are usually drawn below everything else.
+
+  The brush will be drawn before (under) any background pixmap, which may be specified with \ref
+  setBackground(const QPixmap &pm).
+
+  To disable drawing of a background brush, set \a brush to Qt::NoBrush.
+  
+  \see setBackground(const QPixmap &pm)
+*/
 void QCPAxisRect::setBackground(const QBrush &brush)
 {
   mBackgroundBrush = brush;
@@ -416,7 +634,8 @@ void QCPAxisRect::setBackgroundScaledMode(Qt::AspectRatioMode mode)
 }
 
 /*!
-  Returns the range drag axis of the \a orientation provided
+  Returns the range drag axis of the \a orientation provided.
+  
   \see setRangeDragAxes
 */
 QCPAxis *QCPAxisRect::rangeDragAxis(Qt::Orientation orientation)
@@ -425,7 +644,8 @@ QCPAxis *QCPAxisRect::rangeDragAxis(Qt::Orientation orientation)
 }
 
 /*!
-  Returns the range zoom axis of the \a orientation provided
+  Returns the range zoom axis of the \a orientation provided.
+  
   \see setRangeZoomAxes
 */
 QCPAxis *QCPAxisRect::rangeZoomAxis(Qt::Orientation orientation)
@@ -434,7 +654,8 @@ QCPAxis *QCPAxisRect::rangeZoomAxis(Qt::Orientation orientation)
 }
 
 /*!
-  Returns the range zoom factor of the \a orientation provided
+  Returns the range zoom factor of the \a orientation provided.
+  
   \see setRangeZoomFactor
 */
 double QCPAxisRect::rangeZoomFactor(Qt::Orientation orientation)
@@ -539,8 +760,8 @@ void QCPAxisRect::setRangeZoomFactor(double factor)
   Draws the background of this axis rect. It may consist of a background fill (a QBrush) and a
   pixmap.
   
-  If a brush was given via \ref setBackground, this function first draws an according filling
-  inside the axis rect with the provided \a painter.
+  If a brush was given via \ref setBackground(const QBrush &brush), this function first draws an
+  according filling inside the axis rect with the provided \a painter.
   
   Then, if a pixmap was provided via \ref setBackground, this function buffers the scaled version
   depending on \ref setBackgroundScaled and \ref setBackgroundScaledMode and then draws it inside
@@ -576,6 +797,16 @@ void QCPAxisRect::drawBackground(QCPPainter *painter)
   }
 }
 
+/*! \internal
+  
+  This function makes sure multiple axes on the side specified with \a type don't collide, but are
+  distributed according to their respective space requirement (QCPAxis::calculateMargin).
+  
+  It does this by setting an appropriate offset (\ref QCPAxis::setOffset) on all axes except the
+  one with index zero.
+  
+  This function is called by \ref calculateAutoMargin.
+*/
 void QCPAxisRect::updateAxesOffset(QCPAxis::AxisType type)
 {
   const QList<QCPAxis*> axesList = mAxes.value(type);
@@ -583,6 +814,7 @@ void QCPAxisRect::updateAxesOffset(QCPAxis::AxisType type)
     axesList.at(i)->setOffset(axesList.at(i-1)->offset() + axesList.at(i-1)->calculateMargin() + axesList.at(i)->tickLengthIn());
 }
 
+/* inherits documentation from base class */
 int QCPAxisRect::calculateAutoMargin(QCP::MarginSide side)
 {
   if (!mAutoMargins.testFlag(side))
@@ -600,9 +832,9 @@ int QCPAxisRect::calculateAutoMargin(QCP::MarginSide side)
 
 /*! \internal
   
-  Event handler for when a mouse button is pressed on the axis rect. If the left mouse button is pressed, the range
-  dragging interaction is initialized (the actual range manipulation happens in the \ref
-  mouseMoveEvent).
+  Event handler for when a mouse button is pressed on the axis rect. If the left mouse button is
+  pressed, the range dragging interaction is initialized (the actual range manipulation happens in
+  the \ref mouseMoveEvent).
 
   The mDragging flag is set to true and some anchor points are set that are needed to determine the
   distance the mouse was dragged in the mouse move/release events later.
@@ -632,6 +864,13 @@ void QCPAxisRect::mousePressEvent(QMouseEvent *event)
   }
 }
 
+/*! \internal
+  
+  Event handler for when the mouse is moved on the axis rect. If range dragging was activated in a
+  preceding \ref mousePressEvent, the range is moved accordingly.
+  
+  \see mousePressEvent, mouseReleaseEvent
+*/
 void QCPAxisRect::mouseMoveEvent(QMouseEvent *event)
 {
   // Mouse range dragging interaction:
@@ -676,6 +915,7 @@ void QCPAxisRect::mouseMoveEvent(QMouseEvent *event)
   }
 }
 
+/* inherits documentation from base class */
 void QCPAxisRect::mouseReleaseEvent(QMouseEvent *event)
 {
   Q_UNUSED(event)
