@@ -36,6 +36,10 @@
   QCPMarginGroup allows you to tie a margin side of two or more layout elements together, such that
   they will all have the same size, based on the largest required margin in the group.
   
+  \n
+  \image html QCPMarginGroup.png "Demonstration of QCPMarginGroup"
+  \n
+  
   In certain situations it is desirable that margins at specific sides are synchronized across
   layout elements. For example, if one QCPAxisRect is below another one in a grid layout, it will
   provide a cleaner look to the user if the left and right margins of the two axis rects are of the

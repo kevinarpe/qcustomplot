@@ -29,6 +29,7 @@ public:
   void genItemText();
   void genItemTracer();
   void genLineEnding();
+  void genMarginGroup();
   
   // helpers:
   void labelItemAnchors(QCPAbstractItem *item, double fontSize=8, bool circle=true, bool labelBelow=true);

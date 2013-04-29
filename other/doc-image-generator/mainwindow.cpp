@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     genItemTracer();      
     genLineEnding(); 
     genScatterStyles();
+    genMarginGroup();
   }
   QTimer::singleShot(0, qApp, SLOT(quit()));
 }
@@ -44,31 +45,30 @@ void MainWindow::genScatterStyles()
   customPlot->yAxis->setRange(-1, 1);
   customPlot->addGraph();
   customPlot->graph()->addData(0, 0);
-  customPlot->graph()->setScatterSize(8.5);
   customPlot->graph()->setPen(QPen(Qt::black));
-  customPlot->setColor(Qt::transparent);
-  QMap<QCP::ScatterStyle, QString> scatterStyles;
-  scatterStyles.insert(QCP::ssDot, "ssDot");
-  scatterStyles.insert(QCP::ssCross, "ssCross");
-  scatterStyles.insert(QCP::ssPlus, "ssPlus");
-  scatterStyles.insert(QCP::ssCircle, "ssCircle");
-  scatterStyles.insert(QCP::ssDisc, "ssDisc");
-  scatterStyles.insert(QCP::ssSquare, "ssSquare");
-  scatterStyles.insert(QCP::ssDiamond, "ssDiamond");
-  scatterStyles.insert(QCP::ssStar, "ssStar");
-  scatterStyles.insert(QCP::ssTriangle, "ssTriangle");
-  scatterStyles.insert(QCP::ssTriangleInverted, "ssTriangleInverted");
-  scatterStyles.insert(QCP::ssCrossSquare, "ssCrossSquare");
-  scatterStyles.insert(QCP::ssPlusSquare, "ssPlusSquare");
-  scatterStyles.insert(QCP::ssCrossCircle, "ssCrossCircle");
-  scatterStyles.insert(QCP::ssPlusCircle, "ssPlusCircle");
-  scatterStyles.insert(QCP::ssPeace, "ssPeace");
-  QMapIterator<QCP::ScatterStyle, QString> scatterIt(scatterStyles);
+  customPlot->setBackground(Qt::transparent);
+  QMap<QCPScatterStyle::ScatterShape, QString> scatterShapes;
+  scatterShapes.insert(QCPScatterStyle::ssDot, "ssDot");
+  scatterShapes.insert(QCPScatterStyle::ssCross, "ssCross");
+  scatterShapes.insert(QCPScatterStyle::ssPlus, "ssPlus");
+  scatterShapes.insert(QCPScatterStyle::ssCircle, "ssCircle");
+  scatterShapes.insert(QCPScatterStyle::ssDisc, "ssDisc");
+  scatterShapes.insert(QCPScatterStyle::ssSquare, "ssSquare");
+  scatterShapes.insert(QCPScatterStyle::ssDiamond, "ssDiamond");
+  scatterShapes.insert(QCPScatterStyle::ssStar, "ssStar");
+  scatterShapes.insert(QCPScatterStyle::ssTriangle, "ssTriangle");
+  scatterShapes.insert(QCPScatterStyle::ssTriangleInverted, "ssTriangleInverted");
+  scatterShapes.insert(QCPScatterStyle::ssCrossSquare, "ssCrossSquare");
+  scatterShapes.insert(QCPScatterStyle::ssPlusSquare, "ssPlusSquare");
+  scatterShapes.insert(QCPScatterStyle::ssCrossCircle, "ssCrossCircle");
+  scatterShapes.insert(QCPScatterStyle::ssPlusCircle, "ssPlusCircle");
+  scatterShapes.insert(QCPScatterStyle::ssPeace, "ssPeace");
+  QMapIterator<QCPScatterStyle::ScatterShape, QString> scatterIt(scatterShapes);
   while (scatterIt.hasNext())
   {
     scatterIt.next();
-    customPlot->graph()->setScatterStyle(scatterIt.key());
-    QPixmap pm = customPlot->pixmap(16, 16);
+    customPlot->graph()->setScatterStyle(QCPScatterStyle(scatterIt.key(), 8.5));
+    QPixmap pm = customPlot->toPixmap(16, 16);
     pm.save(dir.filePath(scatterIt.value()+".png"));
   }
 }
@@ -220,7 +220,7 @@ void MainWindow::genItemText()
   customPlot->addItem(text);
   text->position->setCoords(0.5, 0.5);
   text->setText("QCustomPlot\nWidget");
-  text->setFont(QFont(font().family(), 26));
+  text->setFont(QFont(font().family(), 24));
   text->setRotation(12);
   text->setBrush(defaultBrush);
   labelItemAnchors(text);
@@ -251,36 +251,87 @@ void MainWindow::genItemTracer()
 void MainWindow::genLineEnding()
 {
   resetPlot();
-  QMap<QCPLineEnding::EndingStyle, QString> endingStyles;
-  endingStyles.insert(QCPLineEnding::esNone, "esNone");
-  endingStyles.insert(QCPLineEnding::esFlatArrow, "esFlatArrow");
-  endingStyles.insert(QCPLineEnding::esSpikeArrow, "esSpikeArrow");
-  endingStyles.insert(QCPLineEnding::esLineArrow, "esLineArrow");
-  endingStyles.insert(QCPLineEnding::esDisc, "esDisc");
-  endingStyles.insert(QCPLineEnding::esSquare, "esSquare");
-  endingStyles.insert(QCPLineEnding::esDiamond, "esDiamond");
-  endingStyles.insert(QCPLineEnding::esBar, "esBar");
-  QMapIterator<QCPLineEnding::EndingStyle, QString> endingIt(endingStyles);
-  int i = 0;
+  QMetaEnum endingStyleEnum = QCPLineEnding::staticMetaObject.enumerator(QCPLineEnding::staticMetaObject.indexOfEnumerator("EndingStyle"));
   double offset = -0.2;
-  double step = 1.4/((double)endingStyles.size()-1);
-  while (endingIt.hasNext())
+  double step = 1.4/((double)endingStyleEnum.keyCount()-1);
+  for (int i=0; i<endingStyleEnum.keyCount(); ++i)
   {
-    endingIt.next();
+    QCPLineEnding ending(static_cast<QCPLineEnding::EndingStyle>(endingStyleEnum.value(i)));
+    QString endingName(endingStyleEnum.key(i)); 
+    
+    if (ending.style() == QCPLineEnding::esSkewedBar)
+      ending.setInverted(true);
+    
     QCPItemLine *line = new QCPItemLine(customPlot);
+    line->setPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::FlatCap));
     customPlot->addItem(line);
     line->start->setCoords(offset+i*step-0.1, -0.2);
     line->end->setCoords(offset+i*step, 0.5);
-    line->setHead(endingIt.key());
+    line->setHead(ending);
     QCPItemText *text = new QCPItemText(customPlot);
     customPlot->addItem(text);
     text->position->setParentAnchor(line->end);
     text->position->setCoords(8, -15-(i%2)*15);
     text->setFont(QFont(font().family(), 8));
-    text->setText(endingIt.value());
-    ++i;
+    text->setText(endingName);
   }
-  customPlot->savePng(dir.filePath("QCPLineEnding.png"), 400, 100);
+
+  customPlot->savePng(dir.filePath("QCPLineEnding.png"), 500, 100);
+}
+
+void MainWindow::genMarginGroup()
+{
+  resetPlot();
+  
+  customPlot->plotLayout()->clear();
+  customPlot->plotLayout()->addElement(0, 0, new QCPAxisRect(customPlot));
+  customPlot->plotLayout()->addElement(0, 1, new QCPAxisRect(customPlot));
+  customPlot->plotLayout()->addElement(1, 0, new QCPAxisRect(customPlot));
+  customPlot->plotLayout()->addElement(1, 1, new QCPAxisRect(customPlot));
+  
+  foreach (QCPAxisRect *r, customPlot->axisRects())
+    r->axis(QCPAxis::atBottom)->setTickLabels(false);
+  
+  QCPMarginGroup *marginGroup = new QCPMarginGroup(customPlot);
+  customPlot->axisRect(0)->setMarginGroup(QCP::msLeft, marginGroup);
+  customPlot->axisRect(2)->setMarginGroup(QCP::msLeft, marginGroup);
+  
+  customPlot->axisRect(0)->axis(QCPAxis::atLeft)->setRange(0, 1300);
+  customPlot->axisRect(1)->axis(QCPAxis::atLeft)->setRange(0, 1300);
+  customPlot->axisRect(0)->axis(QCPAxis::atLeft)->setLabel("y");
+  customPlot->axisRect(1)->axis(QCPAxis::atLeft)->setLabel("y");
+  
+  customPlot->plotLayout()->setAutoMargins(QCP::msLeft|QCP::msRight|QCP::msBottom);
+  customPlot->plotLayout()->setMargins(QMargins(0, 25, 0, 0));
+  
+  QFont textFont;
+  textFont.setBold(true);
+  QCPItemText *leftCaption = new QCPItemText(customPlot);
+  customPlot->addItem(leftCaption);
+  leftCaption->position->setType(QCPItemPosition::ptViewportRatio);
+  leftCaption->setClipToAxisRect(false);
+  leftCaption->position->setCoords(0.25, 0);
+  leftCaption->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
+  leftCaption->setText("left sides in margin group");
+  leftCaption->setFont(textFont);
+  QCPItemText *rightCaption = new QCPItemText(customPlot);
+  customPlot->addItem(rightCaption);
+  rightCaption->position->setType(QCPItemPosition::ptViewportRatio);
+  rightCaption->position->setCoords(0.75, 0);
+  rightCaption->setClipToAxisRect(false);
+  rightCaption->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
+  rightCaption->setText("no margin group");
+  rightCaption->setFont(textFont);
+  
+  QCPItemLine *splitter = new QCPItemLine(customPlot);
+  splitter->start->setType(QCPItemPosition::ptViewportRatio);
+  splitter->start->setCoords(0.5, 0);
+  splitter->end->setType(QCPItemPosition::ptViewportRatio);
+  splitter->end->setCoords(0.5, 1);
+  splitter->setClipToAxisRect(false);
+  splitter->setPen(QPen(Qt::gray, 0, Qt::DashLine));
+  
+  customPlot->savePng(dir.filePath("QCPMarginGroup.png"), 400, 400);
 }
 
 void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool circle, bool labelBelow)
@@ -340,7 +391,6 @@ void MainWindow::resetPlot()
   customPlot->yAxis->setRange(-0.2, 1.2);
   customPlot->xAxis->setVisible(false);
   customPlot->yAxis->setVisible(false);
-  customPlot->setAutoMargin(false);
-  customPlot->setMargin(0, 0, 0, 0);
-  
+  customPlot->axisRect()->setAutoMargins(QCP::msNone);
+  customPlot->axisRect()->setMargins(QMargins(0, 0, 0, 0));
 }
