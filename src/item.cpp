@@ -211,9 +211,22 @@ void QCPItemPosition::setType(QCPItemPosition::PositionType type)
 {
   if (mPositionType != type)
   {
-    QPointF pixelP = pixelPoint();
+    // if switching from or to coordinate type that isn't valid (e.g. because axes or axis rect
+    // were deleted), don't try to recover the pixelPoint() because it would output a qDebug warning.
+    bool recoverPixelPosition = true;
+    if ((mPositionType == ptPlotCoords || type == ptPlotCoords) && (!mKeyAxis || !mValueAxis))
+      recoverPixelPosition = false;
+    if ((mPositionType == ptAxisRectRatio || type == ptAxisRectRatio) && (!mAxisRect))
+      recoverPixelPosition = false;
+      
+    QPointF pixelP;
+    if (recoverPixelPosition)
+      pixelP = pixelPoint();
+    
     mPositionType = type;
-    setPixelPoint(pixelP);
+    
+    if (recoverPixelPosition)
+      setPixelPoint(pixelP);
   }
 }
 
