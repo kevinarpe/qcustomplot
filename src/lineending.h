@@ -31,6 +31,7 @@ class QCPPainter;
 
 class QCP_LIB_DECL QCPLineEnding
 {
+  Q_GADGET
 public:
   /*!
     Defines the type of ending decoration for line-like items, e.g. an arrow.
@@ -43,6 +44,7 @@ public:
     
     \see QCPItemLine::setHead, QCPItemLine::setTail, QCPItemCurve::setHead, QCPItemCurve::setTail
   */
+  Q_ENUMS(EndingStyle)
   enum EndingStyle { esNone          ///< No ending decoration
                      ,esFlatArrow    ///< A filled arrow head with a straight/flat back (a triangle)
                      ,esSpikeArrow   ///< A filled arrow head with an indented back
