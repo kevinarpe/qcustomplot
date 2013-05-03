@@ -33,17 +33,16 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*! \class QCPAbstractLegendItem
-  \brief The abstract base class for all items in a QCPLegend.
+  \brief The abstract base class for all entries in a QCPLegend.
   
-  It defines a very basic interface to items in a QCPLegend. For representing plottables in the
-  legend, the subclass QCPPlottableLegendItem is more suitable.
+  It defines a very basic interface for entries in a QCPLegend. For representing plottables in the
+  legend, the subclass \ref QCPPlottableLegendItem is more suitable.
   
-  Only derive directly from this class when you need absolute freedom (i.e. a legend item that's
-  not associated with a plottable).
+  Only derive directly from this class when you need absolute freedom (e.g. a custom legend entry
+  that's not even associated with a plottable).
 
   You must implement the following pure virtual functions:
-  \li \ref draw
-  \li \ref size
+  \li \ref draw (from QCPLayerable)
   
   You inherit the following members you may use:
   <table>
@@ -57,29 +56,12 @@
   </table>
 */
 
-/* start documentation of pure virtual functions */
-
-/*! \fn void QCPAbstractLegendItem::draw(QCPPainter *painter, const QRect &rect) const = 0;
-  
-  Draws this legend item with \a painter inside the specified \a rect. The \a rect typically has
-  the size which was returned from a preceding \ref size call.
-*/
-
-/*! \fn QSize QCPAbstractLegendItem::size(const QSize &targetSize) const = 0;
-
-  Returns the size this item occupies in the legend. The legend will adapt its layout with the help
-  of this function. If this legend item can have a variable width (e.g. auto-wrapping text), this
-  function tries to find a size with a width close to the width of \a targetSize. The height of \a
-  targetSize only may have meaning in specific sublasses. Typically, it's ignored.
-*/
-
-/* end documentation of pure virtual functions */
 /* start of documentation of signals */
 
 /*! \fn void QCPAbstractLegendItem::selectionChanged(bool selected)
   
-  This signal is emitted when the selection state of this legend item has changed, either by user interaction
-  or by a direct call to \ref setSelected.
+  This signal is emitted when the selection state of this legend item has changed, either by user
+  interaction or by a direct call to \ref setSelected.
 */
 
 /* end of documentation of signals */
@@ -171,6 +153,7 @@ void QCPAbstractLegendItem::setSelected(bool selected)
   }
 }
 
+/* inherits documentation from base class */
 double QCPAbstractLegendItem::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   Q_UNUSED(details)
@@ -184,16 +167,19 @@ double QCPAbstractLegendItem::selectTest(const QPointF &pos, bool onlySelectable
     return -1;
 }
 
+/* inherits documentation from base class */
 void QCPAbstractLegendItem::applyDefaultAntialiasingHint(QCPPainter *painter) const
 {
   applyAntialiasingHint(painter, mAntialiased, QCP::aeLegendItems);
 }
 
+/* inherits documentation from base class */
 QRect QCPAbstractLegendItem::clipRect() const
 {
   return mOuterRect;
 }
 
+/* inherits documentation from base class */
 void QCPAbstractLegendItem::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
@@ -207,6 +193,7 @@ void QCPAbstractLegendItem::selectEvent(QMouseEvent *event, bool additive, const
   }
 }
 
+/* inherits documentation from base class */
 void QCPAbstractLegendItem::deselectEvent(bool *selectionStateChanged)
 {
   if (mSelectable && mParentLegend->selectableParts().testFlag(QCPLegend::spItems))
@@ -228,20 +215,23 @@ void QCPAbstractLegendItem::deselectEvent(bool *selectionStateChanged)
   This is the standard legend item for plottables. It displays an icon of the plottable next to the
   plottable name. The icon is drawn by the respective plottable itself (\ref
   QCPAbstractPlottable::drawLegendIcon), and tries to give an intuitive symbol for the plottable.
-  For example, the QCPGraph draws a centered horizontal line with a single scatter point in the
-  middle and filling (if enabled) below.
+  For example, the QCPGraph draws a centered horizontal line and/or a single scatter point in the
+  middle.
   
   Legend items of this type are always associated with one plottable (retrievable via the
   plottable() function and settable with the constructor). You may change the font of the plottable
-  name with \ref setFont. If \ref setTextWrap is set to true, the plottable name will wrap at the
-  right legend boundary (see \ref QCPLegend::setMinimumSize). Icon padding and border pen is taken
-  from the parent QCPLegend, see \ref QCPLegend::setIconBorderPen and \ref
-  QCPLegend::setIconTextPadding.
+  name with \ref setFont. Icon padding and border pen is taken from the parent QCPLegend, see \ref
+  QCPLegend::setIconBorderPen and \ref QCPLegend::setIconTextPadding.
 
   The function \ref QCPAbstractPlottable::addToLegend/\ref QCPAbstractPlottable::removeFromLegend
   creates/removes legend items of this type in the default implementation. However, these functions
   may be reimplemented such that a different kind of legend item (e.g a direct subclass of
   QCPAbstractLegendItem) is used for that plottable.
+  
+  Since QCPLegend is based on QCPLayoutGrid, a legend item itself is just a subclass of
+  QCPLayoutElement. While it could be added to a legend (or any other layout) via the normal layout
+  interface, QCPLegend has specialized functions for handling legend items conveniently, see the
+  documentation of \ref QCPLegend.
 */
 
 /*!
@@ -344,7 +334,32 @@ QSize QCPPlottableLegendItem::minimumSizeHint() const
 /*! \class QCPLegend
   \brief Manages a legend inside a QCustomPlot.
 
-  Doesn't need to be instantiated externally, rather access QCustomPlot::legend
+  A legend is a small box somewhere in the plot which lists plottables with their name and icon.
+  
+  Normally, the legend is populated by calling \ref QCPAbstractPlottable::addToLegend. The
+  respective legend item can be removed with \ref QCPAbstractPlottable::removeFromLegend. However,
+  QCPLegend also offers an interface to add and manipulate legend items directly: \ref item, \ref
+  itemWithPlottable, \ref itemCount, \ref addItem, \ref removeItem, etc.
+  
+  The QCPLegend derives from QCPLayoutGrid and as such can be placed in any position a
+  QCPLayoutElement may be positioned. The legend items are themselves QCPLayoutElements which are
+  placed in the grid layout of the legend. QCPLegend only adds an interface specialized for
+  handling child elements of type QCPAbstractLegendItem, as mentioned above. In principle, any
+  other layout elements may also be added to a legend via the normal \ref QCPLayoutGrid interface.
+  However, the QCPAbstractLegendItem-Interface will ignore those elements (e.g. \ref itemCount will
+  only return the number of items with QCPAbstractLegendItems type).
+
+  By default, every QCustomPlot has one legend (\ref QCustomPlot::legend) which is placed in the
+  inset layout of the main axis rect (\ref QCPAxisRect::insetLayout). To move the legend to another
+  position inside the axis rect, use the methods of the \ref QCPLayoutInset. To move the legend
+  outside of the axis rect, place it anywhere else with the QCPLayout/QCPLayoutElement interface.
+  For example, the legend may be moved next to the axis rect by placing it at the position (1, 0)
+  of the main grid layout of the plot (\ref QCustomPlot::plotLayout):
+  \code
+  customPlot->plotLayout()->addElement(0, 1, QCustomPlot::legend);
+  \endcode
+  
+  
 */
 
 /* start of documentation of signals */

@@ -143,6 +143,8 @@ class QCP_LIB_DECL QCPLegend : public QCPLayoutGrid
 public:
   /*!
     Defines the selectable parts of a legend
+    
+    \see setSelectedParts, setSelectableParts
   */
   enum SelectablePart { spNone       = 0x000  ///< <tt>0x000</tt> None
                        ,spLegendBox  = 0x001  ///< <tt>0x001</tt> The legend box (frame)
