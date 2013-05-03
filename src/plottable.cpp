@@ -145,8 +145,9 @@
 /* start of documentation of signals */
 
 /*! \fn void QCPAbstractPlottable::selectionChanged(bool selected)
-  This signal is emitted when the selection state of this plottable has changed, either by user interaction
-  or by a direct call to \ref setSelected.
+  
+  This signal is emitted when the selection state of this plottable has changed to \a selected,
+  either by user interaction or by a direct call to \ref setSelected.
 */
 
 /* end of documentation of signals */

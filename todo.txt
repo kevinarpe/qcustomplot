@@ -10,7 +10,7 @@ doc review:
    - have all main source files
    - have all items
    - have all plottables
-   - layoutelement-legend.h at beginning
+   - have all layoutelements
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between

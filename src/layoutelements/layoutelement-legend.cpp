@@ -353,13 +353,6 @@ QSize QCPPlottableLegendItem::minimumSizeHint() const
   inset layout of the main axis rect (\ref QCPAxisRect::insetLayout). To move the legend to another
   position inside the axis rect, use the methods of the \ref QCPLayoutInset. To move the legend
   outside of the axis rect, place it anywhere else with the QCPLayout/QCPLayoutElement interface.
-  For example, the legend may be moved next to the axis rect by placing it at the position (1, 0)
-  of the main grid layout of the plot (\ref QCustomPlot::plotLayout):
-  \code
-  customPlot->plotLayout()->addElement(0, 1, QCustomPlot::legend);
-  \endcode
-  
-  
 */
 
 /* start of documentation of signals */
@@ -839,6 +832,7 @@ void QCPLegend::draw(QCPPainter *painter)
   painter->drawRect(mOuterRect);
 }
 
+/* inherits documentation from base class */
 double QCPLegend::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   if (!mParentPlot) return -1;
@@ -853,6 +847,7 @@ double QCPLegend::selectTest(const QPointF &pos, bool onlySelectable, QVariant *
   return -1;
 }
 
+/* inherits documentation from base class */
 void QCPLegend::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
   Q_UNUSED(event)
@@ -866,6 +861,7 @@ void QCPLegend::selectEvent(QMouseEvent *event, bool additive, const QVariant &d
   }
 }
 
+/* inherits documentation from base class */
 void QCPLegend::deselectEvent(bool *selectionStateChanged)
 {
   mSelectedParts = selectedParts(); // in case item selection has changed
@@ -878,19 +874,19 @@ void QCPLegend::deselectEvent(bool *selectionStateChanged)
   }
 }
 
-
+/* inherits documentation from base class */
 QCP::Interaction QCPLegend::selectionCategory() const
 {
   return QCP::iSelectLegend;
 }
 
-
+/* inherits documentation from base class */
 QCP::Interaction QCPAbstractLegendItem::selectionCategory() const
 {
   return QCP::iSelectLegend;
 }
 
-
+/* inherits documentation from base class */
 void QCPLegend::parentPlotInitialized(QCustomPlot *parentPlot)
 {
   Q_UNUSED(parentPlot)
