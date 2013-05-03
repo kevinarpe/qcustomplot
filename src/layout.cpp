@@ -523,8 +523,15 @@ double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVa
     return -1;
   
   if (QRectF(mOuterRect).contains(pos))
-    return mParentPlot->selectionTolerance()*0.99;
-  else
+  {
+    if (mParentPlot)
+      return mParentPlot->selectionTolerance()*0.99;
+    else
+    {
+      qDebug() << Q_FUNC_INFO << "parent plot not defined";
+      return 3;
+    }
+  } else
     return -1;
 }
 

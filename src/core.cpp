@@ -477,6 +477,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   
   // create initial layout, axis rect and legend:
   mPlotLayout = new QCPLayoutGrid;
+  mPlotLayout->initializeParentPlot(this);
   mPlotLayout->setParent(this); // important because if parent is QWidget, QCPLayout::sizeConstraintsChanged will call QWidget::updateGeometry
   QCPAxisRect *defaultAxisRect = new QCPAxisRect(this, true);
   mPlotLayout->addElement(0, 0, defaultAxisRect);

@@ -404,6 +404,9 @@ void QCPLayerable::initializeParentPlot(QCustomPlot *parentPlot)
     return;
   }
   
+  if (!parentPlot)
+    qDebug() << Q_FUNC_INFO << "called with parentPlot zero";
+  
   mParentPlot = parentPlot;
   parentPlotInitialized(mParentPlot);
 }
