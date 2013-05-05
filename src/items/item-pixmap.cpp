@@ -79,6 +79,8 @@ QCPItemPixmap::~QCPItemPixmap()
 void QCPItemPixmap::setPixmap(const QPixmap &pixmap)
 {
   mPixmap = pixmap;
+  if (mPixmap.isNull())
+    qDebug() << Q_FUNC_INFO << "pixmap is null";
 }
 
 /*!
@@ -186,6 +188,9 @@ QPointF QCPItemPixmap::anchorPixelPoint(int anchorId) const
 */
 void QCPItemPixmap::updateScaledPixmap(QRect finalRect, bool flipHorz, bool flipVert)
 {
+  if (mPixmap.isNull())
+    return;
+  
   if (mScaled)
   {
     if (finalRect.isNull())

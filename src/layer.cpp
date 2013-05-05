@@ -447,11 +447,6 @@ bool QCPLayerable::moveToLayer(QCPLayer *layer, bool prepend)
     qDebug() << Q_FUNC_INFO << "layer" << layer->name() << "is not in same QCustomPlot as this layerable";
     return false;
   }
-  if (layer == mLayer)
-  {
-    qDebug() << Q_FUNC_INFO << "layerable is already on layer" << reinterpret_cast<quintptr*>(layer);
-    return true;
-  }
   
   if (mLayer)
     mLayer->removeChild(this);

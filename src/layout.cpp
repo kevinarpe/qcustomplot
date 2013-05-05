@@ -994,7 +994,8 @@ QCPLayoutGrid::QCPLayoutGrid() :
 /*!
   Returns the element in the cell in \a row and \a column.
   
-  Returns 0 if either the row/column is invalid or if the cell is empty.
+  Returns 0 if either the row/column is invalid or if the cell is empty. In those cases, a qDebug
+  message is printed. To check whether a cell exists and isn't empty, use \ref hasElement.
   
   \see addElement, hasElement
 */
@@ -1004,7 +1005,10 @@ QCPLayoutElement *QCPLayoutGrid::element(int row, int column) const
   {
     if (column >= 0 && column < mElements.first().size())
     {
-      return mElements.at(row).at(column);
+      if (QCPLayoutElement *result = mElements.at(row).at(column))
+        return result;
+      else
+        qDebug() << Q_FUNC_INFO << "Requested cell is empty. Row:" << row << "Column:" << column;
     } else
       qDebug() << Q_FUNC_INFO << "Invalid column. Row:" << row << "Column:" << column;
   } else

@@ -784,22 +784,11 @@ void QCPGraph::getScatterPlotData(QVector<QCPData> *pointData) const
     QCPDataMap::const_iterator it = lower;
     QCPDataMap::const_iterator upperEnd = upper+1;
     int i = 0;
-    if (keyAxis->orientation() == Qt::Vertical)
+    while (it != upperEnd)
     {
-      while (it != upperEnd)
-      {
-        (*pointData)[i] = it.value();
-        ++i;
-        ++it;
-      }
-    } else // key axis is horizontal
-    {
-      while (it != upperEnd)
-      {
-        (*pointData)[i] = it.value();
-        ++i;
-        ++it;
-      }
+      (*pointData)[i] = it.value();
+      ++i;
+      ++it;
     }
   }
 }

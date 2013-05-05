@@ -206,7 +206,7 @@ void QCPBars::setData(const QVector<double> &key, const QVector<double> &value)
 void QCPBars::moveBelow(QCPBars *bars)
 {
   if (bars == this) return;
-  if (bars->keyAxis() != mKeyAxis.data() || bars->valueAxis() != mValueAxis.data())
+  if (bars && (bars->keyAxis() != mKeyAxis.data() || bars->valueAxis() != mValueAxis.data()))
   {
     qDebug() << Q_FUNC_INFO << "passed QCPBars* doesn't have same key and value axis as this QCPBars";
     return;

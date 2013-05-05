@@ -68,17 +68,22 @@
 */
 QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot) : 
   QCPLayoutElement(parentPlot),
-  mFont(QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.5, QFont::Bold)),
+  mFont(QFont("sans serif", 13*1.5, QFont::Bold)),
   mTextColor(Qt::black),
-  mSelectedFont(QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.6, QFont::Bold)),
+  mSelectedFont(QFont("sans serif", 13*1.6, QFont::Bold)),
   mSelectedTextColor(Qt::blue),
   mSelectable(false),
   mSelected(false)
 {
   if (parentPlot)
+  {
     setLayer(parentPlot->currentLayer());
-  else
+    mFont = QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.5, QFont::Bold);
+    mSelectedFont = QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.6, QFont::Bold);
+  } else
+  {
     setLayer("axes");
+  }
   setMargins(QMargins(5, 5, 5, 0));
 }
 
