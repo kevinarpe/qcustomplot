@@ -35,8 +35,8 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupLayoutElementBugTest(mCustomPlot);
   //setupMarginGroupTest(mCustomPlot);
   //setupInsetLayoutTest(mCustomPlot);
-  setupLegendTest(mCustomPlot);
-  //setupMultiAxisRectInteractions(mCustomPlot);
+  //setupLegendTest(mCustomPlot);
+  setupMultiAxisRectInteractions(mCustomPlot);
   //setupTestbed(mCustomPlot);
 }
 

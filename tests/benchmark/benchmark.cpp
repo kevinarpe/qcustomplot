@@ -148,9 +148,9 @@ void Benchmark::QCPGraph_ManyOffScreenLines()
   QCPGraph *graph2 = mPlot->addGraph();
   QCPGraph *graph3 = mPlot->addGraph();
   graph1->setBrush(QBrush(QColor(100, 0, 0, 100)));
-  graph1->setScatterStyle(QCP::ssNone);
-  graph2->setScatterStyle(QCP::ssNone);
-  graph3->setScatterStyle(QCP::ssNone);
+  graph1->setScatterStyle(QCPScatterStyle::ssNone);
+  graph2->setScatterStyle(QCPScatterStyle::ssNone);
+  graph3->setScatterStyle(QCPScatterStyle::ssNone);
   graph1->setLineStyle(QCPGraph::lsLine);
   graph2->setLineStyle(QCPGraph::lsLine);
   graph3->setLineStyle(QCPGraph::lsLine);
@@ -261,7 +261,7 @@ void Benchmark::QCPGraph_AddData()
 void Benchmark::QCPAxis_TickLabels()
 {
   mPlot->setPlottingHint(QCP::phCacheLabels, false);
-  mPlot->setupFullAxesBox();
+  mPlot->axisRect()->setupFullAxesBox();
   mPlot->xAxis2->setTickLabels(true);
   mPlot->yAxis2->setTickLabels(true);
   mPlot->xAxis->setRange(-10, 10);
@@ -277,7 +277,7 @@ void Benchmark::QCPAxis_TickLabels()
 void Benchmark::QCPAxis_TickLabelsCached()
 {
   mPlot->setPlottingHint(QCP::phCacheLabels, true);
-  mPlot->setupFullAxesBox();
+  mPlot->axisRect()->setupFullAxesBox();
   mPlot->xAxis2->setTickLabels(true);
   mPlot->yAxis2->setTickLabels(true);
   mPlot->xAxis->setRange(-10, 10);

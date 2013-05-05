@@ -7,10 +7,7 @@ todo:
  - make QCustomPlot Qt5 compatible (basically some defines in .pro)
 
 doc review:
-   - have all main source files
-   - have all items
-   - have all plottables
-   - have all layoutelements
+   run ./find-undocumented.py and document them
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between

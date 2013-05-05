@@ -110,14 +110,10 @@ void TestQCPAxisRect::axisRemovalConsequencesToItems()
   item->start->setPixelPoint(QPointF(1, 2));
   
   // change type to axis-independent coordinates:
-  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axes defined ");
-  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axes defined ");
   item->start->setType(QCPItemPosition::ptAxisRectRatio);
   item->end->setType(QCPItemPosition::ptAxisRectRatio);
   mPlot->replot(); // shouldn't output any debug messages now because we've changed the type to be independent of axes
   // change back to axis-dependent coordinates:
-  QTest::ignoreMessage(QtDebugMsg, "void QCPItemPosition::setPixelPoint(const QPointF&) No axes defined ");
-  QTest::ignoreMessage(QtDebugMsg, "void QCPItemPosition::setPixelPoint(const QPointF&) No axes defined ");
   item->start->setType(QCPItemPosition::ptPlotCoords);
   item->end->setType(QCPItemPosition::ptPlotCoords);
   
@@ -179,14 +175,10 @@ void TestQCPAxisRect::axisRectRemovalConsequencesToItems()
   item->start->setPixelPoint(QPointF(1, 2));
   
   // change type to axisRect-independent coordinates:
-  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axis rect defined ");
-  QTest::ignoreMessage(QtDebugMsg, "virtual QPointF QCPItemPosition::pixelPoint() const No axes defined ");
   item->start->setType(QCPItemPosition::ptAbsolute);
   item->end->setType(QCPItemPosition::ptAbsolute);
   mPlot->replot(); // shouldn't output any debug messages now because we've changed the type to be independent of axesRect
   // change back to axisRect-dependent coordinates:
-  QTest::ignoreMessage(QtDebugMsg, "void QCPItemPosition::setPixelPoint(const QPointF&) No axis rect defined ");
-  QTest::ignoreMessage(QtDebugMsg, "void QCPItemPosition::setPixelPoint(const QPointF&) No axes defined ");
   item->start->setType(QCPItemPosition::ptAxisRectRatio);
   item->end->setType(QCPItemPosition::ptPlotCoords);
   // test replacement of previously removed axis:
