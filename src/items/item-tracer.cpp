@@ -230,7 +230,6 @@ double QCPItemTracer::selectTest(const QPointF &pos, bool onlySelectable, QVaria
     {
       return qSqrt(qMin(distSqrToLine(QPointF(clip.left(), center.y()), QPointF(clip.right(), center.y()), pos),
                         distSqrToLine(QPointF(center.x(), clip.top()), QPointF(center.x(), clip.bottom()), pos)));
-      break;
     }
     case tsCircle:
     {

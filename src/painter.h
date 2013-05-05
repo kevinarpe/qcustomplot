@@ -120,7 +120,7 @@ public:
                     ,pmNoCaching    = 0x02  ///< <tt>0x02</tt> Mode for all sorts of exports (e.g. PNG, PDF). For example, this prevents using cached pixmap labels
                     ,pmScaledPen    = 0x04  ///< <tt>0x04</tt> Enables a workaround for scaled pens, needed for scaled rastered export.
                    };
-  Q_ENUMS(PainterMode)
+  Q_FLAGS(PainterMode PainterModes)
   Q_DECLARE_FLAGS(PainterModes, PainterMode)
   
   QCPPainter();

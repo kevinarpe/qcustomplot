@@ -150,7 +150,7 @@ public:
                        ,spLegendBox  = 0x001  ///< <tt>0x001</tt> The legend box (frame)
                        ,spItems      = 0x002  ///< <tt>0x002</tt> Legend items individually (see \ref selectedItems)
                       };
-  Q_ENUMS(SelectablePart)
+  Q_FLAGS(SelectablePart SelectableParts)
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)
   
   explicit QCPLegend();

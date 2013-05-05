@@ -60,7 +60,7 @@ public:
   */
   enum LayerInsertMode { limBelow  ///< Layer is inserted below other layer
                          ,limAbove ///< Layer is inserted above other layer
-                   };
+                       };
   Q_ENUMS(LayerInsertMode)
   
   explicit QCustomPlot(QWidget *parent = 0);

@@ -39,8 +39,8 @@
   
   A plot title can be added as follows:
   \code
-  customPlot->plotLayout()->insertRow(0); // insert an empty row above the default axis rect
-  customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(customPlot, "My Plot Title"));
+  customPlot->plotLayout()->insertRow(0); // inserts an empty row above the default axis rect
+  customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(customPlot, "Your Plot Title"));
   \endcode
   
   Since a plot title is a common requirement, QCustomPlot offers specialized selection signals for
