@@ -1263,11 +1263,7 @@ void QCPAxis::setPadding(int padding)
 */
 void QCPAxis::setOffset(int offset)
 {
-  if (mOffset != offset)
-  {
-    mOffset = offset;
-    mCachedMarginValid = false;
-  }
+  mOffset = offset;
 }
 
 /*!
@@ -2652,7 +2648,7 @@ int QCPAxis::calculateMargin()
     }
   }
   margin += mPadding;
-  
+
   mCachedMargin = margin;
   mCachedMarginValid = true;
   return margin;

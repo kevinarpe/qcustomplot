@@ -336,7 +336,8 @@ bool QCPAxisRect::removeAxis(QCPAxis *axis)
     if (it.value().contains(axis))
     {
       mAxes[it.key()].removeOne(axis);
-      parentPlot()->axisRemoved(axis);
+      if (qobject_cast<QCustomPlot*>(parentPlot())) // make sure this isn't called from QObject dtor when QCustomPlot is already destructed (happens when the axis rect is not in any layout and thus QObject-child of QCustomPlot)
+        parentPlot()->axisRemoved(axis);
       delete axis;
       return true;
     }

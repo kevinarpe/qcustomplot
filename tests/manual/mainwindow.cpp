@@ -35,9 +35,9 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupLayoutElementBugTest(mCustomPlot);
   //setupMarginGroupTest(mCustomPlot);
   //setupInsetLayoutTest(mCustomPlot);
-  //setupLegendTest(mCustomPlot);
+  setupLegendTest(mCustomPlot);
   //setupMultiAxisRectInteractions(mCustomPlot);
-  setupTestbed(mCustomPlot);
+  //setupTestbed(mCustomPlot);
 }
 
 MainWindow::~MainWindow()
@@ -414,8 +414,8 @@ void MainWindow::setupDaqPerformance(QCustomPlot *customPlot)
 void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
 {
   
-  QCPLayoutGrid *mainLayout = qobject_cast<QCPLayoutGrid*>(customPlot->plotLayout());
-  delete mainLayout->takeAt(0); // remove initial axis rect
+  QCPLayoutGrid *mainLayout = customPlot->plotLayout();
+  mainLayout->removeAt(0);
   // create 3x3 grid:
   mainLayout->addElement(0, 0, new QCPAxisRect(customPlot));
   mainLayout->addElement(0, 1, new QCPAxisRect(customPlot));
@@ -450,24 +450,24 @@ void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
   customPlot->axisRect(0)->axis(QCPAxis::atTop)->setTickLabelFont(customPlot->font());
   customPlot->axisRect(0)->axis(QCPAxis::atBottom)->setTickLabelFont(customPlot->font());
   
-  QCPLayoutGrid *layout = qobject_cast<QCPLayoutGrid*>(customPlot->plotLayout());
+  QCPLayoutGrid *layout = customPlot->plotLayout();
   layout->setRowSpacing(8);
   layout->setColumnSpacing(8);
-  layout->addElement(new QCPAxisRect(customPlot), 0, 1);
-  layout->addElement(new QCPAxisRect(customPlot), 1, 0);
+  layout->addElement(0, 1, new QCPAxisRect(customPlot));
+  layout->addElement(1, 0, new QCPAxisRect(customPlot));
   
-  QCPLayoutGrid *subLayout = new QCPLayoutGrid(customPlot);
-  subLayout->addElement(new QCPAxisRect(customPlot), 0, 0);
-  subLayout->addElement(new QCPAxisRect(customPlot), 0, 1);
+  QCPLayoutGrid *subLayout = new QCPLayoutGrid;
+  subLayout->addElement(0, 0, new QCPAxisRect(customPlot));
+  subLayout->addElement(0, 1, new QCPAxisRect(customPlot));
   subLayout->setColumnStretchFactor(0, 0.7);
-  layout->addElement(subLayout, 1, 1);
+  layout->addElement(1, 1, subLayout);
   
   QList<QCPAxisRect*> rects = customPlot->axisRects();
   for (int i=0; i<rects.size(); ++i)
   {
     rects.at(i)->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
-    rects.at(i)->axis(QCPAxis::atLeft)->setGrid(true);
-    rects.at(i)->axis(QCPAxis::atBottom)->setGrid(true);
+    rects.at(i)->axis(QCPAxis::atLeft)->grid()->setVisible(true);
+    rects.at(i)->axis(QCPAxis::atBottom)->grid()->setVisible(true);
   }
   
   QCPCurve *c = new QCPCurve(customPlot->xAxis, customPlot->yAxis);
@@ -492,8 +492,8 @@ void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
   customPlot->replot();
   */
   
-  QCPLayoutGrid *topLayout = dynamic_cast<QCPLayoutGrid*>(customPlot->plotLayout());
-  
+  /*
+  QCPLayoutGrid *topLayout = customPlot->plotLayout();
   QList<QCPAxisRect*> rects;
   for (int i=0; i<5; ++i)
     rects << new QCPAxisRect(customPlot);
@@ -531,7 +531,7 @@ void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
   QCPAxisRect *r1 = new QCPAxisRect(customPlot);
   subLayout->addElement(0, 1, r1);
   r1->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
-  r1->setMaximumSize(200, QWIDGETSIZE_MAX);
+  r1->setMaximumSize(200, QWIDGETSIZE_MAX);*/
 }
 
 void MainWindow::setupMultiAxisTest(QCustomPlot *customPlot)
@@ -553,7 +553,7 @@ void MainWindow::setupLayoutElementBugTest(QCustomPlot *customPlot)
 
 void MainWindow::setupMarginGroupTest(QCustomPlot *customPlot)
 {
-  QCPLayoutGrid *topLayout = qobject_cast<QCPLayoutGrid*>(customPlot->plotLayout());
+  QCPLayoutGrid *topLayout =customPlot->plotLayout();
   
   QCPAxisRect *r = new QCPAxisRect(customPlot);
   topLayout->addElement(1, 0, r);
@@ -567,14 +567,14 @@ void MainWindow::setupMarginGroupTest(QCustomPlot *customPlot)
 
 void MainWindow::setupInsetLayoutTest(QCustomPlot *customPlot)
 {
+  customPlot->addLayer("insetLayer");
+  customPlot->setCurrentLayer("insetLayer");
   QCPAxisRect *insetAxRect = new QCPAxisRect(customPlot);
   insetAxRect->setMinimumSize(300, 250);
   customPlot->axisRect(0)->insetLayout()->addElement(insetAxRect, Qt::AlignRight|Qt::AlignTop);
-  insetAxRect->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atBottom|QCPAxis::atTop);
-  insetAxRect->axis(QCPAxis::atLeft, 0)->setVisible(true);
-  insetAxRect->axis(QCPAxis::atLeft, 0)->setTickLabels(true);
-  insetAxRect->axis(QCPAxis::atLeft, 0)->setRange(0, 20);
+  insetAxRect->setupFullAxesBox(true);
   insetAxRect->setBackground(QBrush(QColor(240, 240, 240)));
+  
   
 }
 
