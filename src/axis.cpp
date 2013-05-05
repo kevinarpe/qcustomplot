@@ -55,7 +55,7 @@
   You shouldn't instantiate grids on their own, since every QCPAxis brings its own QCPGrid.
 */
 QCPGrid::QCPGrid(QCPAxis *parentAxis) :
-  QCPLayerable(parentAxis->parentPlot(), "grid", parentAxis),
+  QCPLayerable(parentAxis->parentPlot(), "", parentAxis),
   mParentAxis(parentAxis)
 {
   // warning: this is called in QCPAxis constructor, so parentAxis members should not be accessed/called
@@ -319,7 +319,7 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   You shouldn't instantiate axes directly, rather use \ref QCPAxisRect::addAxis.
 */
 QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
-  QCPLayerable(parent->parentPlot(), "axes", parent),
+  QCPLayerable(parent->parentPlot(), "", parent),
   // axis base:
   mAxisType(type),
   mAxisRect(parent),
@@ -388,6 +388,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
 {
   mGrid->setVisible(false);
   setAntialiased(false);
+  setLayer(mParentPlot->currentLayer()); // it's actually on that layer already, but we want it in front of the grid, so we place it on there again
   
   if (type == atTop)
   {

@@ -25,7 +25,7 @@ doc pictures:
 
 Migration FAQ:
 - setPlotTitle is gone, how do I set a plot title now?
-  Plot titles now are a layout element. You can add a title like this:
+  A plot title now is a layout element. You can add a title like this:
   customPlot->plotLayout()->insertRow(0); // inserts an empty row above the default axis rect
   customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(customPlot, "Your Plot Title"));
   

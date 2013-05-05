@@ -169,7 +169,6 @@ QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot, bool setupDefaultAxes) :
   mRangeZoomFactorVert(0.85),
   mDragging(false)
 {
-  setLayer("background");
   mInsetLayout->initializeParentPlot(mParentPlot);
   mInsetLayout->setParentLayerable(this);
   mInsetLayout->setParent(this);
@@ -183,10 +182,10 @@ QCPAxisRect::QCPAxisRect(QCustomPlot *parentPlot, bool setupDefaultAxes) :
   
   if (setupDefaultAxes)
   {
-    QCPAxis *yAxis = addAxis(QCPAxis::atLeft);
-    QCPAxis *yAxis2 = addAxis(QCPAxis::atRight);
-    QCPAxis *xAxis2 = addAxis(QCPAxis::atTop);
     QCPAxis *xAxis = addAxis(QCPAxis::atBottom);
+    QCPAxis *yAxis = addAxis(QCPAxis::atLeft);
+    QCPAxis *xAxis2 = addAxis(QCPAxis::atTop);
+    QCPAxis *yAxis2 = addAxis(QCPAxis::atRight);
     setRangeDragAxes(xAxis, yAxis);
     setRangeZoomAxes(xAxis, yAxis);
     xAxis2->setVisible(false);

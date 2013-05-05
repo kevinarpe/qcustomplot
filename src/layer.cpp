@@ -46,14 +46,14 @@
   class from which almost all visible objects derive, like axes, grids, graphs, items, etc.
   
   Initially, QCustomPlot has five layers: "background", "grid", "main", "axes" and "legend" (in
-  that order). The top two layers "axes" and "legend" contain all axes and legends by default, so
-  they will be drawn on top. In the middle, there is the "main" layer. It is initially empty and
-  set as the current layer (see QCustomPlot::setCurrentLayer). This means, all new plottables,
-  items etc. are created on this layer by default. Then comes the "grid" layer which contains
-  QCPGrid instances (which belong tightly to QCPAxis, see \ref QCPAxis::grid). Axis rect
-  backgrounds shall be drawn behind everything else, thus QCPAxisRect instances place themselves on
-  the "background" layer by default. Of course, the layer affiliation of the individual objects can
-  be changed as required (\ref QCPLayerable::setLayer).
+  that order). The top two layers "axes" and "legend" contain the default axes and legend, so they
+  will be drawn on top. In the middle, there is the "main" layer. It is initially empty and set as
+  the current layer (see QCustomPlot::setCurrentLayer). This means, all new plottables, items etc.
+  are created on this layer by default. Then comes the "grid" layer which contains the QCPGrid
+  instances (which belong tightly to QCPAxis, see \ref QCPAxis::grid). The Axis rect background
+  shall be drawn behind everything else, thus the default QCPAxisRect instance is placed on the
+  "background" layer. Of course, the layer affiliation of the individual objects can be changed as
+  required (\ref QCPLayerable::setLayer).
   
   Controlling the ordering of objects is easy: Create a new layer in the position you want it to
   be, e.g. above "main", with QCustomPlot::addLayer. Then set the current layer with

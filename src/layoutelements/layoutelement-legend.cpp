@@ -890,5 +890,4 @@ QCP::Interaction QCPAbstractLegendItem::selectionCategory() const
 void QCPLegend::parentPlotInitialized(QCustomPlot *parentPlot)
 {
   Q_UNUSED(parentPlot)
-  setLayer("legend");
 }

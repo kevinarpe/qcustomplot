@@ -80,9 +80,6 @@ QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot) :
     setLayer(parentPlot->currentLayer());
     mFont = QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.5, QFont::Bold);
     mSelectedFont = QFont(parentPlot->font().family(), parentPlot->font().pointSize()*1.6, QFont::Bold);
-  } else
-  {
-    setLayer("axes");
   }
   setMargins(QMargins(5, 5, 5, 0));
 }
