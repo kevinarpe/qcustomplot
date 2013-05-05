@@ -509,22 +509,12 @@ QList<QCPAbstractItem *> QCPAxisRect::items() const
   This method is called automatically upon replot and doesn't need to be called by users of
   QCPAxisRect.
   
-  Sets up the axis tick vectors by calling \ref QCPAxis::setupTickVectors. Then calls the base
-  class implementation to update the margins (see \ref QCPLayoutElement::update), and finally
-  passes the \ref rect to the inset layout (\ref insetLayout) and calls its QCPInsetLayout::update
-  function.
+  Calls the base class implementation to update the margins (see \ref QCPLayoutElement::update),
+  and finally passes the \ref rect to the inset layout (\ref insetLayout) and calls its
+  QCPInsetLayout::update function.
 */
 void QCPAxisRect::update()
 {
-  // update axis tick vectors:
-  QHashIterator<QCPAxis::AxisType, QList<QCPAxis*> > it(mAxes);
-  while (it.hasNext())
-  {
-    it.next();
-    for (int i=0; i<it.value().size(); ++i)
-      it.value().at(i)->setupTickVectors();
-  }
-  
   QCPLayoutElement::update();
   
   // pass update call on to inset layout (doesn't happen automatically, because QCPAxisRect doesn't derive from QCPLayout):
