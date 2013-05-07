@@ -503,7 +503,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   
   setViewport(rect()); // needs to be called after mPlotLayout has been created
   
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
   setPlottingHint(QCP::phForceRepaint);
 #endif
   

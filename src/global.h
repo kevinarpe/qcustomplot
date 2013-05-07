@@ -26,6 +26,7 @@
 #define QCP_GLOBAL_H
 
 #include <QObject>
+#include <QWeakPointer>
 #include <QWidget>
 #include <QPainter>
 #include <QPaintEvent>
