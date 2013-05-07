@@ -164,7 +164,7 @@ void QCPPlotTitle::setSelectable(bool selectable)
 }
 
 /*!
-  Sets the selection state of this plot title to \ref selected. If the selection has changed, \ref
+  Sets the selection state of this plot title to \a selected. If the selection has changed, \ref
   selectionChanged is emitted.
   
   Note that this function can change the selection state independently of the current \ref

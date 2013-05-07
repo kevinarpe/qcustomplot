@@ -177,6 +177,22 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
   For details about the layering mechanism, see the QCPLayer documentation.
 */
 
+/* start documentation of inline functions */
+
+/*! \fn QCPLayerable *QCPLayerable::parentLayerable() const
+ 
+  Returns the parent layerable of this layerable. The parent layerable is used to provide
+  visibility hierarchies in conjunction with the method \ref realVisibility. This way, layerables
+  only get drawn if their parent layerables are visible, too.
+  
+  Note that a parent layerable is not necessarily also the QObject parent for memory management.
+  Further, a layerable doesn't always have a parent layerable, so this function may return 0.
+  
+  A parent layerable is set implicitly with when placed inside layout elements and doesn't need to be
+  set manually by the user.
+*/
+
+/* end documentation of inline functions */
 /* start documentation of pure virtual functions */
 
 /*! \fn virtual void QCPLayerable::applyDefaultAntialiasingHint(QCPPainter *painter) const = 0
@@ -234,7 +250,7 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
   It is possible to provide 0 as \a plot. In that case, you should assign a parent plot at a later
   time with \ref initializeParentPlot.
   
-  The layerable's direct parent is set to \a parentLayerable, if provided. Direct layerable parents
+  The layerable's parent layerable is set to \a parentLayerable, if provided. Direct layerable parents
   are mainly used to control visibility in a hierarchy of layerables. This means a layerable is
   only drawn, if all its ancestor layerables are also visible. Note that \a parentLayerable does
   not become the QObject-parent (for memory management) of this layerable, \a plot does.
@@ -358,13 +374,13 @@ bool QCPLayerable::realVisibility() const
   parent QCustomPlot when the mouseReleaseEvent occurs, and the finally selected object is notified
   via the selectEvent/deselectEvent methods.
   
-  \ref details is an optional output parameter. Every layerable subclass may place any information
+  \a details is an optional output parameter. Every layerable subclass may place any information
   in \a details. This information will be passed to \ref selectEvent when the parent QCustomPlot
   decides on the basis of this selectTest call, that the object was successfully selected. The
   subsequent call to \ref selectEvent will carry the \a details. This is useful for multi-part
   objects (like QCPAxis). This way, a possibly complex calculation to decide which part was clicked
   is only done once in \ref selectTest. The result (i.e. the actually clicked part) can then be
-  placed in \ref details. So in the subsequent \ref selectEvent, the decision which part was
+  placed in \a details. So in the subsequent \ref selectEvent, the decision which part was
   selected doesn't have to be done a second time for a single selection operation.
   
   You may pass 0 as \a details to indicate that you are not interested in those selection details.
@@ -413,7 +429,7 @@ void QCPLayerable::initializeParentPlot(QCustomPlot *parentPlot)
 
 /*! \internal
   
-  Sets the direct parent layerable of this layerable to \a parentLayerable. Note that \a parentLayerable does not
+  Sets the parent layerable of this layerable to \a parentLayerable. Note that \a parentLayerable does not
   become the QObject-parent (for memory management) of this layerable.
   
   The parent layerable has influence on the return value of the \ref realVisibility method. Only
@@ -501,7 +517,7 @@ void QCPLayerable::parentPlotInitialized(QCustomPlot *parentPlot)
   which aren't.
   
   Subclasses that don't fit any of the normal \ref QCP::Interaction values can use \ref
-  iSelectOther. This is what the default implementation returns.
+  QCP::iSelectOther. This is what the default implementation returns.
   
   \see QCustomPlot::setInteractions
 */

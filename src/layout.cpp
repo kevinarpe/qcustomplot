@@ -190,11 +190,11 @@ void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element
   This is an abstract base class. As such, it can't be instantiated directly, rather use one of its subclasses.
   
   A Layout element is a rectangular object which can be placed in layouts. It has an outer rect
-  (\ref outerRect) and an inner rect (\ref rect). The difference between outer and inner rect is
-  called its margin. The margin can either be set to automatic or manual (\ref setAutoMargin) on a
-  per-side basis. If a side is set to manual, that margin can be set explicitly with \ref setMargin
-  and will stay fixed at that value. If it's set to automatic, the layout element subclass will
-  control the value itself (via \ref calculateAutoMargin).
+  (QCPLayoutElement::outerRect) and an inner rect (\ref QCPLayoutElement::rect). The difference
+  between outer and inner rect is called its margin. The margin can either be set to automatic or
+  manual (\ref setAutoMargins) on a per-side basis. If a side is set to manual, that margin can be
+  set explicitly with \ref setMargins and will stay fixed at that value. If it's set to automatic,
+  the layout element subclass will control the value itself (via \ref calculateAutoMargin).
   
   Layout elements can be placed in layouts (base class QCPLayout) like QCPLayoutGrid. The top level
   layout is reachable via QCustomPlot::plotLayout, and is a QCPLayoutGrid. Since QCPLayout itself
@@ -310,8 +310,9 @@ void QCPLayoutElement::setOuterRect(const QRect &rect)
   sides, this function is used to manually set the margin on those sides. Sides that are still set
   to be handled automatically are ignored and may have any value in \a margins.
   
-  The margin is the distance between the \ref outerRect (controlled by the parent layout) and the
-  inner \ref rect (which usually contains the main content of this layout element).
+  The margin is the distance between the outer rect (controlled by the parent layout via \ref
+  setOuterRect) and the inner \ref rect (which usually contains the main content of this layout
+  element).
   
   \see setAutoMargins
 */
@@ -358,7 +359,7 @@ void QCPLayoutElement::setAutoMargins(QCP::MarginSides sides)
 
 /*!
   Sets the minimum size for the inner \ref rect of this layout element. A parent layout tries to
-  respect the \ref size here by changing row/column sizes in the layout accordingly.
+  respect the \a size here by changing row/column sizes in the layout accordingly.
   
   If the parent layout size is not sufficient to satisfy all minimum size constraints of its child
   layout elements, the layout may set a size that is actually smaller than \a size. QCustomPlot
@@ -386,7 +387,7 @@ void QCPLayoutElement::setMinimumSize(int width, int height)
 
 /*!
   Sets the maximum size for the inner \ref rect of this layout element. A parent layout tries to
-  respect the \ref size here by changing row/column sizes in the layout accordingly.
+  respect the \a size here by changing row/column sizes in the layout accordingly.
 */
 void QCPLayoutElement::setMaximumSize(const QSize &size)
 {
@@ -760,7 +761,7 @@ void QCPLayout::sizeConstraintsChanged() const
   Subclasses reimplement this method to update the position and sizes of the child elements/cells
   via calling their \ref QCPLayoutElement::setOuterRect. The default implementation does nothing.
   
-  The geometry used as a reference is the inner \rect of this layout. Child elements should stay
+  The geometry used as a reference is the inner \ref rect of this layout. Child elements should stay
   within that rect.
   
   \ref getSectionSizes may help with the reimplementation of this function.
@@ -1637,7 +1638,7 @@ void QCPLayoutInset::setInsetAlignment(int index, Qt::Alignment alignment)
   corner of the layout, with 35% width and height of the parent layout.
   
   Note that the minimum and maximum sizes of the embedded element (\ref
-  QCPLayoutElement::setMinimumSize/QCPLayoutElement::setMaximumSize) are enforced.
+  QCPLayoutElement::setMinimumSize, \ref QCPLayoutElement::setMaximumSize) are enforced.
 */
 void QCPLayoutInset::setInsetRect(int index, const QRectF &rect)
 {
@@ -1647,6 +1648,7 @@ void QCPLayoutInset::setInsetRect(int index, const QRectF &rect)
     qDebug() << Q_FUNC_INFO << "Invalid element index:" << index;
 }
 
+/* inherits documentation from base class */
 void QCPLayoutInset::updateLayout()
 {
   for (int i=0; i<mElements.size(); ++i)

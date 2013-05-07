@@ -349,8 +349,8 @@ QSize QCPPlottableLegendItem::minimumSizeHint() const
   However, the QCPAbstractLegendItem-Interface will ignore those elements (e.g. \ref itemCount will
   only return the number of items with QCPAbstractLegendItems type).
 
-  By default, every QCustomPlot has one legend (\ref QCustomPlot::legend) which is placed in the
-  inset layout of the main axis rect (\ref QCPAxisRect::insetLayout). To move the legend to another
+  By default, every QCustomPlot has one legend (QCustomPlot::legend) which is placed in the inset
+  layout of the main axis rect (\ref QCPAxisRect::insetLayout). To move the legend to another
   position inside the axis rect, use the methods of the \ref QCPLayoutInset. To move the legend
   outside of the axis rect, place it anywhere else with the QCPLayout/QCPLayoutElement interface.
 */
@@ -402,6 +402,7 @@ QCPLegend::~QCPLegend()
     mParentPlot->legendRemoved(this);
 }
 
+/* no doc for getter, see setSelectedParts */
 QCPLegend::SelectableParts QCPLegend::selectedParts() const
 {
   // check whether any legend elements selected, if yes, add spItems to return value
@@ -519,10 +520,10 @@ void QCPLegend::setIconBorderPen(const QPen &pen)
   (When \ref QCustomPlot::setInteractions contains iSelectLegend.)
   
   However, even when \a selectable is set to a value not allowing the selection of a specific part,
-  it is still possible to set the selection of this part manually, by calling \ref setSelected
+  it is still possible to set the selection of this part manually, by calling \ref setSelectedParts
   directly.
   
-  \see SelectablePart, setSelected
+  \see SelectablePart, setSelectedParts
 */
 void QCPLegend::setSelectableParts(const SelectableParts &selectable)
 {
@@ -538,7 +539,7 @@ void QCPLegend::setSelectableParts(const SelectableParts &selectable)
   contains iSelectLegend. You only need to call this function when you wish to change the selection
   state manually.
   
-  This function can change the selection state of a part even when \ref setSelectable was set to a
+  This function can change the selection state of a part even when \ref setSelectableParts was set to a
   value that actually excludes the part.
   
   emits the \ref selectionChanged signal when \a selected is different from the previous selection state.

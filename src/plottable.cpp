@@ -423,7 +423,7 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
 }
 
 /*!
-  Adds this plottable to the legend of the parent QCustomPlot (\ref QCustomPlot::legend).
+  Adds this plottable to the legend of the parent QCustomPlot (QCustomPlot::legend).
     
   Normally, a QCPPlottableLegendItem is created and inserted into the legend. If the plottable
   needs a more specialized representation in the legend, this function will take this into account
@@ -477,6 +477,7 @@ QRect QCPAbstractPlottable::clipRect() const
     return QRect();
 }
 
+/* inherits documentation from base class */
 QCP::Interaction QCPAbstractPlottable::selectionCategory() const
 {
   return QCP::iSelectPlottables;

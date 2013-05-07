@@ -254,7 +254,7 @@ void QCPPainter::fixScaledPen()
   QCPScatterStyle(ScatterShape shape, double size). If those constructors are used, a call to \ref
   isPenDefined will return false, which will lead to scatter points that inherits the pen from the
   plottable that uses the scatter style. Thus, if such a scatter style is passed to QCPGraph, the line
-  color of the graph (\ref QCPGraph::setLineColor) will be used by the scatter points. This makes
+  color of the graph (\ref QCPGraph::setPen) will be used by the scatter points. This makes
   it very convenient to set up typical scatter settings:
   
   \code

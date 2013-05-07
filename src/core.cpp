@@ -240,6 +240,12 @@
   to allow saving plots with sizes independent of the current widget size.
 */
 
+/*! \fn QCPLayoutGrid *QCustomPlot::plotLayout() const
+  
+  Returns the top level layout of this QCustomPlot instance. It is a \ref QCPLayoutGrid, initially containing just
+  one cell with the main QCPAxisRect inside.
+*/
+
 /* end of documentation of inline functions */
 /* start of documentation of signals */
 
@@ -629,7 +635,7 @@ void QCustomPlot::setAutoAddPlottableToLegend(bool on)
 }
 
 /*!
-  Sets the possible interactions of this QCustomPlot as an or-combination of \ref Interaction
+  Sets the possible interactions of this QCustomPlot as an or-combination of \ref QCP::Interaction
   enums. There are the following types of interactions:
   
   <b>Axis range manipulation</b> is controlled via \ref QCP::iRangeDrag and \ref QCP::iRangeZoom. When the
@@ -2223,7 +2229,7 @@ void QCustomPlot::mouseMoveEvent(QMouseEvent *event)
   If the mouse was moved less than a certain threshold in any direction since the \ref
   mousePressEvent, it is considered a click which causes the selection mechanism (if activated via
   \ref setInteractions) to possibly change selection states accordingly. Further, specialized mouse
-  click signals are emitted (e.g. \ref plottableClick, \ref axesClick, etc.)
+  click signals are emitted (e.g. \ref plottableClick, \ref axisClick, etc.)
   
   If a layout element has mouse capture focus (a \ref mousePressEvent happened on top of the layout
   element before), the \ref mouseReleaseEvent is forwarded to that element.

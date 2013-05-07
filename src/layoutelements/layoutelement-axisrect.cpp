@@ -660,12 +660,12 @@ double QCPAxisRect::rangeZoomFactor(Qt::Orientation orientation)
   default, the horizontal axis is the bottom axis (xAxis) and the vertical axis
   is the left axis (yAxis).
   
-  To disable range dragging entirely, pass 0 as \a orientations or remove \ref iRangeDrag from \ref
-  setInteractions. To enable range dragging for both directions, pass <tt>Qt::Horizontal |
+  To disable range dragging entirely, pass 0 as \a orientations or remove \ref QCP::iRangeDrag from \ref
+  QCustomPlot::setInteractions. To enable range dragging for both directions, pass <tt>Qt::Horizontal |
   Qt::Vertical</tt> as \a orientations.
   
-  In addition to setting \a orientations to a non-zero value, make sure \ref setInteractions
-  contains \ref iRangeDrag to enable the range dragging interaction.
+  In addition to setting \a orientations to a non-zero value, make sure \ref QCustomPlot::setInteractions
+  contains \ref QCP::iRangeDrag to enable the range dragging interaction.
   
   \see setRangeZoom, setRangeDragAxes, setNoAntialiasingOnDrag
 */
@@ -680,12 +680,12 @@ void QCPAxisRect::setRangeDrag(Qt::Orientations orientations)
   QCPAxis *vertical). By default, the horizontal axis is the bottom axis (xAxis) and the vertical
   axis is the left axis (yAxis).
 
-  To disable range zooming entirely, pass 0 as \a orientations or remove \ref iRangeZoom from \ref
-  setInteractions. To enable range zooming for both directions, pass <tt>Qt::Horizontal |
+  To disable range zooming entirely, pass 0 as \a orientations or remove \ref QCP::iRangeZoom from \ref
+  QCustomPlot::setInteractions. To enable range zooming for both directions, pass <tt>Qt::Horizontal |
   Qt::Vertical</tt> as \a orientations.
   
-  In addition to setting \a orientations to a non-zero value, make sure \ref setInteractions
-  contains \ref iRangeZoom to enable the range zooming interaction.
+  In addition to setting \a orientations to a non-zero value, make sure \ref QCustomPlot::setInteractions
+  contains \ref QCP::iRangeZoom to enable the range zooming interaction.
   
   \see setRangeZoomFactor, setRangeZoomAxes, setRangeDrag
 */

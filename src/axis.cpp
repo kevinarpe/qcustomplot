@@ -41,7 +41,7 @@
   
   This class is tightly bound to QCPAxis. Every axis owns a grid instance and uses it to draw the
   grid lines, sub grid lines and zero-line. You can interact with the grid of an axis via \ref
-  QCPAxis::grid(). Normally, you don't need to create an instance of QCPGrid yourself.
+  QCPAxis::grid. Normally, you don't need to create an instance of QCPGrid yourself.
   
   The axis and grid drawing was split into two classes to allow them to be placed on different
   layers (both QCPAxis and QCPGrid inherit from QCPLayerable). Thus it is possible to have the grid
@@ -279,6 +279,12 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   
   Returns the orientation of the axis. The axis orientation (horizontal or vertical) is deduced
   from the axis type (left, top, right or bottom).
+*/
+
+/*! \fn QCPGrid *QCPAxis::grid() const
+  
+  Returns the \ref QCPGrid instance belonging to this axis. Access it to set details about the way the
+  grid is displayed.
 */
 
 /* end of documentation of inline functions */
@@ -1239,10 +1245,10 @@ void QCPAxis::setLabelPadding(int padding)
 /*!
   Sets the padding of the axis.
 
-  When \ref QCPAxisRect::setAutoMargin is enabled, the padding is the additional outer most space,
+  When \ref QCPAxisRect::setAutoMargins is enabled, the padding is the additional outer most space,
   that is left blank.
   
-  The axis padding has no meaning if \ref QCPAxisRect::setAutoMargin is disabled.
+  The axis padding has no meaning if \ref QCPAxisRect::setAutoMargins is disabled.
   
   \see setLabelPadding, setTickLabelPadding
 */
@@ -1552,7 +1558,7 @@ double QCPAxis::coordToPixel(double value) const
 
 /*!
   Returns the part of the axis that is hit by \a pos (in pixels). The return value of this function
-  is independent of the user-selectable parts defined with \ref setSelectable. Further, this
+  is independent of the user-selectable parts defined with \ref setSelectableParts. Further, this
   function does not change the current selection state of the axis.
   
   If the axis is not visible (\ref setVisible), this function always returns \ref spNone.

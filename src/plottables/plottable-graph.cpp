@@ -404,10 +404,10 @@ void QCPGraph::setErrorBarSize(double size)
   If \a enabled is set to true, the error bar will not be drawn as a solid line under the scatter symbol but
   leave some free space around the symbol.
   
-  This feature uses the current scatter size (\ref QCPScatterStyle::setSize) to determine the size of the
-  area to leave blank. So when drawing Pixmaps as scatter points (\ref QCP::ssPixmap), the scatter size
-  must be set manually to a value corresponding to the size of the Pixmap, if the error bars should
-  leave gaps to its boundaries.
+  This feature uses the current scatter size (\ref QCPScatterStyle::setSize) to determine the size
+  of the area to leave blank. So when drawing Pixmaps as scatter points (\ref
+  QCPScatterStyle::ssPixmap), the scatter size must be set manually to a value corresponding to the
+  size of the Pixmap, if the error bars should leave gaps to its boundaries.
   
   \ref setErrorType, setErrorBarSize, setScatterStyle
 */
@@ -566,6 +566,8 @@ double QCPGraph::selectTest(const QPointF &pos, bool onlySelectable, QVariant *d
   
   Allows to define whether error bars are taken into consideration when determining the new axis
   range.
+  
+  \see QCPAbstractPlottable::rescaleAxes
 */
 void QCPGraph::rescaleAxes(bool onlyEnlarge, bool includeErrorBars) const
 {
@@ -577,6 +579,8 @@ void QCPGraph::rescaleAxes(bool onlyEnlarge, bool includeErrorBars) const
   
   Allows to define whether error bars (of kind \ref QCPGraph::etKey) are taken into consideration
   when determining the new axis range.
+  
+  \see QCPAbstractPlottable::rescaleKeyAxis
 */
 void QCPGraph::rescaleKeyAxis(bool onlyEnlarge, bool includeErrorBars) const
 {
@@ -611,6 +615,8 @@ void QCPGraph::rescaleKeyAxis(bool onlyEnlarge, bool includeErrorBars) const
   
   Allows to define whether error bars (of kind \ref QCPGraph::etValue) are taken into consideration
   when determining the new axis range.
+  
+  \see QCPAbstractPlottable::rescaleValueAxis
 */
 void QCPGraph::rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const
 {

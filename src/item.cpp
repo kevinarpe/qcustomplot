@@ -778,7 +778,6 @@ void QCPAbstractItem::setClipToAxisRect(bool clip)
   
   \see setClipToAxisRect
 */
-
 void QCPAbstractItem::setClipAxisRect(QCPAxisRect *rect)
 {
   mClipAxisRect = rect;
