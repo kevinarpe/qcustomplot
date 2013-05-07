@@ -6,9 +6,6 @@ todo:
  - make QPainter-workarounds Qt5 compatible
  - make QCustomPlot Qt5 compatible (basically some defines in .pro)
 
-doc review:
-   run ./find-undocumented.py and document them
-
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between
   QCustomPlot::/QCPGraph::/QCPAbstractPlottable::rescaleAxes 
@@ -44,6 +41,7 @@ Migration FAQ:
 
 FUTURE RELEASE:
 
+- document public interface member vars (legend, xAxis, yAxis,...)
 - selection rect mechanism
 - more options for tick-generation algorithm (integers, other stepping, range end only at ticks, date/time specific steps...)
 - Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs

@@ -71,7 +71,6 @@ enum MarginSide { msLeft     = 0x01 ///< <tt>0x01</tt> left margin
                   ,msAll     = 0xFF ///< <tt>0xFF</tt> all margins
                   ,msNone    = 0x00 ///< <tt>0x00</tt> no margin
                 };
-Q_FLAGS(MarginSide MarginSides)
 Q_DECLARE_FLAGS(MarginSides, MarginSide)
 
 /*!
@@ -97,7 +96,6 @@ enum AntialiasedElement { aeAxes           = 0x0001 ///< <tt>0x0001</tt> Axis ba
                           ,aeAll           = 0xFFFF ///< <tt>0xFFFF</tt> All elements
                           ,aeNone          = 0x0000 ///< <tt>0x0000</tt> No elements
                         };
-Q_FLAGS(AntialiasedElement AntialiasedElements)
 Q_DECLARE_FLAGS(AntialiasedElements, AntialiasedElement)
 
 /*!
@@ -112,7 +110,6 @@ enum PlottingHint { phNone            = 0x000 ///< <tt>0x000</tt> No hints are s
                                               ///<                on Windows-Systems to prevent the plot from freezing on fast consecutive replots (e.g. user drags ranges with mouse).
                     ,phCacheLabels    = 0x004 ///< <tt>0x004</tt> axis (tick) labels will be cached as pixmaps, increasing replot performance.
                   };
-Q_FLAGS(PlottingHint PlottingHints)
 Q_DECLARE_FLAGS(PlottingHints, PlottingHint)
 
 /*!
@@ -131,7 +128,6 @@ enum Interaction { iRangeDrag         = 0x001 ///< <tt>0x001</tt> Axis ranges ar
                    ,iSelectItems      = 0x040 ///< <tt>0x040</tt> Items are selectable (Rectangles, Arrows, Textitems, etc. see \ref QCPAbstractItem)
                    ,iSelectOther      = 0x080 ///< <tt>0x080</tt> All other objects are selectable (e.g. your own derived layerables, the plot title,...)
                  };
-Q_FLAGS(Interaction Interactions)
 Q_DECLARE_FLAGS(Interactions, Interaction)
 
 /*! \internal
