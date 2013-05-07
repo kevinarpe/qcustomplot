@@ -30,9 +30,11 @@ public:
   void genItemTracer();
   void genLineEnding();
   void genMarginGroup();
+  void genAxisRectSpacingOverview();
   
   // helpers:
   void labelItemAnchors(QCPAbstractItem *item, double fontSize=8, bool circle=true, bool labelBelow=true);
+  void addBracket(QPointF left, QPointF right, QString text, QPointF textOffset, bool textSideways, Qt::Alignment textAlign);
   void resetPlot();
 private:
   Ui::MainWindow *ui;

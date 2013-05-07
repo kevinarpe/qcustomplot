@@ -67,6 +67,9 @@
   via \ref setRangeZoom, \ref setRangeZoomAxes and \ref setRangeZoomFactor. These interactions are
   only enabled if \ref QCustomPlot::setInteractions contains \ref QCP::iRangeDrag and \ref
   QCP::iRangeZoom.
+  
+  \image html AxisRectSpacingOverview.png
+  <center>Overview of the spacings and paddings that define the geometry of an axis.</center>
 */
 
 /* start documentation of inline functions */
