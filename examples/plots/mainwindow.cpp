@@ -674,6 +674,7 @@ void MainWindow::setupLogarithmicDemo(QCustomPlot *customPlot)
   
   customPlot->legend->setVisible(true);
   customPlot->legend->setBrush(QBrush(QColor(255,255,255,150)));
+  customPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignLeft|Qt::AlignTop); // make legend align in top left corner or axis rect
 }
 
 void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot)
