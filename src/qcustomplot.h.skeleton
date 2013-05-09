@@ -25,6 +25,11 @@
 #ifndef QCUSTOMPLOT_H
 #define QCUSTOMPLOT_H
 
+#ifdef QT_DISABLE_DEPRECATED_BEFORE
+#  undef QT_DISABLE_DEPRECATED_BEFORE
+#endif
+#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(0, 0, 0)
+
 //amalgamation: place header includes
 
 //amalgamation: place forward declarations

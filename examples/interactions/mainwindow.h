@@ -1,8 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtCore>
-#include <QtGui>
+#include <QMainWindow>
+#include <QInputDialog>
 #include "../../qcustomplot.h"
 
 namespace Ui {

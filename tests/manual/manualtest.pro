@@ -2,8 +2,8 @@
 # Project to test various use cases
 #
 
-
 QT += core gui
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = test
 TEMPLATE = app

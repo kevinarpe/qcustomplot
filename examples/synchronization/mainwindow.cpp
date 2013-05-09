@@ -10,8 +10,8 @@ MainWindow::MainWindow(QWidget *parent) :
   
   ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
   ui->customPlot2->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
-  ui->customPlot->axisRect()->setupFullAxesBox();
-  ui->customPlot2->axisRect()->setupFullAxesBox();
+  ui->customPlot->axisRect()->setupFullAxesBox(true);
+  ui->customPlot2->axisRect()->setupFullAxesBox(true);
   
   // setup the signal/slot connections that realize the bi-directional synchronization:
   connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot2->xAxis, SLOT(setRange(QCPRange)));
@@ -28,12 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
   addRandomGraph(ui->customPlot2);
   addRandomGraph(ui->customPlot2);
   addRandomGraph(ui->customPlot2);
-  
-  // make bottom and left axes transfer their ranges to top and right axes:
-  connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->xAxis2, SLOT(setRange(QCPRange)));
-  connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->yAxis2, SLOT(setRange(QCPRange)));
-  connect(ui->customPlot2->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot2->xAxis2, SLOT(setRange(QCPRange)));
-  connect(ui->customPlot2->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot2->yAxis2, SLOT(setRange(QCPRange)));
 }
 
 MainWindow::~MainWindow()

@@ -42,6 +42,7 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include <QDesktopWidget>
+#include <QScreen>
 #include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -51,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(400, 250, 542, 390);
   
-  setupDemo(0);
+  setupDemo(16);
   //setupPlayground(ui->customPlot);
   // 0:  setupQuadraticDemo(ui->customPlot);
   // 1:  setupSimpleDemo(ui->customPlot);
@@ -72,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent) :
   // 16: setupStyledDemo(ui->customPlot);
   
   // for making screenshots of the current demo or all demos (for website screenshots):
-  QTimer::singleShot(1500, this, SLOT(allScreenShots()));
+  //QTimer::singleShot(1500, this, SLOT(allScreenShots()));
   //QTimer::singleShot(1000, this, SLOT(screenShot()));
 }
 
@@ -1263,7 +1264,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::screenShot()
 {
-  QPixmap pm = QPixmap::grabWindow(qApp->desktop()->winId(), this->x()+5, this->y(), this->frameGeometry().width()-10, this->frameGeometry().height()-5);
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  QPixmap pm = QPixmap::grabWindow(qApp->desktop()->winId(), this->x()+2, this->y()+2, this->frameGeometry().width()-4, this->frameGeometry().height()-4);
+#else
+  QPixmap pm = qApp->primaryScreen()->grabWindow(qApp->desktop()->winId(), this->x()+2, this->y()+2, this->frameGeometry().width()-4, this->frameGeometry().height()-4);
+#endif
   QString fileName = "qcustomplot-"+demoName.toLower()+".png";
   fileName.replace(" ", "");
   pm.save("./screenshots/"+fileName);
@@ -1272,7 +1277,11 @@ void MainWindow::screenShot()
 
 void MainWindow::allScreenShots()
 {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   QPixmap pm = QPixmap::grabWindow(qApp->desktop()->winId(), this->x()+2, this->y()+2, this->frameGeometry().width()-4, this->frameGeometry().height()-4);
+#else
+  QPixmap pm = qApp->primaryScreen()->grabWindow(qApp->desktop()->winId(), this->x()+2, this->y()+2, this->frameGeometry().width()-4, this->frameGeometry().height()-4);
+#endif
   QString fileName = "qcustomplot-"+demoName.toLower()+".png";
   fileName.replace(" ", "");
   pm.save("./screenshots/"+fileName);

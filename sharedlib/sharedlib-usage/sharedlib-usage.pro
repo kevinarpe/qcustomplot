@@ -10,10 +10,10 @@
 #
 
 QT       += core gui
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = sharedlib-usage
 TEMPLATE = app
-
 
 # Tell the qcustomplot header that it will be used as library:
 DEFINES += QCUSTOMPLOT_USE_LIBRARY

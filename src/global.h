@@ -25,6 +25,11 @@
 #ifndef QCP_GLOBAL_H
 #define QCP_GLOBAL_H
 
+#ifdef QT_DISABLE_DEPRECATED_BEFORE
+#  undef QT_DISABLE_DEPRECATED_BEFORE
+#endif
+#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(0, 0, 0)
+
 #include <QObject>
 #include <QWeakPointer>
 #include <QWidget>

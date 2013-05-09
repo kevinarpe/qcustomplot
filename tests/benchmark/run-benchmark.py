@@ -35,24 +35,33 @@ if not os.path.isfile(config.executable):
 
 # Setup and start the actual benchmark loops
 results = defaultdict(list)
-namePattern = re.compile("RESULT : Benchmark::([^(]+)\\(\\):");
-resultPattern = re.compile("\\s*(\\d+(\\.\\d+)?) msecs per iteration.*");
+namePattern = re.compile("RESULT : Benchmark::([^(]+)\\(\\):")
+resultPattern = re.compile("\\s*(\\d+(\\.\\d+)?) msecs per iteration.*")
+qtVersionPattern = re.compile(".*Qt (\\d+\\.\\d+?\\.\\d+?).*")
 maxNameLength = 0
+qtVersion = ""
 
 for i in range(config.rounds):
   if sys.stdout.isatty() and not config.quiet:
     print "iteration "+str(i)+"/"+str(config.rounds)+"    \r",
     sys.stdout.flush()
-  proc = subprocess.Popen([config.executable, "-silent"], stdout=subprocess.PIPE)
+  proc = subprocess.Popen([config.executable], stdout=subprocess.PIPE)
   currentName = "";
   for line in proc.stdout:
+   
     m = namePattern.search(line)
     if m:
       currentName = m.group(1)
       if len(currentName) > maxNameLength: maxNameLength = len(currentName)
+   
     m = resultPattern.search(line)
     if m:
       results[currentName].append(float(m.group(1)))
+    
+    if qtVersion == "":
+      m = qtVersionPattern.search(line)
+      if m:
+        qtVersion = m.group(1)
 
 # Output result statistics:
 proc = subprocess.Popen(["git", "status", "--porcelain", "--branch"], stdout=subprocess.PIPE)
@@ -66,17 +75,17 @@ if not config.anonymous:
   output += "Platform: "+platform.platform()+", "+getpass.getuser()+" on "+platform.node()+"\n"
 else:
   output += "Platform: "+platform.platform()+", anonymous\n"
+output += "Qt Version: "+qtVersion+"\n"
 output += "Git Branch: "+gitBranch+"\n"
 output += "Git Head: "+gitHead+"\n"
 output += "Rounds: "+str(config.rounds)+"\n"
 if config.comment:
   output += "Comment: "+config.comment+"\n"
-output += "\n"
 
 for name, times in sorted(results.iteritems()):
   namePadding = " "*(maxNameLength-len(name)+1);
   output += "{} {}{: >6.2f} +/- {: <4.2f} ms\n".format(name, namePadding, listMean(times), listStd(times))
-output += "\n"
+output += "\n\n"
 
 if not config.quiet:
   print output

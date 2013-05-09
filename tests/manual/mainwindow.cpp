@@ -787,7 +787,7 @@ void MainWindow::tickLabelTestTimerSlot()
 
 void MainWindow::setupMultiAxisRectInteractionsMouseMove(QMouseEvent *event)
 {
-  QCPAxisRect *ar = qobject_cast<QCPAxisRect*>(mCustomPlot->layoutElementAt(event->posF()));
+  QCPAxisRect *ar = qobject_cast<QCPAxisRect*>(mCustomPlot->layoutElementAt(event->pos()));
   if (ar)
     ar->setBackground(QColor(230, 230, 230));
   for (int i=0; i<mCustomPlot->axisRectCount(); ++i)

@@ -1,5 +1,3 @@
-#include <QtGui>
-#include <QtCore>
 #include <QtTest/QtTest>
 
 #include <../../qcustomplot.h>

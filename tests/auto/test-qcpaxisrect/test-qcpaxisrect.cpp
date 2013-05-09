@@ -4,7 +4,7 @@ void TestQCPAxisRect::init()
 {
   mPlot = new QCustomPlot(0);
   mPlot->show();
-  QTest::qWaitForWindowShown(mPlot);
+  QTest::qWait(150);
 }
 
 

@@ -1,8 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtCore>
-#include <QtGui>
+#include <QMainWindow>
+#include <QTimer>
+#include <QHBoxLayout>
+#include <QDir>
+
 #include "../../src/qcp.h"
 
 namespace Ui {
