@@ -39,7 +39,6 @@ ui_*.h
 
 # Other:
 
-*.graphml
 doc/html/*
 doc/qthelp/*
 doc/images/*
