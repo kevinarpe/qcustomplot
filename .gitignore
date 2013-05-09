@@ -37,12 +37,6 @@ ui_*.h
 *.dll
 *.exe
 
-# Other:
-
-doc/html/*
-doc/qthelp/*
-doc/images/*
-
 # Amalgamated sources:
 
 /qcustomplot.h
