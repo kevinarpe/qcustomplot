@@ -9,9 +9,9 @@ TARGET = test
 TEMPLATE = app
 
 CONFIG(debug, debug|release) {
-  qcplib.commands = cd ../../src; make debug
+  qcplib.commands = cd ../../src && $(MAKE) debug
 } else {
-  qcplib.commands = cd ../../src; make release
+  qcplib.commands = cd ../../src && $(MAKE) release
 }
 QMAKE_EXTRA_TARGETS += qcplib
 PRE_TARGETDEPS += qcplib
