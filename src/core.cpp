@@ -1897,8 +1897,8 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   {
     printpainter.setMode(QCPPainter::pmVectorized);
     printpainter.setMode(QCPPainter::pmNoCaching);
+    printpainter.setMode(QCPPainter::pmNonCosmetic, noCosmeticPen);
     printpainter.setWindow(mViewport);
-    printpainter.setRenderHint(QPainter::NonCosmeticDefaultPen, noCosmeticPen);
     if (mBackgroundBrush.style() != Qt::NoBrush &&
         mBackgroundBrush.color() != Qt::white &&
         mBackgroundBrush.color() != Qt::transparent &&
@@ -1922,6 +1922,10 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   image file of size 200*200 in which all graphical elements are scaled up by factor 2 (line widths,
   texts, etc.). This scaling is not done by stretching a 100*100 image, the result will have full
   200*200 pixel resolution.
+  
+  If you use a high scaling factor, it is recommended to enable antialiasing for all elements via
+  temporarily setting \ref QCustomPlot::setAntialiasedElements(QCP::aeAll); as this allows
+  QCustomPlot to place objects with sub-pixel accuracy.
 
   \warning If calling this function inside the constructor of the parent of the QCustomPlot widget
   (i.e. the MainWindow constructor, if QCustomPlot is inside the MainWindow), always provide
@@ -1960,6 +1964,10 @@ bool QCustomPlot::savePng(const QString &fileName, int width, int height, double
   image file of size 200*200 in which all graphical elements are scaled up by factor 2 (line widths,
   texts, etc.). This scaling is not done by stretching a 100*100 image, the result will have full
   200*200 pixel resolution.
+  
+  If you use a high scaling factor, it is recommended to enable antialiasing for all elements via
+  temporarily setting \ref QCustomPlot::setAntialiasedElements(QCP::aeAll); as this allows
+  QCustomPlot to place objects with sub-pixel accuracy.
 
   \warning If calling this function inside the constructor of the parent of the QCustomPlot widget
   (i.e. the MainWindow constructor, if QCustomPlot is inside the MainWindow), always provide
@@ -1995,6 +2003,10 @@ bool QCustomPlot::saveJpg(const QString &fileName, int width, int height, double
   image file of size 200*200 in which all graphical elements are scaled up by factor 2 (line widths,
   texts, etc.). This scaling is not done by stretching a 100*100 image, the result will have full
   200*200 pixel resolution.
+  
+  If you use a high scaling factor, it is recommended to enable antialiasing for all elements via
+  temporarily setting \ref QCustomPlot::setAntialiasedElements(QCP::aeAll); as this allows
+  QCustomPlot to place objects with sub-pixel accuracy.
 
   \warning If calling this function inside the constructor of the parent of the QCustomPlot widget
   (i.e. the MainWindow constructor, if QCustomPlot is inside the MainWindow), always provide
@@ -2471,11 +2483,8 @@ QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
     painter.setMode(QCPPainter::pmNoCaching);
     if (!qFuzzyCompare(scale, 1.0))
     {
-      if (scale > 1.0) // for scale < 1 we always want cosmetic pens where possible, because else lines would disappear
-      {
-        painter.setMode(QCPPainter::pmScaledPen);
-        painter.setRenderHint(QPainter::NonCosmeticDefaultPen);
-      }
+      if (scale > 1.0) // for scale < 1 we always want cosmetic pens where possible, because else lines might disappear for very small scales
+        painter.setMode(QCPPainter::pmNonCosmetic);
       painter.scale(scale, scale);
     }
     if (mBackgroundBrush.style() != Qt::SolidPattern && mBackgroundBrush.style() != Qt::NoBrush)

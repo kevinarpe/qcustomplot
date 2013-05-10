@@ -124,7 +124,7 @@ QCPGraph::QCPGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
 {
   mData = new QCPDataMap;
   
-  setPen(QPen(Qt::blue));
+  setPen(QPen(Qt::blue, 0));
   setErrorPen(QPen(Qt::black));
   setBrush(Qt::NoBrush);
   setSelectedPen(QPen(QColor(80, 80, 255), 2.5));

@@ -49,6 +49,9 @@ QCPPainter::QCPPainter() :
   mModes(pmDefault),
   mIsAntialiasing(false)
 {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0) // before Qt5, default pens used to be cosmetic if NonCosmeticDefaultPen flag isn't set. So we set it to get consistency across Qt versions.
+  setRenderHint(QPainter::NonCosmeticDefaultPen);
+#endif
 }
 
 /*!
@@ -60,6 +63,9 @@ QCPPainter::QCPPainter(QPaintDevice *device) :
   mModes(pmDefault),
   mIsAntialiasing(false)
 {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0) // before Qt5, default pens used to be cosmetic if NonCosmeticDefaultPen flag isn't set. So we set it to get consistency across Qt versions.
+  setRenderHint(QPainter::NonCosmeticDefaultPen);
+#endif
 }
 
 QCPPainter::~QCPPainter()
@@ -75,8 +81,8 @@ QCPPainter::~QCPPainter()
 void QCPPainter::setPen(const QPen &pen)
 {
   QPainter::setPen(pen);
-  if (mModes.testFlag(pmScaledPen))
-    fixScaledPen();
+  if (mModes.testFlag(pmNonCosmetic))
+    makeNonCosmetic();
 }
 
 /*! \overload
@@ -89,8 +95,8 @@ void QCPPainter::setPen(const QPen &pen)
 void QCPPainter::setPen(const QColor &color)
 {
   QPainter::setPen(color);
-  if (mModes.testFlag(pmScaledPen))
-    fixScaledPen();
+  if (mModes.testFlag(pmNonCosmetic))
+    makeNonCosmetic();
 }
 
 /*! \overload
@@ -103,20 +109,21 @@ void QCPPainter::setPen(const QColor &color)
 void QCPPainter::setPen(Qt::PenStyle penStyle)
 {
   QPainter::setPen(penStyle);
-  if (mModes.testFlag(pmScaledPen))
-    fixScaledPen();
+  if (mModes.testFlag(pmNonCosmetic))
+    makeNonCosmetic();
 }
 
 /*! \overload
   
   Works around a Qt bug introduced with Qt 4.8 which makes drawing QLineF unpredictable when
-  antialiasing is disabled.
+  antialiasing is disabled. Thus when antialiasing is disabled, it rounds the \a line to
+  integer coordinates and then passes it to the original drawLine.
   
   \note this function hides the non-virtual base class implementation.
 */
 void QCPPainter::drawLine(const QLineF &line)
 {
-  if (mIsAntialiasing)
+  if (mIsAntialiasing || mModes.testFlag(pmVectorized))
     QPainter::drawLine(line);
   else
     QPainter::drawLine(line.toLine());
@@ -125,22 +132,22 @@ void QCPPainter::drawLine(const QLineF &line)
 /*! 
   Sets whether painting uses antialiasing or not. Use this method instead of using setRenderHint
   with QPainter::Antialiasing directly, as it allows QCPPainter to regain pixel exactness between
-  antialiased and non-antialiased painting (Since Qt uses slightly different coordinate systems for
+  antialiased and non-antialiased painting (Since Qt < 5.0 uses slightly different coordinate systems for
   AA/Non-AA painting).
 */
 void QCPPainter::setAntialiasing(bool enabled)
 {
-  if (mModes.testFlag(pmVectorized))
-    return;
-  
   setRenderHint(QPainter::Antialiasing, enabled);
   if (mIsAntialiasing != enabled)
   {
-    if (mIsAntialiasing)
-      translate(-0.5, -0.5);
-    else
-      translate(0.5, 0.5);
     mIsAntialiasing = enabled;
+    if (!mModes.testFlag(pmVectorized)) // antialiasing half-pixel shift only needed for rasterized outputs
+    {
+      if (mIsAntialiasing)
+        translate(-0.5, -0.5);
+      else
+        translate(0.5, 0.5);
+    }
   }
 }
 
@@ -154,6 +161,7 @@ void QCPPainter::setModes(QCPPainter::PainterModes modes)
 }
 
 /*! \overload
+  
   Sets the mode of the painter. This controls whether the painter shall adjust its
   fixes/workarounds optimized for certain output devices.
 */
@@ -197,16 +205,12 @@ void QCPPainter::restore()
 }
 
 /*!
-  Provides a workaround for a QPainter bug that prevents scaling of pen widths for pens with width
-  0, although the QPainter::NonCosmeticDefaultPen render hint is set.
-  
-  Changes the pen width from 0 to 1, if appropriate.
-  
-  Does nothing if the QCPPainter is not in scaled pen mode (\ref setMode).
+  Changes the pen width to 1 if it currently is 0. This function is called in the \ref setPen
+  overrides when the \ref pmNonCosmetic mode is set.
 */
-void QCPPainter::fixScaledPen()
+void QCPPainter::makeNonCosmetic()
 {
-  if (mModes.testFlag(pmScaledPen) && pen().isCosmetic() && qFuzzyIsNull(pen().widthF()))
+  if (qFuzzyIsNull(pen().widthF()))
   {
     QPen p = pen();
     p.setWidth(1);

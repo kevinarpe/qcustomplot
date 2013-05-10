@@ -13,17 +13,11 @@ MainWindow::MainWindow(QWidget *parent) :
   layout->insertWidget(0, mCustomPlot);
   mCustomPlot->axisRect()->setupFullAxesBox(true);
   
-  /*
-  QVector<double> ticks = QVector<double>() << 1 << 2 << 4 << 8 << 16 << 32;
-  mCustomPlot->xAxis->setAutoTicks(false);
-  mCustomPlot->xAxis->setTickVector(ticks);
-  */
-  
   presetInteractive(mCustomPlot);
   //setupItemAnchorTest(mCustomPlot);
   //setupItemTracerTest(mCustomPlot);
   //setupGraphTest(mCustomPlot);
-  //setupExportTest(mCustomPlot);
+  setupExportTest(mCustomPlot);
   //setupLogErrorsTest(mCustomPlot);
   //setupSelectTest(mCustomPlot);
   //setupDateTest(mCustomPlot);
@@ -36,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupMarginGroupTest(mCustomPlot);
   //setupInsetLayoutTest(mCustomPlot);
   //setupLegendTest(mCustomPlot);
-  setupMultiAxisRectInteractions(mCustomPlot);
+  //setupMultiAxisRectInteractions(mCustomPlot);
   //setupTestbed(mCustomPlot);
 }
 
@@ -244,17 +238,22 @@ void MainWindow::setupExportTest(QCustomPlot *customPlot)
   // test floating-point precision of vectorized (pdf) export:
   QCPGraph *graph = customPlot->addGraph();
   QVector<double> x, y;
-  for (int i=0; i<100; ++i)
+  for (int i=1; i<100; ++i)
   {
     x << 1.0 - 1.0/(double)i;
     y << i;
   }
+  x << 0.3 << 0.6; // point that should perfectly match grid
+  y << 15 << 45; // point that should perfectly match grid
   graph->setData(x, y);
   graph->setLineStyle(QCPGraph::lsNone);
   graph->setScatterStyle(QCPScatterStyle::ssPlus);
   customPlot->xAxis->setRange(0, 1.1);
   customPlot->yAxis->setRange(0, 101);
-  qDebug() << customPlot->savePng(dir.filePath("float-precision-raster.png"), 500, 400, 5);
+  //customPlot->setAntialiasedElements(QCP::aeAll);
+  qDebug() << customPlot->savePng(dir.filePath("float-precision-raster0.2x.png"), 500, 400, 0.2);
+  qDebug() << customPlot->savePng(dir.filePath("float-precision-raster1x.png"), 500, 400);
+  qDebug() << customPlot->savePng(dir.filePath("float-precision-raster5x.png"), 500, 400, 5);
   qDebug() << customPlot->savePdf(dir.filePath("float-precision-vector.pdf"), false, 500, 400);
   customPlot->clearPlottables();
   
@@ -276,6 +275,8 @@ void MainWindow::setupExportTest(QCustomPlot *customPlot)
   qDebug() << customPlot->savePng(dir.filePath("exportTest_bg_color.png"), 500, 400);
   qDebug() << customPlot->savePdf(dir.filePath("exportTest_bg_color.pdf"), true, 500, 400);
   customPlot->clearPlottables();
+  
+  QTimer::singleShot(100, qApp, SLOT(quit()));
 }
 
 void MainWindow::setupLogErrorsTest(QCustomPlot *customPlot)

@@ -2,9 +2,6 @@ NEXT RELEASE:
 
 todo:
  - test custom scatter style
- - fix QPainter-workarounds to keep floating point precision in vectorized output
- - make QPainter-workarounds Qt5 compatible
- - make QCustomPlot Qt5 compatible (basically some defines in .pro)
 
 doc:
 - duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between

@@ -284,12 +284,14 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
     }
     case esSkewedBar:
     {
-      if (!painter->testRenderHint(QPainter::NonCosmeticDefaultPen) && painter->pen().isCosmetic())
+      if (qFuzzyIsNull(painter->pen().widthF()) && !painter->modes().testFlag(QCPPainter::pmNonCosmetic))
       {
+        // if drawing with cosmetic pen (perfectly thin stroke, happens only in vector exports), draw bar exactly on tip of line
         painter->drawLine((pos+widthVec+lengthVec*0.2*(mInverted?-1:1)).toPointF(),
                           (pos-widthVec-lengthVec*0.2*(mInverted?-1:1)).toPointF());
       } else
       {
+        // if drawing with thick (non-cosmetic) pen, shift bar a little in line direction to prevent line from sticking through bar slightly
         painter->drawLine((pos+widthVec+lengthVec*0.2*(mInverted?-1:1)+dir.normalized()*qMax(1.0, painter->pen().widthF())*0.5).toPointF(),
                           (pos-widthVec-lengthVec*0.2*(mInverted?-1:1)+dir.normalized()*qMax(1.0, painter->pen().widthF())*0.5).toPointF());
       }
