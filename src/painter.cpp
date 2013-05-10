@@ -49,14 +49,15 @@ QCPPainter::QCPPainter() :
   mModes(pmDefault),
   mIsAntialiasing(false)
 {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0) // before Qt5, default pens used to be cosmetic if NonCosmeticDefaultPen flag isn't set. So we set it to get consistency across Qt versions.
-  setRenderHint(QPainter::NonCosmeticDefaultPen);
-#endif
+  // don't setRenderHint(QPainter::NonCosmeticDefautPen) here, because painter isn't active yet and
+  // a call to begin() will follow
 }
 
 /*!
   Creates a new QCPPainter instance on the specified paint \a device and sets default values. Just
   like the analogous QPainter constructor, begins painting on \a device immediately.
+  
+  Like \ref begin, this method sets QPainter::NonCosmeticDefaultPen in Qt versions before Qt5.
 */
 QCPPainter::QCPPainter(QPaintDevice *device) :
   QPainter(device),
@@ -64,7 +65,8 @@ QCPPainter::QCPPainter(QPaintDevice *device) :
   mIsAntialiasing(false)
 {
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0) // before Qt5, default pens used to be cosmetic if NonCosmeticDefaultPen flag isn't set. So we set it to get consistency across Qt versions.
-  setRenderHint(QPainter::NonCosmeticDefaultPen);
+  if (isActive())
+    setRenderHint(QPainter::NonCosmeticDefaultPen);
 #endif
 }
 
@@ -144,9 +146,9 @@ void QCPPainter::setAntialiasing(bool enabled)
     if (!mModes.testFlag(pmVectorized)) // antialiasing half-pixel shift only needed for rasterized outputs
     {
       if (mIsAntialiasing)
-        translate(-0.5, -0.5);
-      else
         translate(0.5, 0.5);
+      else
+        translate(-0.5, -0.5);
     }
   }
 }
@@ -158,6 +160,27 @@ void QCPPainter::setAntialiasing(bool enabled)
 void QCPPainter::setModes(QCPPainter::PainterModes modes)
 {
   mModes = modes;
+}
+
+/*!
+  Sets the QPainter::NonCosmeticDefaultPen in Qt versions before Qt5 after beginning painting on \a
+  device. This is necessary to get cosmetic pen consistency across Qt versions, because since Qt5,
+  all pens are non-cosmetic by default, and in Qt4 this render hint must be set to get that
+  behaviour.
+  
+  The Constructor \ref QCPPainter(QPaintDevice *device) which directly starts painting also sets
+  the render hint as appropriate.
+  
+  \note this function hides the non-virtual base class implementation.
+*/
+bool QCPPainter::begin(QPaintDevice *device)
+{
+  bool result = QPainter::begin(device);
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0) // before Qt5, default pens used to be cosmetic if NonCosmeticDefaultPen flag isn't set. So we set it to get consistency across Qt versions.
+  if (result)
+    setRenderHint(QPainter::NonCosmeticDefaultPen);
+#endif
+  return result;
 }
 
 /*! \overload

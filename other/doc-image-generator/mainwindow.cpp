@@ -358,7 +358,7 @@ void MainWindow::genAxisRectSpacingOverview()
   
   addBracket(QPointF(200-95-27-17, 30), QPointF(1, 30), "padding (if auto margins enabled)", QPointF(-25, -5), false, Qt::AlignLeft|Qt::AlignBottom);
   
-  addBracket(QPointF(1, 365), QPointF(200, 365), "margin", QPointF(0, 5), false, Qt::AlignHCenter|Qt::AlignTop);
+  addBracket(QPointF(1, 370), QPointF(200, 370), "margin", QPointF(0, 5), false, Qt::AlignHCenter|Qt::AlignTop);
   addBracket(QPointF(200-30, 240), QPointF(200, 240), "axis offset", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
   addBracket(QPointF(200-35, 250), QPointF(200-30, 250), "tick length out", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
   addBracket(QPointF(200-65, 240), QPointF(200-35, 240), "tick label padding", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
