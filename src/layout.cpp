@@ -281,7 +281,8 @@ QCPLayoutElement::QCPLayoutElement(QCustomPlot *parentPlot) :
 QCPLayoutElement::~QCPLayoutElement()
 {
   setMarginGroup(QCP::msAll, 0); // unregister at margin groups, if there are any
-  if (mParentLayout) // unregister at layout
+  // unregister at layout:
+  if (qobject_cast<QCPLayout*>(mParentLayout)) // the qobject_cast is just a safeguard in case the layout forgets to call clear() in its dtor and this dtor is called by QObject dtor
     mParentLayout->take(this);
 }
 
@@ -992,6 +993,13 @@ QCPLayoutGrid::QCPLayoutGrid() :
 {
 }
 
+QCPLayoutGrid::~QCPLayoutGrid()
+{
+  // clear all child layout elements. This is important because only the specific layouts know how
+  // to handle removing elements (clear calls virtual removeAt method to do that).
+  clear();
+}
+
 /*!
   Returns the element in the cell in \a row and \a column.
   
@@ -1554,6 +1562,13 @@ void QCPLayoutGrid::getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<in
 */
 QCPLayoutInset::QCPLayoutInset()
 {
+}
+
+QCPLayoutInset::~QCPLayoutInset()
+{
+  // clear all child layout elements. This is important because only the specific layouts know how
+  // to handle removing elements (clear calls virtual removeAt method to do that).
+  clear();
 }
 
 /*!

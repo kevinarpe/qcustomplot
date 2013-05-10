@@ -75,7 +75,7 @@ class QCP_LIB_DECL QCPLayoutElement : public QCPLayerable
   /// \endcond
 public:
   explicit QCPLayoutElement(QCustomPlot *parentPlot=0);
-  ~QCPLayoutElement();
+  virtual ~QCPLayoutElement();
   
   // getters:
   QCPLayout *layout() const { return mParentLayout; }
@@ -191,6 +191,7 @@ class QCP_LIB_DECL QCPLayoutGrid : public QCPLayout
   /// \endcond
 public:
   explicit QCPLayoutGrid();
+  virtual ~QCPLayoutGrid();
   
   // getters:
   int rowCount() const;
@@ -255,6 +256,7 @@ public:
                       };
   
   explicit QCPLayoutInset();
+  virtual ~QCPLayoutInset();
   
   // getters:
   InsetPlacement insetPlacement(int index) const;
