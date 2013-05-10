@@ -162,19 +162,20 @@ public:
   bool removeAt(int index);
   bool remove(QCPLayoutElement* element);
   void clear();
-  void sizeConstraintsChanged() const;
   
 protected:
   // introduced virtual methods:
   virtual void updateLayout();
   
   // non-virtual methods:
+  void sizeConstraintsChanged() const;
   void adoptElement(QCPLayoutElement *el);
   void releaseElement(QCPLayoutElement *el);
   QVector<int> getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const;
   
 private:
   Q_DISABLE_COPY(QCPLayout)
+  friend class QCPLayoutElement;
 };
 
 
@@ -274,6 +275,7 @@ public:
   virtual QCPLayoutElement* elementAt(int index) const;
   virtual QCPLayoutElement* takeAt(int index);
   virtual bool take(QCPLayoutElement* element);
+  virtual void simplify() {}
   
   // non-virtual methods:
   void addElement(QCPLayoutElement *element, Qt::Alignment alignment);

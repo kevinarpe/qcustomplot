@@ -1924,7 +1924,7 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   200*200 pixel resolution.
   
   If you use a high scaling factor, it is recommended to enable antialiasing for all elements via
-  temporarily setting \ref QCustomPlot::setAntialiasedElements(QCP::aeAll); as this allows
+  temporarily setting \ref QCustomPlot::setAntialiasedElements to \ref QCP::aeAll as this allows
   QCustomPlot to place objects with sub-pixel accuracy.
 
   \warning If calling this function inside the constructor of the parent of the QCustomPlot widget
@@ -1966,7 +1966,7 @@ bool QCustomPlot::savePng(const QString &fileName, int width, int height, double
   200*200 pixel resolution.
   
   If you use a high scaling factor, it is recommended to enable antialiasing for all elements via
-  temporarily setting \ref QCustomPlot::setAntialiasedElements(QCP::aeAll); as this allows
+  temporarily setting \ref QCustomPlot::setAntialiasedElements to \ref QCP::aeAll as this allows
   QCustomPlot to place objects with sub-pixel accuracy.
 
   \warning If calling this function inside the constructor of the parent of the QCustomPlot widget
@@ -2005,7 +2005,7 @@ bool QCustomPlot::saveJpg(const QString &fileName, int width, int height, double
   200*200 pixel resolution.
   
   If you use a high scaling factor, it is recommended to enable antialiasing for all elements via
-  temporarily setting \ref QCustomPlot::setAntialiasedElements(QCP::aeAll); as this allows
+  temporarily setting \ref QCustomPlot::setAntialiasedElements to \ref QCP::aeAll as this allows
   QCustomPlot to place objects with sub-pixel accuracy.
 
   \warning If calling this function inside the constructor of the parent of the QCustomPlot widget

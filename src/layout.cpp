@@ -685,7 +685,6 @@ QList<QCPLayoutElement*> QCPLayout::elements() const
 */
 void QCPLayout::simplify()
 {
-  qDebug() << Q_FUNC_INFO << "This layout does not support/need simplification";
 }
 
 /*!
@@ -1391,7 +1390,9 @@ QList<QCPLayoutElement*> QCPLayoutGrid::elements() const
   return result;
 }
 
-/* inherits documentation from base class */
+/*!
+  Simplifies the layout by collapsing rows and columns which only contain empty cells.
+*/
 void QCPLayoutGrid::simplify()
 {
   // remove rows with only empty cells:
@@ -1556,6 +1557,16 @@ void QCPLayoutGrid::getMaximumRowColSizes(QVector<int> *maxColWidths, QVector<in
   
   This is the layout that every QCPAxisRect has as \ref QCPAxisRect::insetLayout.
 */
+
+/* start documentation of inline functions */
+
+/*! \fn virtual void QCPLayoutInset::simplify()
+  
+  The QCPInsetLayout does not need simplification since it can never have empty cells due to its
+  linear index structure. This method does nothing.
+*/
+
+/* end documentation of inline functions */
 
 /*!
   Creates an instance of QCPLayoutInset and sets default values.
