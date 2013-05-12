@@ -129,7 +129,7 @@ void QCPAbstractLegendItem::setSelectedTextColor(const QColor &color)
 /*!
   Sets whether this specific legend item is selectable.
   
-  \see setSelected, QCustomPlot::setInteractions
+  \see setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAbstractLegendItem::setSelectable(bool selectable)
 {
@@ -142,7 +142,7 @@ void QCPAbstractLegendItem::setSelectable(bool selectable)
   It is possible to set the selection state of this item by calling this function directly, even if
   setSelectable is set to false.
   
-  \see setSelectable, QCustomPlot::setInteractions
+  \see setSelectableParts, QCustomPlot::setInteractions
 */
 void QCPAbstractLegendItem::setSelected(bool selected)
 {
@@ -361,7 +361,7 @@ QSize QCPPlottableLegendItem::minimumSizeHint() const
 
   This signal is emitted when the selection state of this legend has changed.
   
-  \see setSelected, setSelectable
+  \see setSelectedParts, setSelectableParts
 */
 
 /* end of documentation of signals */
@@ -496,8 +496,6 @@ void QCPLegend::setIconSize(int width, int height)
   Sets the horizontal space in pixels between the legend icon and the text next to it.
   Legend items that draw an icon (e.g. a visual representation of the graph) and text (e.g. the
   name of the graph) will use this space by default.
-  
-  \see setItemSpacing
 */
 void QCPLegend::setIconTextPadding(int padding)
 {
@@ -548,7 +546,7 @@ void QCPLegend::setSelectableParts(const SelectableParts &selectable)
   before, because there's no way to specify which exact items to newly select. Do this by calling
   \ref QCPAbstractLegendItem::setSelected directly on the legend item you wish to select.
   
-  \see SelectablePart, setSelectable, selectTest, setSelectedBorderPen, setSelectedIconBorderPen, setSelectedBrush,
+  \see SelectablePart, setSelectableParts, selectTest, setSelectedBorderPen, setSelectedIconBorderPen, setSelectedBrush,
   setSelectedFont
 */
 void QCPLegend::setSelectedParts(const SelectableParts &selected)
@@ -580,7 +578,7 @@ void QCPLegend::setSelectedParts(const SelectableParts &selected)
   When the legend box is selected, this pen is used to draw the border instead of the normal pen
   set via \ref setBorderPen.
 
-  \see setSelected, setSelectable, setSelectedBrush
+  \see setSelectedParts, setSelectableParts, setSelectedBrush
 */
 void QCPLegend::setSelectedBorderPen(const QPen &pen)
 {
@@ -590,7 +588,7 @@ void QCPLegend::setSelectedBorderPen(const QPen &pen)
 /*!
   Sets the pen legend items will use to draw their icon borders, when they are selected.
 
-  \see setSelected, setSelectable, setSelectedFont
+  \see setSelectedParts, setSelectableParts, setSelectedFont
 */
 void QCPLegend::setSelectedIconBorderPen(const QPen &pen)
 {
@@ -601,7 +599,7 @@ void QCPLegend::setSelectedIconBorderPen(const QPen &pen)
   When the legend box is selected, this brush is used to draw the legend background instead of the normal brush
   set via \ref setBrush.
 
-  \see setSelected, setSelectable, setSelectedBorderPen
+  \see setSelectedParts, setSelectableParts, setSelectedBorderPen
 */
 void QCPLegend::setSelectedBrush(const QBrush &brush)
 {

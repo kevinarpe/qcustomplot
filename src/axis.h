@@ -176,7 +176,7 @@ public:
   Q_ENUMS(ScaleType)
   /*!
     Defines the selectable parts of an axis.
-    \see setSelectable, setSelected
+    \see setSelectableParts, setSelectedParts
   */
   enum SelectablePart { spNone        = 0      ///< None of the selectable parts
                         ,spAxis       = 0x001  ///< The axis backbone and tick marks

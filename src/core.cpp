@@ -1869,7 +1869,7 @@ void QCustomPlot::rescaleAxes(bool onlyVisible)
   aren't defined yet inside the constructor, so you would get an image that has strange
   widths/heights.
   
-  \see savePs, savePng, saveBmp, saveJpg, saveRastered
+  \see savePng, saveBmp, saveJpg, saveRastered
 */
 bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width, int height)
 {

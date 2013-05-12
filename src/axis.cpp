@@ -802,18 +802,19 @@ void QCPAxis::setTickLabelPadding(int padding)
   
   If \a type is set to \ref ltDateTime, the format specifications of \ref setDateTimeFormat apply.
   
-  In QCustomPlot, date/time coordinates are double numbers representing the seconds since
+  In QCustomPlot, date/time coordinates are <tt>double</tt> numbers representing the seconds since
   1970-01-01T00:00:00 UTC. This format can be retrieved from QDateTime objects with the
   QDateTime::toTime_t() function. Since this only gives a resolution of one second, there is also
   the QDateTime::toMSecsSinceEpoch() function which returns the timespan described above in
   milliseconds. Divide its return value by 1000.0 to get a value with the format needed for
-  date/time plotting, this time with a resolution of one millisecond.
+  date/time plotting, with a resolution of one millisecond.
   
   Using the toMSecsSinceEpoch function allows dates that go back to 2nd January 4713 B.C.
-  (represented by a negative number), unlike the toTime_t approach which works with unsigned
-  integers and thus only goes back to 1st January 1970.
+  (represented by a negative number), unlike the toTime_t function, which works with unsigned
+  integers and thus only goes back to 1st January 1970. So both for range and accuracy, use of
+  toMSecsSinceEpoch()/1000.0 should be preferred as key coordinate for date/time axes.
   
-  \see setTicklabels
+  \see setTickLabels
 */
 void QCPAxis::setTickLabelType(LabelType type)
 {
@@ -827,7 +828,7 @@ void QCPAxis::setTickLabelType(LabelType type)
 /*!
   Sets the font of the tick labels.
   
-  \see setTicklabels, setTickLabelColor
+  \see setTickLabels, setTickLabelColor
 */
 void QCPAxis::setTickLabelFont(const QFont &font)
 {
@@ -842,7 +843,7 @@ void QCPAxis::setTickLabelFont(const QFont &font)
 /*!
   Sets the color of the tick labels.
   
-  \see setTicklabels, setTickLabelFont
+  \see setTickLabels, setTickLabelFont
 */
 void QCPAxis::setTickLabelColor(const QColor &color)
 {
@@ -1298,7 +1299,7 @@ void QCPAxis::setSelectedTickLabelFont(const QFont &font)
 /*!
   Sets the font that is used for the axis label when it is selected.
   
-  \see setLabelFont, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setLabelFont, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedLabelFont(const QFont &font)
 {
@@ -1309,7 +1310,7 @@ void QCPAxis::setSelectedLabelFont(const QFont &font)
 /*!
   Sets the color that is used for tick labels when they are selected.
   
-  \see setTickLabelColor, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setTickLabelColor, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedTickLabelColor(const QColor &color)
 {
@@ -1323,7 +1324,7 @@ void QCPAxis::setSelectedTickLabelColor(const QColor &color)
 /*!
   Sets the color that is used for the axis label when it is selected.
   
-  \see setLabelColor, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setLabelColor, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedLabelColor(const QColor &color)
 {
@@ -1333,7 +1334,7 @@ void QCPAxis::setSelectedLabelColor(const QColor &color)
 /*!
   Sets the pen that is used to draw the axis base line when selected.
   
-  \see setBasePen, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setBasePen, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedBasePen(const QPen &pen)
 {
@@ -1343,7 +1344,7 @@ void QCPAxis::setSelectedBasePen(const QPen &pen)
 /*!
   Sets the pen that is used to draw the (major) ticks when selected.
   
-  \see setTickPen, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setTickPen, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedTickPen(const QPen &pen)
 {
@@ -1353,7 +1354,7 @@ void QCPAxis::setSelectedTickPen(const QPen &pen)
 /*!
   Sets the pen that is used to draw the subticks when selected.
   
-  \see setSubTickPen, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setSubTickPen, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedSubTickPen(const QPen &pen)
 {
@@ -1571,7 +1572,7 @@ double QCPAxis::coordToPixel(double value) const
   
   If the axis is not visible (\ref setVisible), this function always returns \ref spNone.
   
-  \see setSelected, setSelectable, QCustomPlot::setInteractions
+  \see setSelectedParts, setSelectableParts, QCustomPlot::setInteractions
 */
 QCPAxis::SelectablePart QCPAxis::getPartAt(const QPointF &pos) const
 {

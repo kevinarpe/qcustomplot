@@ -356,6 +356,8 @@ void QCPAbstractPlottable::setSelected(bool selected)
   \a onlyEnlarge makes sure the ranges are only expanded, never reduced. So it's possible to show
   multiple plottables in their entirety by multiple calls to rescaleAxes where the first call has
   \a onlyEnlarge set to false (the default), and all subsequent set to true.
+  
+  \see rescaleKeyAxis, rescaleValueAxis, QCustomPlot::rescaleAxes
 */
 void QCPAbstractPlottable::rescaleAxes(bool onlyEnlarge) const
 {

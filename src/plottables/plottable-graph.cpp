@@ -567,7 +567,7 @@ double QCPGraph::selectTest(const QPointF &pos, bool onlySelectable, QVariant *d
   Allows to define whether error bars are taken into consideration when determining the new axis
   range.
   
-  \see QCPAbstractPlottable::rescaleAxes
+  \see rescaleKeyAxis, rescaleValueAxis, QCPAbstractPlottable::rescaleAxes, QCustomPlot::rescaleAxes
 */
 void QCPGraph::rescaleAxes(bool onlyEnlarge, bool includeErrorBars) const
 {
@@ -580,7 +580,7 @@ void QCPGraph::rescaleAxes(bool onlyEnlarge, bool includeErrorBars) const
   Allows to define whether error bars (of kind \ref QCPGraph::etKey) are taken into consideration
   when determining the new axis range.
   
-  \see QCPAbstractPlottable::rescaleKeyAxis
+  \see rescaleAxes, QCPAbstractPlottable::rescaleKeyAxis
 */
 void QCPGraph::rescaleKeyAxis(bool onlyEnlarge, bool includeErrorBars) const
 {
@@ -616,7 +616,7 @@ void QCPGraph::rescaleKeyAxis(bool onlyEnlarge, bool includeErrorBars) const
   Allows to define whether error bars (of kind \ref QCPGraph::etValue) are taken into consideration
   when determining the new axis range.
   
-  \see QCPAbstractPlottable::rescaleValueAxis
+  \see rescaleAxes, QCPAbstractPlottable::rescaleValueAxis
 */
 void QCPGraph::rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const
 {
