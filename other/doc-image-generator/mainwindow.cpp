@@ -9,26 +9,22 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(300, 300, 500, 500);
   
-  dir.setPath("./");
+  dir.setPath(qApp->applicationDirPath());
   dir.mkdir("images");
   if (!dir.cd("images"))
   {
     QMessageBox::critical(this, "Error", tr("Couldn't create and access image directory:\n%1").arg(dir.filePath("images")));
   } else
   {
-    genItemPixmap();      
-    genItemRect();        
-    genItemEllipse();     
-    genItemLine();        
-    genItemStraightLIne();
-    genItemCurve();       
-    genItemBracket();     
-    genItemText();        
-    genItemTracer();      
-    genLineEnding(); 
-    genScatterStyles();
-    genMarginGroup();
-    genAxisRectSpacingOverview();
+    // invoke all methods of MainWindow that start with "gen":
+    for (int i=this->metaObject()->methodOffset(); i<this->metaObject()->methodCount(); ++i)
+    {
+      if (QString::fromLatin1(this->metaObject()->method(i).signature()).startsWith("gen"))
+      {
+        if (!this->metaObject()->method(i).invoke(this))
+          qDebug() << "Failed to invoke doc-image-generator method" << i;
+      }
+    }
   }
   QTimer::singleShot(0, qApp, SLOT(quit()));
 }
@@ -356,13 +352,12 @@ void MainWindow::genAxisRectSpacingOverview()
   customPlot->yAxis->setTickLengthOut(5);
   customPlot->yAxis->setSubTickLengthOut(2);
   
-  addBracket(QPointF(200-95-27-17, 30), QPointF(1, 30), "padding (if auto margins enabled)", QPointF(-25, -5), false, Qt::AlignLeft|Qt::AlignBottom);
-  
-  addBracket(QPointF(1, 370), QPointF(200, 370), "margin", QPointF(0, 5), false, Qt::AlignHCenter|Qt::AlignTop);
-  addBracket(QPointF(200-30, 240), QPointF(200, 240), "axis offset", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
-  addBracket(QPointF(200-35, 250), QPointF(200-30, 250), "tick length out", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
-  addBracket(QPointF(200-65, 240), QPointF(200-35, 240), "tick label padding", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
-  addBracket(QPointF(200-95-25, 240), QPointF(200-65-25, 240), "label padding", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
+  addBracket(QPointF(200-95-27-17, 30), QPointF(1, 30), "Padding (if auto margins enabled)", QPointF(-25, -5), false, Qt::AlignLeft|Qt::AlignBottom);
+  addBracket(QPointF(1, 370), QPointF(200, 370), "Margin", QPointF(0, 5), false, Qt::AlignHCenter|Qt::AlignTop);
+  addBracket(QPointF(200-30, 240), QPointF(200, 240), "Axis offset", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
+  addBracket(QPointF(200-35, 250), QPointF(200-30, 250), "Tick length out", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
+  addBracket(QPointF(200-65, 240), QPointF(200-35, 240), "Tick label padding", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
+  addBracket(QPointF(200-95-25, 240), QPointF(200-65-25, 240), "Label padding", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
   
   QCPItemLine *leftBorder = new QCPItemLine(customPlot);
   customPlot->addItem(leftBorder);
@@ -373,7 +368,40 @@ void MainWindow::genAxisRectSpacingOverview()
   leftBorder->end->setCoords(0, 1);
   leftBorder->setPen(QPen(Qt::gray, 0, Qt::DashLine));
   
+  QCPItemText *axisRectLabel = new QCPItemText(customPlot);
+  customPlot->addItem(axisRectLabel);
+  axisRectLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
+  axisRectLabel->position->setCoords(0.5, 0.5);
+  axisRectLabel->setFont(QFont(QFont().family(), 16));
+  axisRectLabel->setText("QCPAxisRect");
+  axisRectLabel->setColor(QColor(0, 0, 0, 60));
+  
   customPlot->savePng(dir.filePath("AxisRectSpacingOverview.png"), 400, 400);
+}
+
+void MainWindow::genAxisNamesOverview()
+{
+  resetPlot();
+ 
+  customPlot->xAxis->setRange(1, 2);
+  customPlot->yAxis->setRange(-50, 150);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->axisRect()->setupFullAxesBox();
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->axisRect()->setAutoMargins(QCP::msNone);
+  customPlot->axisRect()->setMargins(QMargins(250, 50, 20, 65));
+  customPlot->yAxis->setLabel("Axis Label");
+  
+  addArrow(QPointF(216, 70), QPointF(150, 32), "Tick label", Qt::AlignRight|Qt::AlignVCenter);
+  addArrow(QPointF(187, 110), QPointF(130, 76), "Axis label", Qt::AlignRight|Qt::AlignVCenter);
+  addArrow(QPointF(260, 77), QPointF(300, 77), "Tick", Qt::AlignLeft|Qt::AlignVCenter);
+  addArrow(QPointF(255, 95), QPointF(300, 95), "Sub tick", Qt::AlignLeft|Qt::AlignVCenter);
+  addArrow(QPointF(297, 193), QPointF(297, 250), "Zero line", Qt::AlignHCenter|Qt::AlignTop);
+  addArrow(QPointF(354, 165), QPointF(354, 266), "Grid line", Qt::AlignHCenter|Qt::AlignTop);
+  addBracket(QPointF(263, 132), QPointF(263, 105), "Tick step", QPointF(8, 0), false, Qt::AlignLeft|Qt::AlignVCenter, QCPItemBracket::bsCurly);
+  
+  customPlot->savePng(dir.filePath("AxisNamesOverview.png"), 450, 300);
 }
 
 void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool circle, bool labelBelow)
@@ -385,6 +413,7 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
     {
       QCPItemEllipse *circ = new QCPItemEllipse(item->parentPlot());
       item->parentPlot()->addItem(circ);
+      circ->setClipToAxisRect(false);
       circ->topLeft->setParentAnchor(anchors.at(i));
       circ->bottomRight->setParentAnchor(anchors.at(i));
       circ->topLeft->setCoords(-4, -4);
@@ -400,6 +429,7 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
       {
         QCPItemEllipse *circ2 = new QCPItemEllipse(item->parentPlot());
         item->parentPlot()->addItem(circ2);
+        circ2->setClipToAxisRect(false);
         circ2->topLeft->setParentAnchor(anchors.at(i));
         circ2->bottomRight->setParentAnchor(anchors.at(i));
         circ2->topLeft->setCoords(-2.5, -2.5);
@@ -412,6 +442,7 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
     {
       QCPItemText *label = new QCPItemText(item->parentPlot());
       item->parentPlot()->addItem(label);
+      label->setClipToAxisRect(false);
       label->setFont(QFont(font().family(), fontSize));
       label->setColor(Qt::blue);
       label->setText(QString("%2 (%1)").arg(i).arg(anchors.at(i)->name()));
@@ -425,7 +456,7 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
   }
 }
 
-void MainWindow::addBracket(QPointF left, QPointF right, QString text, QPointF textOffset, bool textSideways, Qt::Alignment textAlign)
+void MainWindow::addBracket(QPointF left, QPointF right, QString text, QPointF textOffset, bool textSideways, Qt::Alignment textAlign, QCPItemBracket::BracketStyle style)
 {
   QCPItemBracket *bracket = new QCPItemBracket(customPlot);
   customPlot->addItem(bracket);
@@ -434,7 +465,7 @@ void MainWindow::addBracket(QPointF left, QPointF right, QString text, QPointF t
   bracket->right->setType(QCPItemPosition::ptAbsolute);
   bracket->left->setCoords(right);
   bracket->right->setCoords(left);
-  bracket->setStyle(QCPItemBracket::bsRound);
+  bracket->setStyle(style);
   bracket->setLength(3);
   bracket->setPen(QPen(Qt::blue));
   
@@ -448,6 +479,51 @@ void MainWindow::addBracket(QPointF left, QPointF right, QString text, QPointF t
   textItem->position->setParentAnchor(bracket->center);
   textItem->position->setCoords(textOffset);
   textItem->setColor(Qt::blue);
+}
+
+void MainWindow::addArrow(QPointF target, QPointF textPosition, QString text, Qt::Alignment textAlign)
+{
+  QCPItemText *textItem = new QCPItemText(customPlot);
+  customPlot->addItem(textItem);
+  textItem->setClipToAxisRect(false);
+  textItem->setText(text);
+  textItem->setPositionAlignment(textAlign);
+  textItem->position->setType(QCPItemPosition::ptAbsolute);
+  textItem->position->setCoords(textPosition);
+  textItem->setColor(Qt::blue);
+  QRectF textRect(textItem->topLeft->pixelPoint(), textItem->bottomRight->pixelPoint());
+  
+  QCPItemLine *arrowItem = new QCPItemLine(customPlot);
+  customPlot->addItem(arrowItem);
+  arrowItem->setClipToAxisRect(false);
+  arrowItem->setHead(QCPLineEnding::esSpikeArrow);
+  arrowItem->setPen(QPen(Qt::blue));
+  arrowItem->end->setType(QCPItemPosition::ptAbsolute);
+  arrowItem->end->setCoords(target);
+  
+  if (target.x() < textRect.left())
+  {
+    if (target.y() < textRect.top())
+      arrowItem->start->setParentAnchor(textItem->topLeft);
+    else if (target.y() > textRect.bottom())
+      arrowItem->start->setParentAnchor(textItem->bottomLeft);
+    else
+      arrowItem->start->setParentAnchor(textItem->left);
+  } else if (target.x() > textRect.right())
+  {
+    if (target.y() < textRect.top())
+      arrowItem->start->setParentAnchor(textItem->topRight);
+    else if (target.y() > textRect.bottom())
+      arrowItem->start->setParentAnchor(textItem->bottomRight);
+    else
+      arrowItem->start->setParentAnchor(textItem->right);
+  } else
+  {
+    if (target.y() < textRect.top())
+      arrowItem->start->setParentAnchor(textItem->top);
+    else if (target.y() > textRect.bottom())
+      arrowItem->start->setParentAnchor(textItem->bottom);
+  }
 }
 
 void MainWindow::resetPlot()

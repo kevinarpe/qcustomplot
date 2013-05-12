@@ -20,6 +20,7 @@ public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
   
+public slots:
   // image generators:
   void genScatterStyles();
   void genItemPixmap();
@@ -34,12 +35,15 @@ public:
   void genLineEnding();
   void genMarginGroup();
   void genAxisRectSpacingOverview();
+  void genAxisNamesOverview();
   
+private:
   // helpers:
   void labelItemAnchors(QCPAbstractItem *item, double fontSize=8, bool circle=true, bool labelBelow=true);
-  void addBracket(QPointF left, QPointF right, QString text, QPointF textOffset, bool textSideways, Qt::Alignment textAlign);
+  void addBracket(QPointF left, QPointF right, QString text, QPointF textOffset, bool textSideways, Qt::Alignment textAlign, QCPItemBracket::BracketStyle style=QCPItemBracket::bsRound);
+  void addArrow(QPointF target, QPointF textPosition, QString text, Qt::Alignment textAlign=Qt::AlignCenter);
   void resetPlot();
-private:
+  
   Ui::MainWindow *ui;
   QCustomPlot *customPlot;
   QDir dir; // target directory for images

@@ -271,9 +271,14 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   QCustomPlot::yAxis2 (right).
   
   Axes are always part of an axis rect, see QCPAxisRect.
-  
+  \image html AxisNamesOverview.png
+  <center>Naming convention of axis parts</center>
+  \n
+    
   \image html AxisRectSpacingOverview.png
-  <center>Overview of the spacings and paddings that define the geometry of an axis.</center>
+  <center>Overview of the spacings and paddings that define the geometry of an axis. The dashed gray line
+  on the left represents the QCustomPlot widget border.</center>
+
 */
 
 /* start of documentation of inline functions */
