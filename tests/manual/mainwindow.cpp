@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupItemAnchorTest(mCustomPlot);
   //setupItemTracerTest(mCustomPlot);
   //setupGraphTest(mCustomPlot);
-  setupExportTest(mCustomPlot);
+  //setupExportTest(mCustomPlot);
   //setupLogErrorsTest(mCustomPlot);
   //setupSelectTest(mCustomPlot);
   //setupDateTest(mCustomPlot);
@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupInsetLayoutTest(mCustomPlot);
   //setupLegendTest(mCustomPlot);
   //setupMultiAxisRectInteractions(mCustomPlot);
-  //setupTestbed(mCustomPlot);
+  setupTestbed(mCustomPlot);
 }
 
 MainWindow::~MainWindow()

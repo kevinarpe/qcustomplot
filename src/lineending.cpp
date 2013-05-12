@@ -202,8 +202,10 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
   widthVec *= mWidth*0.5*(mInverted ? -1 : 1);
   
   QPen penBackup = painter->pen();
+  QBrush brushBackup = painter->brush();
   QPen miterPen = penBackup;
-  miterPen.setJoinStyle(Qt::MiterJoin);
+  miterPen.setJoinStyle(Qt::MiterJoin); // to make arrow heads spikey
+  QBrush brush(painter->pen().color(), Qt::SolidPattern);
   switch (mStyle)
   {
     case esNone: break;
@@ -214,7 +216,9 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
                            (pos-lengthVec-widthVec).toPointF()
                           };
       painter->setPen(miterPen);
+      painter->setBrush(brush);
       painter->drawConvexPolygon(points, 3);
+      painter->setBrush(brushBackup);
       painter->setPen(penBackup);
       break;
     }
@@ -226,7 +230,9 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
                            (pos-lengthVec-widthVec).toPointF()
                           };
       painter->setPen(miterPen);
+      painter->setBrush(brush);
       painter->drawConvexPolygon(points, 4);
+      painter->setBrush(brushBackup);
       painter->setPen(penBackup);
       break;
     }
@@ -243,7 +249,9 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
     }
     case esDisc:
     {
+      painter->setBrush(brush);
       painter->drawEllipse(pos.toPointF(),  mWidth*0.5, mWidth*0.5);
+      painter->setBrush(brushBackup);
       break;
     }
     case esSquare:
@@ -255,7 +263,9 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
                            (pos+widthVecPerp+widthVec).toPointF()
                           };
       painter->setPen(miterPen);
+      painter->setBrush(brush);
       painter->drawConvexPolygon(points, 4);
+      painter->setBrush(brushBackup);
       painter->setPen(penBackup);
       break;
     }
@@ -268,7 +278,9 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
                            (pos+widthVec).toPointF()
                           };
       painter->setPen(miterPen);
+      painter->setBrush(brush);
       painter->drawConvexPolygon(points, 4);
+      painter->setBrush(brushBackup);
       painter->setPen(penBackup);
       break;
     }

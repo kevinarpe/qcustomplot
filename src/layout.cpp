@@ -555,13 +555,15 @@ void QCPLayoutElement::parentPlotInitialized(QCustomPlot *parentPlot)
 /*! \internal 
   
   Returns the margin size for this \a side. It is used if automatic margins is enabled for this \a
-  side (see \ref setAutoMargins).
+  side (see \ref setAutoMargins). If a minimum margin was set with \ref setMinimumMargins, the
+  returned value will not be smaller than the specified minimum margin.
   
-  The default implementation just returns the respective manual margin (\ref setMargins).
+  The default implementation just returns the respective manual margin (\ref setMargins) or the
+  minimum margin, whichever is larger.
 */
 int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
 {
-  return QCP::getMarginValue(mMargins, side);
+  return qMax(QCP::getMarginValue(mMargins, side), QCP::getMarginValue(mMinimumMargins, side));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,18 +1,7 @@
 NEXT RELEASE:
 
-todo:
- - test custom scatter style
-
 doc:
-- duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between
-  QCustomPlot::/QCPGraph::/QCPAbstractPlottable::rescaleAxes 
-- add doc-note and qDebug output for case when addToLegend (QCPGraph/QCPAbstractPlottable) is called without the plottable being in the plot. 
-- explain ltDateTime mode on axes better. Probably give examples with numbers
-- QCPLayoutElement::calculateAutoMargin: note it must be taken care to respect minimumMargins value when using the auto margin
 - make own doc page which explains the layout system with images from doc-image-generator
-
-doc pictures:
-  - make margins/padding overview picture in doc-image-generator and insert in doc where appropriate – possibly make an own doc page with this
 
 Migration FAQ:
 - setPlotTitle is gone, how do I set a plot title now?

@@ -68,7 +68,7 @@ public:
   QCPScatterStyle(ScatterShape shape, const QPen &pen, const QBrush &brush, double size);
   QCPScatterStyle(const QPixmap &pixmap);
   QCPScatterStyle(const QPainterPath &customPath, const QPen &pen, const QBrush &brush=Qt::NoBrush, double size=6);
-
+  
   // getters:
   double size() const { return mSize; }
   ScatterShape shape() const { return mShape; }
@@ -145,7 +145,7 @@ public:
   void drawLine(const QPointF &p1, const QPointF &p2) {drawLine(QLineF(p1, p2));}
   void save();
   void restore();
-
+  
   // non-virtual methods:
   void makeNonCosmetic();
   
