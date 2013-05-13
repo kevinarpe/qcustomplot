@@ -61,15 +61,75 @@
   margins smaller than desired for a specific situation. If automatic margin calculation is unset
   for a specific side, the margin of that side can be controlled directy via \ref
   QCPLayoutElement::setMargins.
- 
-  \image html LayoutsystemSketch0.png
-  \image html LayoutsystemSketch1.png
-  <center>Sketch of the default QCPLayoutGrid accessible via \ref QCustomPlot::plotLayout. The upper image
-  shows the outer and inner rect of the grid layout itself while the lower image shows how two child layout elements
-  are placed inside the grid layout next to each other in cells (0, 0) and (0, 1).</center>
   
+  If multiple layout ements are arranged next to or beneath each other, it may be desirable to
+  align their inner rects on certain sides. Since they all might have different automatic margins,
+  this usually isn't the case. The class \ref QCPMarginGroup and \ref
+  QCPLayoutElement::setMarginGroup fix this by allowing to synchronize multiple margins. See the
+  documentation there for details.
+  
+  \subsection layoutsystem-layout Layouts
+  
+  As mentioned, a QCPLayoutElement may have an arbitrary number of child layout elements and in
+  princple can have the only purpose to manage/arrange those child elements. This is what the
+  subclass \ref QCPLayout specializes on. It is a QCPLayoutElement itself but has no visual
+  representation. It defines an interface to add, remove and manage child layout elements.
+  QCPLayout isn't a usable layout though, it's an abstract base class that concrete layouts derive
+  from, like \ref QCPLayoutGrid which arranges its child elements in a grid and \ref QCPLayoutInset
+  which allows placing child elements freely inside its rect.
+  
+  Since a QCPLayout is a layout element itself, it may be placed inside other layouts. This way,
+  complex hierarchies may be created, offering very flexible arrangements.
+  
+  <div style="text-align:center">
+  <div style="display:inline-block; margin-left:auto; margin-right:auto"><img src="LayoutsystemSketch0.png"></div>
+  <div style="display:inline-block; margin-left:auto; margin-right:auto"><img src="LayoutsystemSketch1.png"></div>
+  <div style="clear:both"></div>
+  <div style="display:inline-block; max-width:1000px; text-align:justify">
+  Sketch of the default QCPLayoutGrid accessible via \ref QCustomPlot::plotLayout. The left image
+  shows the outer and inner rect of the grid layout itself while the right image shows how two
+  child layout elements are placed inside the grid layout next to each other in cells (0, 0) and
+  (0, 1).
+  </div>
+  </div>
+  
+  \subsection layoutsystem-plotlayout The top level plot layout
+  
+  Every QCustomPlot has one top level layout of type \ref QCPLayoutGrid. It is accessible via \ref
+  QCustomPlot::plotLayout and contains (directly or indirectly via other sub-layouts) all layout
+  elements in the QCustomPlot. By default, this top level grid layout contains a single cell which
+  holds the main axis rect.
+ 
+  \subsection layoutsystem-examples Examples
+  
+  <b>Adding a plot title</b> is a typical and simple case to demonstrate basic workings of the layout system.
+  \code
+  // first we create and prepare a plot title layout element:
+  QCPPlotTitle *title = new QCPPlotTitle(customPlot);
+  title->setText("Plot Title Example");
+  title->setFont(QFont("sans", 12, QFont::Bold));
+  // then we add it to the main plot layout:
+  customPlot->plotLayout()->insertRow(0); // insert an empty row above the axis rect
+  customPlot->plotLayout()->addElement(0, 0, title); // insert the title in the empty cell we just created
+  \endcode
+  \image html layoutsystem-addingplottitle.png
 
-
+  <b>Arranging multiple axis rects</b> actually is the central purpose of the layout system.
+  \code
+  customPlot->plotLayout()->clear(); // let's start from scratch and remove the default axis rect
+  // add the first axis rect in second row (row index 1):
+  customPlot->plotLayout()->addElement(1, 0, new QCPAxisRect(customPlot));
+  // create a sub layout that we'll place in first row:
+  QCPLayoutGrid *subLayout = new QCPLayoutGrid;
+  customPlot->plotLayout()->addElement(0, 0, subLayout);
+  // add two axis rects in the sub layout next to eachother:
+  subLayout->addElement(0, 0, new QCPAxisRect(customPlot));
+  subLayout->addElement(0, 1, new QCPAxisRect(customPlot));
+  subLayout->setColumnStretchFactor(0, 3); // left axis rect shall have 60% of width
+  subLayout->setColumnStretchFactor(1, 2); // right one only 40% (3:2 = 60:40)
+  \endcode
+  \image html layoutsystem-multipleaxisrects.png
+  
 */
 
 

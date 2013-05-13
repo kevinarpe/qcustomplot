@@ -37,13 +37,15 @@ public slots:
   void genAxisRectSpacingOverview();
   void genAxisNamesOverview();
   
+  void genLayoutsystem_AddingPlotTitle();
+  void genLayoutsystem_MultipleAxisRects();
 private:
   // helpers:
   void labelItemAnchors(QCPAbstractItem *item, double fontSize=8, bool circle=true, bool labelBelow=true);
   void addBracket(QPointF left, QPointF right, QString text, QPointF textOffset, bool textSideways, Qt::Alignment textAlign, QCPItemBracket::BracketStyle style=QCPItemBracket::bsRound);
   void addArrow(QPointF target, QPointF textPosition, QString text, Qt::Alignment textAlign=Qt::AlignCenter);
   void addGridLayoutOutline(QCPLayoutGrid *layout);
-  void resetPlot();
+  void resetPlot(bool clearAxes=true);
   
   Ui::MainWindow *ui;
   QCustomPlot *customPlot;

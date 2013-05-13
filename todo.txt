@@ -1,8 +1,5 @@
 NEXT RELEASE:
 
-doc:
-- make own doc page which explains the layout system with images from doc-image-generator
-
 Migration FAQ:
 - setPlotTitle is gone, how do I set a plot title now?
   A plot title now is a layout element. You can add a title like this:

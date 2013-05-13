@@ -404,6 +404,39 @@ void MainWindow::genAxisNamesOverview()
   customPlot->savePng(dir.filePath("AxisNamesOverview.png"), 450, 300);
 }
 
+void MainWindow::genLayoutsystem_AddingPlotTitle()
+{
+  resetPlot(false);
+  
+  // first we create and prepare a plot title layout element:
+  QCPPlotTitle *title = new QCPPlotTitle(customPlot);
+  title->setText("Plot Title Example");
+  title->setFont(QFont("sans", 12, QFont::Bold));
+  // then we add it to the main plot layout:
+  customPlot->plotLayout()->insertRow(0); // insert an empty row above the axis rect
+  customPlot->plotLayout()->addElement(0, 0, title); // insert the title in the empty cell we just created
+  
+  customPlot->savePng(dir.filePath("layoutsystem-addingplottitle.png"), 300, 200);
+}
+
+void MainWindow::genLayoutsystem_MultipleAxisRects()
+{
+  resetPlot(false);
+  
+  customPlot->plotLayout()->clear(); // let's start from scratch and remove the default axis rect
+  // add the first axis rect in second row (row index 1):
+  customPlot->plotLayout()->addElement(1, 0, new QCPAxisRect(customPlot));
+  // create a sub layout that we'll place in first row:
+  QCPLayoutGrid *subLayout = new QCPLayoutGrid;
+  customPlot->plotLayout()->addElement(0, 0, subLayout);
+  // add two axis rects in the sub layout next to eachother:
+  subLayout->addElement(0, 0, new QCPAxisRect(customPlot));
+  subLayout->addElement(0, 1, new QCPAxisRect(customPlot));
+  subLayout->setColumnStretchFactor(0, 3); // left axis rect shall have 60% of width
+  subLayout->setColumnStretchFactor(1, 2); // right one only 40% (3:2 = 60:40)
+  
+  customPlot->savePng(dir.filePath("layoutsystem-multipleaxisrects.png"), 400, 300);
+}
 void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool circle, bool labelBelow)
 {
   QList<QCPItemAnchor*> anchors = item->anchors();
@@ -561,14 +594,17 @@ void MainWindow::addGridLayoutOutline(QCPLayoutGrid *layout)
   }
 }
 
-void MainWindow::resetPlot()
+void MainWindow::resetPlot(bool clearAxes)
 {
   customPlot = new QCustomPlot(this);
   setCentralWidget(customPlot);
-  customPlot->xAxis->setRange(-0.4, 1.4);
-  customPlot->yAxis->setRange(-0.2, 1.2);
-  customPlot->xAxis->setVisible(false);
-  customPlot->yAxis->setVisible(false);
-  customPlot->axisRect()->setAutoMargins(QCP::msNone);
-  customPlot->axisRect()->setMargins(QMargins(0, 0, 0, 0));
+  if (clearAxes)
+  {
+    customPlot->xAxis->setRange(-0.4, 1.4);
+    customPlot->yAxis->setRange(-0.2, 1.2);
+    customPlot->xAxis->setVisible(false);
+    customPlot->yAxis->setVisible(false);
+    customPlot->axisRect()->setAutoMargins(QCP::msNone);
+    customPlot->axisRect()->setMargins(QMargins(0, 0, 0, 0));
+  }
 }

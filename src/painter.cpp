@@ -279,10 +279,10 @@ void QCPPainter::makeNonCosmetic()
   
   There are two constructors which leave the pen undefined: \ref QCPScatterStyle() and \ref
   QCPScatterStyle(ScatterShape shape, double size). If those constructors are used, a call to \ref
-  isPenDefined will return false, which will lead to scatter points that inherits the pen from the
-  plottable that uses the scatter style. Thus, if such a scatter style is passed to QCPGraph, the line
-  color of the graph (\ref QCPGraph::setPen) will be used by the scatter points. This makes
-  it very convenient to set up typical scatter settings:
+  isPenDefined returns false. This leads to scatter points that inherit the pen from the plottable
+  that uses the scatter style. Thus, if such a scatter style is passed to QCPGraph, the line color
+  of the graph (\ref QCPGraph::setPen) will be used by the scatter points. This makes it very
+  convenient to set up typical scatter settings:
   
   \code
   customPlot->graph(0)->setScatterStyle(QCPScatterStyle::ssPlus);
@@ -296,7 +296,7 @@ void QCPPainter::makeNonCosmetic()
   
   \section QCPScatterStyle-custompath-and-pixmap Custom shapes and pixmaps
   
-  QCPScatterShape supports drawing custom shapes and arbitrary pixmaps as scatter points.
+  QCPScatterStyle supports drawing custom shapes and arbitrary pixmaps as scatter points.
 
   For custom shapes, you can provide a QPainterPath with the desired shape to the \ref
   setCustomPath function or call the constructor that takes a painter path. The scatter shape will
@@ -394,7 +394,7 @@ QCPScatterStyle::QCPScatterStyle(ScatterShape shape, const QColor &color, const 
   \warning In some cases it might be tempting to directly use a pen style like <tt>Qt::NoPen</tt> as \a pen
   and a color like <tt>Qt::blue</tt> as \a brush. Notice however, that the corresponding call\n
   <tt>QCPScatterStyle(QCPScatterShape::ssCircle, Qt::NoPen, Qt::blue, 5)</tt>\n
-  has shown to not necessarily lead C++ to use this constructor but might mistake
+  doesn't necessarily lead C++ to use this constructor in some cases, but might mistake
   <tt>Qt::NoPen</tt> for a QColor and use the
   \ref QCPScatterStyle(ScatterShape shape, const QColor &color, const QColor &fill, double size)
   constructor instead (which will lead to an unexpected look of the scatter points). To prevent
