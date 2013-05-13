@@ -526,6 +526,41 @@ void MainWindow::addArrow(QPointF target, QPointF textPosition, QString text, Qt
   }
 }
 
+void MainWindow::addGridLayoutOutline(QCPLayoutGrid *layout)
+{
+  QList<QCPLayoutElement*> elements;
+  elements << layout;
+  elements << layout->elements(true);
+  for (int i=0; i<elements.size(); ++i)
+  {
+    if (!elements.at(i))
+      continue;
+    
+    qDebug() << elements.at(i) << elements.at(i)->outerRect();
+    
+    QCPItemRect *outerRect = new QCPItemRect(customPlot);
+    customPlot->addItem(outerRect);
+    outerRect->setClipToAxisRect(false);
+    outerRect->setBrush(QColor(0, 0, 0, 25));
+    outerRect->setPen(QPen(QColor(180, 180, 180)));
+    outerRect->topLeft->setType(QCPItemPosition::ptAbsolute);
+    outerRect->bottomRight->setType(QCPItemPosition::ptAbsolute);
+    outerRect->topLeft->setPixelPoint(elements.at(i)->outerRect().topLeft());
+    outerRect->bottomRight->setPixelPoint(elements.at(i)->outerRect().bottomRight());
+    
+    QCPItemRect *innerRect = new QCPItemRect(customPlot);
+    customPlot->addItem(innerRect);
+    innerRect->setClipToAxisRect(false);
+    innerRect->setBrush(QColor(230, 100, 100, 25));
+    innerRect->setPen(QPen(QColor(180, 180, 180)));
+    innerRect->topLeft->setType(QCPItemPosition::ptAbsolute);
+    innerRect->bottomRight->setType(QCPItemPosition::ptAbsolute);
+    innerRect->topLeft->setCoords(elements.at(i)->rect().topLeft());
+    innerRect->bottomRight->setCoords(elements.at(i)->rect().bottomRight());
+    
+  }
+}
+
 void MainWindow::resetPlot()
 {
   customPlot = new QCustomPlot(this);

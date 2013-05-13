@@ -604,6 +604,9 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
   <tr><td>QCPItemTracer</td><td>An item that can be attached to a QCPGraph and sticks to its data points, given a key coordinate.</td></tr>
   </table>
   
+  Items are by default clipped to the main axis rect. To make an item visible outside that axis
+  rect, disable clipping via \ref setClipToAxisRect.
+  
   \section items-using Using items
   
   First you instantiate the item you want to use and add it to the plot:

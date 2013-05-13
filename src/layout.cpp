@@ -25,6 +25,53 @@
 #include "layout.h"
 #include "core.h"
 
+/*! \page thelayoutsystem The Layout System
+ 
+  The layout system is responsible for positioning and scaling layout elements such as axis rects,
+  legends and plot titles in a QCustomPlot.
+
+  \section layoutsystem-classesandmechanisms Classes and mechanisms
+  
+  The layout system is based on the abstract base class \ref QCPLayoutElement. All objects that
+  take part in the layout system derive from this class, either directly or indirectly.
+  
+  Since QCPLayoutElement itself derives from \ref QCPLayerable, a layout element may draw its own
+  content. However, it is perfectly possible for a layout element to only serve as a structuring
+  and/or positioning element, not drawing anything on its own.
+  
+  \subsection layoutsystem-rects Rects of a layout element
+  
+  A layout element is a rectangular object described by two rects: the inner rect (\ref
+  QCPLayoutElement::rect) and the outer rect (\ref QCPLayoutElement::setOuterRect). The inner rect
+  is calculated automatically by applying the margin (\ref QCPLayoutElement::setMargins) inward
+  from the outer rect. The inner rect is meant for main content while the margin area may either be
+  left blank or serve for displaying peripheral graphics. For example, \ref QCPAxisRect positions
+  the four main axes at the sides of the inner rect, so graphs end up inside it and the axis labels
+  and tick labels are in the margin area.
+  
+  \subsection layoutsystem-margins Margins
+  
+  Each layout element may provide a mechanism to automatically determine its margins. Internally,
+  this is realized with the \ref QCPLayoutElement::calculateAutoMargin function which takes a \ref
+  QCP::MarginSide and returns an integer value which represents the ideal margin for the specified
+  side. The automatic margin will be used on the sides specified in \ref
+  QCPLayoutElement::setAutoMargins. By default, it is set to \ref QCP::msAll meaning automatic
+  margin calculation is enabled for all four sides. In this case, a minimum margin may be set with
+  \ref QCPLayoutElement::setMinimumMargins, to prevent the automatic margin mechanism from setting
+  margins smaller than desired for a specific situation. If automatic margin calculation is unset
+  for a specific side, the margin of that side can be controlled directy via \ref
+  QCPLayoutElement::setMargins.
+ 
+  \image html LayoutsystemSketch0.png
+  \image html LayoutsystemSketch1.png
+  <center>Sketch of the default QCPLayoutGrid accessible via \ref QCustomPlot::plotLayout. The upper image
+  shows the outer and inner rect of the grid layout itself while the lower image shows how two child layout elements
+  are placed inside the grid layout next to each other in cells (0, 0) and (0, 1).</center>
+  
+
+
+*/
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPMarginGroup
@@ -185,7 +232,7 @@ void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*! \class QCPLayoutElement
-  \brief The abstract base class for all objects that form the layout system
+  \brief The abstract base class for all objects that form \ref thelayoutsystem "the layout system".
   
   This is an abstract base class. As such, it can't be instantiated directly, rather use one of its subclasses.
   
@@ -197,8 +244,8 @@ void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element
   the layout element subclass will control the value itself (via \ref calculateAutoMargin).
   
   Layout elements can be placed in layouts (base class QCPLayout) like QCPLayoutGrid. The top level
-  layout is reachable via QCustomPlot::plotLayout, and is a QCPLayoutGrid. Since QCPLayout itself
-  derives from QCPLayoutElement, layouts can be nested.
+  layout is reachable via \ref QCustomPlot::plotLayout, and is a \ref QCPLayoutGrid. Since \ref
+  QCPLayout itself derives from \ref QCPLayoutElement, layouts can be nested.
   
   Thus in QCustomPlot one can divide layout elements into two categories: The ones that are
   invisible by themselves, because they don't draw anything. Their only purpose is to manage the
@@ -220,7 +267,7 @@ void QCPMarginGroup::removeChild(QCP::MarginSide side, QCPLayoutElement *element
 /*! \fn QRect QCPLayoutElement::rect() const
   
   Returns the inner rect of this layout element. The inner rect is the outer rect (\ref
-  setOuterRect) minus the margins (\ref setMargins, \ref setAutoMargins).
+  setOuterRect) shrinked by the margins (\ref setMargins, \ref setAutoMargins).
   
   In some cases, the area between outer and inner rect is left blank. In other cases the margin
   area is used to display peripheral graphics while the main content is in the inner rect. This is
@@ -293,7 +340,7 @@ QCPLayoutElement::~QCPLayoutElement()
   Calling this function externally has no effect, since the layout will overwrite any changes to
   the outer rect upon the next replot.
   
-  The layout element will adapt its inner \ref rect by subtracting the margin from the outer rect.
+  The layout element will adapt its inner \ref rect by applying the margins inward to the outer rect.
   
   \see rect
 */
@@ -593,6 +640,9 @@ int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
   
   Since this is an abstract base class, you can't instantiate it directly. Rather use one of its
   subclasses like QCPLayoutGrid or QCPLayoutInset.
+  
+  For a general introduction to the layout system, see the dedicated documentation page \ref
+  thelayoutsystem "The Layout System".
 */
 
 /* start documentation of pure virtual functions */

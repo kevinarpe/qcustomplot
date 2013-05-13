@@ -674,8 +674,7 @@ EXAMPLE_RECURSIVE      = NO
 # the \image command).
 
 IMAGE_PATH             += other/doc-image-generator/images
-IMAGE_PATH             += doc/ClassesOverview.png
-IMAGE_PATH             += doc/ClassesOverviewSimplified.png
+IMAGE_PATH             += doc/images
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
