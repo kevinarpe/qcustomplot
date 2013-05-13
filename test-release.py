@@ -13,11 +13,15 @@ def runQmakeMake(qmakecommand):
   if subprocess.call("make -j4", shell=True) != 0:
     printerror("make failed"); sys.exit(1)
 
-qmakeVersions = ["qmake474", "qmake483", "qmake502"]
+qmakeVersions = ["qmake474", "qmake480", "qmake481", "qmake483", "qmake501", "qmake502"]
 for qmakecommand in qmakeVersions:
 
-  qmakeproc = subprocess.Popen([qmakecommand, "-v"], stdout=subprocess.PIPE)
-  printinfo(qmakeproc.stdout.readlines()[1].rstrip()); # print used Qt version in this run
+  try:
+    qmakeproc = subprocess.Popen([qmakecommand, "-v"], stdout=subprocess.PIPE)
+    printinfo(qmakeproc.stdout.readlines()[1].rstrip()); # print used Qt version in this run
+  except:
+    printinfo("Qt version of '"+qmakecommand+"' not found, skipping.");
+    continue
   os.chdir(sys.path[0]) # change current working dir to script dir
   os.mkdir("./temp")
   os.chdir("./temp")

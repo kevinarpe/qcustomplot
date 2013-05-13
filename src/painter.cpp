@@ -280,10 +280,10 @@ void QCPPainter::makeNonCosmetic()
   
   There are two constructors which leave the pen undefined: \ref QCPScatterStyle() and \ref
   QCPScatterStyle(ScatterShape shape, double size). If those constructors are used, a call to \ref
-  isPenDefined returns false. This leads to scatter points that inherit the pen from the plottable
-  that uses the scatter style. Thus, if such a scatter style is passed to QCPGraph, the line color
-  of the graph (\ref QCPGraph::setPen) will be used by the scatter points. This makes it very
-  convenient to set up typical scatter settings:
+  isPenDefined will return false. It leads to scatter points that inherit the pen from the
+  plottable that uses the scatter style. Thus, if such a scatter style is passed to QCPGraph, the line
+  color of the graph (\ref QCPGraph::setPen) will be used by the scatter points. This makes
+  it very convenient to set up typical scatter settings:
   
   \code
   customPlot->graph(0)->setScatterStyle(QCPScatterStyle::ssPlus);

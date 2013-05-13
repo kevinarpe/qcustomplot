@@ -51,13 +51,13 @@ public:
                       ,ssSquare    ///< \enumimage{ssSquare.png} a square
                       ,ssDiamond   ///< \enumimage{ssDiamond.png} a diamond
                       ,ssStar      ///< \enumimage{ssStar.png} a star with eight arms, i.e. a combination of cross and plus
-                      ,ssTriangle  ///< \enumimage{ssTriangle.png} an equilateral triangle which is not filled, standing on baseline
-                      ,ssTriangleInverted ///< \enumimage{ssTriangleInverted.png} an equilateral triangle which is not filled, standing on corner
-                      ,ssCrossSquare      ///< \enumimage{ssCrossSquare.png} a square which is not filled, with a cross inside
-                      ,ssPlusSquare       ///< \enumimage{ssPlusSquare.png} a square which is not filled, with a plus inside
-                      ,ssCrossCircle      ///< \enumimage{ssCrossCircle.png} a circle which is not filled, with a cross inside
-                      ,ssPlusCircle       ///< \enumimage{ssPlusCircle.png} a circle which is not filled, with a plus inside
-                      ,ssPeace     ///< \enumimage{ssPeace.png} a circle which is not filled, with one vertical and two downward diagonal lines
+                      ,ssTriangle  ///< \enumimage{ssTriangle.png} an equilateral triangle, standing on baseline
+                      ,ssTriangleInverted ///< \enumimage{ssTriangleInverted.png} an equilateral triangle, standing on corner
+                      ,ssCrossSquare      ///< \enumimage{ssCrossSquare.png} a square with a cross inside
+                      ,ssPlusSquare       ///< \enumimage{ssPlusSquare.png} a square with a plus inside
+                      ,ssCrossCircle      ///< \enumimage{ssCrossCircle.png} a circle with a cross inside
+                      ,ssPlusCircle       ///< \enumimage{ssPlusCircle.png} a circle with a plus inside
+                      ,ssPeace     ///< \enumimage{ssPeace.png} a circle, with one vertical and two downward diagonal lines
                       ,ssPixmap    ///< \enumimage{ssPixmap.png} a custom pixmap specified by setScatterPixmap, centered on the data point coordinates
                       ,ssCustom    ///< \enumimage{ssCustom.png} custom painter operations are performed per scatter (As QPainterPath, see \ref setCustomPath)
                     };
