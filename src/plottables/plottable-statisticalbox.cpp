@@ -34,6 +34,8 @@
 /*! \class QCPStatisticalBox
   \brief A plottable representing a single statistical box in a plot.
 
+  \image html QCPStatisticalBox.png
+  
   To plot data, assign it with the individual parameter functions or use \ref setData to set all
   parameters at once. The individual funcions are:
   \li \ref setMinimum

@@ -72,9 +72,12 @@ QCPCurveData::QCPCurveData(double t, double key, double value) :
 /*! \class QCPCurve
   \brief A plottable representing a parametric curve in a plot.
   
-  Unlike QCPGraph, plottables of this type may have multiple points with the same key value, their
-  visual representation can have \a loops. This is realized by introducing a third coordinate \a t,
-  which defines the order of the points described by the other two coordinates \a x and \a y.
+  \image html QCPCurve.png
+  
+  Unlike QCPGraph, plottables of this type may have multiple points with the same key coordinate,
+  so their visual representation can have \a loops. This is realized by introducing a third
+  coordinate \a t, which defines the order of the points described by the other two coordinates \a
+  x and \a y.
 
   To plot data, assign it with the \ref setData or \ref addData functions.
   

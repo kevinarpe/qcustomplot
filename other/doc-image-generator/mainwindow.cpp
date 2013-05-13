@@ -437,6 +437,155 @@ void MainWindow::genLayoutsystem_MultipleAxisRects()
   
   customPlot->savePng(dir.filePath("layoutsystem-multipleaxisrects.png"), 400, 300);
 }
+
+void MainWindow::genQCPGraph()
+{
+  resetPlot(true);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->xAxis->setBasePen(Qt::NoPen);
+  customPlot->yAxis->setBasePen(Qt::NoPen);
+  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->xAxis->setTicks(false);
+  customPlot->yAxis->setTicks(false);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->yAxis->setTickLabels(false);
+  
+  QVector<double> x1, y1, x2, y2, err2;
+  for (int i=0; i<100; ++i)
+  {
+    x1 << i/99.0*10;
+    if (i != 50)
+      y1 << qSin((x1.last()-5.0)*3)/((x1.last()-5.0)*3);
+    else
+      y1 << 1;
+  }
+  x2 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8 << 9;
+  y2 << 1 << 1.1 << 1.5 << 1.6 << 1.4 << 1.35 << 1.3 << 1.2 << 1.15;
+  err2 << 0.25 << 0.3 << 0.34 << 0.35 << 0.3 << 0.15 << 0.17 << 0.23 << 0.24;
+  
+  customPlot->addGraph();
+  customPlot->graph()->setData(x1, y1);
+  customPlot->graph()->setBrush(QColor(255, 50, 50, 25));
+  
+  customPlot->addGraph();
+  customPlot->graph()->setDataValueError(x2, y2, err2);
+  customPlot->graph()->setErrorType(QCPGraph::etValue);
+  customPlot->graph()->setLineStyle(QCPGraph::lsNone);
+  customPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::black, QColor(0, 0, 0, 25), 6));
+  
+  customPlot->xAxis->setRange(-1, 11);
+  customPlot->yAxis->setRange(-0.5, 2.1);
+  
+  customPlot->savePng(dir.filePath("QCPGraph.png"), 450, 200);
+}
+
+void MainWindow::genQCPCurve()
+{
+  resetPlot(true);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->xAxis->setBasePen(Qt::NoPen);
+  customPlot->yAxis->setBasePen(Qt::NoPen);
+  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->xAxis->setTicks(false);
+  customPlot->yAxis->setTicks(false);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->yAxis->setTickLabels(false);
+  
+  QVector<double> x1, y1;
+  for (int i=-20; i<70; ++i)
+  {
+    double t = i/99.0*2*M_PI;
+    x1 << 4*qCos(t);
+    y1 << qSin(t*2);
+  }
+  QCPCurve *curve = new QCPCurve(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(curve);
+  curve->setData(x1, y1);
+  
+  customPlot->xAxis->setRange(-5, 5);
+  customPlot->yAxis->setRange(-2, 2);
+  
+  customPlot->savePng(dir.filePath("QCPCurve.png"), 450, 200);
+}
+
+void MainWindow::genQCPBars()
+{
+  resetPlot(true);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->xAxis->setBasePen(Qt::NoPen);
+  customPlot->yAxis->setBasePen(Qt::NoPen);
+  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->xAxis->setTicks(false);
+  customPlot->yAxis->setTicks(false);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->yAxis->setTickLabels(false);
+  
+  QVector<double> x1, y1, y2;
+  x1 << -2 << -1 << 0 << 1 << 2;
+  y1 << 0.5 << -0.4 << 0.2 << 0.8 << 1.2;
+  y2 << 0.3 << -0.2 << 0.2 << 0.3 << 0.4;
+  
+  QCPBars *bars1 = new QCPBars(customPlot->xAxis, customPlot->yAxis);
+  QCPBars *bars2 = new QCPBars(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(bars1);
+  customPlot->addPlottable(bars2);
+  bars1->setData(x1, y1);
+  bars2->setData(x1, y2);
+  bars2->moveAbove(bars1);
+  
+  bars1->setAntialiased(false);
+  bars2->setAntialiased(false);
+  bars2->setPen(QPen(QColor(200, 50, 50)));
+  bars2->setBrush(QColor(255, 50, 50, 25));
+  
+  customPlot->xAxis->setRange(-3, 3);
+  customPlot->yAxis->setRange(-1, 2);
+  
+  customPlot->savePng(dir.filePath("QCPBars.png"), 450, 200);
+}
+
+void MainWindow::genQCPStatisticalBox()
+{
+  resetPlot(true);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->xAxis->setBasePen(Qt::NoPen);
+  customPlot->yAxis->setBasePen(Qt::NoPen);
+  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->xAxis->setTicks(false);
+  customPlot->yAxis->setTicks(false);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->yAxis->setTickLabels(false);
+  
+  QCPStatisticalBox *box1 = new QCPStatisticalBox(customPlot->xAxis, customPlot->yAxis);
+  QCPStatisticalBox *box2 = new QCPStatisticalBox(customPlot->xAxis, customPlot->yAxis);
+  QCPStatisticalBox *box3 = new QCPStatisticalBox(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(box1);
+  customPlot->addPlottable(box2);
+  customPlot->addPlottable(box3);
+  box1->setData(-1, -1.2, -0.35, 0.1, 0.4, 1.1);
+  box2->setData(0, -1.4, -0.7, -0.1, 0.34, 0.9);
+  box3->setData(1, -0.6, -0.2, 0.15, 0.6, 1.2);
+  box1->setBrush(QColor(0, 0, 255, 20));
+  box2->setBrush(QColor(0, 0, 255, 20));
+  box3->setBrush(QColor(0, 0, 255, 20));
+  
+  box3->setOutliers(QVector<double>() << -0.9 << -1 << 1.35 << 1.4 << 1.1);
+  box3->setOutlierStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, 5));
+  
+  customPlot->xAxis->setRange(-3, 3);
+  customPlot->yAxis->setRange(-1.5, 1.5);
+  
+  customPlot->savePng(dir.filePath("QCPStatisticalBox.png"), 450, 200);
+}
+
 void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool circle, bool labelBelow)
 {
   QList<QCPItemAnchor*> anchors = item->anchors();

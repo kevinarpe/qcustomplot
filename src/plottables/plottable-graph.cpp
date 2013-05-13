@@ -81,6 +81,8 @@ QCPData::QCPData(double key, double value) :
 /*! \class QCPGraph
   \brief A plottable representing a graph in a plot.
 
+  \image html QCPGraph.png
+  
   Usually QCustomPlot creates graphs internally via QCustomPlot::addGraph and the resulting
   instance is accessed via QCustomPlot::graph.
 

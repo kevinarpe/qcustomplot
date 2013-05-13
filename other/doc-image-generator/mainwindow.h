@@ -39,6 +39,12 @@ public slots:
   
   void genLayoutsystem_AddingPlotTitle();
   void genLayoutsystem_MultipleAxisRects();
+  
+  void genQCPGraph();
+  void genQCPCurve();
+  void genQCPBars();
+  void genQCPStatisticalBox();
+  
 private:
   // helpers:
   void labelItemAnchors(QCPAbstractItem *item, double fontSize=8, bool circle=true, bool labelBelow=true);

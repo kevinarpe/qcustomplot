@@ -68,6 +68,8 @@ QCPBarData::QCPBarData(double key, double value) :
 /*! \class QCPBars
   \brief A plottable representing a bar chart in a plot.
 
+  \image html QCPBars.png
+  
   To plot data, assign it with the \ref setData or \ref addData functions.
   
   \section appearance Changing the appearance
