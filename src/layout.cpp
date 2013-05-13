@@ -509,10 +509,15 @@ QSize QCPLayoutElement::maximumSizeHint() const
 }
 
 /*!
-  Returns a list of all the child elements in this layout element.
+  Returns a list of all child elements in this layout element. If \a recursive is true, all
+  sub-child elements are included in the list, too.
+  
+  Note that there may be entries with value 0 in the returned list. (For example, QCPLayoutGrid may have
+  empty cells which yield 0 at the respective index.)
 */
-QList<QCPLayoutElement*> QCPLayoutElement::elements() const
+QList<QCPLayoutElement*> QCPLayoutElement::elements(bool recursive) const
 {
+  Q_UNUSED(recursive)
   return QList<QCPLayoutElement*>();
 }
 
@@ -668,13 +673,21 @@ void QCPLayout::update()
 }
 
 /* inherits documentation from base class */
-QList<QCPLayoutElement*> QCPLayout::elements() const
+QList<QCPLayoutElement*> QCPLayout::elements(bool recursive) const
 {
   int c = elementCount();
   QList<QCPLayoutElement*> result;
   result.reserve(c);
   for (int i=0; i<c; ++i)
     result.append(elementAt(i));
+  if (recursive)
+  {
+    for (int i=0; i<c; ++i)
+    {
+      if (result.at(i))
+        result << result.at(i)->elements(recursive);
+    }
+  }
   return result;
 }
 
@@ -1376,7 +1389,7 @@ bool QCPLayoutGrid::take(QCPLayoutElement *element)
 }
 
 /* inherits documentation from base class */
-QList<QCPLayoutElement*> QCPLayoutGrid::elements() const
+QList<QCPLayoutElement*> QCPLayoutGrid::elements(bool recursive) const
 {
   QList<QCPLayoutElement*> result;
   int colC = columnCount();
@@ -1387,6 +1400,15 @@ QList<QCPLayoutElement*> QCPLayoutGrid::elements() const
     for (int col=0; col<colC; ++col)
     {
       result.append(mElements.at(row).at(col));
+    }
+  }
+  if (recursive)
+  {
+    int c = result.size();
+    for (int i=0; i<c; ++i)
+    {
+      if (result.at(i))
+        result << result.at(i)->elements(recursive);
     }
   }
   return result;

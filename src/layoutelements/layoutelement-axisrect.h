@@ -104,7 +104,7 @@ public:
   
   // reimplemented virtual methods:
   virtual void update();
-  virtual QList<QCPLayoutElement*> elements() const;
+  virtual QList<QCPLayoutElement*> elements(bool recursive=false) const;
 
 protected:
   // property members:

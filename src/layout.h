@@ -104,7 +104,7 @@ public:
   virtual void update();
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;
-  virtual QList<QCPLayoutElement*> elements() const;
+  virtual QList<QCPLayoutElement*> elements(bool recursive=false) const;
   
   // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
@@ -149,7 +149,7 @@ public:
   
   // reimplemented virtual methods:
   virtual void update();
-  virtual QList<QCPLayoutElement*> elements() const;
+  virtual QList<QCPLayoutElement*> elements(bool recursive=false) const;
   
   // introduced virtual methods:
   virtual int elementCount() const = 0;
@@ -216,7 +216,7 @@ public:
   virtual QCPLayoutElement* elementAt(int index) const;
   virtual QCPLayoutElement* takeAt(int index);
   virtual bool take(QCPLayoutElement* element);
-  virtual QList<QCPLayoutElement*> elements() const;
+  virtual QList<QCPLayoutElement*> elements(bool recursive=false) const;
   virtual void simplify();
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;

@@ -527,12 +527,16 @@ void QCPAxisRect::update()
 }
 
 /* inherits documentation from base class */
-QList<QCPLayoutElement*> QCPAxisRect::elements() const
+QList<QCPLayoutElement*> QCPAxisRect::elements(bool recursive) const
 {
+  QList<QCPLayoutElement*> result;
   if (mInsetLayout)
-    return mInsetLayout->elements();
-  else
-    return QList<QCPLayoutElement*>();
+  {
+    result << mInsetLayout;
+    if (recursive)
+      result << mInsetLayout->elements(recursive);
+  }
+  return result;
 }
 
 /* inherits documentation from base class */
