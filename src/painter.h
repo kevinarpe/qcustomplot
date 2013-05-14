@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_PAINTER_H
@@ -109,7 +110,7 @@ Q_DECLARE_TYPEINFO(QCPScatterStyle, Q_MOVABLE_TYPE);
 
 class QCP_LIB_DECL QCPPainter : public QPainter
 {
-Q_GADGET
+  Q_GADGET
 public:
   /*!
     Defines special modes the painter can operate in. They disable or enable certain subsets of features/fixes/workarounds,
