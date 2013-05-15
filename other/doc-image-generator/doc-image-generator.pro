@@ -9,18 +9,11 @@ TARGET = doc-image-generator
 TEMPLATE = app
 
 HEADERS  += mainwindow.h \
-  ../../src/*.h
-
-LIBS += -L../../src
-
-CONFIG(debug, debug|release) {
-  LIBS += -lqcustomplotd
-} else {
-  LIBS += -lqcustomplot
-}
+            ../../qcustomplot.h
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp\
+        ../../qcustomplot.cpp
 
 HEADERS  += mainwindow.h
 

@@ -5,7 +5,7 @@ mkdir documentation/html
 
 # copy doc images to documentation/html directory. Doxyfile's IMAGE_PATH includes them from there:
 cp other/doc-image-generator/images/* documentation/html/
-cp doc/images/* documentation/html/
+cp documentation/images/* documentation/html/
 
 doxygen
 cd documentation/html

@@ -6,7 +6,7 @@
 #include <QMetaEnum>
 #include <QTimer>
 #include <QDir>
-#include "../../src/qcp.h"
+#include "../../qcustomplot.h"
 
 namespace Ui {
 class MainWindow;
