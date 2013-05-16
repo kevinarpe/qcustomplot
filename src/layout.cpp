@@ -867,6 +867,19 @@ void QCPLayout::clear()
 }
 
 /*!
+  Since layouts usually are invisible and only responsible for positioning and sizing of child
+  elements, they are not selectable or mouse-hittable by default. So this function always returns
+  -1. Specific Layout subclasses may override this behaviour.
+*/
+double QCPLayout::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
+{
+  Q_UNUSED(pos)
+  Q_UNUSED(onlySelectable)
+  Q_UNUSED(details)
+  return -1;
+}
+
+/*!
   Subclasses call this method to report changed (minimum/maximum) size constraints.
   
   If the parent of this layout is again a QCPLayout, forwards the call to the parent's \ref

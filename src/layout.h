@@ -164,6 +164,9 @@ public:
   bool remove(QCPLayoutElement* element);
   void clear();
   
+  // reimplemented virtual methods:
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const;
+  
 protected:
   // introduced virtual methods:
   virtual void updateLayout();
