@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_AXIS_H
@@ -28,17 +29,30 @@
 #include "global.h"
 #include "range.h"
 #include "layer.h"
+#include "layout.h"
+#include "lineending.h"
 
 class QCPPainter;
 class QCustomPlot;
 class QCPAxis;
+class QCPAxisRect;
+class QCPAbstractPlottable;
+class QCPGraph;
+class QCPAbstractItem;
 
-class QCP_LIB_DECL QCPGrid : public QCPLayerable
+class QCP_LIB_DECL QCPGrid :public QCPLayerable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(bool subGridVisible READ subGridVisible WRITE setSubGridVisible)
+  Q_PROPERTY(bool antialiasedSubGrid READ antialiasedSubGrid WRITE setAntialiasedSubGrid)
+  Q_PROPERTY(bool antialiasedZeroLine READ antialiasedZeroLine WRITE setAntialiasedZeroLine)
+  Q_PROPERTY(QPen pen READ pen WRITE setPen)
+  Q_PROPERTY(QPen subGridPen READ subGridPen WRITE setSubGridPen)
+  Q_PROPERTY(QPen zeroLinePen READ zeroLinePen WRITE setZeroLinePen)
+  /// \endcond
 public:
   QCPGrid(QCPAxis *parentAxis);
-  ~QCPGrid();
   
   // getters:
   bool subGridVisible() const { return mSubGridVisible; }
@@ -47,8 +61,6 @@ public:
   QPen pen() const { return mPen; }
   QPen subGridPen() const { return mSubGridPen; }
   QPen zeroLinePen() const { return mZeroLinePen; }
-  QBrush sectionBrushEven() const { return mSectionBrushEven; }
-  QBrush sectionBrushOdd() const { return mSectionBrushOdd; }
   
   // setters:
   void setSubGridVisible(bool visible);
@@ -57,19 +69,20 @@ public:
   void setPen(const QPen &pen);
   void setSubGridPen(const QPen &pen);
   void setZeroLinePen(const QPen &pen);
-  void setSectionBrushes(const QBrush &brushEven, const QBrush &brushOdd);
   
 protected:
-  QCPAxis *mParentAxis;
+  // property members:
   bool mSubGridVisible;
   bool mAntialiasedSubGrid, mAntialiasedZeroLine;
   QPen mPen, mSubGridPen, mZeroLinePen;
-  QBrush mSectionBrushEven, mSectionBrushOdd;
+  // non-property members:
+  QCPAxis *mParentAxis;
   
+  // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
   virtual void draw(QCPPainter *painter);
-  // drawing helpers:
-  void drawSections(QCPPainter *painter) const;
+  
+  // non-virtual methods:
   void drawGridLines(QCPPainter *painter) const;
   void drawSubGridLines(QCPPainter *painter) const;
   
@@ -81,13 +94,12 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
 {
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
-  Q_PROPERTY(AxisType axisType READ axisType WRITE setAxisType)
+  Q_PROPERTY(AxisType axisType READ axisType)
+  Q_PROPERTY(QCPAxisRect* axisRect READ axisRect)
   Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType)
   Q_PROPERTY(double scaleLogBase READ scaleLogBase WRITE setScaleLogBase)
-  Q_PROPERTY(QRect axisRect READ axisRect WRITE setAxisRect)
   Q_PROPERTY(QCPRange range READ range WRITE setRange)
-  Q_PROPERTY(bool grid READ grid WRITE setGrid)
-  Q_PROPERTY(bool subGrid READ subGrid WRITE setSubGrid)
+  Q_PROPERTY(bool rangeReversed READ rangeReversed WRITE setRangeReversed)
   Q_PROPERTY(bool autoTicks READ autoTicks WRITE setAutoTicks)
   Q_PROPERTY(int autoTickCount READ autoTickCount WRITE setAutoTickCount)
   Q_PROPERTY(bool autoTickLabels READ autoTickLabels WRITE setAutoTickLabels)
@@ -98,79 +110,92 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(int tickLabelPadding READ tickLabelPadding WRITE setTickLabelPadding)
   Q_PROPERTY(LabelType tickLabelType READ tickLabelType WRITE setTickLabelType)
   Q_PROPERTY(QFont tickLabelFont READ tickLabelFont WRITE setTickLabelFont)
+  Q_PROPERTY(QColor tickLabelColor READ tickLabelColor WRITE setTickLabelColor)
   Q_PROPERTY(double tickLabelRotation READ tickLabelRotation WRITE setTickLabelRotation)
   Q_PROPERTY(QString dateTimeFormat READ dateTimeFormat WRITE setDateTimeFormat)
   Q_PROPERTY(QString numberFormat READ numberFormat WRITE setNumberFormat)
+  Q_PROPERTY(int numberPrecision READ numberPrecision WRITE setNumberPrecision)
   Q_PROPERTY(double tickStep READ tickStep WRITE setTickStep)
   Q_PROPERTY(QVector<double> tickVector READ tickVector WRITE setTickVector)
   Q_PROPERTY(QVector<QString> tickVectorLabels READ tickVectorLabels WRITE setTickVectorLabels)
+  Q_PROPERTY(int tickLengthIn READ tickLengthIn WRITE setTickLengthIn)
+  Q_PROPERTY(int tickLengthOut READ tickLengthOut WRITE setTickLengthOut)
   Q_PROPERTY(int subTickCount READ subTickCount WRITE setSubTickCount)
+  Q_PROPERTY(int subTickLengthIn READ subTickLengthIn WRITE setSubTickLengthIn)
+  Q_PROPERTY(int subTickLengthOut READ subTickLengthOut WRITE setSubTickLengthOut)
   Q_PROPERTY(QPen basePen READ basePen WRITE setBasePen)
-  Q_PROPERTY(QPen gridPen READ gridPen WRITE setGridPen)
-  Q_PROPERTY(QPen subGridPen READ subGridPen WRITE setSubGridPen)
   Q_PROPERTY(QPen tickPen READ tickPen WRITE setTickPen)
   Q_PROPERTY(QPen subTickPen READ subTickPen WRITE setSubTickPen)
   Q_PROPERTY(QFont labelFont READ labelFont WRITE setLabelFont)
+  Q_PROPERTY(QColor labelColor READ labelColor WRITE setLabelColor)
   Q_PROPERTY(QString label READ label WRITE setLabel)
   Q_PROPERTY(int labelPadding READ labelPadding WRITE setLabelPadding)
+  Q_PROPERTY(int padding READ padding WRITE setPadding)
+  Q_PROPERTY(int offset READ offset WRITE setOffset)
+  Q_PROPERTY(SelectableParts selectedParts READ selectedParts WRITE setSelectedParts)
+  Q_PROPERTY(SelectableParts selectableParts READ selectableParts WRITE setSelectableParts)
+  Q_PROPERTY(QFont selectedTickLabelFont READ selectedTickLabelFont WRITE setSelectedTickLabelFont)
+  Q_PROPERTY(QFont selectedLabelFont READ selectedLabelFont WRITE setSelectedLabelFont)
+  Q_PROPERTY(QColor selectedTickLabelColor READ selectedTickLabelColor WRITE setSelectedTickLabelColor)
+  Q_PROPERTY(QColor selectedLabelColor READ selectedLabelColor WRITE setSelectedLabelColor)
+  Q_PROPERTY(QPen selectedBasePen READ selectedBasePen WRITE setSelectedBasePen)
+  Q_PROPERTY(QPen selectedTickPen READ selectedTickPen WRITE setSelectedTickPen)
+  Q_PROPERTY(QPen selectedSubTickPen READ selectedSubTickPen WRITE setSelectedSubTickPen)
+  Q_PROPERTY(QCPLineEnding lowerEnding READ lowerEnding WRITE setLowerEnding)
+  Q_PROPERTY(QCPLineEnding upperEnding READ upperEnding WRITE setUpperEnding)
+  Q_PROPERTY(QCPGrid* grid READ grid)
   /// \endcond
 public:
   /*!
     Defines at which side of the axis rect the axis will appear. This also affects how the tick
     marks are drawn, on which side the labels are placed etc.
-    \see setAxisType
   */
-  enum AxisType { atLeft    ///< Axis is vertical and on the left side of the axis rect of the parent QCustomPlot
-                  ,atRight  ///< Axis is vertical and on the right side of the axis rect of the parent QCustomPlot
-                  ,atTop    ///< Axis is horizontal and on the top side of the axis rect of the parent QCustomPlot
-                  ,atBottom ///< Axis is horizontal and on the bottom side of the axis rect of the parent QCustomPlot
+  enum AxisType { atLeft    = 0x01  ///< <tt>0x01</tt> Axis is vertical and on the left side of the axis rect
+                  ,atRight  = 0x02  ///< <tt>0x02</tt> Axis is vertical and on the right side of the axis rect
+                  ,atTop    = 0x04  ///< <tt>0x04</tt> Axis is horizontal and on the top side of the axis rect
+                  ,atBottom = 0x08  ///< <tt>0x08</tt> Axis is horizontal and on the bottom side of the axis rect
                 };
-  Q_ENUMS(AxisType)
+  Q_FLAGS(AxisType AxisTypes)
+  Q_DECLARE_FLAGS(AxisTypes, AxisType)
   /*!
     When automatic tick label generation is enabled (\ref setAutoTickLabels), defines how the
-    numerical value (coordinate) of the tick position is translated into a string that will be
-    drawn at the tick position.
+    coordinate of the tick is interpreted, i.e. translated into a string.
+    
     \see setTickLabelType
   */
   enum LabelType { ltNumber    ///< Tick coordinate is regarded as normal number and will be displayed as such. (see \ref setNumberFormat)
-                   ,ltDateTime ///< Tick coordinate is regarded as a date/time (seconds since 1970-01-01T00:00:00 UTC, see QDateTime::toTime_t) and will be displayed and formatted as such. (see \ref setDateTimeFormat)
+                   ,ltDateTime ///< Tick coordinate is regarded as a date/time (seconds since 1970-01-01T00:00:00 UTC) and will be displayed and formatted as such. (for details, see \ref setDateTimeFormat)
                  };
   Q_ENUMS(LabelType)
   /*!
     Defines the scale of an axis.
     \see setScaleType
   */
-  enum ScaleType { stLinear       ///< Normal linear scaling
+  enum ScaleType { stLinear       ///< Linear scaling
                    ,stLogarithmic ///< Logarithmic scaling with correspondingly transformed plots and (major) tick marks at every base power (see \ref setScaleLogBase).
                  };
   Q_ENUMS(ScaleType)
   /*!
     Defines the selectable parts of an axis.
-    \see setSelectable, setSelected
+    \see setSelectableParts, setSelectedParts
   */
   enum SelectablePart { spNone        = 0      ///< None of the selectable parts
                         ,spAxis       = 0x001  ///< The axis backbone and tick marks
                         ,spTickLabels = 0x002  ///< Tick labels (numbers) of this axis (as a whole, not individually)
                         ,spAxisLabel  = 0x004  ///< The axis label
                       };
-  Q_ENUMS(SelectablePart)
+  Q_FLAGS(SelectablePart SelectableParts)
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)
   
-  explicit QCPAxis(QCustomPlot *parentPlot, AxisType type);
-  virtual ~QCPAxis();
+  explicit QCPAxis(QCPAxisRect *parent, AxisType type);
       
   // getters:
   AxisType axisType() const { return mAxisType; }
-  QRect axisRect() const { return mAxisRect; }
+  QCPAxisRect *axisRect() const { return mAxisRect; }
   ScaleType scaleType() const { return mScaleType; }
   double scaleLogBase() const { return mScaleLogBase; }
   const QCPRange range() const { return mRange; }
   bool rangeReversed() const { return mRangeReversed; }
-  bool antialiasedGrid() const { return mGrid->antialiased(); }
-  bool antialiasedSubGrid() const { return mGrid->antialiasedSubGrid(); }
-  bool antialiasedZeroLine() const { return mGrid->antialiasedZeroLine(); }
-  bool grid() const { return mGrid->visible(); }
-  bool subGrid() const { return mGrid->subGridVisible(); }
   bool autoTicks() const { return mAutoTicks; }
   int autoTickCount() const { return mAutoTickCount; }
   bool autoTickLabels() const { return mAutoTickLabels; }
@@ -195,9 +220,6 @@ public:
   int subTickLengthIn() const { return mSubTickLengthIn; }
   int subTickLengthOut() const { return mSubTickLengthOut; }
   QPen basePen() const { return mBasePen; }
-  QPen gridPen() const { return mGrid->pen(); }
-  QPen subGridPen() const { return mGrid->subGridPen(); }
-  QPen zeroLinePen() const { return mGrid->zeroLinePen(); }
   QPen tickPen() const { return mTickPen; }
   QPen subTickPen() const { return mSubTickPen; }
   QFont labelFont() const { return mLabelFont; }
@@ -205,8 +227,9 @@ public:
   QString label() const { return mLabel; }
   int labelPadding() const { return mLabelPadding; }
   int padding() const { return mPadding; }
-  SelectableParts selected() const { return mSelected; }
-  SelectableParts selectable() const { return mSelectable; }
+  int offset() const { return mOffset; }
+  SelectableParts selectedParts() const { return mSelectedParts; }
+  SelectableParts selectableParts() const { return mSelectableParts; }
   QFont selectedTickLabelFont() const { return mSelectedTickLabelFont; }
   QFont selectedLabelFont() const { return mSelectedLabelFont; }
   QColor selectedTickLabelColor() const { return mSelectedTickLabelColor; }
@@ -214,20 +237,19 @@ public:
   QPen selectedBasePen() const { return mSelectedBasePen; }
   QPen selectedTickPen() const { return mSelectedTickPen; }
   QPen selectedSubTickPen() const { return mSelectedSubTickPen; }
+  QCPLineEnding lowerEnding() const { return mLowerEnding; }
+  QCPLineEnding upperEnding() const { return mUpperEnding; }
+  QCPGrid *grid() const { return mGrid; }
   
   // setters:
   void setScaleType(ScaleType type);
   void setScaleLogBase(double base);
+  Q_SLOT void setRange(const QCPRange &range);
   void setRange(double lower, double upper);
   void setRange(double position, double size, Qt::AlignmentFlag alignment);
   void setRangeLower(double lower);
   void setRangeUpper(double upper);
   void setRangeReversed(bool reversed);
-  void setAntialiasedGrid(bool enabled);
-  void setAntialiasedSubGrid(bool enabled);
-  void setAntialiasedZeroLine(bool enabled);
-  void setGrid(bool show);
-  void setSubGrid(bool show);
   void setAutoTicks(bool on);
   void setAutoTickCount(int approximateCount);
   void setAutoTickLabels(bool on);
@@ -247,12 +269,13 @@ public:
   void setTickVector(const QVector<double> &vec);
   void setTickVectorLabels(const QVector<QString> &vec);
   void setTickLength(int inside, int outside=0);
+  void setTickLengthIn(int inside);
+  void setTickLengthOut(int outside);
   void setSubTickCount(int count);
   void setSubTickLength(int inside, int outside=0);
+  void setSubTickLengthIn(int inside);
+  void setSubTickLengthOut(int outside);
   void setBasePen(const QPen &pen);
-  void setGridPen(const QPen &pen);
-  void setSubGridPen(const QPen &pen);
-  void setZeroLinePen(const QPen &pen);
   void setTickPen(const QPen &pen);
   void setSubTickPen(const QPen &pen);
   void setLabelFont(const QFont &font);
@@ -260,6 +283,7 @@ public:
   void setLabel(const QString &str);
   void setLabelPadding(int padding);
   void setPadding(int padding);
+  void setOffset(int offset);
   void setSelectedTickLabelFont(const QFont &font);
   void setSelectedLabelFont(const QFont &font);
   void setSelectedTickLabelColor(const QColor &color);
@@ -267,26 +291,32 @@ public:
   void setSelectedBasePen(const QPen &pen);
   void setSelectedTickPen(const QPen &pen);
   void setSelectedSubTickPen(const QPen &pen);
+  Q_SLOT void setSelectableParts(const QCPAxis::SelectableParts &selectableParts);
+  Q_SLOT void setSelectedParts(const QCPAxis::SelectableParts &selectedParts);
+  void setLowerEnding(const QCPLineEnding &ending);
+  void setUpperEnding(const QCPLineEnding &ending);
   
-  // non-property methods:
+  // reimplemented virtual methods:
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  
+  // non-virtual methods:
   Qt::Orientation orientation() const { return mOrientation; }
   void moveRange(double diff);
   void scaleRange(double factor, double center);
   void setScaleRatio(const QCPAxis *otherAxis, double ratio=1.0);
   double pixelToCoord(double value) const;
   double coordToPixel(double value) const;
-  SelectablePart selectTest(const QPointF &pos) const;
+  SelectablePart getPartAt(const QPointF &pos) const;
+  QList<QCPAbstractPlottable*> plottables() const;
+  QList<QCPGraph*> graphs() const;
+  QList<QCPAbstractItem*> items() const;
   
-public slots:
-  // slot setters:
-  void setRange(const QCPRange &range);
-  void setSelectable(const QCPAxis::SelectableParts &selectable);
-  void setSelected(const QCPAxis::SelectableParts &selected);
+  static AxisType marginSideToAxisType(QCP::MarginSide side);
   
 signals:
   void ticksRequest();
   void rangeChanged(const QCPRange &newRange);
-  void selectionChanged(QCPAxis::SelectableParts selection);
+  void selectionChanged(const QCPAxis::SelectableParts &parts);
 
 protected:
   struct CachedLabel
@@ -301,72 +331,82 @@ protected:
     QFont baseFont, expFont;
   };
   
-  // simple properties with getters and setters:
-  QVector<double> mTickVector;
-  QVector<QString> mTickVectorLabels;
-  QCPRange mRange;
-  QString mDateTimeFormat;
-  QString mLabel;
-  QRect mAxisRect;
-  QPen mBasePen, mTickPen, mSubTickPen;
-  QFont mTickLabelFont, mLabelFont;
-  QColor mTickLabelColor, mLabelColor;
-  LabelType mTickLabelType;
-  ScaleType mScaleType;
+  // property members:
+  // axis base:
   AxisType mAxisType;
-  double mTickStep;
-  double mScaleLogBase, mScaleLogBaseLogInv;
-  int mSubTickCount, mTickLengthIn, mTickLengthOut, mSubTickLengthIn, mSubTickLengthOut;
-  int mAutoTickCount;
-  int mTickLabelPadding, mLabelPadding, mPadding;
+  QCPAxisRect *mAxisRect;
+  int mOffset, mPadding;
+  Qt::Orientation mOrientation;
+  SelectableParts mSelectableParts, mSelectedParts;
+  QPen mBasePen, mSelectedBasePen;
+  QCPLineEnding mLowerEnding, mUpperEnding;
+  // axis label:
+  int mLabelPadding;
+  QString mLabel;
+  QFont mLabelFont, mSelectedLabelFont;
+  QColor mLabelColor, mSelectedLabelColor;
+  // tick labels:
+  int mTickLabelPadding;
+  bool mTickLabels, mAutoTickLabels;
   double mTickLabelRotation;
-  bool mTicks, mTickLabels, mAutoTicks, mAutoTickLabels, mAutoTickStep, mAutoSubTicks;
-  bool mRangeReversed;
-  SelectableParts mSelectable, mSelected;
-  QFont mSelectedTickLabelFont, mSelectedLabelFont;
-  QColor mSelectedTickLabelColor, mSelectedLabelColor;
-  QPen mSelectedBasePen, mSelectedTickPen, mSelectedSubTickPen;
-  QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
-  
-  // internal or not explicitly exposed properties:
-  QCPGrid *mGrid;
-  QVector<double> mSubTickVector;
-  QChar mExponentialChar, mPositiveSignChar;
+  LabelType mTickLabelType;
+  QFont mTickLabelFont, mSelectedTickLabelFont;
+  QColor mTickLabelColor, mSelectedTickLabelColor;
+  QString mDateTimeFormat;
   int mNumberPrecision;
   char mNumberFormatChar;
-  bool mNumberBeautifulPowers, mNumberMultiplyCross;
-  Qt::Orientation mOrientation;
-  int mLowestVisibleTick, mHighestVisibleTick;
+  bool mNumberBeautifulPowers;
+  bool mNumberMultiplyCross;
+  // ticks and subticks:
+  bool mTicks;
+  double mTickStep;
+  int mSubTickCount, mAutoTickCount;
+  bool mAutoTicks, mAutoTickStep, mAutoSubTicks;
+  int mTickLengthIn, mTickLengthOut, mSubTickLengthIn, mSubTickLengthOut;
+  QPen mTickPen, mSelectedTickPen;
+  QPen mSubTickPen, mSelectedSubTickPen;
+  // scale and range:
+  QCPRange mRange;
+  bool mRangeReversed;
+  ScaleType mScaleType;
+  double mScaleLogBase, mScaleLogBaseLogInv;
+  
+  // non-property members:
+  QCPGrid *mGrid;
   QCache<QString, CachedLabel> mLabelCache;
+  int mLowestVisibleTick, mHighestVisibleTick;
+  QChar mExponentialChar, mPositiveSignChar;
+  QVector<double> mTickVector;
+  QVector<QString> mTickVectorLabels;
+  QVector<double> mSubTickVector;
+  QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
+  bool mCachedMarginValid;
+  int mCachedMargin;
   
-  // internal setters:
-  void setAxisType(AxisType type);
-  void setAxisRect(const QRect &rect);
-  
-  // introduced methods:
+  // introduced virtual methods:
   virtual void setupTickVectors();
   virtual void generateAutoTicks();
   virtual int calculateAutoSubTickCount(double tickStep) const;
-  virtual int calculateMargin() const;
-  virtual bool handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified);
-  
-  // drawing:
-  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
-  virtual void draw(QCPPainter *painter); 
+  virtual int calculateMargin();
+  // tick label drawing/caching:
   virtual void placeTickLabel(QCPPainter *painter, double position, int distanceToAxis, const QString &text, QSize *tickLabelsSize);
-  
-  // tick label drawing/caching helpers:
   virtual void drawTickLabel(QCPPainter *painter, double x, double y, const TickLabelData &labelData) const;
   virtual TickLabelData getTickLabelData(const QFont &font, const QString &text) const;
   virtual QPointF getTickLabelDrawOffset(const TickLabelData &labelData) const;
   virtual void getMaxTickLabelSize(const QFont &font, const QString &text, QSize *tickLabelsSize) const;
   
-  // basic non virtual helpers:
+  // reimplemented virtual methods:
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
+  virtual void draw(QCPPainter *painter); 
+  virtual QCP::Interaction selectionCategory() const;
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
+  
+  // non-virtual methods:
   void visibleTickBounds(int &lowIndex, int &highIndex) const;
   double baseLog(double value) const;
   double basePow(double value) const;
-  
-  // helpers to get the right pen/font depending on selection state:
   QPen getBasePen() const;
   QPen getTickPen() const;
   QPen getSubTickPen() const;
@@ -380,7 +420,10 @@ private:
   
   friend class QCustomPlot;
   friend class QCPGrid;
+  friend class QCPAxisRect;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::SelectableParts)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::AxisTypes)
+Q_DECLARE_METATYPE(QCPAxis::SelectablePart)
 
 #endif // QCP_AXIS_H

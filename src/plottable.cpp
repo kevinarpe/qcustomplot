@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #include "plottable.h"
@@ -27,7 +28,8 @@
 #include "painter.h"
 #include "core.h"
 #include "axis.h"
-#include "legend.h"
+#include "layoutelements/layoutelement-axisrect.h"
+#include "layoutelements/layoutelement-legend.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPAbstractPlottable
@@ -37,8 +39,8 @@
   \brief The abstract base class for all data representing objects in a plot.
 
   It defines a very basic interface like name, pen, brush, visibility etc. Since this class is
-  abstract, it can't be instantiated. Use one of the subclasses or create a subclass yourself (see
-  below), to create new ways of displaying data.
+  abstract, it can't be instantiated. Use one of the subclasses or create a subclass yourself to
+  create new ways of displaying data (see "Creating own plottables" below).
   
   All further specifics are in the subclasses, for example:
   \li A normal graph with possibly a line, scatter points and error bars is displayed by \ref QCPGraph
@@ -68,17 +70,14 @@
   QCPAxis::coordToPixel. However, you must then take care about the orientation of the axis
   yourself.
   
-  From QCPAbstractPlottable you inherit the following members you may use:
+  Here are some important membery you inherit from QCPAbstractPlottable:
   <table>
   <tr>
     <td>QCustomPlot *\b mParentPlot</td>
-    <td>A pointer to the parent QCustomPlot instance. This is adopted from the axes that are passed in the constructor.</td>
+    <td>A pointer to the parent QCustomPlot instance. The parent plot is inferred from the axes that are passed in the constructor.</td>
   </tr><tr>
     <td>QString \b mName</td>
     <td>The name of the plottable.</td>
-  </tr><tr>
-    <td>bool \b mVisible</td>
-    <td>Whether the plot is visible or not. When this is false, you shouldn't draw the data in the \ref draw function (\ref draw is always called, no matter what mVisible is).</td>
   </tr><tr>
     <td>QPen \b mPen</td>
     <td>The generic pen of the plottable. You should use this pen for the most prominent data representing lines in the plottable (e.g QCPGraph uses this pen for its graph lines and scatters)</td>
@@ -92,8 +91,9 @@
     <td>QBrush \b mSelectedBrush</td>
     <td>The generic brush that should be used when the plottable is selected (hint: \ref mainBrush gives you the right brush, depending on selection state).</td>
   </tr><tr>
-    <td>QCPAxis *\b mKeyAxis, *\b mValueAxis</td>
-    <td>The key and value axes this plottable is attached to. Call their QCPAxis::coordToPixel functions to translate coordinates to pixels in either the key or value dimension.</td>
+    <td>QWeakPointer<QCPAxis>\b mKeyAxis, \b mValueAxis</td>
+    <td>The key and value axes this plottable is attached to. Call their QCPAxis::coordToPixel functions to translate coordinates to pixels in either the key or value dimension.
+        Make sure to check whether the weak pointer is null before using it. If one of the axes is null, don't draw the plottable.</td>
   </tr><tr>
     <td>bool \b mSelected</td>
     <td>indicates whether the plottable is selected or not.</td>
@@ -105,40 +105,6 @@
 
 /*! \fn void QCPAbstractPlottable::clearData() = 0
   Clears all data in the plottable.
-*/
-
-/*! \fn double QCPAbstractPlottable::selectTest(const QPointF &pos) const = 0
-  
-  This function is used to decide whether a click hits a plottable or not.
-
-  \a pos is a point in pixel coordinates on the QCustomPlot surface. This function returns the
-  shortest pixel distance of this point to the plottable (e.g. to the scatters/lines of a graph).
-  If the plottable is either invisible, contains no data or the distance couldn't be determined,
-  -1.0 is returned. \ref setSelectable has no influence on the return value of this function.
-
-  If the plottable is represented not by single lines but by an area like QCPBars or
-  QCPStatisticalBox, a click inside the area returns a constant value greater zero (typically 99%
-  of the selectionTolerance of the parent QCustomPlot). If the click lies outside the area, this
-  function returns -1.0.
-  
-  Providing a constant value for area objects allows selecting line objects even when they are
-  obscured by such area objects, by clicking close to the lines (i.e. closer than
-  0.99*selectionTolerance).
-  
-  The actual setting of the selection state is not done by this function. This is handled by the
-  parent QCustomPlot when the mouseReleaseEvent occurs.
-  
-  \see setSelected, QCustomPlot::setInteractions
-*/
-
-/*! \fn void QCPAbstractPlottable::draw(QCPPainter *painter) = 0
-  \internal
-  
-  Draws this plottable with the provided \a painter. Called by \ref QCustomPlot::draw on all its
-  visible plottables.
-  
-  The cliprect of the provided painter is set to the axis rect of the key/value axis of this
-  plottable (what \ref clipRect returns), before this function is called.
 */
 
 /*! \fn void QCPAbstractPlottable::drawLegendIcon(QCPPainter *painter, const QRect &rect) const = 0
@@ -180,8 +146,9 @@
 /* start of documentation of signals */
 
 /*! \fn void QCPAbstractPlottable::selectionChanged(bool selected)
-  This signal is emitted when the selection state of this plottable has changed, either by user interaction
-  or by a direct call to \ref setSelected.
+  
+  This signal is emitted when the selection state of this plottable has changed to \a selected,
+  either by user interaction or by a direct call to \ref setSelected.
 */
 
 /* end of documentation of signals */
@@ -189,18 +156,16 @@
 /*!
   Constructs an abstract plottable which uses \a keyAxis as its key axis ("x") and \a valueAxis as
   its value axis ("y"). \a keyAxis and \a valueAxis must reside in the same QCustomPlot instance
-  and not have the same orientation. If either of these restrictions is violated, a corresponding
+  and have perpendicular orientations. If either of these restrictions is violated, a corresponding
   message is printed to the debug output (qDebug), the construction is not aborted, though.
   
-  Since QCPAbstractPlottable is an abstract class that defines the basic interface to plottables
-  (i.e. any form of data representation inside a plot, like graphs, curves etc.), it can't be
-  directly instantiated.
+  Since QCPAbstractPlottable is an abstract class that defines the basic interface to plottables,
+  it can't be directly instantiated.
   
-  You probably want one of the subclasses like \ref QCPGraph and \ref QCPCurve instead.
-  \see setKeyAxis, setValueAxis
+  You probably want one of the subclasses like \ref QCPGraph or \ref QCPCurve instead.
 */
 QCPAbstractPlottable::QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis) :
-  QCPLayerable(keyAxis->parentPlot()),
+  QCPLayerable(keyAxis->parentPlot(), "", keyAxis->axisRect()),
   mName(""),
   mAntialiasedFill(true),
   mAntialiasedScatters(true),
@@ -211,8 +176,8 @@ QCPAbstractPlottable::QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis)
   mSelectedBrush(Qt::NoBrush),
   mKeyAxis(keyAxis),
   mValueAxis(valueAxis),
-  mSelected(false),
-  mSelectable(true)
+  mSelectable(true),
+  mSelected(false)
 {
   if (keyAxis->parentPlot() != valueAxis->parentPlot())
     qDebug() << Q_FUNC_INFO << "Parent plot of keyAxis is not the same as that of valueAxis.";
@@ -221,8 +186,8 @@ QCPAbstractPlottable::QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis)
 }
 
 /*!
-   The name is the textual representation of this plottable as it is displayed in the QCPLegend of
-   the parent QCustomPlot. It may contain any utf-8 characters, including newlines.
+   The name is the textual representation of this plottable as it is displayed in the legend
+   (\ref QCPLegend). It may contain any UTF-8 characters, including newlines.
 */
 void QCPAbstractPlottable::setName(const QString &name)
 {
@@ -371,7 +336,7 @@ void QCPAbstractPlottable::setSelectable(bool selectable)
   
   emits the \ref selectionChanged signal when \a selected is different from the previous selection state.
   
-  \see selectTest
+  \see setSelectable, selectTest
 */
 void QCPAbstractPlottable::setSelected(bool selected)
 {
@@ -392,6 +357,8 @@ void QCPAbstractPlottable::setSelected(bool selected)
   \a onlyEnlarge makes sure the ranges are only expanded, never reduced. So it's possible to show
   multiple plottables in their entirety by multiple calls to rescaleAxes where the first call has
   \a onlyEnlarge set to false (the default), and all subsequent set to true.
+  
+  \see rescaleKeyAxis, rescaleValueAxis, QCustomPlot::rescaleAxes
 */
 void QCPAbstractPlottable::rescaleAxes(bool onlyEnlarge) const
 {
@@ -406,9 +373,12 @@ void QCPAbstractPlottable::rescaleAxes(bool onlyEnlarge) const
 */
 void QCPAbstractPlottable::rescaleKeyAxis(bool onlyEnlarge) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  if (!keyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
+  
   SignDomain signDomain = sdBoth;
-  if (mKeyAxis->scaleType() == QCPAxis::stLogarithmic)
-    signDomain = (mKeyAxis->range().upper < 0 ? sdNegative : sdPositive);
+  if (keyAxis->scaleType() == QCPAxis::stLogarithmic)
+    signDomain = (keyAxis->range().upper < 0 ? sdNegative : sdPositive);
   
   bool validRange;
   QCPRange newRange = getKeyRange(validRange, signDomain);
@@ -416,12 +386,12 @@ void QCPAbstractPlottable::rescaleKeyAxis(bool onlyEnlarge) const
   {
     if (onlyEnlarge)
     {
-      if (mKeyAxis->range().lower < newRange.lower)
-        newRange.lower = mKeyAxis->range().lower;
-      if (mKeyAxis->range().upper > newRange.upper)
-        newRange.upper = mKeyAxis->range().upper;
+      if (keyAxis->range().lower < newRange.lower)
+        newRange.lower = keyAxis->range().lower;
+      if (keyAxis->range().upper > newRange.upper)
+        newRange.upper = keyAxis->range().upper;
     }
-    mKeyAxis->setRange(newRange);
+    keyAxis->setRange(newRange);
   }
 }
 
@@ -432,9 +402,12 @@ void QCPAbstractPlottable::rescaleKeyAxis(bool onlyEnlarge) const
 */
 void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
 {
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!valueAxis) { qDebug() << Q_FUNC_INFO << "invalid value axis"; return; }
+  
   SignDomain signDomain = sdBoth;
-  if (mValueAxis->scaleType() == QCPAxis::stLogarithmic)
-    signDomain = (mValueAxis->range().upper < 0 ? sdNegative : sdPositive);
+  if (valueAxis->scaleType() == QCPAxis::stLogarithmic)
+    signDomain = (valueAxis->range().upper < 0 ? sdNegative : sdPositive);
   
   bool validRange;
   QCPRange newRange = getValueRange(validRange, signDomain);
@@ -443,29 +416,35 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
   {
     if (onlyEnlarge)
     {
-      if (mValueAxis->range().lower < newRange.lower)
-        newRange.lower = mValueAxis->range().lower;
-      if (mValueAxis->range().upper > newRange.upper)
-        newRange.upper = mValueAxis->range().upper;
+      if (valueAxis->range().lower < newRange.lower)
+        newRange.lower = valueAxis->range().lower;
+      if (valueAxis->range().upper > newRange.upper)
+        newRange.upper = valueAxis->range().upper;
     }
-    mValueAxis->setRange(newRange);
+    valueAxis->setRange(newRange);
   }
 }
 
 /*!
-  Adds this plottable to the legend of the parent QCustomPlot.
+  Adds this plottable to the legend of the parent QCustomPlot (QCustomPlot::legend).
     
   Normally, a QCPPlottableLegendItem is created and inserted into the legend. If the plottable
   needs a more specialized representation in the legend, this function will take this into account
   and instead create the specialized subclass of QCPAbstractLegendItem.
     
-  Returns true on success, i.e. when a legend item associated with this plottable isn't already in
+  Returns true on success, i.e. when the legend exists and a legend item associated with this plottable isn't already in
   the legend.
     
   \see removeFromLegend, QCPLegend::addItem
 */
 bool QCPAbstractPlottable::addToLegend()
 {
+  if (!mParentPlot || !mParentPlot->legend)
+  {
+    qDebug() << Q_FUNC_INFO << "No parent plot or no parent plot legend set";
+    return false;
+  }
+  
   if (!mParentPlot->legend->hasItemWithPlottable(this))
   {
     mParentPlot->legend->addItem(new QCPPlottableLegendItem(mParentPlot->legend, this));
@@ -479,13 +458,16 @@ bool QCPAbstractPlottable::addToLegend()
   QCPAbstractLegendItem (usually a QCPPlottableLegendItem) that is associated with this plottable
   is removed.
     
-  Returns true on success, i.e. if a legend item associated with this plottable was found and
-  removed from the legend.
+  Returns true on success, i.e. if the legend exists and a legend item associated with this
+  plottable was found and removed.
     
   \see addToLegend, QCPLegend::removeItem
 */
 bool QCPAbstractPlottable::removeFromLegend() const
 {
+  if (!mParentPlot->legend)
+    return false;
+  
   if (QCPPlottableLegendItem *lip = mParentPlot->legend->itemWithPlottable(this))
     return mParentPlot->legend->removeItem(lip);
   else
@@ -495,7 +477,16 @@ bool QCPAbstractPlottable::removeFromLegend() const
 /* inherits documentation from base class */
 QRect QCPAbstractPlottable::clipRect() const
 {
-  return mKeyAxis->axisRect() | mValueAxis->axisRect();
+  if (mKeyAxis && mValueAxis)
+    return mKeyAxis.data()->axisRect()->rect() & mValueAxis.data()->axisRect()->rect();
+  else
+    return QRect();
+}
+
+/* inherits documentation from base class */
+QCP::Interaction QCPAbstractPlottable::selectionCategory() const
+{
+  return QCP::iSelectPlottables;
 }
 
 /*! \internal
@@ -510,14 +501,18 @@ QRect QCPAbstractPlottable::clipRect() const
 */
 void QCPAbstractPlottable::coordsToPixels(double key, double value, double &x, double &y) const
 {
-  if (mKeyAxis->orientation() == Qt::Horizontal)
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
+  if (keyAxis->orientation() == Qt::Horizontal)
   {
-    x = mKeyAxis->coordToPixel(key);
-    y = mValueAxis->coordToPixel(value);
+    x = keyAxis->coordToPixel(key);
+    y = valueAxis->coordToPixel(value);
   } else
   {
-    y = mKeyAxis->coordToPixel(key);
-    x = mValueAxis->coordToPixel(value);
+    y = keyAxis->coordToPixel(key);
+    x = valueAxis->coordToPixel(value);
   }
 }
 
@@ -528,10 +523,14 @@ void QCPAbstractPlottable::coordsToPixels(double key, double value, double &x, d
 */
 const QPointF QCPAbstractPlottable::coordsToPixels(double key, double value) const
 {
-  if (mKeyAxis->orientation() == Qt::Horizontal)
-    return QPointF(mKeyAxis->coordToPixel(key), mValueAxis->coordToPixel(value));
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return QPointF(); }
+  
+  if (keyAxis->orientation() == Qt::Horizontal)
+    return QPointF(keyAxis->coordToPixel(key), valueAxis->coordToPixel(value));
   else
-    return QPointF(mValueAxis->coordToPixel(value), mKeyAxis->coordToPixel(key));
+    return QPointF(valueAxis->coordToPixel(value), keyAxis->coordToPixel(key));
 }
 
 /*! \internal
@@ -546,14 +545,18 @@ const QPointF QCPAbstractPlottable::coordsToPixels(double key, double value) con
 */
 void QCPAbstractPlottable::pixelsToCoords(double x, double y, double &key, double &value) const
 {
-  if (mKeyAxis->orientation() == Qt::Horizontal)
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
+  if (keyAxis->orientation() == Qt::Horizontal)
   {
-    key = mKeyAxis->pixelToCoord(x);
-    value = mValueAxis->pixelToCoord(y);
+    key = keyAxis->pixelToCoord(x);
+    value = valueAxis->pixelToCoord(y);
   } else
   {
-    key = mKeyAxis->pixelToCoord(y);
-    value = mValueAxis->pixelToCoord(x);
+    key = keyAxis->pixelToCoord(y);
+    value = valueAxis->pixelToCoord(x);
   }
 }
 
@@ -594,8 +597,9 @@ QBrush QCPAbstractPlottable::mainBrush() const
 
   This is the antialiasing state the painter passed to the \ref draw method is in by default.
   
-  This function takes into account the local setting of the antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased, applyFillAntialiasingHint, applyScattersAntialiasingHint, applyErrorBarsAntialiasingHint
 */
@@ -609,8 +613,9 @@ void QCPAbstractPlottable::applyDefaultAntialiasingHint(QCPPainter *painter) con
   A convenience function to easily set the QPainter::Antialiased hint on the provided \a painter
   before drawing plottable fills.
   
-  This function takes into account the local setting of the fill antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased, applyDefaultAntialiasingHint, applyScattersAntialiasingHint, applyErrorBarsAntialiasingHint
 */
@@ -624,8 +629,9 @@ void QCPAbstractPlottable::applyFillAntialiasingHint(QCPPainter *painter) const
   A convenience function to easily set the QPainter::Antialiased hint on the provided \a painter
   before drawing plottable scatter points.
   
-  This function takes into account the local setting of the scatters antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased, applyFillAntialiasingHint, applyDefaultAntialiasingHint, applyErrorBarsAntialiasingHint
 */
@@ -639,8 +645,9 @@ void QCPAbstractPlottable::applyScattersAntialiasingHint(QCPPainter *painter) co
   A convenience function to easily set the QPainter::Antialiased hint on the provided \a painter
   before drawing plottable error bars.
   
-  This function takes into account the local setting of the error bars antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased, applyFillAntialiasingHint, applyScattersAntialiasingHint, applyDefaultAntialiasingHint
 */
@@ -678,4 +685,30 @@ double QCPAbstractPlottable::distSqrToLine(const QPointF &start, const QPointF &
       return ((a + mu*v)-p).lengthSquared();
   } else
     return (a-p).lengthSquared();
+}
+
+/* inherits documentation from base class */
+void QCPAbstractPlottable::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
+{
+  Q_UNUSED(event)
+  Q_UNUSED(details)
+  if (mSelectable)
+  {
+    bool selBefore = mSelected;
+    setSelected(additive ? !mSelected : true);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
+}
+
+/* inherits documentation from base class */
+void QCPAbstractPlottable::deselectEvent(bool *selectionStateChanged)
+{
+  if (mSelectable)
+  {
+    bool selBefore = mSelected;
+    setSelected(false);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelected != selBefore;
+  }
 }

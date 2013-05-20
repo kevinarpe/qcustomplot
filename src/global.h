@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,13 +19,20 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 /*! \file */
 #ifndef QCP_GLOBAL_H
 #define QCP_GLOBAL_H
 
+#ifdef QT_DISABLE_DEPRECATED_BEFORE
+#  undef QT_DISABLE_DEPRECATED_BEFORE
+#endif
+#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(0, 0, 0)
+
 #include <QObject>
+#include <QWeakPointer>
 #include <QWidget>
 #include <QPainter>
 #include <QPaintEvent>
@@ -41,6 +48,7 @@
 #include <QVector2D>
 #include <QStack>
 #include <QCache>
+#include <QMargins>
 #include <qmath.h>
 #include <limits>
 
@@ -54,43 +62,28 @@
 #endif
 
 /*!
-  The QCP Namespace contains general enums and QFlags 
+  The QCP Namespace contains general enums and QFlags used throughout the QCustomPlot library
 */
 namespace QCP
 {
 /*!
-  Defines the symbol used for scatter points.
+  Defines the sides of a rectangular entity to which margins can be applied.
   
-  On plottables/items that draw scatters, the sizes of these visualizations (with exception of \ref
-  QCP::ssDot and \ref QCP::ssPixmap) can be controlled with a \a setScatterSize function. Scatters
-  are in general drawn with the main pen set on the plottable/item.
-  
-  \see QCPGraph::setScatterStyle, QCPStatisticalBox::setOutlierStyle
+  \see QCPLayoutElement::setAutoMargins, QCPAxisRect::setAutoMargins
 */
-enum ScatterStyle { ssNone       ///< \enumimage{ssNone.png} no scatter symbols are drawn (e.g. in QCPGraph, data only represented with lines)
-                    ,ssDot       ///< \enumimage{ssDot.png} a single pixel (use \ref ssDisc if you want a round shape with a certain radius)
-                    ,ssCross     ///< \enumimage{ssCross.png} a cross
-                    ,ssPlus      ///< \enumimage{ssPlus.png} a plus
-                    ,ssCircle    ///< \enumimage{ssCircle.png} a circle which is not filled
-                    ,ssDisc      ///< \enumimage{ssDisc.png} a circle which is filled with the color of the pen (not the brush!)
-                    ,ssSquare    ///< \enumimage{ssSquare.png} a square which is not filled
-                    ,ssDiamond   ///< \enumimage{ssDiamond.png} a diamond which is not filled
-                    ,ssStar      ///< \enumimage{ssStar.png} a star with eight arms, i.e. a combination of cross and plus
-                    ,ssTriangle  ///< \enumimage{ssTriangle.png} an equilateral triangle which is not filled, standing on baseline
-                    ,ssTriangleInverted ///< \enumimage{ssTriangleInverted.png} an equilateral triangle which is not filled, standing on corner
-                    ,ssCrossSquare      ///< \enumimage{ssCrossSquare.png} a square which is not filled, with a cross inside
-                    ,ssPlusSquare       ///< \enumimage{ssPlusSquare.png} a square which is not filled, with a plus inside
-                    ,ssCrossCircle      ///< \enumimage{ssCrossCircle.png} a circle which is not filled, with a cross inside
-                    ,ssPlusCircle       ///< \enumimage{ssPlusCircle.png} a circle which is not filled, with a plus inside
-                    ,ssPeace     ///< \enumimage{ssPeace.png} a circle which is not filled, with one vertical and two downward diagonal lines
-                    ,ssPixmap    ///< \enumimage{ssPixmap.png} a custom pixmap specified by setScatterPixmap, centered on the data point coordinates
-                  };
+enum MarginSide { msLeft     = 0x01 ///< <tt>0x01</tt> left margin
+                  ,msRight   = 0x02 ///< <tt>0x02</tt> right margin
+                  ,msTop     = 0x04 ///< <tt>0x04</tt> top margin
+                  ,msBottom  = 0x08 ///< <tt>0x08</tt> bottom margin
+                  ,msAll     = 0xFF ///< <tt>0xFF</tt> all margins
+                  ,msNone    = 0x00 ///< <tt>0x00</tt> no margin
+                };
+Q_DECLARE_FLAGS(MarginSides, MarginSide)
 
 /*!
-  Defines what elements of a plot can be forcibly drawn antialiased/not antialiased. If an
-  element is neither forcibly drawn antialiased nor forcibly drawn not antialiased, it is up to
-  the respective element how it is drawn. Typically it provides a \a setAntialiased function for
-  this.
+  Defines what objects of a plot can be forcibly drawn antialiased/not antialiased. If an object is
+  neither forcibly drawn antialiased nor forcibly drawn not antialiased, it is up to the respective
+  element how it is drawn. Typically it provides a \a setAntialiased function for this.
   
   \c AntialiasedElements is a flag of or-combined elements of this enum type.
   
@@ -106,30 +99,49 @@ enum AntialiasedElement { aeAxes           = 0x0001 ///< <tt>0x0001</tt> Axis ba
                           ,aeScatters      = 0x0080 ///< <tt>0x0080</tt> Scatter symbols of plottables (excluding scatter symbols of type ssPixmap)
                           ,aeErrorBars     = 0x0100 ///< <tt>0x0100</tt> Error bars
                           ,aeFills         = 0x0200 ///< <tt>0x0200</tt> Borders of fills (e.g. under or between graphs)
-                          ,aeZeroLine      = 0x0400 ///< <tt>0x0400</tt> Zero-lines, see \ref QCPAxis::setZeroLinePen
+                          ,aeZeroLine      = 0x0400 ///< <tt>0x0400</tt> Zero-lines, see \ref QCPGrid::setZeroLinePen
                           ,aeAll           = 0xFFFF ///< <tt>0xFFFF</tt> All elements
                           ,aeNone          = 0x0000 ///< <tt>0x0000</tt> No elements
-                        }; 
+                        };
 Q_DECLARE_FLAGS(AntialiasedElements, AntialiasedElement)
 
 /*!
   Defines plotting hints that control various aspects of the quality and speed of plotting.
+  
   \see QCustomPlot::setPlottingHints
 */
 enum PlottingHint { phNone            = 0x000 ///< <tt>0x000</tt> No hints are set
                     ,phFastPolylines  = 0x001 ///< <tt>0x001</tt> Graph/Curve lines are drawn with a faster method. This reduces the quality
-                                              ///<                especially of the line segment joins. (Only used for solid line pens.)
+                                              ///<                especially of the line segment joins. (Only relevant for solid line pens.)
                     ,phForceRepaint   = 0x002 ///< <tt>0x002</tt> causes an immediate repaint() instead of a soft update() when QCustomPlot::replot() is called. This is set by default
                                               ///<                on Windows-Systems to prevent the plot from freezing on fast consecutive replots (e.g. user drags ranges with mouse).
                     ,phCacheLabels    = 0x004 ///< <tt>0x004</tt> axis (tick) labels will be cached as pixmaps, increasing replot performance.
                   };
 Q_DECLARE_FLAGS(PlottingHints, PlottingHint)
 
+/*!
+  Defines the mouse interactions possible with QCustomPlot.
+  
+  \c Interactions is a flag of or-combined elements of this enum type.
+  
+  \see QCustomPlot::setInteractions
+*/
+enum Interaction { iRangeDrag         = 0x001 ///< <tt>0x001</tt> Axis ranges are draggable (see \ref QCPAxisRect::setRangeDrag, \ref QCPAxisRect::setRangeDragAxes)
+                   ,iRangeZoom        = 0x002 ///< <tt>0x002</tt> Axis ranges are zoomable with the mouse wheel (see \ref QCPAxisRect::setRangeZoom, \ref QCPAxisRect::setRangeZoomAxes)
+                   ,iMultiSelect      = 0x004 ///< <tt>0x004</tt> The user can select multiple objects by holding the modifier set by \ref QCustomPlot::setMultiSelectModifier while clicking
+                   ,iSelectPlottables = 0x008 ///< <tt>0x008</tt> Plottables are selectable
+                   ,iSelectAxes       = 0x010 ///< <tt>0x010</tt> Axes are selectable (or parts of them, see QCPAxis::setSelectableParts)
+                   ,iSelectLegend     = 0x020 ///< <tt>0x020</tt> Legends are selectable (or their child items, see QCPLegend::setSelectableParts)
+                   ,iSelectItems      = 0x040 ///< <tt>0x040</tt> Items are selectable (Rectangles, Arrows, Textitems, etc. see \ref QCPAbstractItem)
+                   ,iSelectOther      = 0x080 ///< <tt>0x080</tt> All other objects are selectable (e.g. your own derived layerables, the plot title,...)
+                 };
+Q_DECLARE_FLAGS(Interactions, Interaction)
 
 /*! \internal
-  Returns whether the specified \a value is considered an invalid data value for plottables (i.e. is \e nan or \e +/-inf). This
-  function is used to check data validity upon replots, when the compiler flag \c
-  QCUSTOMPLOT_CHECK_DATA is set.
+  
+  Returns whether the specified \a value is considered an invalid data value for plottables (i.e.
+  is \e nan or \e +/-inf). This function is used to check data validity upon replots, when the
+  compiler flag \c QCUSTOMPLOT_CHECK_DATA is set.
 */
 inline bool isInvalidData(double value)
 {
@@ -148,8 +160,50 @@ inline bool isInvalidData(double value1, double value2)
   return isInvalidData(value1) || isInvalidData(value2);
 }
 
+/*! \internal
+  
+  Sets the specified \a side of \a margins to \a value
+  
+  \see getMarginValue
+*/
+inline void setMarginValue(QMargins &margins, QCP::MarginSide side, int value)
+{
+  switch (side)
+  {
+    case QCP::msLeft: margins.setLeft(value); break;
+    case QCP::msRight: margins.setRight(value); break;
+    case QCP::msTop: margins.setTop(value); break;
+    case QCP::msBottom: margins.setBottom(value); break;
+    case QCP::msAll: margins = QMargins(value, value, value, value); break;
+    default: break;
+  }
+}
+
+/*! \internal
+  
+  Returns the value of the specified \a side of \a margins. If \a side is \ref QCP::msNone or
+  \ref QCP::msAll, returns 0.
+  
+  \see setMarginValue
+*/
+inline int getMarginValue(const QMargins &margins, QCP::MarginSide side)
+{
+  switch (side)
+  {
+    case QCP::msLeft: return margins.left();
+    case QCP::msRight: return margins.right();
+    case QCP::msTop: return margins.top();
+    case QCP::msBottom: return margins.bottom();
+    default: break;
+  }
+  return 0;
+}
+
 } // end of namespace QCP
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::AntialiasedElements)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::PlottingHints)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::MarginSides)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QCP::Interactions)
 
 #endif // QCP_GLOBAL_H

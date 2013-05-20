@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #include "item-text.h"
@@ -216,13 +217,14 @@ void QCPItemText::setPadding(const QMargins &padding)
 }
 
 /* inherits documentation from base class */
-double QCPItemText::selectTest(const QPointF &pos) const
+double QCPItemText::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (!mVisible)
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
     return -1;
   
   // The rect may be rotated, so we transform the actual clicked pos to the rotated
-  // coordinate system, wo we can use the normal rectSelectTest function for non-rotated rects:
+  // coordinate system, so we can use the normal rectSelectTest function for non-rotated rects:
   QPointF positionPixels(position->pixelPoint());
   QTransform inputTransform;
   inputTransform.translate(positionPixels.x(), positionPixels.y());
@@ -242,7 +244,7 @@ double QCPItemText::selectTest(const QPointF &pos) const
 void QCPItemText::draw(QCPPainter *painter)
 {
   QPointF pos(position->pixelPoint());
-  QTransform transform;
+  QTransform transform = painter->transform();
   transform.translate(pos.x(), pos.y());
   if (!qFuzzyIsNull(mRotation))
     transform.rotate(mRotation);
@@ -254,7 +256,7 @@ void QCPItemText::draw(QCPPainter *painter)
   textBoxRect.moveTopLeft(textPos.toPoint());
   double clipPad = mainPen().widthF();
   QRect boundingRect = textBoxRect.adjusted(-clipPad, -clipPad, clipPad, clipPad);
-  if (transform.mapRect(boundingRect).intersects(clipRect()))
+  if (transform.mapRect(boundingRect).intersects(painter->transform().mapRect(clipRect())))
   {
     painter->setTransform(transform);
     if ((mainBrush().style() != Qt::NoBrush && mainBrush().color().alpha() != 0) ||

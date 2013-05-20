@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_PLOTTABLE_BARS_H
@@ -56,15 +57,20 @@ typedef QMutableMapIterator<double, QCPBarData> QCPBarDataMutableMapIterator;
 class QCP_LIB_DECL QCPBars : public QCPAbstractPlottable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(double width READ width WRITE setWidth)
+  Q_PROPERTY(QCPBars* barBelow READ barBelow)
+  Q_PROPERTY(QCPBars* barAbove READ barAbove)
+  /// \endcond
 public:
   explicit QCPBars(QCPAxis *keyAxis, QCPAxis *valueAxis);
   virtual ~QCPBars();
   
   // getters:
   double width() const { return mWidth; }
-  QCPBars *barBelow() const { return mBarBelow; }
-  QCPBars *barAbove() const { return mBarAbove; }
-  const QCPBarDataMap *data() const { return mData; }
+  QCPBars *barBelow() const { return mBarBelow.data(); }
+  QCPBars *barAbove() const { return mBarAbove.data(); }
+  QCPBarDataMap *data() const { return mData; }
   
   // setters:
   void setWidth(double width);
@@ -82,22 +88,27 @@ public:
   void removeDataAfter(double key);
   void removeData(double fromKey, double toKey);
   void removeData(double key);
+  
+  // reimplemented virtual methods:
   virtual void clearData();
-  virtual double selectTest(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
+  // property members:
   QCPBarDataMap *mData;
   double mWidth;
-  QCPBars *mBarBelow, *mBarAbove;
+  QWeakPointer<QCPBars> mBarBelow, mBarAbove;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
+  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
+  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
   
+  // non-virtual methods:
   QPolygonF getBarPolygon(double key, double value) const;
   double getBaseValue(double key, bool positive) const;
   static void connectBars(QCPBars* lower, QCPBars* upper);
-  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
-  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
   
   friend class QCustomPlot;
   friend class QCPLegend;

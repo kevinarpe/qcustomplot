@@ -9,7 +9,9 @@ desktop.ini
 
 build-release/
 build-debug/
-*.pro.user
+*-build-*-Release/
+*-build-*-Debug/
+*.pro.user*
 Makefile*
 moc_*.cpp
 qrc_*.cpp
@@ -19,6 +21,7 @@ ui_*.h
 *.qm
 *.ts
 *.autosave
+*.moc
 
 # Compilation Binaries:
 
@@ -33,14 +36,6 @@ ui_*.h
 *.lib
 *.dll
 *.exe
-
-# Other:
-
-sketches.txt
-*.graphml
-doc/html/*
-doc/qthelp/*
-doc/images/*
 
 # Amalgamated sources:
 

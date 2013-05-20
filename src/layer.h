@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_LAYER_H
@@ -30,9 +31,18 @@
 class QCPPainter;
 class QCustomPlot;
 class QCPLayerable;
+class QCPLayoutElement;
+class QCPLayout;
 
-class QCP_LIB_DECL QCPLayer
+class QCP_LIB_DECL QCPLayer : public QObject
 {
+  Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QCustomPlot* parentPlot READ parentPlot)
+  Q_PROPERTY(QString name READ name)
+  Q_PROPERTY(int index READ index)
+  Q_PROPERTY(QList<QCPLayerable*> children READ children)
+  /// \endcond
 public:
   QCPLayer(QCustomPlot* parentPlot, const QString &layerName);
   ~QCPLayer();
@@ -40,33 +50,45 @@ public:
   // getters:
   QCustomPlot *parentPlot() const { return mParentPlot; }
   QString name() const { return mName; }
-  int index() const;
+  int index() const { return mIndex; }
   QList<QCPLayerable*> children() const { return mChildren; }
   
 protected:
+  // property members:
   QCustomPlot *mParentPlot;
   QString mName;
+  int mIndex;
   QList<QCPLayerable*> mChildren;
   
+  // non-virtual methods:
   void addChild(QCPLayerable *layerable, bool prepend);
   void removeChild(QCPLayerable *layerable);
   
 private:
   Q_DISABLE_COPY(QCPLayer)
   
+  friend class QCustomPlot;
   friend class QCPLayerable;
 };
 
 class QCP_LIB_DECL QCPLayerable : public QObject
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(bool visible READ visible WRITE setVisible)
+  Q_PROPERTY(QCustomPlot* parentPlot READ parentPlot)
+  Q_PROPERTY(QCPLayerable* parentLayerable READ parentLayerable)
+  Q_PROPERTY(QCPLayer* layer READ layer WRITE setLayer)
+  Q_PROPERTY(bool antialiased READ antialiased WRITE setAntialiased)
+  /// \endcond
 public:
-  QCPLayerable(QCustomPlot *parentPlot);
+  QCPLayerable(QCustomPlot *plot, QString targetLayer="", QCPLayerable *parentLayerable=0);
   ~QCPLayerable();
   
   // getters:
   bool visible() const { return mVisible; }
   QCustomPlot *parentPlot() const { return mParentPlot; }
+  QCPLayerable *parentLayerable() const { return mParentLayerable.data(); }
   QCPLayer *layer() const { return mLayer; }
   bool antialiased() const { return mAntialiased; }
   
@@ -76,24 +98,41 @@ public:
   bool setLayer(const QString &layerName);
   void setAntialiased(bool enabled);
   
+  // introduced virtual methods:
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  
+  // non-property methods:
+  bool realVisibility() const;
+  
 protected:
+  // property members:
   bool mVisible;
   QCustomPlot *mParentPlot;
+  QWeakPointer<QCPLayerable> mParentLayerable;
   QCPLayer *mLayer;
   bool mAntialiased;
   
-  // non-property methods:
-  bool moveToLayer(QCPLayer *layer, bool prepend);
-  
-  void applyAntialiasingHint(QCPPainter *painter, bool localAntialiased, QCP::AntialiasedElement overrideElement) const;
-  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const = 0;
+  // introduced virtual methods:
+  virtual void parentPlotInitialized(QCustomPlot *parentPlot);
+  virtual QCP::Interaction selectionCategory() const;
   virtual QRect clipRect() const;
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const = 0;
   virtual void draw(QCPPainter *painter) = 0;
+  // events:
+  virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);
+  virtual void deselectEvent(bool *selectionStateChanged);
+  
+  // non-property methods:
+  void initializeParentPlot(QCustomPlot *parentPlot);
+  void setParentLayerable(QCPLayerable* parentLayerable);
+  bool moveToLayer(QCPLayer *layer, bool prepend);
+  void applyAntialiasingHint(QCPPainter *painter, bool localAntialiased, QCP::AntialiasedElement overrideElement) const;
   
 private:
   Q_DISABLE_COPY(QCPLayerable)
   
   friend class QCustomPlot;
+  friend class QCPAxisRect;
 };
 
 #endif // QCP_LAYER_H

@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #include "lineending.h"
@@ -103,9 +104,12 @@ void QCPLineEnding::setLength(double length)
 }
 
 /*!
-  Sets whether the direction of the ending decoration shall be inverted with respect to the natural
-  direction given by the parent item. For example, an arrow decoration will point inward when
-  \a inverted is set to true.
+  Sets whether the ending decoration shall be inverted. For example, an arrow decoration will point
+  inward when \a inverted is set to true.
+
+  Note that also the \a width direction is inverted. For symmetrical ending styles like arrows or
+  discs, this doesn't make a difference. However, asymmetric styles like \ref esHalfBar are
+  affected by it, which can be used to control to which side the half bar points to.
 */
 void QCPLineEnding::setInverted(bool inverted)
 {
@@ -131,13 +135,52 @@ double QCPLineEnding::boundingDistance() const
     case esFlatArrow:
     case esSpikeArrow:
     case esLineArrow:
+    case esSkewedBar:
       return qSqrt(mWidth*mWidth+mLength*mLength); // items that have width and length
       
     case esDisc:
     case esSquare:
     case esDiamond:
     case esBar:
-      return mWidth*1.42; // items that only have a width -> with*sqrt(2)
+    case esHalfBar:
+      return mWidth*1.42; // items that only have a width -> width*sqrt(2)
+
+  }
+  return 0;
+}
+
+/*!
+  Starting from the origin of this line ending (which is style specific), returns the length
+  covered by the line ending symbol, in backward direction.
+  
+  For example, the \ref esSpikeArrow has a shorter real length than a \ref esFlatArrow, even if
+  both have the same \ref setLength value, because the spike arrow has an inward curved back, which
+  reduces the length along its center axis (the drawing origin for arrows is at the tip).
+  
+  This function is used for precise, style specific placement of line endings, for example in
+  QCPAxes.
+*/
+double QCPLineEnding::realLength() const
+{
+  switch (mStyle)
+  {
+    case esNone:
+    case esLineArrow:
+    case esSkewedBar:
+    case esBar:
+    case esHalfBar:
+      return 0;
+      
+    case esFlatArrow:
+      return mLength;
+      
+    case esDisc:
+    case esSquare:
+    case esDiamond:
+      return mWidth*0.5;
+      
+    case esSpikeArrow:
+      return mLength*0.8;
   }
   return 0;
 }
@@ -152,16 +195,18 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
   if (mStyle == esNone)
     return;
   
-  QVector2D lengthVec(dir.normalized()*(mInverted ? -1 : 1));
+  QVector2D lengthVec(dir.normalized());
   if (lengthVec.isNull())
     lengthVec = QVector2D(1, 0);
   QVector2D widthVec(-lengthVec.y(), lengthVec.x());
-  lengthVec *= mLength;
-  widthVec *= mWidth*0.5;
+  lengthVec *= mLength*(mInverted ? -1 : 1);
+  widthVec *= mWidth*0.5*(mInverted ? -1 : 1);
   
   QPen penBackup = painter->pen();
+  QBrush brushBackup = painter->brush();
   QPen miterPen = penBackup;
-  miterPen.setJoinStyle(Qt::MiterJoin);
+  miterPen.setJoinStyle(Qt::MiterJoin); // to make arrow heads spikey
+  QBrush brush(painter->pen().color(), Qt::SolidPattern);
   switch (mStyle)
   {
     case esNone: break;
@@ -172,7 +217,9 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
                            (pos-lengthVec-widthVec).toPointF()
                           };
       painter->setPen(miterPen);
+      painter->setBrush(brush);
       painter->drawConvexPolygon(points, 3);
+      painter->setBrush(brushBackup);
       painter->setPen(penBackup);
       break;
     }
@@ -184,7 +231,9 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
                            (pos-lengthVec-widthVec).toPointF()
                           };
       painter->setPen(miterPen);
+      painter->setBrush(brush);
       painter->drawConvexPolygon(points, 4);
+      painter->setBrush(brushBackup);
       painter->setPen(penBackup);
       break;
     }
@@ -201,7 +250,9 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
     }
     case esDisc:
     {
+      painter->setBrush(brush);
       painter->drawEllipse(pos.toPointF(),  mWidth*0.5, mWidth*0.5);
+      painter->setBrush(brushBackup);
       break;
     }
     case esSquare:
@@ -213,7 +264,9 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
                            (pos+widthVecPerp+widthVec).toPointF()
                           };
       painter->setPen(miterPen);
+      painter->setBrush(brush);
       painter->drawConvexPolygon(points, 4);
+      painter->setBrush(brushBackup);
       painter->setPen(penBackup);
       break;
     }
@@ -226,13 +279,35 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
                            (pos+widthVec).toPointF()
                           };
       painter->setPen(miterPen);
+      painter->setBrush(brush);
       painter->drawConvexPolygon(points, 4);
+      painter->setBrush(brushBackup);
       painter->setPen(penBackup);
       break;
     }
     case esBar:
     {
       painter->drawLine((pos+widthVec).toPointF(), (pos-widthVec).toPointF());
+      break;
+    }
+    case esHalfBar:
+    {
+      painter->drawLine((pos+widthVec).toPointF(), pos.toPointF());
+      break;
+    }
+    case esSkewedBar:
+    {
+      if (qFuzzyIsNull(painter->pen().widthF()) && !painter->modes().testFlag(QCPPainter::pmNonCosmetic))
+      {
+        // if drawing with cosmetic pen (perfectly thin stroke, happens only in vector exports), draw bar exactly on tip of line
+        painter->drawLine((pos+widthVec+lengthVec*0.2*(mInverted?-1:1)).toPointF(),
+                          (pos-widthVec-lengthVec*0.2*(mInverted?-1:1)).toPointF());
+      } else
+      {
+        // if drawing with thick (non-cosmetic) pen, shift bar a little in line direction to prevent line from sticking through bar slightly
+        painter->drawLine((pos+widthVec+lengthVec*0.2*(mInverted?-1:1)+dir.normalized()*qMax(1.0, painter->pen().widthF())*0.5).toPointF(),
+                          (pos-widthVec-lengthVec*0.2*(mInverted?-1:1)+dir.normalized()*qMax(1.0, painter->pen().widthF())*0.5).toPointF());
+      }
       break;
     }
   }

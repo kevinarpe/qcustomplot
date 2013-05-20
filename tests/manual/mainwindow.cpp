@@ -8,27 +8,30 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(300, 300, 500, 500);
   mCustomPlot = new QCustomPlot(this);
-  setCentralWidget(mCustomPlot);
-  mCustomPlot->setupFullAxesBox();
+  QHBoxLayout *layout = new QHBoxLayout();
+  ui->centralWidget->setLayout(layout);
+  layout->insertWidget(0, mCustomPlot);
+  mCustomPlot->axisRect()->setupFullAxesBox(true);
   
-  /*
-  QVector<double> ticks = QVector<double>() << 1 << 2 << 4 << 8 << 16 << 32;
-  mCustomPlot->xAxis->setAutoTicks(false);
-  mCustomPlot->xAxis->setTickVector(ticks);
-  */
-  
-  //presetInteractive(mCustomPlot);
+  presetInteractive(mCustomPlot);
   //setupItemAnchorTest(mCustomPlot);
   //setupItemTracerTest(mCustomPlot);
   //setupGraphTest(mCustomPlot);
-  setupExportTest(mCustomPlot);
+  //setupExportTest(mCustomPlot);
   //setupLogErrorsTest(mCustomPlot);
   //setupSelectTest(mCustomPlot);
   //setupDateTest(mCustomPlot);
-  //setupTestbed(mCustomPlot);
   //setupIntegerTickStepCase(mCustomPlot);
   //setupTickLabelTest(mCustomPlot);
   //setupDaqPerformance(mCustomPlot);
+  //setupLayoutTest(mCustomPlot);
+  //setupMultiAxisTest(mCustomPlot);
+  //setupLayoutElementBugTest(mCustomPlot);
+  //setupMarginGroupTest(mCustomPlot);
+  //setupInsetLayoutTest(mCustomPlot);
+  //setupLegendTest(mCustomPlot);
+  //setupMultiAxisRectInteractions(mCustomPlot);
+  setupTestbed(mCustomPlot);
 }
 
 MainWindow::~MainWindow()
@@ -195,7 +198,7 @@ void MainWindow::setupGraphTest(QCustomPlot *customPlot)
   qDebug() << "data" << t.restart();
   customPlot->graph(0)->setData(dataMap, false);
   qDebug() << "set" << t.restart();
-  customPlot->xAxis->setRange(0, 10000);
+  customPlot->xAxis->setRange(0, 50);
   customPlot->yAxis->setRange(-1, 1);
   t.restart();
   customPlot->replot();
@@ -205,6 +208,11 @@ void MainWindow::setupGraphTest(QCustomPlot *customPlot)
 
 void MainWindow::setupExportTest(QCustomPlot *customPlot)
 {
+  QDir dir("./");
+  dir.mkdir("export-test");
+  dir.cd("export-test");
+  
+  // test cosmetic/non-cosmetic pen and scaling of export functions:
   int n = 10;
   for (int penWidth=0; penWidth<5; ++penWidth)
   {
@@ -218,27 +226,64 @@ void MainWindow::setupExportTest(QCustomPlot *customPlot)
     customPlot->graph()->setData(x, y);
     customPlot->graph()->setPen(QPen(Qt::blue, penWidth));
   }
-  
   customPlot->rescaleAxes();
-  
-  QDir dir("./");
-  dir.mkdir("export-test");
-  dir.cd("export-test");
   qDebug() << customPlot->savePdf(dir.filePath("exportTest_cosmetic.pdf"), false, 500, 400);
   qDebug() << customPlot->savePdf(dir.filePath("exportTest_noncosmetic.pdf"), true, 500, 400);
   qDebug() << customPlot->savePng(dir.filePath("exportTest_1x.png"), 500, 400);
   qDebug() << customPlot->savePng(dir.filePath("exportTest_2x.png"), 500, 400, 2);
   qDebug() << customPlot->saveJpg(dir.filePath("exportTest_1x.jpg"), 500, 400);
   qDebug() << customPlot->saveJpg(dir.filePath("exportTest_2x.jpg"), 500, 400, 2);
-  qDebug() << customPlot->saveBmp(dir.filePath("exportTest_1x.bmp"), 500, 400);
-  qDebug() << customPlot->saveBmp(dir.filePath("exportTest_2x.bmp"), 500, 400, 2);
+  customPlot->clearPlottables();
+  
+  // test floating-point precision of vectorized (pdf) export:
+  QCPGraph *graph = customPlot->addGraph();
+  QVector<double> x, y;
+  for (int i=1; i<100; ++i)
+  {
+    x << 1.0 - 1.0/(double)i;
+    y << i;
+  }
+  x << 0.3 << 0.6; // point that should perfectly match grid
+  y << 15 << 45; // point that should perfectly match grid
+  graph->setData(x, y);
+  graph->setLineStyle(QCPGraph::lsNone);
+  graph->setScatterStyle(QCPScatterStyle::ssPlus);
+  customPlot->xAxis->setRange(0, 1.1);
+  customPlot->yAxis->setRange(0, 101);
+  //customPlot->setAntialiasedElements(QCP::aeAll);
+  qDebug() << customPlot->savePng(dir.filePath("float-precision-raster0.2x.png"), 500, 400, 0.2);
+  qDebug() << customPlot->savePng(dir.filePath("float-precision-raster1x.png"), 500, 400);
+  qDebug() << customPlot->savePng(dir.filePath("float-precision-raster5x.png"), 500, 400, 5);
+  qDebug() << customPlot->savePdf(dir.filePath("float-precision-vector.pdf"), false, 500, 400);
+  customPlot->clearPlottables();
+  
+  // test transparent/colored background:
+  customPlot->addGraph();
+  x.clear();
+  y.clear();
+  for (int i=0; i<100; ++i)
+  {
+    x << i;
+    y << qSin(i/20.0);
+  }
+  customPlot->graph()->setData(x, y);
+  customPlot->rescaleAxes();
+  customPlot->setBackground(Qt::transparent);
+  qDebug() << customPlot->savePng(dir.filePath("exportTest_bg_transparent.png"), 500, 400);
+  qDebug() << customPlot->savePdf(dir.filePath("exportTest_bg_transparent.pdf"), true, 500, 400);
+  customPlot->setBackground(QColor(100, 100, 155));
+  qDebug() << customPlot->savePng(dir.filePath("exportTest_bg_color.png"), 500, 400);
+  qDebug() << customPlot->savePdf(dir.filePath("exportTest_bg_color.pdf"), true, 500, 400);
+  customPlot->clearPlottables();
+  
+  QTimer::singleShot(100, qApp, SLOT(quit()));
 }
 
 void MainWindow::setupLogErrorsTest(QCustomPlot *customPlot)
 {
   customPlot->yAxis->setScaleType(QCPAxis::stLogarithmic);
   customPlot->yAxis->setSubTickCount(8);
-  customPlot->yAxis->setSubGrid(true);
+  customPlot->yAxis->grid()->setSubGridVisible(true);
   int n = 11;
   QVector<double> x(n), y(n), yerr(n), xerr(n);
   for (int i=0; i<n; ++i)
@@ -249,7 +294,7 @@ void MainWindow::setupLogErrorsTest(QCustomPlot *customPlot)
     xerr[i] = qAbs(qCos(i/2.0)*0.5);
   }
   customPlot->addGraph();
-  customPlot->graph()->setScatterStyle(QCP::ssCross);
+  customPlot->graph()->setScatterStyle(QCPScatterStyle::ssCross);
   customPlot->graph()->setDataBothError(x, y, xerr, yerr);
   customPlot->graph()->setErrorType(QCPGraph::etBoth);
   customPlot->graph()->setErrorBarSkipSymbol(true);
@@ -343,7 +388,7 @@ void MainWindow::setupDateTest(QCustomPlot *customPlot)
 
 void MainWindow::setupTickLabelTest(QCustomPlot *customPlot)
 {
-  customPlot->setupFullAxesBox();
+  customPlot->axisRect()->setupFullAxesBox();
   customPlot->xAxis2->setTickLabels(true);
   customPlot->yAxis2->setTickLabels(true);
   connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->xAxis2, SLOT(setRange(QCPRange)));
@@ -367,18 +412,231 @@ void MainWindow::setupDaqPerformance(QCustomPlot *customPlot)
   mDataTimer.start();
 }
 
+void MainWindow::setupLayoutTest(QCustomPlot *customPlot)
+{
+  
+  QCPLayoutGrid *mainLayout = customPlot->plotLayout();
+  mainLayout->removeAt(0);
+  // create 3x3 grid:
+  mainLayout->addElement(0, 0, new QCPAxisRect(customPlot));
+  mainLayout->addElement(0, 1, new QCPAxisRect(customPlot));
+  mainLayout->addElement(0, 2, new QCPAxisRect(customPlot));
+  mainLayout->addElement(1, 0, new QCPAxisRect(customPlot));
+  mainLayout->addElement(1, 1, new QCPAxisRect(customPlot));
+  mainLayout->addElement(1, 2, new QCPAxisRect(customPlot));
+  mainLayout->addElement(2, 0, new QCPAxisRect(customPlot));
+  mainLayout->addElement(2, 1, new QCPAxisRect(customPlot));
+  mainLayout->addElement(2, 2, new QCPAxisRect(customPlot));
+  QList<QCPAxisRect*> rlist;
+  for (int i=0; i<mainLayout->elementCount(); ++i)
+  {
+    rlist << qobject_cast<QCPAxisRect*>(mainLayout->elementAt(i));
+    rlist.last()->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+  }
+  
+  mainLayout->setColumnStretchFactors(QList<double>() << 1 << 2 << 1);
+  mainLayout->setRowStretchFactors(QList<double>() << 1 << 2 << 3);
+  
+  mainLayout->element(0, 0)->setMinimumSize(200, 100);
+  mainLayout->element(0, 1)->setMaximumSize(150, 100);
+  mainLayout->element(2, 2)->setMinimumSize(100, 100);
+  
+  
+  /*
+  customPlot->setFont(QFont(customPlot->font().family(), 7));
+  customPlot->axisRect(0)->axis(QCPAxis::atRight)->setTickLabels(true);
+  customPlot->axisRect(0)->axis(QCPAxis::atTop)->setTickLabels(true);
+  customPlot->axisRect(0)->axis(QCPAxis::atLeft)->setTickLabelFont(customPlot->font());
+  customPlot->axisRect(0)->axis(QCPAxis::atRight)->setTickLabelFont(customPlot->font());
+  customPlot->axisRect(0)->axis(QCPAxis::atTop)->setTickLabelFont(customPlot->font());
+  customPlot->axisRect(0)->axis(QCPAxis::atBottom)->setTickLabelFont(customPlot->font());
+  
+  QCPLayoutGrid *layout = customPlot->plotLayout();
+  layout->setRowSpacing(8);
+  layout->setColumnSpacing(8);
+  layout->addElement(0, 1, new QCPAxisRect(customPlot));
+  layout->addElement(1, 0, new QCPAxisRect(customPlot));
+  
+  QCPLayoutGrid *subLayout = new QCPLayoutGrid;
+  subLayout->addElement(0, 0, new QCPAxisRect(customPlot));
+  subLayout->addElement(0, 1, new QCPAxisRect(customPlot));
+  subLayout->setColumnStretchFactor(0, 0.7);
+  layout->addElement(1, 1, subLayout);
+  
+  QList<QCPAxisRect*> rects = customPlot->axisRects();
+  for (int i=0; i<rects.size(); ++i)
+  {
+    rects.at(i)->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+    rects.at(i)->axis(QCPAxis::atLeft)->grid()->setVisible(true);
+    rects.at(i)->axis(QCPAxis::atBottom)->grid()->setVisible(true);
+  }
+  
+  QCPCurve *c = new QCPCurve(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(c);
+  
+  QCPCurveDataMap *d1 = new QCPCurveDataMap;
+  d1->insert(0, QCPCurveData(0, 2, 1));
+  d1->insert(1, QCPCurveData(1, 3, 2));
+  d1->insert(2, QCPCurveData(2, 6, 4));
+  
+  c->clearData();
+  c->setData(d1, false);
+  
+  QCPCurveDataMap *d2 = new QCPCurveDataMap;
+  d2->insert(0, QCPCurveData(0, 26, 14));
+  d2->insert(2, QCPCurveData(2, 31, 22));
+  d2->insert(4, QCPCurveData(4, 61, 42));
+  
+  c->clearData();
+  c->setData(d2, false);
+  
+  customPlot->replot();
+  */
+  
+  /*
+  QCPLayoutGrid *topLayout = customPlot->plotLayout();
+  QList<QCPAxisRect*> rects;
+  for (int i=0; i<5; ++i)
+    rects << new QCPAxisRect(customPlot);
+  
+  for (int i=0; i<rects.size(); ++i)
+  {
+    topLayout->addElement(0, i+1, rects.at(i));
+    rects.at(i)->addAxis(QCPAxis::atLeft);
+    rects.at(i)->addAxis(QCPAxis::atRight);
+    rects.at(i)->addAxis(QCPAxis::atBottom);
+    rects.at(i)->addAxis(QCPAxis::atTop);
+    for (int k=0; k<rects.at(i)->axes().size(); ++k)
+    {
+      QCPAxis *ax = rects.at(i)->axes().at(k);
+      ax->setTicks(false);
+      ax->setTickLabels(false);
+      ax->grid()->setVisible(false);
+    }
+    rects.at(i)->setAutoMargins(QCP::msNone);
+    rects.at(i)->setMargins(QMargins(1, 1, 1, 1));
+  }
+  
+  topLayout->setColumnStretchFactors(QList<double>() << 1 << 1e9 << 1e7 << 1e9 << 1e3 << 1e1);
+  rects.at(0)->setMaximumSize(300, QWIDGETSIZE_MAX);
+  rects.at(1)->setMaximumSize(250, QWIDGETSIZE_MAX);
+  rects.at(2)->setMinimumSize(200, 0);
+  rects.at(3)->setMaximumSize(150, QWIDGETSIZE_MAX);
+  rects.at(4)->setMaximumSize(100, QWIDGETSIZE_MAX);
+  
+  QCPLayoutGrid *subLayout = new QCPLayoutGrid;
+  topLayout->addElement(1, 3, subLayout);
+  QCPAxisRect *r0 = new QCPAxisRect(customPlot);
+  subLayout->addElement(0, 0, r0);
+  r0->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+  QCPAxisRect *r1 = new QCPAxisRect(customPlot);
+  subLayout->addElement(0, 1, r1);
+  r1->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+  r1->setMaximumSize(200, QWIDGETSIZE_MAX);*/
+}
+
+void MainWindow::setupMultiAxisTest(QCustomPlot *customPlot)
+{
+  presetInteractive(customPlot);
+  customPlot->axisRect()->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atTop|QCPAxis::atBottom);
+  customPlot->axisRect()->axis(QCPAxis::atRight, 0)->setTickLabels(true);
+  customPlot->axisRect()->axis(QCPAxis::atTop, 0)->setTickLabels(true);
+}
+
+void MainWindow::setupLayoutElementBugTest(QCustomPlot *customPlot)
+{
+  QCPLayoutGrid *topLayout = qobject_cast<QCPLayoutGrid*>(customPlot->plotLayout());
+  
+  QCPAxisRect *r = new QCPAxisRect(customPlot);
+  r->addAxes(QCPAxis::atLeft);
+  topLayout->addElement(0, 0, r);
+}
+
+void MainWindow::setupMarginGroupTest(QCustomPlot *customPlot)
+{
+  QCPLayoutGrid *topLayout =customPlot->plotLayout();
+  
+  QCPAxisRect *r = new QCPAxisRect(customPlot);
+  topLayout->addElement(1, 0, r);
+  r->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atBottom|QCPAxis::atTop);
+  r->addAxes(QCPAxis::atLeft|QCPAxis::atRight|QCPAxis::atBottom|QCPAxis::atTop);
+  
+  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
+  topLayout->element(0, 0)->setMarginGroup(QCP::msAll, group);
+  topLayout->element(1, 0)->setMarginGroup(QCP::msAll, group);
+}
+
+void MainWindow::setupInsetLayoutTest(QCustomPlot *customPlot)
+{
+  customPlot->addLayer("insetLayer");
+  customPlot->setCurrentLayer("insetLayer");
+  QCPAxisRect *insetAxRect = new QCPAxisRect(customPlot);
+  insetAxRect->setMinimumSize(300, 250);
+  customPlot->axisRect(0)->insetLayout()->addElement(insetAxRect, Qt::AlignRight|Qt::AlignTop);
+  insetAxRect->setupFullAxesBox(true);
+  insetAxRect->setBackground(QBrush(QColor(240, 240, 240)));
+  
+  
+}
+
+void MainWindow::setupLegendTest(QCustomPlot *customPlot)
+{
+  customPlot->legend->setVisible(true);
+  //customPlot->legend->setMinimumSize(300, 150);
+  //customPlot->axisRect()->setMinimumMargins(QMargins(15, 0, 15, 15));
+  
+  customPlot->addGraph()->setName("first graph");
+  customPlot->addGraph()->setName("second longer graph");
+  customPlot->addGraph()->setName("some stupid text\nthat has a line break\nand some more text");
+  customPlot->addGraph()->setName("yadayada");
+  //customPlot->legend->addElement(0, 1, customPlot->legend->element(3, 0));
+  //customPlot->legend->addElement(1, 1, customPlot->legend->element(2, 0));
+  customPlot->addGraph()->setName("yadayaasdda");
+  customPlot->graph(3)->removeFromLegend();
+  customPlot->graph(3)->addToLegend();
+  
+  QCPLayoutGrid *grid = customPlot->plotLayout();
+  grid->addElement(1, 0, grid->element(0, 0));
+  
+  QCPPlotTitle *title = new QCPPlotTitle(customPlot);
+  title->setText("This is a Plot Title");
+  title->setSelectable(true);
+  grid->addElement(0, 0, title);
+  
+  customPlot->graph(0)->addData(QVector<double>() << 1 << 2, QVector<double>() << 1 << 1.2);
+}
+
+void MainWindow::setupMultiAxisRectInteractions(QCustomPlot *customPlot)
+{
+  QCPAxisRect *r1 = new QCPAxisRect(customPlot);
+  customPlot->plotLayout()->addElement(1, 0, r1);
+  QCPAxisRect *r2 = new QCPAxisRect(customPlot);
+  customPlot->plotLayout()->addElement(0, 1, r2);
+  QCPAxisRect *r3 = new QCPAxisRect(customPlot);
+  customPlot->plotLayout()->addElement(1, 1, r3);
+  
+  QCPAxisRect *inset = new QCPAxisRect(customPlot);
+  inset->setMinimumSize(170, 120);
+  inset->setupFullAxesBox(true);
+  foreach (QCPAxis *ax, inset->axes())
+    ax->setAutoTickCount(3);
+  r3->insetLayout()->addElement(inset, Qt::AlignRight|Qt::AlignTop);
+  
+  connect(mCustomPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(setupMultiAxisRectInteractionsMouseMove(QMouseEvent*)));
+}
+
 void MainWindow::presetInteractive(QCustomPlot *customPlot)
 {
-  customPlot->setInteractions(QCustomPlot::iRangeDrag|
-                              QCustomPlot::iRangeZoom|
-                              QCustomPlot::iSelectAxes|
-                              QCustomPlot::iSelectItems|
-                              QCustomPlot::iSelectLegend|
-                              QCustomPlot::iSelectPlottables|
-                              QCustomPlot::iSelectTitle|
-                              QCustomPlot::iMultiSelect);
-  customPlot->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-  customPlot->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+  customPlot->setInteractions(QCP::iRangeDrag|
+                              QCP::iRangeZoom|
+                              QCP::iSelectAxes|
+                              QCP::iSelectItems|
+                              QCP::iSelectLegend|
+                              QCP::iSelectPlottables|
+                              QCP::iSelectOther|
+                              QCP::iMultiSelect);
+  customPlot->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+  customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
 }
 
 void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool circle, bool labelBelow)
@@ -432,10 +690,10 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
 
 void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
 {
-  QImage colorMap(customPlot->axisRect().size(), QImage::Format_RGB32);
-  colorMap.fill(Qt::blue);
-  int offsetx = customPlot->axisRect().x();
-  int offsety = customPlot->axisRect().y();
+  QImage colorMap(customPlot->axisRects().first()->size(), QImage::Format_RGB32);
+  colorMap.fill(QColor(Qt::blue).rgb());
+  int offsetx = customPlot->axisRects().first()->left();
+  int offsety = customPlot->axisRects().first()->top();
   // for items:
   for (int i=0; i<customPlot->itemCount(); ++i)
   {
@@ -445,7 +703,7 @@ void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
       QRgb *p = reinterpret_cast<QRgb*>(colorMap.scanLine(y));
       for (int x=0; x<colorMap.width(); ++x)
       {
-        double dist = item->selectTest(QPointF(x+offsetx, y+offsety));
+        double dist = item->selectTest(QPointF(x+offsetx, y+offsety), false);
         if (dist >= 0)
         {
           int r = qRed(p[x]);
@@ -469,7 +727,7 @@ void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
       QRgb *p = reinterpret_cast<QRgb*>(colorMap.scanLine(y));
       for (int x=0; x<colorMap.width(); ++x)
       {
-        double dist = plottable->selectTest(QPointF(x+offsetx, y+offsety));
+        double dist = plottable->selectTest(QPointF(x+offsetx, y+offsety), false);
         if (dist >= 0)
         {
           int r = qRed(p[x]);
@@ -485,11 +743,12 @@ void MainWindow::showSelectTestColorMap(QCustomPlot *customPlot)
     }
   }
   // set as plot background:
-  customPlot->setAxisBackground(QPixmap::fromImage(colorMap), false);
+  customPlot->axisRects().first()->setBackground(QPixmap::fromImage(colorMap), false);
 }
 
 void MainWindow::setupTestbed(QCustomPlot *customPlot)
 {
+  Q_UNUSED(customPlot)
 }
 
 void MainWindow::setupIntegerTickStepCase(QCustomPlot *customPlot)
@@ -524,6 +783,19 @@ void MainWindow::tickLabelTestTimerSlot()
 {
   mCustomPlot->setPlottingHint(QCP::phCacheLabels, !mCustomPlot->plottingHints().testFlag(QCP::phCacheLabels));
   ui->statusBar->showMessage(mCustomPlot->plottingHints().testFlag(QCP::phCacheLabels) ? "Cached" : "Not Cached");
+  mCustomPlot->replot();
+}
+
+void MainWindow::setupMultiAxisRectInteractionsMouseMove(QMouseEvent *event)
+{
+  QCPAxisRect *ar = qobject_cast<QCPAxisRect*>(mCustomPlot->layoutElementAt(event->pos()));
+  if (ar)
+    ar->setBackground(QColor(230, 230, 230));
+  for (int i=0; i<mCustomPlot->axisRectCount(); ++i)
+  {
+    if (mCustomPlot->axisRect(i) != ar)
+      mCustomPlot->axisRect(i)->setBackground(Qt::NoBrush);
+  }
   mCustomPlot->replot();
 }
 

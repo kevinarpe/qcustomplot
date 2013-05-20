@@ -1,8 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtCore>
-#include <QtGui>
+#include <QMainWindow>
+#include <QInputDialog>
 #include "../../qcustomplot.h"
 
 namespace Ui {
@@ -18,7 +18,7 @@ public:
   ~MainWindow();
   
 private slots:
-  void titleDoubleClick();
+  void titleDoubleClick(QMouseEvent *event, QCPPlotTitle *title);
   void axisLabelDoubleClick(QCPAxis* axis, QCPAxis::SelectablePart part);
   void legendDoubleClick(QCPLegend* legend, QCPAbstractLegendItem* item);
   void selectionChanged();

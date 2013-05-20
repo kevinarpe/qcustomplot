@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_PLOTTABLE_STATISTICALBOX_H
@@ -28,6 +29,7 @@
 #include "../global.h"
 #include "../range.h"
 #include "../plottable.h"
+#include "../painter.h"
 
 class QCPPainter;
 class QCPAxis;
@@ -35,9 +37,23 @@ class QCPAxis;
 class QCP_LIB_DECL QCPStatisticalBox : public QCPAbstractPlottable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(double key READ key WRITE setKey)
+  Q_PROPERTY(double minimum READ minimum WRITE setMinimum)
+  Q_PROPERTY(double lowerQuartile READ lowerQuartile WRITE setLowerQuartile)
+  Q_PROPERTY(double median READ median WRITE setMedian)
+  Q_PROPERTY(double upperQuartile READ upperQuartile WRITE setUpperQuartile)
+  Q_PROPERTY(double maximum READ maximum WRITE setMaximum)
+  Q_PROPERTY(QVector<double> outliers READ outliers WRITE setOutliers)
+  Q_PROPERTY(double width READ width WRITE setWidth)
+  Q_PROPERTY(double whiskerWidth READ whiskerWidth WRITE setWhiskerWidth)
+  Q_PROPERTY(QPen whiskerPen READ whiskerPen WRITE setWhiskerPen)
+  Q_PROPERTY(QPen whiskerBarPen READ whiskerBarPen WRITE setWhiskerBarPen)
+  Q_PROPERTY(QPen medianPen READ medianPen WRITE setMedianPen)
+  Q_PROPERTY(QCPScatterStyle outlierStyle READ outlierStyle WRITE setOutlierStyle)
+  /// \endcond
 public:
   explicit QCPStatisticalBox(QCPAxis *keyAxis, QCPAxis *valueAxis);
-  virtual ~QCPStatisticalBox();
   
   // getters:
   double key() const { return mKey; }
@@ -52,9 +68,7 @@ public:
   QPen whiskerPen() const { return mWhiskerPen; }
   QPen whiskerBarPen() const { return mWhiskerBarPen; }
   QPen medianPen() const { return mMedianPen; }
-  double outlierSize() const { return mOutlierSize; }
-  QPen outlierPen() const { return mOutlierPen; }
-  QCP::ScatterStyle outlierStyle() const { return mOutlierStyle; }
+  QCPScatterStyle outlierStyle() const { return mOutlierStyle; }
 
   // setters:
   void setKey(double key);
@@ -70,32 +84,32 @@ public:
   void setWhiskerPen(const QPen &pen);
   void setWhiskerBarPen(const QPen &pen);
   void setMedianPen(const QPen &pen);
-  void setOutlierSize(double pixels);
-  void setOutlierPen(const QPen &pen);
-  void setOutlierStyle(QCP::ScatterStyle style);
+  void setOutlierStyle(const QCPScatterStyle &style);
   
   // non-property methods:
   virtual void clearData();
-  virtual double selectTest(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
+  // property members:
   QVector<double> mOutliers;
   double mKey, mMinimum, mLowerQuartile, mMedian, mUpperQuartile, mMaximum;
   double mWidth;
   double mWhiskerWidth;
-  double mOutlierSize;
-  QPen mWhiskerPen, mWhiskerBarPen, mOutlierPen, mMedianPen;
-  QCP::ScatterStyle mOutlierStyle;
+  QPen mWhiskerPen, mWhiskerBarPen, mMedianPen;
+  QCPScatterStyle mOutlierStyle;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
+  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
+  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
   
+  // introduced virtual methods:
   virtual void drawQuartileBox(QCPPainter *painter, QRectF *quartileBox=0) const;
   virtual void drawMedian(QCPPainter *painter) const;
   virtual void drawWhiskers(QCPPainter *painter) const;
   virtual void drawOutliers(QCPPainter *painter) const;
-  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
-  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
   
   friend class QCustomPlot;
   friend class QCPLegend;

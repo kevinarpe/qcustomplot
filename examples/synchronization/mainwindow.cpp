@@ -8,13 +8,10 @@ MainWindow::MainWindow(QWidget *parent) :
   srand(QDateTime::currentDateTime().toTime_t());
   ui->setupUi(this);
   
-  ui->customPlot->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-  ui->customPlot->setRangeZoom(Qt::Horizontal|Qt::Vertical);
-  ui->customPlot->setupFullAxesBox();
-  
-  ui->customPlot2->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-  ui->customPlot2->setRangeZoom(Qt::Horizontal|Qt::Vertical);
-  ui->customPlot2->setupFullAxesBox();
+  ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+  ui->customPlot2->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+  ui->customPlot->axisRect()->setupFullAxesBox(true);
+  ui->customPlot2->axisRect()->setupFullAxesBox(true);
   
   // setup the signal/slot connections that realize the bi-directional synchronization:
   connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot2->xAxis, SLOT(setRange(QCPRange)));
@@ -31,12 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
   addRandomGraph(ui->customPlot2);
   addRandomGraph(ui->customPlot2);
   addRandomGraph(ui->customPlot2);
-  
-  // make bottom and left axes transfer their ranges to top and right axes:
-  connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->xAxis2, SLOT(setRange(QCPRange)));
-  connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->yAxis2, SLOT(setRange(QCPRange)));
-  connect(ui->customPlot2->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot2->xAxis2, SLOT(setRange(QCPRange)));
-  connect(ui->customPlot2->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot2->yAxis2, SLOT(setRange(QCPRange)));
 }
 
 MainWindow::~MainWindow()
@@ -67,7 +58,7 @@ void MainWindow::addRandomGraph(QCustomPlot *plot)
   plot->graph()->setData(x, y);
   plot->graph()->setLineStyle((QCPGraph::LineStyle)(rand()%5+1));
   if (rand()%100 > 75)
-    plot->graph()->setScatterStyle((QCP::ScatterStyle)(rand()%9+1));
+    plot->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(rand()%9+1)));
   QPen graphPen;
   graphPen.setColor(QColor(rand()%245+10, rand()%245+10, rand()%245+10));
   graphPen.setWidthF(rand()/(double)RAND_MAX*2+1);

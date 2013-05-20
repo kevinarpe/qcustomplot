@@ -9,24 +9,22 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(300, 300, 500, 500);
   
-  dir.setPath("./");
+  dir.setPath(qApp->applicationDirPath());
   dir.mkdir("images");
   if (!dir.cd("images"))
   {
     QMessageBox::critical(this, "Error", tr("Couldn't create and access image directory:\n%1").arg(dir.filePath("images")));
   } else
   {
-    genItemPixmap();      
-    genItemRect();        
-    genItemEllipse();     
-    genItemLine();        
-    genItemStraightLIne();
-    genItemCurve();       
-    genItemBracket();     
-    genItemText();        
-    genItemTracer();      
-    genLineEnding(); 
-    genScatterStyles();
+    // invoke all methods of MainWindow that start with "gen":
+    for (int i=this->metaObject()->methodOffset(); i<this->metaObject()->methodCount(); ++i)
+    {
+      if (QString::fromLatin1(this->metaObject()->method(i).signature()).startsWith("gen"))
+      {
+        if (!this->metaObject()->method(i).invoke(this))
+          qDebug() << "Failed to invoke doc-image-generator method" << i;
+      }
+    }
   }
   QTimer::singleShot(0, qApp, SLOT(quit()));
 }
@@ -44,31 +42,30 @@ void MainWindow::genScatterStyles()
   customPlot->yAxis->setRange(-1, 1);
   customPlot->addGraph();
   customPlot->graph()->addData(0, 0);
-  customPlot->graph()->setScatterSize(8.5);
   customPlot->graph()->setPen(QPen(Qt::black));
-  customPlot->setColor(Qt::transparent);
-  QMap<QCP::ScatterStyle, QString> scatterStyles;
-  scatterStyles.insert(QCP::ssDot, "ssDot");
-  scatterStyles.insert(QCP::ssCross, "ssCross");
-  scatterStyles.insert(QCP::ssPlus, "ssPlus");
-  scatterStyles.insert(QCP::ssCircle, "ssCircle");
-  scatterStyles.insert(QCP::ssDisc, "ssDisc");
-  scatterStyles.insert(QCP::ssSquare, "ssSquare");
-  scatterStyles.insert(QCP::ssDiamond, "ssDiamond");
-  scatterStyles.insert(QCP::ssStar, "ssStar");
-  scatterStyles.insert(QCP::ssTriangle, "ssTriangle");
-  scatterStyles.insert(QCP::ssTriangleInverted, "ssTriangleInverted");
-  scatterStyles.insert(QCP::ssCrossSquare, "ssCrossSquare");
-  scatterStyles.insert(QCP::ssPlusSquare, "ssPlusSquare");
-  scatterStyles.insert(QCP::ssCrossCircle, "ssCrossCircle");
-  scatterStyles.insert(QCP::ssPlusCircle, "ssPlusCircle");
-  scatterStyles.insert(QCP::ssPeace, "ssPeace");
-  QMapIterator<QCP::ScatterStyle, QString> scatterIt(scatterStyles);
+  customPlot->setBackground(Qt::transparent);
+  QMap<QCPScatterStyle::ScatterShape, QString> scatterShapes;
+  scatterShapes.insert(QCPScatterStyle::ssDot, "ssDot");
+  scatterShapes.insert(QCPScatterStyle::ssCross, "ssCross");
+  scatterShapes.insert(QCPScatterStyle::ssPlus, "ssPlus");
+  scatterShapes.insert(QCPScatterStyle::ssCircle, "ssCircle");
+  scatterShapes.insert(QCPScatterStyle::ssDisc, "ssDisc");
+  scatterShapes.insert(QCPScatterStyle::ssSquare, "ssSquare");
+  scatterShapes.insert(QCPScatterStyle::ssDiamond, "ssDiamond");
+  scatterShapes.insert(QCPScatterStyle::ssStar, "ssStar");
+  scatterShapes.insert(QCPScatterStyle::ssTriangle, "ssTriangle");
+  scatterShapes.insert(QCPScatterStyle::ssTriangleInverted, "ssTriangleInverted");
+  scatterShapes.insert(QCPScatterStyle::ssCrossSquare, "ssCrossSquare");
+  scatterShapes.insert(QCPScatterStyle::ssPlusSquare, "ssPlusSquare");
+  scatterShapes.insert(QCPScatterStyle::ssCrossCircle, "ssCrossCircle");
+  scatterShapes.insert(QCPScatterStyle::ssPlusCircle, "ssPlusCircle");
+  scatterShapes.insert(QCPScatterStyle::ssPeace, "ssPeace");
+  QMapIterator<QCPScatterStyle::ScatterShape, QString> scatterIt(scatterShapes);
   while (scatterIt.hasNext())
   {
     scatterIt.next();
-    customPlot->graph()->setScatterStyle(scatterIt.key());
-    QPixmap pm = customPlot->pixmap(16, 16);
+    customPlot->graph()->setScatterStyle(QCPScatterStyle(scatterIt.key(), 8.5));
+    QPixmap pm = customPlot->toPixmap(16, 16);
     pm.save(dir.filePath(scatterIt.value()+".png"));
   }
 }
@@ -220,7 +217,7 @@ void MainWindow::genItemText()
   customPlot->addItem(text);
   text->position->setCoords(0.5, 0.5);
   text->setText("QCustomPlot\nWidget");
-  text->setFont(QFont(font().family(), 26));
+  text->setFont(QFont(font().family(), 24));
   text->setRotation(12);
   text->setBrush(defaultBrush);
   labelItemAnchors(text);
@@ -251,36 +248,342 @@ void MainWindow::genItemTracer()
 void MainWindow::genLineEnding()
 {
   resetPlot();
-  QMap<QCPLineEnding::EndingStyle, QString> endingStyles;
-  endingStyles.insert(QCPLineEnding::esNone, "esNone");
-  endingStyles.insert(QCPLineEnding::esFlatArrow, "esFlatArrow");
-  endingStyles.insert(QCPLineEnding::esSpikeArrow, "esSpikeArrow");
-  endingStyles.insert(QCPLineEnding::esLineArrow, "esLineArrow");
-  endingStyles.insert(QCPLineEnding::esDisc, "esDisc");
-  endingStyles.insert(QCPLineEnding::esSquare, "esSquare");
-  endingStyles.insert(QCPLineEnding::esDiamond, "esDiamond");
-  endingStyles.insert(QCPLineEnding::esBar, "esBar");
-  QMapIterator<QCPLineEnding::EndingStyle, QString> endingIt(endingStyles);
-  int i = 0;
+  QMetaEnum endingStyleEnum = QCPLineEnding::staticMetaObject.enumerator(QCPLineEnding::staticMetaObject.indexOfEnumerator("EndingStyle"));
   double offset = -0.2;
-  double step = 1.4/((double)endingStyles.size()-1);
-  while (endingIt.hasNext())
+  double step = 1.4/((double)endingStyleEnum.keyCount()-1);
+  for (int i=0; i<endingStyleEnum.keyCount(); ++i)
   {
-    endingIt.next();
+    QCPLineEnding ending(static_cast<QCPLineEnding::EndingStyle>(endingStyleEnum.value(i)));
+    QString endingName(endingStyleEnum.key(i)); 
+    
+    if (ending.style() == QCPLineEnding::esSkewedBar)
+      ending.setInverted(true);
+    
     QCPItemLine *line = new QCPItemLine(customPlot);
+    line->setPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::FlatCap));
     customPlot->addItem(line);
     line->start->setCoords(offset+i*step-0.1, -0.2);
     line->end->setCoords(offset+i*step, 0.5);
-    line->setHead(endingIt.key());
+    line->setHead(ending);
     QCPItemText *text = new QCPItemText(customPlot);
     customPlot->addItem(text);
     text->position->setParentAnchor(line->end);
     text->position->setCoords(8, -15-(i%2)*15);
     text->setFont(QFont(font().family(), 8));
-    text->setText(endingIt.value());
-    ++i;
+    text->setText(endingName);
   }
-  customPlot->savePng(dir.filePath("QCPLineEnding.png"), 400, 100);
+
+  customPlot->savePng(dir.filePath("QCPLineEnding.png"), 500, 100);
+}
+
+void MainWindow::genMarginGroup()
+{
+  resetPlot();
+  
+  customPlot->plotLayout()->clear();
+  customPlot->plotLayout()->addElement(0, 0, new QCPAxisRect(customPlot));
+  customPlot->plotLayout()->addElement(0, 1, new QCPAxisRect(customPlot));
+  customPlot->plotLayout()->addElement(1, 0, new QCPAxisRect(customPlot));
+  customPlot->plotLayout()->addElement(1, 1, new QCPAxisRect(customPlot));
+  
+  foreach (QCPAxisRect *r, customPlot->axisRects())
+    r->axis(QCPAxis::atBottom)->setTickLabels(false);
+  
+  QCPMarginGroup *marginGroup = new QCPMarginGroup(customPlot);
+  customPlot->axisRect(0)->setMarginGroup(QCP::msLeft, marginGroup);
+  customPlot->axisRect(2)->setMarginGroup(QCP::msLeft, marginGroup);
+  
+  customPlot->axisRect(0)->axis(QCPAxis::atLeft)->setRange(0, 1300);
+  customPlot->axisRect(1)->axis(QCPAxis::atLeft)->setRange(0, 1300);
+  customPlot->axisRect(0)->axis(QCPAxis::atLeft)->setLabel("y");
+  customPlot->axisRect(1)->axis(QCPAxis::atLeft)->setLabel("y");
+  
+  customPlot->plotLayout()->setAutoMargins(QCP::msLeft|QCP::msRight|QCP::msBottom);
+  customPlot->plotLayout()->setMargins(QMargins(0, 25, 0, 0));
+  
+  QFont textFont;
+  textFont.setBold(true);
+  QCPItemText *leftCaption = new QCPItemText(customPlot);
+  customPlot->addItem(leftCaption);
+  leftCaption->position->setType(QCPItemPosition::ptViewportRatio);
+  leftCaption->setClipToAxisRect(false);
+  leftCaption->position->setCoords(0.25, 0);
+  leftCaption->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
+  leftCaption->setText("left sides in margin group");
+  leftCaption->setFont(textFont);
+  QCPItemText *rightCaption = new QCPItemText(customPlot);
+  customPlot->addItem(rightCaption);
+  rightCaption->position->setType(QCPItemPosition::ptViewportRatio);
+  rightCaption->position->setCoords(0.75, 0);
+  rightCaption->setClipToAxisRect(false);
+  rightCaption->setPositionAlignment(Qt::AlignTop|Qt::AlignHCenter);
+  rightCaption->setText("no margin group");
+  rightCaption->setFont(textFont);
+  
+  QCPItemLine *splitter = new QCPItemLine(customPlot);
+  splitter->start->setType(QCPItemPosition::ptViewportRatio);
+  splitter->start->setCoords(0.5, 0);
+  splitter->end->setType(QCPItemPosition::ptViewportRatio);
+  splitter->end->setCoords(0.5, 1);
+  splitter->setClipToAxisRect(false);
+  splitter->setPen(QPen(Qt::gray, 0, Qt::DashLine));
+  
+  customPlot->savePng(dir.filePath("QCPMarginGroup.png"), 400, 400);
+}
+
+void MainWindow::genAxisRectSpacingOverview()
+{
+  resetPlot();
+ 
+  customPlot->xAxis->setRange(-0.4, 1.4);
+  customPlot->yAxis->setRange(100, 900);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->axisRect()->setupFullAxesBox();
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->axisRect()->setAutoMargins(QCP::msNone);
+  customPlot->axisRect()->setMargins(QMargins(200, 50, 20, 165));
+  customPlot->axisRect()->setBackground(QColor(245, 245, 245));
+  
+  customPlot->yAxis->setLabel("Axis Label");
+  customPlot->yAxis->setOffset(30);
+  customPlot->yAxis->setTickLabelPadding(30);
+  customPlot->yAxis->setLabelPadding(30);
+  customPlot->yAxis->setTickLengthOut(5);
+  customPlot->yAxis->setSubTickLengthOut(2);
+  
+  addBracket(QPointF(200-95-27-17, 30), QPointF(1, 30), "Padding (if auto margins enabled)", QPointF(-25, -5), false, Qt::AlignLeft|Qt::AlignBottom);
+  addBracket(QPointF(1, 370), QPointF(200, 370), "Margin", QPointF(0, 5), false, Qt::AlignHCenter|Qt::AlignTop);
+  addBracket(QPointF(200-30, 240), QPointF(200, 240), "Axis offset", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
+  addBracket(QPointF(200-35, 250), QPointF(200-30, 250), "Tick length out", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
+  addBracket(QPointF(200-65, 240), QPointF(200-35, 240), "Tick label padding", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
+  addBracket(QPointF(200-95-25, 240), QPointF(200-65-25, 240), "Label padding", QPointF(-1, 5), true, Qt::AlignRight|Qt::AlignVCenter);
+  
+  QCPItemLine *leftBorder = new QCPItemLine(customPlot);
+  customPlot->addItem(leftBorder);
+  leftBorder->setClipToAxisRect(false);
+  leftBorder->start->setType(QCPItemPosition::ptViewportRatio);
+  leftBorder->end->setType(QCPItemPosition::ptViewportRatio);
+  leftBorder->start->setCoords(0, 0);
+  leftBorder->end->setCoords(0, 1);
+  leftBorder->setPen(QPen(Qt::gray, 0, Qt::DashLine));
+  
+  QCPItemText *axisRectLabel = new QCPItemText(customPlot);
+  customPlot->addItem(axisRectLabel);
+  axisRectLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
+  axisRectLabel->position->setCoords(0.5, 0.5);
+  axisRectLabel->setFont(QFont(QFont().family(), 16));
+  axisRectLabel->setText("QCPAxisRect");
+  axisRectLabel->setColor(QColor(0, 0, 0, 60));
+  
+  customPlot->savePng(dir.filePath("AxisRectSpacingOverview.png"), 400, 400);
+}
+
+void MainWindow::genAxisNamesOverview()
+{
+  resetPlot();
+ 
+  customPlot->xAxis->setRange(1, 2);
+  customPlot->yAxis->setRange(-50, 150);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->axisRect()->setupFullAxesBox();
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->axisRect()->setAutoMargins(QCP::msNone);
+  customPlot->axisRect()->setMargins(QMargins(250, 50, 20, 65));
+  customPlot->yAxis->setLabel("Axis Label");
+  
+  addArrow(QPointF(216, 70), QPointF(150, 32), "Tick label", Qt::AlignRight|Qt::AlignVCenter);
+  addArrow(QPointF(187, 110), QPointF(130, 76), "Axis label", Qt::AlignRight|Qt::AlignVCenter);
+  addArrow(QPointF(260, 77), QPointF(300, 77), "Tick", Qt::AlignLeft|Qt::AlignVCenter);
+  addArrow(QPointF(255, 95), QPointF(300, 95), "Sub tick", Qt::AlignLeft|Qt::AlignVCenter);
+  addArrow(QPointF(297, 193), QPointF(297, 250), "Zero line", Qt::AlignHCenter|Qt::AlignTop);
+  addArrow(QPointF(354, 165), QPointF(354, 266), "Grid line", Qt::AlignHCenter|Qt::AlignTop);
+  addBracket(QPointF(263, 132), QPointF(263, 105), "Tick step", QPointF(8, 0), false, Qt::AlignLeft|Qt::AlignVCenter, QCPItemBracket::bsCurly);
+  
+  customPlot->savePng(dir.filePath("AxisNamesOverview.png"), 450, 300);
+}
+
+void MainWindow::genLayoutsystem_AddingPlotTitle()
+{
+  resetPlot(false);
+  
+  // first we create and prepare a plot title layout element:
+  QCPPlotTitle *title = new QCPPlotTitle(customPlot);
+  title->setText("Plot Title Example");
+  title->setFont(QFont("sans", 12, QFont::Bold));
+  // then we add it to the main plot layout:
+  customPlot->plotLayout()->insertRow(0); // insert an empty row above the axis rect
+  customPlot->plotLayout()->addElement(0, 0, title); // insert the title in the empty cell we just created
+  
+  customPlot->savePng(dir.filePath("layoutsystem-addingplottitle.png"), 300, 200);
+}
+
+void MainWindow::genLayoutsystem_MultipleAxisRects()
+{
+  resetPlot(false);
+  
+  customPlot->plotLayout()->clear(); // let's start from scratch and remove the default axis rect
+  // add the first axis rect in second row (row index 1):
+  customPlot->plotLayout()->addElement(1, 0, new QCPAxisRect(customPlot));
+  // create a sub layout that we'll place in first row:
+  QCPLayoutGrid *subLayout = new QCPLayoutGrid;
+  customPlot->plotLayout()->addElement(0, 0, subLayout);
+  // add two axis rects in the sub layout next to eachother:
+  subLayout->addElement(0, 0, new QCPAxisRect(customPlot));
+  subLayout->addElement(0, 1, new QCPAxisRect(customPlot));
+  subLayout->setColumnStretchFactor(0, 3); // left axis rect shall have 60% of width
+  subLayout->setColumnStretchFactor(1, 2); // right one only 40% (3:2 = 60:40)
+  
+  customPlot->savePng(dir.filePath("layoutsystem-multipleaxisrects.png"), 400, 300);
+}
+
+void MainWindow::genQCPGraph()
+{
+  resetPlot(true);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->xAxis->setBasePen(Qt::NoPen);
+  customPlot->yAxis->setBasePen(Qt::NoPen);
+  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->xAxis->setTicks(false);
+  customPlot->yAxis->setTicks(false);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->yAxis->setTickLabels(false);
+  
+  QVector<double> x1, y1, x2, y2, err2;
+  for (int i=0; i<100; ++i)
+  {
+    x1 << i/99.0*10;
+    if (i != 50)
+      y1 << qSin((x1.last()-5.0)*3)/((x1.last()-5.0)*3);
+    else
+      y1 << 1;
+  }
+  x2 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8 << 9;
+  y2 << 1 << 1.1 << 1.5 << 1.6 << 1.4 << 1.35 << 1.3 << 1.2 << 1.15;
+  err2 << 0.25 << 0.3 << 0.34 << 0.35 << 0.3 << 0.15 << 0.17 << 0.23 << 0.24;
+  
+  customPlot->addGraph();
+  customPlot->graph()->setData(x1, y1);
+  customPlot->graph()->setBrush(QColor(255, 50, 50, 25));
+  
+  customPlot->addGraph();
+  customPlot->graph()->setDataValueError(x2, y2, err2);
+  customPlot->graph()->setErrorType(QCPGraph::etValue);
+  customPlot->graph()->setLineStyle(QCPGraph::lsNone);
+  customPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::black, QColor(0, 0, 0, 25), 6));
+  
+  customPlot->xAxis->setRange(-1, 11);
+  customPlot->yAxis->setRange(-0.5, 2.1);
+  
+  customPlot->savePng(dir.filePath("QCPGraph.png"), 450, 200);
+}
+
+void MainWindow::genQCPCurve()
+{
+  resetPlot(true);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->xAxis->setBasePen(Qt::NoPen);
+  customPlot->yAxis->setBasePen(Qt::NoPen);
+  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->xAxis->setTicks(false);
+  customPlot->yAxis->setTicks(false);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->yAxis->setTickLabels(false);
+  
+  QVector<double> x1, y1;
+  for (int i=-20; i<70; ++i)
+  {
+    double t = i/99.0*2*M_PI;
+    x1 << 4*qCos(t);
+    y1 << qSin(t*2);
+  }
+  QCPCurve *curve = new QCPCurve(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(curve);
+  curve->setData(x1, y1);
+  
+  customPlot->xAxis->setRange(-5, 5);
+  customPlot->yAxis->setRange(-2, 2);
+  
+  customPlot->savePng(dir.filePath("QCPCurve.png"), 450, 200);
+}
+
+void MainWindow::genQCPBars()
+{
+  resetPlot(true);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->xAxis->setBasePen(Qt::NoPen);
+  customPlot->yAxis->setBasePen(Qt::NoPen);
+  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->xAxis->setTicks(false);
+  customPlot->yAxis->setTicks(false);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->yAxis->setTickLabels(false);
+  
+  QVector<double> x1, y1, y2;
+  x1 << -2 << -1 << 0 << 1 << 2;
+  y1 << 0.5 << -0.4 << 0.2 << 0.8 << 1.2;
+  y2 << 0.3 << -0.2 << 0.2 << 0.3 << 0.4;
+  
+  QCPBars *bars1 = new QCPBars(customPlot->xAxis, customPlot->yAxis);
+  QCPBars *bars2 = new QCPBars(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(bars1);
+  customPlot->addPlottable(bars2);
+  bars1->setData(x1, y1);
+  bars2->setData(x1, y2);
+  bars2->moveAbove(bars1);
+  
+  bars1->setAntialiased(false);
+  bars2->setAntialiased(false);
+  bars2->setPen(QPen(QColor(200, 50, 50)));
+  bars2->setBrush(QColor(255, 50, 50, 25));
+  
+  customPlot->xAxis->setRange(-3, 3);
+  customPlot->yAxis->setRange(-1, 2);
+  
+  customPlot->savePng(dir.filePath("QCPBars.png"), 450, 200);
+}
+
+void MainWindow::genQCPStatisticalBox()
+{
+  resetPlot(true);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->xAxis->setBasePen(Qt::NoPen);
+  customPlot->yAxis->setBasePen(Qt::NoPen);
+  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->xAxis->setTicks(false);
+  customPlot->yAxis->setTicks(false);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->yAxis->setTickLabels(false);
+  
+  QCPStatisticalBox *box1 = new QCPStatisticalBox(customPlot->xAxis, customPlot->yAxis);
+  QCPStatisticalBox *box2 = new QCPStatisticalBox(customPlot->xAxis, customPlot->yAxis);
+  QCPStatisticalBox *box3 = new QCPStatisticalBox(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(box1);
+  customPlot->addPlottable(box2);
+  customPlot->addPlottable(box3);
+  box1->setData(-1, -1.2, -0.35, 0.1, 0.4, 1.1);
+  box2->setData(0, -1.4, -0.7, -0.1, 0.34, 0.9);
+  box3->setData(1, -0.6, -0.2, 0.15, 0.6, 1.2);
+  box1->setBrush(QColor(0, 0, 255, 20));
+  box2->setBrush(QColor(0, 0, 255, 20));
+  box3->setBrush(QColor(0, 0, 255, 20));
+  
+  box3->setOutliers(QVector<double>() << -0.9 << -1 << 1.35 << 1.4 << 1.1);
+  box3->setOutlierStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, 5));
+  
+  customPlot->xAxis->setRange(-3, 3);
+  customPlot->yAxis->setRange(-1.5, 1.5);
+  
+  customPlot->savePng(dir.filePath("QCPStatisticalBox.png"), 450, 200);
 }
 
 void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool circle, bool labelBelow)
@@ -292,6 +595,7 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
     {
       QCPItemEllipse *circ = new QCPItemEllipse(item->parentPlot());
       item->parentPlot()->addItem(circ);
+      circ->setClipToAxisRect(false);
       circ->topLeft->setParentAnchor(anchors.at(i));
       circ->bottomRight->setParentAnchor(anchors.at(i));
       circ->topLeft->setCoords(-4, -4);
@@ -307,6 +611,7 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
       {
         QCPItemEllipse *circ2 = new QCPItemEllipse(item->parentPlot());
         item->parentPlot()->addItem(circ2);
+        circ2->setClipToAxisRect(false);
         circ2->topLeft->setParentAnchor(anchors.at(i));
         circ2->bottomRight->setParentAnchor(anchors.at(i));
         circ2->topLeft->setCoords(-2.5, -2.5);
@@ -319,6 +624,7 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
     {
       QCPItemText *label = new QCPItemText(item->parentPlot());
       item->parentPlot()->addItem(label);
+      label->setClipToAxisRect(false);
       label->setFont(QFont(font().family(), fontSize));
       label->setColor(Qt::blue);
       label->setText(QString("%2 (%1)").arg(i).arg(anchors.at(i)->name()));
@@ -332,15 +638,122 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
   }
 }
 
-void MainWindow::resetPlot()
+void MainWindow::addBracket(QPointF left, QPointF right, QString text, QPointF textOffset, bool textSideways, Qt::Alignment textAlign, QCPItemBracket::BracketStyle style)
+{
+  QCPItemBracket *bracket = new QCPItemBracket(customPlot);
+  customPlot->addItem(bracket);
+  bracket->setClipToAxisRect(false);
+  bracket->left->setType(QCPItemPosition::ptAbsolute);
+  bracket->right->setType(QCPItemPosition::ptAbsolute);
+  bracket->left->setCoords(right);
+  bracket->right->setCoords(left);
+  bracket->setStyle(style);
+  bracket->setLength(3);
+  bracket->setPen(QPen(Qt::blue));
+  
+  QCPItemText *textItem = new QCPItemText(customPlot);
+  customPlot->addItem(textItem);
+  textItem->setClipToAxisRect(false);
+  textItem->setText(text);
+  textItem->setPositionAlignment(textAlign);
+  if (textSideways)
+    textItem->setRotation(-90);
+  textItem->position->setParentAnchor(bracket->center);
+  textItem->position->setCoords(textOffset);
+  textItem->setColor(Qt::blue);
+}
+
+void MainWindow::addArrow(QPointF target, QPointF textPosition, QString text, Qt::Alignment textAlign)
+{
+  QCPItemText *textItem = new QCPItemText(customPlot);
+  customPlot->addItem(textItem);
+  textItem->setClipToAxisRect(false);
+  textItem->setText(text);
+  textItem->setPositionAlignment(textAlign);
+  textItem->position->setType(QCPItemPosition::ptAbsolute);
+  textItem->position->setCoords(textPosition);
+  textItem->setColor(Qt::blue);
+  QRectF textRect(textItem->topLeft->pixelPoint(), textItem->bottomRight->pixelPoint());
+  
+  QCPItemLine *arrowItem = new QCPItemLine(customPlot);
+  customPlot->addItem(arrowItem);
+  arrowItem->setClipToAxisRect(false);
+  arrowItem->setHead(QCPLineEnding::esSpikeArrow);
+  arrowItem->setPen(QPen(Qt::blue));
+  arrowItem->end->setType(QCPItemPosition::ptAbsolute);
+  arrowItem->end->setCoords(target);
+  
+  if (target.x() < textRect.left())
+  {
+    if (target.y() < textRect.top())
+      arrowItem->start->setParentAnchor(textItem->topLeft);
+    else if (target.y() > textRect.bottom())
+      arrowItem->start->setParentAnchor(textItem->bottomLeft);
+    else
+      arrowItem->start->setParentAnchor(textItem->left);
+  } else if (target.x() > textRect.right())
+  {
+    if (target.y() < textRect.top())
+      arrowItem->start->setParentAnchor(textItem->topRight);
+    else if (target.y() > textRect.bottom())
+      arrowItem->start->setParentAnchor(textItem->bottomRight);
+    else
+      arrowItem->start->setParentAnchor(textItem->right);
+  } else
+  {
+    if (target.y() < textRect.top())
+      arrowItem->start->setParentAnchor(textItem->top);
+    else if (target.y() > textRect.bottom())
+      arrowItem->start->setParentAnchor(textItem->bottom);
+  }
+}
+
+void MainWindow::addGridLayoutOutline(QCPLayoutGrid *layout)
+{
+  QList<QCPLayoutElement*> elements;
+  elements << layout;
+  elements << layout->elements(true);
+  for (int i=0; i<elements.size(); ++i)
+  {
+    if (!elements.at(i))
+      continue;
+    
+    qDebug() << elements.at(i) << elements.at(i)->outerRect();
+    
+    QCPItemRect *outerRect = new QCPItemRect(customPlot);
+    customPlot->addItem(outerRect);
+    outerRect->setClipToAxisRect(false);
+    outerRect->setBrush(QColor(0, 0, 0, 25));
+    outerRect->setPen(QPen(QColor(180, 180, 180)));
+    outerRect->topLeft->setType(QCPItemPosition::ptAbsolute);
+    outerRect->bottomRight->setType(QCPItemPosition::ptAbsolute);
+    outerRect->topLeft->setPixelPoint(elements.at(i)->outerRect().topLeft());
+    outerRect->bottomRight->setPixelPoint(elements.at(i)->outerRect().bottomRight());
+    
+    QCPItemRect *innerRect = new QCPItemRect(customPlot);
+    customPlot->addItem(innerRect);
+    innerRect->setClipToAxisRect(false);
+    innerRect->setBrush(QColor(230, 100, 100, 25));
+    innerRect->setPen(QPen(QColor(180, 180, 180)));
+    innerRect->topLeft->setType(QCPItemPosition::ptAbsolute);
+    innerRect->bottomRight->setType(QCPItemPosition::ptAbsolute);
+    innerRect->topLeft->setCoords(elements.at(i)->rect().topLeft());
+    innerRect->bottomRight->setCoords(elements.at(i)->rect().bottomRight());
+    
+  }
+}
+
+void MainWindow::resetPlot(bool clearAxes)
 {
   customPlot = new QCustomPlot(this);
   setCentralWidget(customPlot);
-  customPlot->xAxis->setRange(-0.4, 1.4);
-  customPlot->yAxis->setRange(-0.2, 1.2);
-  customPlot->xAxis->setVisible(false);
-  customPlot->yAxis->setVisible(false);
-  customPlot->setAutoMargin(false);
-  customPlot->setMargin(0, 0, 0, 0);
-  
+  if (clearAxes)
+  {
+    customPlot->xAxis->setRange(-0.4, 1.4);
+    customPlot->yAxis->setRange(-0.2, 1.2);
+    customPlot->xAxis->setVisible(false);
+    customPlot->yAxis->setVisible(false);
+    customPlot->axisRect()->setAutoMargins(QCP::msNone);
+    customPlot->axisRect()->setMargins(QMargins(0, 0, 0, 0));
+  }
 }

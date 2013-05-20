@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_H
@@ -28,9 +29,9 @@
 #include "global.h"
 #include "painter.h"
 #include "layer.h"
+#include "layout.h"
 #include "range.h"
 #include "axis.h"
-#include "legend.h"
 #include "plottable.h"
 #include "item.h"
 #include "lineending.h"
@@ -48,5 +49,8 @@
 #include "items/item-pixmap.h"
 #include "items/item-tracer.h"
 #include "items/item-bracket.h"
+#include "layoutelements/layoutelement-axisrect.h"
+#include "layoutelements/layoutelement-legend.h"
+#include "layoutelements/layoutelement-plottitle.h"
 
 #endif // QCP_H

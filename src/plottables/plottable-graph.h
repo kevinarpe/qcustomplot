@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_PLOTTABLE_GRAPH_H
@@ -28,6 +29,7 @@
 #include "../global.h"
 #include "../range.h"
 #include "../plottable.h"
+#include "../painter.h"
 
 class QCPPainter;
 class QCPAxis;
@@ -58,6 +60,15 @@ typedef QMutableMapIterator<double, QCPData> QCPDataMutableMapIterator;
 class QCP_LIB_DECL QCPGraph : public QCPAbstractPlottable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(LineStyle lineStyle READ lineStyle WRITE setLineStyle)
+  Q_PROPERTY(QCPScatterStyle scatterStyle READ scatterStyle WRITE setScatterStyle)
+  Q_PROPERTY(ErrorType errorType READ errorType WRITE setErrorType)
+  Q_PROPERTY(QPen errorPen READ errorPen WRITE setErrorPen)
+  Q_PROPERTY(double errorBarSize READ errorBarSize WRITE setErrorBarSize)
+  Q_PROPERTY(bool errorBarSkipSymbol READ errorBarSkipSymbol WRITE setErrorBarSkipSymbol)
+  Q_PROPERTY(QCPGraph* channelFillGraph READ channelFillGraph WRITE setChannelFillGraph)
+  /// \endcond
 public:
   /*!
     Defines how the graph's line is represented visually in the plot. The line is drawn with the
@@ -89,14 +100,12 @@ public:
   // getters:
   const QCPDataMap *data() const { return mData; }
   LineStyle lineStyle() const { return mLineStyle; }
-  QCP::ScatterStyle scatterStyle() const { return mScatterStyle; }
-  double scatterSize() const { return mScatterSize; }
-  const QPixmap scatterPixmap() const { return mScatterPixmap; }
+  QCPScatterStyle scatterStyle() const { return mScatterStyle; }
   ErrorType errorType() const { return mErrorType; }
   QPen errorPen() const { return mErrorPen; }
   double errorBarSize() const { return mErrorBarSize; }
   bool errorBarSkipSymbol() const { return mErrorBarSkipSymbol; }
-  QCPGraph *channelFillGraph() const { return mChannelFillGraph; }
+  QCPGraph *channelFillGraph() const { return mChannelFillGraph.data(); }
   
   // setters:
   void setData(QCPDataMap *data, bool copy=false);
@@ -108,9 +117,7 @@ public:
   void setDataBothError(const QVector<double> &key, const QVector<double> &value, const QVector<double> &keyError, const QVector<double> &valueError);
   void setDataBothError(const QVector<double> &key, const QVector<double> &value, const QVector<double> &keyErrorMinus, const QVector<double> &keyErrorPlus, const QVector<double> &valueErrorMinus, const QVector<double> &valueErrorPlus);
   void setLineStyle(LineStyle ls);
-  void setScatterStyle(QCP::ScatterStyle ss);
-  void setScatterSize(double size);
-  void setScatterPixmap(const QPixmap &pixmap);
+  void setScatterStyle(const QCPScatterStyle &style);
   void setErrorType(ErrorType errorType);
   void setErrorPen(const QPen &pen);
   void setErrorBarSize(double size);
@@ -126,8 +133,10 @@ public:
   void removeDataAfter(double key);
   void removeData(double fromKey, double toKey);
   void removeData(double key);
+  
+  // reimplemented virtual methods:
   virtual void clearData();
-  virtual double selectTest(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   using QCPAbstractPlottable::rescaleAxes;
   using QCPAbstractPlottable::rescaleKeyAxis;
   using QCPAbstractPlottable::rescaleValueAxis;
@@ -136,38 +145,39 @@ public:
   virtual void rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
   
 protected:
+  // property members:
   QCPDataMap *mData;
   QPen mErrorPen;
   LineStyle mLineStyle;
-  QCP::ScatterStyle mScatterStyle;
-  double mScatterSize;
-  QPixmap mScatterPixmap;
+  QCPScatterStyle mScatterStyle;
   ErrorType mErrorType;
   double mErrorBarSize;
   bool mErrorBarSkipSymbol;
-  QCPGraph *mChannelFillGraph;
-
+  QWeakPointer<QCPGraph> mChannelFillGraph;
+  
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
-
-  // functions to generate plot data points in pixel coordinates:
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
+  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
+  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
+  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain, bool includeErrors) const; // overloads base class interface
+  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain, bool includeErrors) const; // overloads base class interface
+  
+  // introduced virtual methods:
+  virtual void drawFill(QCPPainter *painter, QVector<QPointF> *lineData) const;
+  virtual void drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData) const;
+  virtual void drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) const;
+  virtual void drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) const;
+  
+  // non-virtual methods:
   void getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
-  // plot style specific functions to generate plot data, used by getPlotData:
   void getScatterPlotData(QVector<QCPData> *pointData) const;
   void getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
-  
-  // helper functions for drawing:
-  virtual void drawFill(QCPPainter *painter, QVector<QPointF> *lineData) const;
-  virtual void drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData) const;
-  virtual void drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) const;
-  virtual void drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) const;
   void drawError(QCPPainter *painter, double x, double y, const QCPData &data) const;
-  
-  // helper functions:
   void getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper, int &count) const;
   void addFillBasePoints(QVector<QPointF> *lineData) const;
   void removeFillBasePoints(QVector<QPointF> *lineData) const;
@@ -179,10 +189,6 @@ protected:
   int findIndexBelowY(const QVector<QPointF> *data, double y) const;
   int findIndexAboveY(const QVector<QPointF> *data, double y) const;
   double pointDistance(const QPointF &pixelPoint) const;
-  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
-  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
-  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain, bool includeErrors) const; // overloads base class interface
-  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain, bool includeErrors) const; // overloads base class interface
   
   friend class QCustomPlot;
   friend class QCPLegend;

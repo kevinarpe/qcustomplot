@@ -1,9 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtCore>
-#include <QtGui>
-#include "../../src/qcp.h"
+#include <QMainWindow>
+#include <QMessageBox>
+#include <QMetaEnum>
+#include <QTimer>
+#include <QDir>
+#include "../../qcustomplot.h"
 
 namespace Ui {
 class MainWindow;
@@ -17,6 +20,7 @@ public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
   
+public slots:
   // image generators:
   void genScatterStyles();
   void genItemPixmap();
@@ -29,11 +33,26 @@ public:
   void genItemText();
   void genItemTracer();
   void genLineEnding();
+  void genMarginGroup();
+  void genAxisRectSpacingOverview();
+  void genAxisNamesOverview();
   
+  void genLayoutsystem_AddingPlotTitle();
+  void genLayoutsystem_MultipleAxisRects();
+  
+  void genQCPGraph();
+  void genQCPCurve();
+  void genQCPBars();
+  void genQCPStatisticalBox();
+  
+private:
   // helpers:
   void labelItemAnchors(QCPAbstractItem *item, double fontSize=8, bool circle=true, bool labelBelow=true);
-  void resetPlot();
-private:
+  void addBracket(QPointF left, QPointF right, QString text, QPointF textOffset, bool textSideways, Qt::Alignment textAlign, QCPItemBracket::BracketStyle style=QCPItemBracket::bsRound);
+  void addArrow(QPointF target, QPointF textPosition, QString text, Qt::Alignment textAlign=Qt::AlignCenter);
+  void addGridLayoutOutline(QCPLayoutGrid *layout);
+  void resetPlot(bool clearAxes=true);
+  
   Ui::MainWindow *ui;
   QCustomPlot *customPlot;
   QDir dir; // target directory for images

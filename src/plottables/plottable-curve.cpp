@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #include "plottable-curve.h"
@@ -27,6 +28,7 @@
 #include "../painter.h"
 #include "../core.h"
 #include "../axis.h"
+#include "../layoutelements/layoutelement-axisrect.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPCurveData
@@ -70,6 +72,13 @@ QCPCurveData::QCPCurveData(double t, double key, double value) :
 
 /*! \class QCPCurve
   \brief A plottable representing a parametric curve in a plot.
+  
+  \image html QCPCurve.png
+  
+  Unlike QCPGraph, plottables of this type may have multiple points with the same key coordinate,
+  so their visual representation can have \a loops. This is realized by introducing a third
+  coordinate \a t, which defines the order of the points described by the other two coordinates \a
+  x and \a y.
 
   To plot data, assign it with the \ref setData or \ref addData functions.
   
@@ -115,8 +124,7 @@ QCPCurve::QCPCurve(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   mSelectedPen.setColor(QColor(80, 80, 255)); // lighter than Qt::blue of mPen
   mSelectedBrush = mBrush;
   
-  setScatterSize(6);
-  setScatterStyle(QCP::ssNone);
+  setScatterStyle(QCPScatterStyle());
   setLineStyle(lsLine);
 }
 
@@ -187,36 +195,15 @@ void QCPCurve::setData(const QVector<double> &key, const QVector<double> &value)
 }
 
 /*! 
-  Sets the visual appearance of single data points in the plot. If set to \ref QCP::ssNone, no scatter points
-  are drawn (e.g. for line-only-plots with appropriate line style).
-  \see ScatterStyle, setLineStyle
+  Sets the visual appearance of single data points in the plot. If set to \ref
+  QCPScatterStyle::ssNone, no scatter points are drawn (e.g. for line-only plots with appropriate
+  line style).
+  
+  \see QCPScatterStyle, setLineStyle
 */
-void QCPCurve::setScatterStyle(QCP::ScatterStyle style)
+void QCPCurve::setScatterStyle(const QCPScatterStyle &style)
 {
   mScatterStyle = style;
-}
-
-/*! 
-  This defines how big (in pixels) single scatters are drawn, if scatter style (\ref
-  setScatterStyle) isn't \ref QCP::ssNone, \ref QCP::ssDot or \ref QCP::ssPixmap. Floating point values are
-  allowed for fine grained control over optical appearance with antialiased painting.
-  
-  \see ScatterStyle
-*/
-void QCPCurve::setScatterSize(double size)
-{
-  mScatterSize = size;
-}
-
-/*! 
-  If the scatter style (\ref setScatterStyle) is set to ssPixmap, this function defines the QPixmap
-  that will be drawn centered on the data point coordinate.
-  
-  \see ScatterStyle
-*/
-void QCPCurve::setScatterPixmap(const QPixmap &pixmap)
-{
-  mScatterPixmap = pixmap;
 }
 
 /*!
@@ -364,9 +351,10 @@ void QCPCurve::clearData()
 }
 
 /* inherits documentation from base class */
-double QCPCurve::selectTest(const QPointF &pos) const
+double QCPCurve::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (mData->isEmpty() || !mVisible)
+  Q_UNUSED(details)
+  if ((onlySelectable && !mSelectable) || mData->isEmpty())
     return -1;
   
   return pointDistance(pos);
@@ -424,7 +412,7 @@ void QCPCurve::draw(QCPPainter *painter)
   }
   
   // draw scatters:
-  if (mScatterStyle != QCP::ssNone)
+  if (!mScatterStyle.isNone())
     drawScatterPlot(painter, lineData);
   
   // free allocated line data:
@@ -432,7 +420,7 @@ void QCPCurve::draw(QCPPainter *painter)
 }
 
 /* inherits documentation from base class */
-void QCPCurve::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
+void QCPCurve::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
   // draw fill:
   if (mBrush.style() != Qt::NoBrush)
@@ -448,35 +436,36 @@ void QCPCurve::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
     painter->drawLine(QLineF(rect.left(), rect.top()+rect.height()/2.0, rect.right()+5, rect.top()+rect.height()/2.0)); // +5 on x2 else last segment is missing from dashed/dotted pens
   }
   // draw scatter symbol:
-  if (mScatterStyle != QCP::ssNone)
+  if (!mScatterStyle.isNone())
   {
     applyScattersAntialiasingHint(painter);
-    painter->setPen(mPen);
-    if (mScatterStyle == QCP::ssPixmap)
+    // scale scatter pixmap if it's too large to fit in legend icon rect:
+    if (mScatterStyle.shape() == QCPScatterStyle::ssPixmap && (mScatterStyle.pixmap().size().width() > rect.width() || mScatterStyle.pixmap().size().height() > rect.height()))
     {
-      if (mScatterPixmap.size().width() > rect.width() || mScatterPixmap.size().height() > rect.height()) // scale scatter pixmap if it's too large to fit in legend icon rect
-        painter->setScatterPixmap(mScatterPixmap.scaled(rect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-      else
-        painter->setScatterPixmap(mScatterPixmap);
+      QCPScatterStyle scaledStyle(mScatterStyle);
+      scaledStyle.setPixmap(scaledStyle.pixmap().scaled(rect.size().toSize(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+      scaledStyle.applyTo(painter, mPen);
+      scaledStyle.drawShape(painter, QRectF(rect).center());
+    } else
+    {
+      mScatterStyle.applyTo(painter, mPen);
+      mScatterStyle.drawShape(painter, QRectF(rect).center());
     }
-    painter->drawScatter(QRectF(rect).center().x(), QRectF(rect).center().y(), mScatterSize, mScatterStyle);
   }
 }
 
 /*! \internal
   
   Draws scatter symbols at every data point passed in \a pointData. scatter symbols are independent of
-  the line style and are always drawn if scatter style is not \ref QCP::ssNone.
+  the line style and are always drawn if scatter shape is not \ref QCPScatterStyle::ssNone.
 */
 void QCPCurve::drawScatterPlot(QCPPainter *painter, const QVector<QPointF> *pointData) const
 {
   // draw scatter point symbols:
   applyScattersAntialiasingHint(painter);
-  painter->setPen(mainPen());
-  painter->setBrush(mainBrush());
-  painter->setScatterPixmap(mScatterPixmap);
+  mScatterStyle.applyTo(painter, mPen);
   for (int i=0; i<pointData->size(); ++i)
-    painter->drawScatter(pointData->at(i).x(), pointData->at(i).y(), mScatterSize, mScatterStyle);
+    mScatterStyle.drawShape(painter,  pointData->at(i));
 }
 
 /*! \internal
@@ -496,14 +485,19 @@ void QCPCurve::getCurveData(QVector<QPointF> *lineData) const
      fills inside R consistent.
      The region R has index 5.
   */
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  
+  QRect axisRect = mKeyAxis.data()->axisRect()->rect() & mValueAxis.data()->axisRect()->rect();
   lineData->reserve(mData->size());
   QCPCurveDataMap::const_iterator it;
   int lastRegion = 5;
   int currentRegion = 5;
-  double RLeft = mKeyAxis->range().lower;
-  double RRight = mKeyAxis->range().upper;
-  double RBottom = mValueAxis->range().lower;
-  double RTop = mValueAxis->range().upper;
+  double RLeft = keyAxis->range().lower;
+  double RRight = keyAxis->range().upper;
+  double RBottom = valueAxis->range().lower;
+  double RTop = valueAxis->range().upper;
   double x, y; // current key/value
   bool addedLastAlready = true;
   bool firstPoint = true; // first point must always be drawn, to make sure fill works correctly
@@ -577,9 +571,9 @@ void QCPCurve::getCurveData(QVector<QPointF> *lineData) const
       {
         // always add last point if not added already, optimized:
         if (!addedLastAlready)
-          lineData->append(outsideCoordsToPixels((it-1).value().key, (it-1).value().value, currentRegion));
+          lineData->append(outsideCoordsToPixels((it-1).value().key, (it-1).value().value, currentRegion, axisRect));
         // add current point, optimized:
-        lineData->append(outsideCoordsToPixels(it.value().key, it.value().value, currentRegion));
+        lineData->append(outsideCoordsToPixels(it.value().key, it.value().value, currentRegion, axisRect));
       }
       addedLastAlready = true; // so that if next point enters 5, or crosses another region boundary, we don't add this point twice
     } else // neither in R, nor crossed a region boundary, skip current point
@@ -632,15 +626,15 @@ double QCPCurve::pointDistance(const QPointF &pixelPoint) const
   This is a specialized \ref coordsToPixels function for points that are outside the visible
   axisRect and just crossing a boundary (since \ref getCurveData reduces non-visible curve segments
   to those line segments that cross region boundaries, see documentation there). It only uses the
-  coordinate parallel to the region boundary of the axisRect. The other coordinate is picked 10
-  pixels outside the axisRect. Together with the optimization in \ref getCurveData this improves
-  performance for large curves (or zoomed in ones) significantly while keeping the illusion the
-  whole curve and its filling is still being drawn for the viewer.
+  coordinate parallel to the region boundary of the axisRect. The other coordinate is picked just
+  outside the axisRect (how far is determined by the scatter size and the line width). Together
+  with the optimization in \ref getCurveData this improves performance for large curves (or zoomed
+  in ones) significantly while keeping the illusion the whole curve and its filling is still being
+  drawn for the viewer.
 */
-QPointF QCPCurve::outsideCoordsToPixels(double key, double value, int region) const
+QPointF QCPCurve::outsideCoordsToPixels(double key, double value, int region, QRect axisRect) const
 {
-  int margin = 10;
-  QRect axisRect = mKeyAxis->axisRect() | mValueAxis->axisRect();
+  int margin = qCeil(qMax(mScatterStyle.size(), (double)mPen.widthF())) + 2;
   QPointF result = coordsToPixels(key, value);
   switch (region)
   {

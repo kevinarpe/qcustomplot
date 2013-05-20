@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_PLOTTABLE_CURVE_H
@@ -28,6 +29,7 @@
 #include "../global.h"
 #include "../range.h"
 #include "../plottable.h"
+#include "../painter.h"
 
 class QCPPainter;
 class QCPAxis;
@@ -57,6 +59,10 @@ typedef QMutableMapIterator<double, QCPCurveData> QCPCurveDataMutableMapIterator
 class QCP_LIB_DECL QCPCurve : public QCPAbstractPlottable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QCPScatterStyle scatterStyle READ scatterStyle WRITE setScatterStyle)
+  Q_PROPERTY(LineStyle lineStyle READ lineStyle WRITE setLineStyle)
+  /// \endcond
 public:
   /*!
     Defines how the curve's line is represented visually in the plot. The line is drawn with the
@@ -70,19 +76,15 @@ public:
   virtual ~QCPCurve();
   
   // getters:
-  const QCPCurveDataMap *data() const { return mData; }
-  QCP::ScatterStyle scatterStyle() const { return mScatterStyle; }
-  double scatterSize() const { return mScatterSize; }
-  QPixmap scatterPixmap() const { return mScatterPixmap; }
+  QCPCurveDataMap *data() const { return mData; }
+  QCPScatterStyle scatterStyle() const { return mScatterStyle; }
   LineStyle lineStyle() const { return mLineStyle; }
   
   // setters:
   void setData(QCPCurveDataMap *data, bool copy=false);
   void setData(const QVector<double> &t, const QVector<double> &key, const QVector<double> &value);
   void setData(const QVector<double> &key, const QVector<double> &value);
-  void setScatterStyle(QCP::ScatterStyle style);
-  void setScatterSize(double size);
-  void setScatterPixmap(const QPixmap &pixmap);
+  void setScatterStyle(const QCPScatterStyle &style);
   void setLineStyle(LineStyle style);
   
   // non-property methods:
@@ -95,28 +97,30 @@ public:
   void removeDataAfter(double t);
   void removeData(double fromt, double tot);
   void removeData(double t);
+  
+  // reimplemented virtual methods:
   virtual void clearData();
-  virtual double selectTest(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
+  // property members:
   QCPCurveDataMap *mData;
-  QCP::ScatterStyle mScatterStyle;
-  double mScatterSize;
-  QPixmap mScatterPixmap;
+  QCPScatterStyle mScatterStyle;
   LineStyle mLineStyle;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
-  // drawing helpers:
-  virtual void drawScatterPlot(QCPPainter *painter, const QVector<QPointF> *pointData) const;
-  
-  // helper functions:
-  void getCurveData(QVector<QPointF> *lineData) const;
-  double pointDistance(const QPointF &pixelPoint) const;
-
-  QPointF outsideCoordsToPixels(double key, double value, int region) const;
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
   virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
   virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
+  
+  // introduced virtual methods:
+  virtual void drawScatterPlot(QCPPainter *painter, const QVector<QPointF> *pointData) const;
+  
+  // non-virtual methods:
+  void getCurveData(QVector<QPointF> *lineData) const;
+  double pointDistance(const QPointF &pixelPoint) const;
+  QPointF outsideCoordsToPixels(double key, double value, int region, QRect axisRect) const;
   
   friend class QCustomPlot;
   friend class QCPLegend;

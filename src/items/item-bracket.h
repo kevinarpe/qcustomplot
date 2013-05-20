@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_ITEM_BRACKET_H
@@ -34,6 +35,12 @@ class QCustomPlot;
 class QCP_LIB_DECL QCPItemBracket : public QCPAbstractItem
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QPen pen READ pen WRITE setPen)
+  Q_PROPERTY(QPen selectedPen READ selectedPen WRITE setSelectedPen)
+  Q_PROPERTY(double length READ length WRITE setLength)
+  Q_PROPERTY(BracketStyle style READ style WRITE setStyle)
+  /// \endcond
 public:
   enum BracketStyle { bsSquare  ///< A brace with angled edges
                       ,bsRound  ///< A brace with round edges
@@ -56,23 +63,25 @@ public:
   void setLength(double length);
   void setStyle(BracketStyle style);
   
-  // non-property methods:
-  virtual double selectTest(const QPointF &pos) const;
+  // reimplemented virtual methods:
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   QCPItemPosition * const left;
   QCPItemPosition * const right;
   QCPItemAnchor * const center;
   
 protected:
+  // property members:
   enum AnchorIndex {aiCenter};
   QPen mPen, mSelectedPen;
   double mLength;
   BracketStyle mStyle;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
   virtual QPointF anchorPixelPoint(int anchorId) const;
   
-  // helper functions:
+  // non-virtual methods:
   QPen mainPen() const;
 };
 

@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,12 +19,12 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #include "plottable-statisticalbox.h"
 
-#include "../painter.h"
 #include "../core.h"
 #include "../axis.h"
 
@@ -35,6 +35,8 @@
 /*! \class QCPStatisticalBox
   \brief A plottable representing a single statistical box in a plot.
 
+  \image html QCPStatisticalBox.png
+  
   To plot data, assign it with the individual parameter functions or use \ref setData to set all
   parameters at once. The individual funcions are:
   \li \ref setMinimum
@@ -48,22 +50,21 @@
   
   \section appearance Changing the appearance
   
-  The appearance of the box itself is controlled via \ref setPen and \ref setBrush. You
-  may change the width of the box with \ref setWidth in plot coordinates (not pixels).
+  The appearance of the box itself is controlled via \ref setPen and \ref setBrush. You may change
+  the width of the box with \ref setWidth in plot coordinates (not pixels).
 
   Analog functions exist for the minimum/maximum-whiskers: \ref setWhiskerPen, \ref
   setWhiskerBarPen, \ref setWhiskerWidth. The whisker width is the width of the bar at the top
-  (maximum) or bottom (minimum).
+  (maximum) and bottom (minimum).
   
   The median indicator line has its own pen, \ref setMedianPen.
   
-  If the pens are changed, especially the whisker pen, make sure to set the capStyle to
-  Qt::FlatCap. Else, e.g. the whisker line might exceed the bar line by a few pixels due to the pen
-  cap being not perfectly flat.
+  If the whisker backbone pen is changed, make sure to set the capStyle to Qt::FlatCap. Else, the
+  backbone line might exceed the whisker bars by a few pixels due to the pen cap being not
+  perfectly flat.
   
-  The Outlier data points are drawn normal scatter points. Their look can be controlled with \ref
-  setOutlierStyle and \ref setOutlierPen. The size (diameter) can be set with \ref setOutlierSize
-  in pixels.
+  The Outlier data points are drawn as normal scatter points. Their look can be controlled with
+  \ref setOutlierStyle
   
   \section usage Usage
   
@@ -102,8 +103,7 @@ QCPStatisticalBox::QCPStatisticalBox(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   mUpperQuartile(0),
   mMaximum(0)
 {
-  setOutlierStyle(QCP::ssCircle);
-  setOutlierSize(5);
+  setOutlierStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, 6));
   setWhiskerWidth(0.2);
   setWidth(0.5);
   
@@ -112,13 +112,8 @@ QCPStatisticalBox::QCPStatisticalBox(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   setMedianPen(QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
   setWhiskerPen(QPen(Qt::black, 0, Qt::DashLine, Qt::FlatCap));
   setWhiskerBarPen(QPen(Qt::black));
-  setOutlierPen(QPen(Qt::blue));
   setBrush(Qt::NoBrush);
   setSelectedBrush(Qt::NoBrush);
-}
-
-QCPStatisticalBox::~QCPStatisticalBox()
-{
 }
 
 /*!
@@ -192,7 +187,7 @@ void QCPStatisticalBox::setMaximum(double value)
   are not within the whiskers (\ref setMinimum, \ref setMaximum) should be considered outliers and
   displayed as such.
   
-  \see setOutlierPen, setOutlierBrush, setOutlierSize
+  \see setOutlierStyle
 */
 void QCPStatisticalBox::setOutliers(const QVector<double> &values)
 {
@@ -237,8 +232,8 @@ void QCPStatisticalBox::setWhiskerWidth(double width)
 /*!
   Sets the pen used for drawing the whisker backbone (That's the line parallel to the value axis).
   
-  Make sure to set the \a pen capStyle to Qt::FlatCap to prevent the backbone from reaching a few
-  pixels past the bars, when using a non-zero pen width.
+  Make sure to set the \a pen capStyle to Qt::FlatCap to prevent the whisker backbone from reaching
+  a few pixels past the whisker bars, when using a non-zero pen width.
   
   \see setWhiskerBarPen
 */
@@ -249,7 +244,7 @@ void QCPStatisticalBox::setWhiskerPen(const QPen &pen)
 
 /*!
   Sets the pen used for drawing the whisker bars (Those are the lines parallel to the key axis at
-  each end of the backbone).
+  each end of the whisker backbone).
   
   \see setWhiskerPen
 */
@@ -260,9 +255,6 @@ void QCPStatisticalBox::setWhiskerBarPen(const QPen &pen)
 
 /*!
   Sets the pen used for drawing the median indicator line inside the statistical box.
-  
-  Make sure to set the \a pen capStyle to Qt::FlatCap to prevent the median line from reaching a
-  few pixels outside the box, when using a non-zero pen width.
 */
 void QCPStatisticalBox::setMedianPen(const QPen &pen)
 {
@@ -270,31 +262,11 @@ void QCPStatisticalBox::setMedianPen(const QPen &pen)
 }
 
 /*!
-  Sets the pixel size of the scatter symbols that represent the outlier data points.
+  Sets the appearance of the outlier data points.
   
-  \see setOutlierPen, setOutliers
+  \see setOutliers
 */
-void QCPStatisticalBox::setOutlierSize(double pixels)
-{
-  mOutlierSize = pixels;
-}
-
-/*!
-  Sets the pen used to draw the outlier data points.
-  
-  \see setOutlierSize, setOutliers
-*/
-void QCPStatisticalBox::setOutlierPen(const QPen &pen)
-{
-  mOutlierPen = pen;
-}
-
-/*!
-  Sets the scatter style of the outlier data points.
-  
-  \see setOutlierSize, setOutlierPen, setOutliers
-*/
-void QCPStatisticalBox::setOutlierStyle(QCP::ScatterStyle style)
+void QCPStatisticalBox::setOutlierStyle(const QCPScatterStyle &style)
 {
   mOutlierStyle = style;
 }
@@ -312,8 +284,13 @@ void QCPStatisticalBox::clearData()
 }
 
 /* inherits documentation from base class */
-double QCPStatisticalBox::selectTest(const QPointF &pos) const
+double QCPStatisticalBox::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
+    return -1;
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
+  
   double posKey, posValue;
   pixelsToCoords(pos, posKey, posValue);
   // quartile box:
@@ -324,7 +301,7 @@ double QCPStatisticalBox::selectTest(const QPointF &pos) const
   
   // min/max whiskers:
   if (QCPRange(mMinimum, mMaximum).contains(posValue))
-    return qAbs(mKeyAxis->coordToPixel(mKey)-mKeyAxis->coordToPixel(posKey));
+    return qAbs(mKeyAxis.data()->coordToPixel(mKey)-mKeyAxis.data()->coordToPixel(posKey));
   
   return -1;
 }
@@ -332,6 +309,8 @@ double QCPStatisticalBox::selectTest(const QPointF &pos) const
 /* inherits documentation from base class */
 void QCPStatisticalBox::draw(QCPPainter *painter)
 {
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+
   // check data validity if flag set:
 #ifdef QCUSTOMPLOT_CHECK_DATA
   if (QCP::isInvalidData(mKey, mMedian) ||
@@ -356,7 +335,7 @@ void QCPStatisticalBox::draw(QCPPainter *painter)
 }
 
 /* inherits documentation from base class */
-void QCPStatisticalBox::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
+void QCPStatisticalBox::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
   // draw filled rect:
   applyDefaultAntialiasingHint(painter);
@@ -422,18 +401,14 @@ void QCPStatisticalBox::drawWhiskers(QCPPainter *painter) const
 
 /*! \internal
   
-  Draws the outlier circles.
+  Draws the outlier scatter points.
 */
 void QCPStatisticalBox::drawOutliers(QCPPainter *painter) const
 {
   applyScattersAntialiasingHint(painter);
-  painter->setPen(mOutlierPen);
-  painter->setBrush(Qt::NoBrush);
+  mOutlierStyle.applyTo(painter, mPen);
   for (int i=0; i<mOutliers.size(); ++i)
-  {
-    QPointF dataPoint = coordsToPixels(mKey, mOutliers.at(i));
-    painter->drawScatter(dataPoint.x(), dataPoint.y(), mOutlierSize, mOutlierStyle);
-  }
+    mOutlierStyle.drawShape(painter, coordsToPixels(mKey, mOutliers.at(i)));
 }
 
 /* inherits documentation from base class */

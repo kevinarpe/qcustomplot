@@ -3,6 +3,8 @@
 #
 
 QT       += core gui
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
+
 TARGET = plot-examples
 TEMPLATE = app
 
@@ -12,8 +14,6 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
          ../../qcustomplot.h
-
-LIBS += ../../../../libs/timer/src/Timer.o
 
 FORMS    += mainwindow.ui
 

@@ -1,20 +1,38 @@
 NEXT RELEASE:
 
-- alternating axis section backgrounds
-- Refactor scatter system. User should be able to fill all scatters with a color he likes. (Make example line plot with white-filled circles and a non-white background. Looks good) 
-- doc: duplicate QCPAbstractPlottable::rescaleAxes documentation in QCPGraph::rescaleAxes reimplementations. and make cross references between
-  QCustomPlot::/QCPGraph::/QCPAbstractPlottable::rescaleAxes 
-- add doc-note and qDebug output for case when addToLegend (QCPGraph/QCPAbstractPlottable) is called without the plottable being in the plot. 
-- doc: explain ltDateTime mode on axes better. Probably give examples with numbers
-- Experiment with better styled background, Gradients/patterns. Maybe replace setColor with setBrush or overload setColor to also accept QBrush.
-- restructure tests. Have top level dir "tests" with subdir "manual", "automatic". place current "export test" and "test" into "manual".
-- Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs
-- give QCustomPlot::rescaleAxes() the parameter "bool onlyVisible=true" to allow rescaling only via visible graphs
+Migration FAQ:
+- setPlotTitle is gone, how do I set a plot title now?
+  A plot title now is a layout element. You can add a title like this:
+  customPlot->plotLayout()->insertRow(0); // inserts an empty row above the default axis rect
+  customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(customPlot, "Your Plot Title"));
+  
+- where did setupFullAxesBox, setRangeDrag, setMargin etc. go?
+  Many functions related to the axis rect moved to the QCPAxisRect class. You can reach the default axis rect via
+  customPlot->axisRect()
+  from there, you can use the functions like you're used to.
+
+- enable/disable range zoom and drag?
+  By default, the QCPAxisRect::setRangeZoom/Drag are now set to Qt::Horizontal|Qt::Vertical. To enable range zooming/dragging, all you need
+  to do now is set the corresponding interaction flag: customPlot->setInteractions(QCP::iRangeZoom | QCP::iRangeDrag);
+
+- where did setSelected/setSelectable on QCPAxis and QCPLegend go?
+  they're now called setSelectedParts/setSelectableParts reflecting the fact, that they don't handle a bool but an enum with multiple possible parts.
+  
+- What happened to scatter styles and colors, for example on QCPGraph and QCPCurve?
+  They're now handled by QCPScatterStyle. When old code said setScatterStyle(QCP::ssCircle), you now write setScatterStyle(QCPScatterStyle::ssCircle).
+  For more details what's behind that and the new possibilities, see the documentation of QCPScatterStyle.
 
 FUTURE RELEASE:
 
+- document public interface member vars (legend, xAxis, yAxis,...)
+- selection rect mechanism
+- more options for tick-generation algorithm (integers, other stepping, range end only at ticks, date/time specific steps...)
+- Ask for permission to add to http://qt-project.org/faq/answer/do_you_provide_a_tool_for_creating_graphs
+- alternating axis section backgrounds
+- Gaps in QCPGraph
+- possibly setLodFactor/setAutoLod in QCPGraph (or rather only QCPPerformanceGraph?)
 - Item class based on tracer which adds tag-like labels to points. With option to show x/y values via formatting strings (%key and %value).
-- Range navigation via selection rectangle
+- QCPTheme for assigning colors/styles/colorwheels easily
 - optimize QCPGraph (and QCPCurve) with improved intersection clip algorithm (keep old algo for timing). QCPGraph will need clipping on left and right
   only for first and last segment due to the sorted underlying QCPDataMap. Watch out for regression for lsImpulse... (shouldn't happen since we work on raw line data)
   - increase the intersection rect by mScatterSize
@@ -24,23 +42,18 @@ FUTURE RELEASE:
 - make demo with TeXGyreTermes axis fonts/text/arrows etc.
 - make type and parent of QCPItemPosition individual for key and value, but keep interface that sets them simultaneously
 - QCPItemPolygon // hide the QCPItemPosition list behind QCPItemPosition &point(i), pointCount(), setPointCount(c) interface.
+- Data fetcher (model/view)
 - layer visibility
 - maybe adjust getKeyRange on QCPGraph in sdBoth mode to actually use the sorted fashion of map (just look at first and last)
 - think about how to realize splitted axes in the future
 - QCPCandlesticks (http://en.wikipedia.org/wiki/Candlestick_chart)
 - QCPBubbles (x, y, area)
-
 - QCPBars value error bars, print values above bars, maybe print per bar text inside bar (rotated)
 - somehow, range checks must be aware of the scale type used (if that's done, fix the validRange function for log plot 1e-300-1e300)
 - provide a way to set axes ranges with 1:1 ratio (via signals/slots? review setScaleRatio)
-- Data fetcher
 - make drawScatterPlot more efficient
   In total, we calculate the coordToPixel transformation for the .key and .value
   three times (for polygon line, for error and for scatter). Maybe provide the
   polygon data here and make this function aware of at which increments the
   data points are positioned in the polygon (depends on line style!).
 - Fix for N900 error for pen width 0 (perhaps with Q_OS_SYMBIAN flag in QCPPainter?)
-
-- subplots, maybe as some sort of descendant of QCustomPlot, or an own widget with
-  friend access to QCustomPlot (yeah, do that), which manages multiple internal QCustomPlots, so
-  they don't need to know about eachother.

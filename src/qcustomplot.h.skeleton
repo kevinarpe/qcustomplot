@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,11 +19,17 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCUSTOMPLOT_H
 #define QCUSTOMPLOT_H
+
+#ifdef QT_DISABLE_DEPRECATED_BEFORE
+#  undef QT_DISABLE_DEPRECATED_BEFORE
+#endif
+#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(0, 0, 0)
 
 //amalgamation: place header includes
 
@@ -32,11 +38,11 @@
 //amalgamation: add painter.h
 //amalgamation: add layer.h
 //amalgamation: add range.h
+//amalgamation: add layout.h
+//amalgamation: add lineending.h
 //amalgamation: add axis.h
-//amalgamation: add legend.h
 //amalgamation: add plottable.h
 //amalgamation: add item.h
-//amalgamation: add lineending.h
 //amalgamation: add core.h
 //amalgamation: add plottables/plottable-graph.h
 //amalgamation: add plottables/plottable-curve.h
@@ -51,6 +57,9 @@
 //amalgamation: add items/item-pixmap.h
 //amalgamation: add items/item-tracer.h
 //amalgamation: add items/item-bracket.h
+//amalgamation: add layoutelements/layoutelement-axisrect.h
+//amalgamation: add layoutelements/layoutelement-legend.h
+//amalgamation: add layoutelements/layoutelement-plottitle.h
 
 #endif // QCUSTOMPLOT_H
 

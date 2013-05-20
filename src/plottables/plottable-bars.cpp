@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #include "plottable-bars.h"
@@ -68,6 +69,8 @@ QCPBarData::QCPBarData(double key, double value) :
 /*! \class QCPBars
   \brief A plottable representing a bar chart in a plot.
 
+  \image html QCPBars.png
+  
   To plot data, assign it with the \ref setData or \ref addData functions.
   
   \section appearance Changing the appearance
@@ -120,9 +123,7 @@ QCPBarData::QCPBarData(double key, double value) :
   then takes ownership of the bar chart.
 */
 QCPBars::QCPBars(QCPAxis *keyAxis, QCPAxis *valueAxis) :
-  QCPAbstractPlottable(keyAxis, valueAxis),
-  mBarBelow(0),
-  mBarAbove(0)
+  QCPAbstractPlottable(keyAxis, valueAxis)
 {
   mData = new QCPBarDataMap;
   mPen.setColor(Qt::blue);
@@ -140,7 +141,7 @@ QCPBars::QCPBars(QCPAxis *keyAxis, QCPAxis *valueAxis) :
 QCPBars::~QCPBars()
 {
   if (mBarBelow || mBarAbove)
-    connectBars(mBarBelow, mBarAbove); // take this bar out of any stacking
+    connectBars(mBarBelow.data(), mBarAbove.data()); // take this bar out of any stacking
   delete mData;
 }
 
@@ -208,18 +209,18 @@ void QCPBars::setData(const QVector<double> &key, const QVector<double> &value)
 void QCPBars::moveBelow(QCPBars *bars)
 {
   if (bars == this) return;
-  if (bars->keyAxis() != mKeyAxis || bars->valueAxis() != mValueAxis)
+  if (bars && (bars->keyAxis() != mKeyAxis.data() || bars->valueAxis() != mValueAxis.data()))
   {
     qDebug() << Q_FUNC_INFO << "passed QCPBars* doesn't have same key and value axis as this QCPBars";
     return;
   }
   // remove from stacking:
-  connectBars(mBarBelow, mBarAbove); // Note: also works if one (or both) of them is 0
+  connectBars(mBarBelow.data(), mBarAbove.data()); // Note: also works if one (or both) of them is 0
   // if new bar given, insert this bar below it:
   if (bars)
   {
     if (bars->mBarBelow)
-      connectBars(bars->mBarBelow, this);
+      connectBars(bars->mBarBelow.data(), this);
     connectBars(this, bars);
   }
 }
@@ -241,18 +242,18 @@ void QCPBars::moveBelow(QCPBars *bars)
 void QCPBars::moveAbove(QCPBars *bars)
 {
   if (bars == this) return;
-  if (bars && (bars->keyAxis() != mKeyAxis || bars->valueAxis() != mValueAxis))
+  if (bars && (bars->keyAxis() != mKeyAxis.data() || bars->valueAxis() != mValueAxis.data()))
   {
     qDebug() << Q_FUNC_INFO << "passed QCPBars* doesn't have same key and value axis as this QCPBars";
     return;
   }
   // remove from stacking:
-  connectBars(mBarBelow, mBarAbove); // Note: also works if one (or both) of them is 0
+  connectBars(mBarBelow.data(), mBarAbove.data()); // Note: also works if one (or both) of them is 0
   // if new bar given, insert this bar above it:
   if (bars)
   {
     if (bars->mBarAbove)
-      connectBars(this, bars->mBarAbove);
+      connectBars(this, bars->mBarAbove.data());
     connectBars(bars, this);
   }
 }
@@ -366,8 +367,12 @@ void QCPBars::clearData()
 }
 
 /* inherits documentation from base class */
-double QCPBars::selectTest(const QPointF &pos) const
+double QCPBars::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
+    return -1;
+  
   QCPBarDataMap::ConstIterator it;
   double posKey, posValue;
   pixelsToCoords(pos, posKey, posValue);
@@ -385,13 +390,14 @@ double QCPBars::selectTest(const QPointF &pos) const
 /* inherits documentation from base class */
 void QCPBars::draw(QCPPainter *painter)
 {
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
   if (mData->isEmpty()) return;
   
   QCPBarDataMap::const_iterator it;
   for (it = mData->constBegin(); it != mData->constEnd(); ++it)
   {
     // skip bar if not visible in key axis range:
-    if (it.key()+mWidth*0.5 < mKeyAxis->range().lower || it.key()-mWidth*0.5 > mKeyAxis->range().upper)
+    if (it.key()+mWidth*0.5 < mKeyAxis.data()->range().lower || it.key()-mWidth*0.5 > mKeyAxis.data()->range().upper)
       continue;
     // check data validity if flag set:
 #ifdef QCUSTOMPLOT_CHECK_DATA
@@ -419,7 +425,7 @@ void QCPBars::draw(QCPPainter *painter)
 }
 
 /* inherits documentation from base class */
-void QCPBars::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
+void QCPBars::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
   // draw filled rect:
   applyDefaultAntialiasingHint(painter);
@@ -461,8 +467,8 @@ double QCPBars::getBaseValue(double key, bool positive) const
   {
     double max = 0;
     // find bars of mBarBelow that are approximately at key and find largest one:
-    QCPBarDataMap::const_iterator it = mBarBelow->mData->lowerBound(key-mWidth*0.1);
-    QCPBarDataMap::const_iterator itEnd = mBarBelow->mData->upperBound(key+mWidth*0.1);
+    QCPBarDataMap::const_iterator it = mBarBelow.data()->mData->lowerBound(key-mWidth*0.1);
+    QCPBarDataMap::const_iterator itEnd = mBarBelow.data()->mData->upperBound(key+mWidth*0.1);
     while (it != itEnd)
     {
       if ((positive && it.value().value > max) ||
@@ -471,7 +477,7 @@ double QCPBars::getBaseValue(double key, bool positive) const
       ++it;
     }
     // recurse down the bar-stack to find the total height:
-    return max + mBarBelow->getBaseValue(key, positive);
+    return max + mBarBelow.data()->getBaseValue(key, positive);
   } else
     return 0;
 }
@@ -491,23 +497,23 @@ void QCPBars::connectBars(QCPBars *lower, QCPBars *upper)
   if (!lower) // disconnect upper at bottom
   {
     // disconnect old bar below upper:
-    if (upper->mBarBelow && upper->mBarBelow->mBarAbove == upper)
-      upper->mBarBelow->mBarAbove = 0;
-    upper->mBarBelow = 0;
+    if (upper->mBarBelow && upper->mBarBelow.data()->mBarAbove.data() == upper)
+      upper->mBarBelow.data()->mBarAbove.clear();
+    upper->mBarBelow.clear();
   } else if (!upper) // disconnect lower at top
   {
     // disconnect old bar above lower:
-    if (lower->mBarAbove && lower->mBarAbove->mBarBelow == lower)
-      lower->mBarAbove->mBarBelow = 0;
-    lower->mBarAbove = 0;
+    if (lower->mBarAbove && lower->mBarAbove.data()->mBarBelow.data() == lower)
+      lower->mBarAbove.data()->mBarBelow.clear();
+    lower->mBarAbove.clear();
   } else // connect lower and upper
   {
     // disconnect old bar above lower:
-    if (lower->mBarAbove && lower->mBarAbove->mBarBelow == lower)
-      lower->mBarAbove->mBarBelow = 0;
+    if (lower->mBarAbove && lower->mBarAbove.data()->mBarBelow.data() == lower)
+      lower->mBarAbove.data()->mBarBelow.clear();
     // disconnect old bar below upper:
-    if (upper->mBarBelow && upper->mBarBelow->mBarAbove == upper)
-      upper->mBarBelow->mBarAbove = 0;
+    if (upper->mBarBelow && upper->mBarBelow.data()->mBarAbove.data() == upper)
+      upper->mBarBelow.data()->mBarAbove.clear();
     lower->mBarAbove = upper;
     upper->mBarBelow = lower;
   }

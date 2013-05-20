@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #include "item-pixmap.h"
@@ -79,6 +80,8 @@ QCPItemPixmap::~QCPItemPixmap()
 void QCPItemPixmap::setPixmap(const QPixmap &pixmap)
 {
   mPixmap = pixmap;
+  if (mPixmap.isNull())
+    qDebug() << Q_FUNC_INFO << "pixmap is null";
 }
 
 /*!
@@ -113,9 +116,10 @@ void QCPItemPixmap::setSelectedPen(const QPen &pen)
 }
 
 /* inherits documentation from base class */
-double QCPItemPixmap::selectTest(const QPointF &pos) const
+double QCPItemPixmap::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  if (!mVisible)
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
     return -1;
   
   return rectSelectTest(getFinalRect(), pos, true);
@@ -185,6 +189,9 @@ QPointF QCPItemPixmap::anchorPixelPoint(int anchorId) const
 */
 void QCPItemPixmap::updateScaledPixmap(QRect finalRect, bool flipHorz, bool flipVert)
 {
+  if (mPixmap.isNull())
+    return;
+  
   if (mScaled)
   {
     if (finalRect.isNull())

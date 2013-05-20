@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_ITEM_TEXT_H
@@ -34,6 +35,21 @@ class QCustomPlot;
 class QCP_LIB_DECL QCPItemText : public QCPAbstractItem
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QColor color READ color WRITE setColor)
+  Q_PROPERTY(QColor selectedColor READ selectedColor WRITE setSelectedColor)
+  Q_PROPERTY(QPen pen READ pen WRITE setPen)
+  Q_PROPERTY(QPen selectedPen READ selectedPen WRITE setSelectedPen)
+  Q_PROPERTY(QBrush brush READ brush WRITE setBrush)
+  Q_PROPERTY(QBrush selectedBrush READ selectedBrush WRITE setSelectedBrush)
+  Q_PROPERTY(QFont font READ font WRITE setFont)
+  Q_PROPERTY(QFont selectedFont READ selectedFont WRITE setSelectedFont)
+  Q_PROPERTY(QString text READ text WRITE setText)
+  Q_PROPERTY(Qt::Alignment positionAlignment READ positionAlignment WRITE setPositionAlignment)
+  Q_PROPERTY(Qt::Alignment textAlignment READ textAlignment WRITE setTextAlignment)
+  Q_PROPERTY(double rotation READ rotation WRITE setRotation)
+  Q_PROPERTY(QMargins padding READ padding WRITE setPadding)
+  /// \endcond
 public:
   QCPItemText(QCustomPlot *parentPlot);
   virtual ~QCPItemText();
@@ -68,8 +84,8 @@ public:
   void setRotation(double degrees);
   void setPadding(const QMargins &padding);
   
-  // non-property methods:
-  virtual double selectTest(const QPointF &pos) const;
+  // reimplemented virtual methods:
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   QCPItemPosition * const position;
   QCPItemAnchor * const topLeft;
@@ -83,6 +99,8 @@ public:
   
 protected:
   enum AnchorIndex {aiTopLeft, aiTop, aiTopRight, aiRight, aiBottomRight, aiBottom, aiBottomLeft, aiLeft};
+  
+  // property members:
   QColor mColor, mSelectedColor;
   QPen mPen, mSelectedPen;
   QBrush mBrush, mSelectedBrush;
@@ -93,10 +111,11 @@ protected:
   double mRotation;
   QMargins mPadding;
   
+  // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
   virtual QPointF anchorPixelPoint(int anchorId) const;
   
-  // helper functions:
+  // non-virtual methods:
   QPointF getTextDrawPoint(const QPointF &pos, const QRectF &rect, Qt::Alignment positionAlignment) const;
   QFont mainFont() const;
   QColor mainColor() const;

@@ -1,5 +1,5 @@
-#include <QtCore>
-#include <QtGui>
+#include <QApplication>
+#include <QMainWindow>
 #include "../../qcustomplot.h"
 
 int main(int argc, char *argv[])

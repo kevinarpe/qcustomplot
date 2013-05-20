@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,13 +19,19 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #include "axis.h"
 
 #include "painter.h"
 #include "core.h"
+#include "plottable.h"
+#include "plottables/plottable-graph.h"
+#include "item.h"
+#include "layoutelements/layoutelement-axisrect.h"
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPGrid
@@ -34,28 +40,27 @@
 /*! \class QCPGrid
   \brief Responsible for drawing the grid of a QCPAxis.
   
-  This class is tightly bound to QCPAxis. Every axis owns a grid instance internally and uses it to
-  draw the grid. Normally, you don't need to interact with the QCPGrid instance, because QCPAxis
-  reproduces the grid interface in its own interface.
+  This class is tightly bound to QCPAxis. Every axis owns a grid instance and uses it to draw the
+  grid lines, sub grid lines and zero-line. You can interact with the grid of an axis via \ref
+  QCPAxis::grid. Normally, you don't need to create an instance of QCPGrid yourself.
   
   The axis and grid drawing was split into two classes to allow them to be placed on different
-  layers (both QCPAxis and QCPGrid inherit from QCPLayerable). So it is possible to have the grid
-  at the background and the axes in the foreground, and any plottables/items in between. This
-  described situation is the default setup, see QCPLayer documentation.  
+  layers (both QCPAxis and QCPGrid inherit from QCPLayerable). Thus it is possible to have the grid
+  in the background and the axes in the foreground, and any plottables/items in between. This
+  described situation is the default setup, see the QCPLayer documentation.
 */
 
 /*!
   Creates a QCPGrid instance and sets default values.
   
-  You shouldn't instantiate grids on their own, since every QCPAxis brings its own QCPGrid
-  internally
+  You shouldn't instantiate grids on their own, since every QCPAxis brings its own QCPGrid.
 */
 QCPGrid::QCPGrid(QCPAxis *parentAxis) :
-  QCPLayerable(parentAxis->parentPlot()),
-  mParentAxis(parentAxis),
-  mSectionBrushEven(Qt::NoBrush),
-  mSectionBrushOdd(Qt::NoBrush)
+  QCPLayerable(parentAxis->parentPlot(), "", parentAxis),
+  mParentAxis(parentAxis)
 {
+  // warning: this is called in QCPAxis constructor, so parentAxis members should not be accessed/called
+  setParent(parentAxis);
   setPen(QPen(QColor(200,200,200), 0, Qt::DotLine));
   setSubGridPen(QPen(QColor(220,220,220), 0, Qt::DotLine));
   setZeroLinePen(QPen(QColor(200,200,200), 0, Qt::SolidLine));
@@ -63,13 +68,6 @@ QCPGrid::QCPGrid(QCPAxis *parentAxis) :
   setAntialiased(false);
   setAntialiasedSubGrid(false);
   setAntialiasedZeroLine(false);
-  
-  //DBG:
-  //setSectionBrushes(QBrush(Qt::lightGray), QBrush(Qt::gray));
-}
-
-QCPGrid::~QCPGrid()
-{
 }
 
 /*!
@@ -117,22 +115,12 @@ void QCPGrid::setSubGridPen(const QPen &pen)
 /*!
   Sets the pen with which zero lines are drawn.
   
-  Zero lines are lines at coordinate 0 which may be drawn with a different pen than other grid
+  Zero lines are lines at value coordinate 0 which may be drawn with a different pen than other grid
   lines. To disable zero lines and just draw normal grid lines at zero, set \a pen to Qt::NoPen.
 */
 void QCPGrid::setZeroLinePen(const QPen &pen)
 {
   mZeroLinePen = pen;
-}
-
-/*!
-  Sets the brushes that will be used to draw tick section backgrounds of the axes alternatingly. To
-  disable alternating background brushes for axis tick sections, set the brushes to Qt::NoBrush
-*/
-void QCPGrid::setSectionBrushes(const QBrush &brushEven, const QBrush &brushOdd)
-{
-  mSectionBrushEven = brushEven;
-  mSectionBrushOdd = brushOdd;
 }
 
 /*! \internal
@@ -142,8 +130,9 @@ void QCPGrid::setSectionBrushes(const QBrush &brushEven, const QBrush &brushOdd)
 
   This is the antialiasing state the painter passed to the \ref draw method is in by default.
   
-  This function takes into account the local setting of the antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased
 */
@@ -156,68 +145,14 @@ void QCPGrid::applyDefaultAntialiasingHint(QCPPainter *painter) const
   
   Draws grid lines and sub grid lines at the positions of (sub) ticks of the parent axis, spanning
   over the complete axis rect. Also draws the zero line, if appropriate (\ref setZeroLinePen).
-  
-  Called by QCustomPlot::draw to draw the grid of an axis.
 */
 void QCPGrid::draw(QCPPainter *painter)
 {
-  if (!mParentAxis->visible()) return; // also don't draw grid when parent axis isn't visible
+  if (!mParentAxis) { qDebug() << Q_FUNC_INFO << "invalid parent axis"; return; }
   
-  if (mSectionBrushEven != Qt::NoBrush || mSectionBrushOdd != Qt::NoBrush)
-    drawSections(painter);
   if (mSubGridVisible)
     drawSubGridLines(painter);
   drawGridLines(painter);
-}
-
-/*! \internal
-  
-  Draws tick sections of the axis with alternating brushes set via \ref setSectionBrushes.
-  
-  Called by QCustomPlot::draw to draw the sections of an axis.
-*/
-void QCPGrid::drawSections(QCPPainter *painter) const
-{
-  int lowTick = mParentAxis->mLowestVisibleTick;
-  int highTick = mParentAxis->mHighestVisibleTick;
-  double t1, t2; // helper variable, result of coordinate-to-pixel transforms
-  if (mParentAxis->orientation() == Qt::Horizontal)
-  {
-    // TODO: make this properly work. Doesn't work when only one tick in range and probably when logarithmic scale.
-    // idea for no tick in visible range: if (lowtick > hightick), draw full axis fillrect with color depending on
-    // side (left or right of ticks) and whether there are ticks to left/right in tickvector.
-    applyDefaultAntialiasingHint(painter);
-    painter->setPen(Qt::NoPen);
-    for (int i=lowTick; i <= highTick-1; ++i)
-    {
-      int sectionId = 0;
-      if (mParentAxis->autoTicks())
-      {
-        double sectionHalf = (mParentAxis->mTickVector.at(i)+mParentAxis->mTickVector.at(i+1))/2.0;
-        sectionId = qFloor(sectionHalf/mParentAxis->mTickStep);
-      }
-      {
-        sectionId = i;
-      }
-      t1 = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i)); // x1
-      t2 = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i+1)); // x2
-      if (i == lowTick) // draw first section extra
-      {
-        painter->setBrush((sectionId-1) % 2 == 0 ? mSectionBrushEven : mSectionBrushOdd);
-        painter->drawRect(QRectF(mParentAxis->mAxisRect.left(), mParentAxis->mAxisRect.top(), t1-mParentAxis->mAxisRect.left(), mParentAxis->mAxisRect.height()));
-      }
-      painter->setBrush(sectionId % 2 == 0 ? mSectionBrushEven : mSectionBrushOdd);
-      painter->drawRect(QRectF(t1, mParentAxis->mAxisRect.top(), t2-t1, mParentAxis->mAxisRect.height()));
-      if (i == highTick-1) // draw last section extra
-      {
-        painter->setBrush((sectionId+1) % 2 == 0 ? mSectionBrushEven : mSectionBrushOdd);
-        painter->drawRect(QRectF(t2, mParentAxis->mAxisRect.top(), mParentAxis->mAxisRect.right()-t2+1, mParentAxis->mAxisRect.height()));
-      }
-    }
-  } else
-  {
-    // TODO: same for Qt::Vertical
-  }
 }
 
 /*! \internal
@@ -228,6 +163,8 @@ void QCPGrid::drawSections(QCPPainter *painter) const
 */
 void QCPGrid::drawGridLines(QCPPainter *painter) const
 {
+  if (!mParentAxis) { qDebug() << Q_FUNC_INFO << "invalid parent axis"; return; }
+  
   int lowTick = mParentAxis->mLowestVisibleTick;
   int highTick = mParentAxis->mHighestVisibleTick;
   double t; // helper variable, result of coordinate-to-pixel transforms
@@ -246,7 +183,7 @@ void QCPGrid::drawGridLines(QCPPainter *painter) const
         {
           zeroLineIndex = i;
           t = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i)); // x
-          painter->drawLine(QLineF(t, mParentAxis->mAxisRect.bottom(), t, mParentAxis->mAxisRect.top()));
+          painter->drawLine(QLineF(t, mParentAxis->mAxisRect->bottom(), t, mParentAxis->mAxisRect->top()));
           break;
         }
       }
@@ -258,7 +195,7 @@ void QCPGrid::drawGridLines(QCPPainter *painter) const
     {
       if (i == zeroLineIndex) continue; // don't draw a gridline on top of the zeroline
       t = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i)); // x
-      painter->drawLine(QLineF(t, mParentAxis->mAxisRect.bottom(), t, mParentAxis->mAxisRect.top()));
+      painter->drawLine(QLineF(t, mParentAxis->mAxisRect->bottom(), t, mParentAxis->mAxisRect->top()));
     }
   } else
   {
@@ -275,7 +212,7 @@ void QCPGrid::drawGridLines(QCPPainter *painter) const
         {
           zeroLineIndex = i;
           t = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i)); // y
-          painter->drawLine(QLineF(mParentAxis->mAxisRect.left(), t, mParentAxis->mAxisRect.right(), t));
+          painter->drawLine(QLineF(mParentAxis->mAxisRect->left(), t, mParentAxis->mAxisRect->right(), t));
           break;
         }
       }
@@ -287,7 +224,7 @@ void QCPGrid::drawGridLines(QCPPainter *painter) const
     {
       if (i == zeroLineIndex) continue; // don't draw a gridline on top of the zeroline
       t = mParentAxis->coordToPixel(mParentAxis->mTickVector.at(i)); // y
-      painter->drawLine(QLineF(mParentAxis->mAxisRect.left(), t, mParentAxis->mAxisRect.right(), t));
+      painter->drawLine(QLineF(mParentAxis->mAxisRect->left(), t, mParentAxis->mAxisRect->right(), t));
     }
   }
 }
@@ -300,6 +237,8 @@ void QCPGrid::drawGridLines(QCPPainter *painter) const
 */
 void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 {
+  if (!mParentAxis) { qDebug() << Q_FUNC_INFO << "invalid parent axis"; return; }
+  
   applyAntialiasingHint(painter, mAntialiasedSubGrid, QCP::aeSubGrid);
   double t; // helper variable, result of coordinate-to-pixel transforms
   painter->setPen(mSubGridPen);
@@ -308,14 +247,14 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
     for (int i=0; i<mParentAxis->mSubTickVector.size(); ++i)
     {
       t = mParentAxis->coordToPixel(mParentAxis->mSubTickVector.at(i)); // x
-      painter->drawLine(QLineF(t, mParentAxis->mAxisRect.bottom(), t, mParentAxis->mAxisRect.top()));
+      painter->drawLine(QLineF(t, mParentAxis->mAxisRect->bottom(), t, mParentAxis->mAxisRect->top()));
     }
   } else
   {
     for (int i=0; i<mParentAxis->mSubTickVector.size(); ++i)
     {
       t = mParentAxis->coordToPixel(mParentAxis->mSubTickVector.at(i)); // y
-      painter->drawLine(QLineF(mParentAxis->mAxisRect.left(), t, mParentAxis->mAxisRect.right(), t));
+      painter->drawLine(QLineF(mParentAxis->mAxisRect->left(), t, mParentAxis->mAxisRect->right(), t));
     }
   }
 }
@@ -328,9 +267,19 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 /*! \class QCPAxis
   \brief Manages a single axis inside a QCustomPlot.
 
-  Usually doesn't need to be instantiated externally. Access %QCustomPlot's axes via
+  Usually doesn't need to be instantiated externally. Access %QCustomPlot's default four axes via
   QCustomPlot::xAxis (bottom), QCustomPlot::yAxis (left), QCustomPlot::xAxis2 (top) and
   QCustomPlot::yAxis2 (right).
+  
+  Axes are always part of an axis rect, see QCPAxisRect.
+  \image html AxisNamesOverview.png
+  <center>Naming convention of axis parts</center>
+  \n
+    
+  \image html AxisRectSpacingOverview.png
+  <center>Overview of the spacings and paddings that define the geometry of an axis. The dashed gray line
+  on the left represents the QCustomPlot widget border.</center>
+
 */
 
 /* start of documentation of inline functions */
@@ -341,13 +290,19 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   from the axis type (left, top, right or bottom).
 */
 
+/*! \fn QCPGrid *QCPAxis::grid() const
+  
+  Returns the \ref QCPGrid instance belonging to this axis. Access it to set details about the way the
+  grid is displayed.
+*/
+
 /* end of documentation of inline functions */
 /* start of documentation of signals */
 
 /*! \fn void QCPAxis::ticksRequest()
   
   This signal is emitted when \ref setAutoTicks is false and the axis is about to generate tick
-  labels and replot itself.
+  labels for a replot.
   
   Modifying the tick positions can be done with \ref setTickVector. If you also want to control the
   tick labels, set \ref setAutoTickLabels to false and also provide the labels with \ref
@@ -369,72 +324,87 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 /*! \fn void QCPAxis::selectionChanged(QCPAxis::SelectableParts selection)
   
   This signal is emitted when the selection state of this axis has changed, either by user interaction
-  or by a direct call to \ref setSelected.
+  or by a direct call to \ref setSelectedParts.
 */
 
 /* end of documentation of signals */
 
 /*!
-  Constructs an Axis instance of Type \a type inside \a parentPlot.
+  Constructs an Axis instance of Type \a type for the axis rect \a parent.
+  You shouldn't instantiate axes directly, rather use \ref QCPAxisRect::addAxis.
 */
-QCPAxis::QCPAxis(QCustomPlot *parentPlot, AxisType type) :
-  QCPLayerable(parentPlot)
+QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
+  QCPLayerable(parent->parentPlot(), "", parent),
+  // axis base:
+  mAxisType(type),
+  mAxisRect(parent),
+  mOffset(0),
+  mPadding(5),
+  mOrientation((type == atBottom || type == atTop) ? Qt::Horizontal : Qt::Vertical),
+  mSelectableParts(spAxis | spTickLabels | spAxisLabel),
+  mSelectedParts(spNone),
+  mBasePen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
+  mSelectedBasePen(QPen(Qt::blue, 2)),
+  mLowerEnding(QCPLineEnding::esNone),
+  mUpperEnding(QCPLineEnding::esNone),
+  // axis label:
+  mLabelPadding(0),
+  mLabel(""),
+  mLabelFont(mParentPlot->font()),
+  mSelectedLabelFont(QFont(mLabelFont.family(), mLabelFont.pointSize(), QFont::Bold)),
+  mLabelColor(Qt::black),
+  mSelectedLabelColor(Qt::blue),
+  // tick labels:
+  mTickLabelPadding(0),
+  mTickLabels(true),
+  mAutoTickLabels(true),
+  mTickLabelRotation(0),
+  mTickLabelType(ltNumber),
+  mTickLabelFont(mParentPlot->font()),
+  mSelectedTickLabelFont(QFont(mTickLabelFont.family(), mTickLabelFont.pointSize(), QFont::Bold)),
+  mTickLabelColor(Qt::black),
+  mSelectedTickLabelColor(Qt::blue),
+  mDateTimeFormat("hh:mm:ss\ndd.MM.yy"),
+  mNumberPrecision(6),
+  mNumberFormatChar('g'),
+  mNumberBeautifulPowers(true),
+  mNumberMultiplyCross(false),
+  // ticks and subticks:
+  mTicks(true),
+  mTickStep(1),
+  mSubTickCount(4),
+  mAutoTickCount(6),
+  mAutoTicks(true),
+  mAutoTickStep(true),
+  mAutoSubTicks(true),
+  mTickLengthIn(5),
+  mTickLengthOut(0),
+  mSubTickLengthIn(2),
+  mSubTickLengthOut(0),
+  mTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
+  mSelectedTickPen(QPen(Qt::blue, 2)),
+  mSubTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
+  mSelectedSubTickPen(QPen(Qt::blue, 2)),
+  // scale and range:
+  mRange(0, 5),
+  mRangeReversed(false),
+  mScaleType(stLinear),
+  mScaleLogBase(10),
+  mScaleLogBaseLogInv(1.0/qLn(mScaleLogBase)),
+  // internal members:
+  mGrid(new QCPGrid(this)),
+  mLabelCache(16), // cache at most 16 (tick) labels
+  mLowestVisibleTick(0),
+  mHighestVisibleTick(-1),
+  mExponentialChar('e'), // will be updated with locale sensitive values in setupTickVector
+  mPositiveSignChar('+'), // will be updated with locale sensitive values in setupTickVector
+  mCachedMarginValid(false),
+  mCachedMargin(0)
 {
-  mLabelCache.setMaxCost(16); // cache at most 16 (tick) labels
-  mLowestVisibleTick = 0;
-  mHighestVisibleTick = -1;
-  mGrid = new QCPGrid(this);
-  setAxisType(type);
-  setAxisRect(parentPlot->axisRect()); 
-  setScaleType(stLinear);
-  setScaleLogBase(10);
-  
+  mGrid->setVisible(false);
   setAntialiased(false);
-  setRange(0, 5);
-  setRangeReversed(false);
+  setLayer(mParentPlot->currentLayer()); // it's actually on that layer already, but we want it in front of the grid, so we place it on there again
   
-  setTicks(true);
-  setTickStep(1);
-  setAutoTickCount(6);
-  setAutoTicks(true);
-  setAutoTickLabels(true);
-  setAutoTickStep(true);
-  setTickLabelFont(parentPlot->font());
-  setTickLabelColor(Qt::black);
-  setTickLength(5);
-  setTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap));
-  setTickLabels(true);
-  setTickLabelType(ltNumber);
-  setTickLabelRotation(0);
-  setDateTimeFormat("hh:mm:ss\ndd.MM.yy");
-  setNumberFormat("gbd");
-  setNumberPrecision(6);
-  setLabel("");
-  setLabelFont(parentPlot->font());
-  setLabelColor(Qt::black);
-  
-  setAutoSubTicks(true);
-  setSubTickCount(4);
-  setSubTickLength(2);
-  setSubTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap));
-  setBasePen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap));
-  
-  setSelected(spNone);
-  setSelectable(spAxis | spTickLabels | spAxisLabel);
-  QFont selTickLabelFont = tickLabelFont();
-  selTickLabelFont.setBold(true);
-  setSelectedTickLabelFont(selTickLabelFont);
-  QFont selLabelFont = labelFont();
-  selLabelFont.setBold(true);
-  setSelectedLabelFont(selLabelFont);
-  setSelectedTickLabelColor(Qt::blue);
-  setSelectedLabelColor(Qt::blue);
-  QPen blueThickPen(Qt::blue, 2);
-  setSelectedBasePen(blueThickPen);
-  setSelectedTickPen(blueThickPen);
-  setSelectedSubTickPen(blueThickPen);
-  
-  setPadding(0);
   if (type == atTop)
   {
     setTickLabelPadding(3);
@@ -454,11 +424,6 @@ QCPAxis::QCPAxis(QCustomPlot *parentPlot, AxisType type) :
   }
 }
 
-QCPAxis::~QCPAxis()
-{
-  delete mGrid;
-}
-
 /* No documentation as it is a property getter */
 QString QCPAxis::numberFormat() const
 {
@@ -471,30 +436,6 @@ QString QCPAxis::numberFormat() const
       result.append("c");
   }
   return result;
-}
-
-/*! \internal
-  
-  Sets the axis type. This determines the \ref orientation and together with the current axis rect
-  (see \ref setAxisRect), the position of the axis. Depending on \a type, ticks, tick labels, and
-  label are drawn on corresponding sides of the axis base line.
-*/
-void QCPAxis::setAxisType(AxisType type)
-{
-  mAxisType = type;
-  mOrientation = (type == atBottom || type == atTop) ? Qt::Horizontal : Qt::Vertical;
-}
-
-/*! \internal
-  
-  Sets the axis rect. The axis uses this rect to position itself within the plot,
-  together with the information of its type (\ref setAxisType). Theoretically it's possible to give
-  a plot's axes different axis rects (e.g. for gaps between them), however, they are currently all
-  synchronized by the QCustomPlot::setAxisRect function.
-*/
-void QCPAxis::setAxisRect(const QRect &rect)
-{
-  mAxisRect = rect;
 }
 
 /*!
@@ -512,9 +453,13 @@ void QCPAxis::setAxisRect(const QRect &rect)
 */
 void QCPAxis::setScaleType(ScaleType type)
 {
-  mScaleType = type;
-  if (mScaleType == stLogarithmic)
-    mRange = mRange.sanitizedForLogScale();
+  if (mScaleType != type)
+  {
+    mScaleType = type;
+    if (mScaleType == stLogarithmic)
+      mRange = mRange.sanitizedForLogScale();
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -530,6 +475,7 @@ void QCPAxis::setScaleLogBase(double base)
   {
     mScaleLogBase = base;
     mScaleLogBaseLogInv = 1.0/qLn(mScaleLogBase); // buffer for faster baseLog() calculation
+    mCachedMarginValid = false;
   } else
     qDebug() << Q_FUNC_INFO << "Invalid logarithmic scale base (must be greater 1):" << base;
 }
@@ -540,7 +486,7 @@ void QCPAxis::setScaleLogBase(double base)
   This slot may be connected with the \ref rangeChanged signal of another axis so this axis
   is always synchronized with the other axis range, when it changes.
   
-  To invert the direction of an axis range, use \ref setRangeReversed.
+  To invert the direction of an axis, use \ref setRangeReversed.
 */
 void QCPAxis::setRange(const QCPRange &range)
 {
@@ -555,6 +501,7 @@ void QCPAxis::setRange(const QCPRange &range)
   {
     mRange = range.sanitizedForLinScale();
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
@@ -563,14 +510,14 @@ void QCPAxis::setRange(const QCPRange &range)
   (When \ref QCustomPlot::setInteractions contains iSelectAxes.)
   
   However, even when \a selectable is set to a value not allowing the selection of a specific part,
-  it is still possible to set the selection of this part manually, by calling \ref setSelected
+  it is still possible to set the selection of this part manually, by calling \ref setSelectedParts
   directly.
   
-  \see SelectablePart, setSelected
+  \see SelectablePart, setSelectedParts
 */
-void QCPAxis::setSelectable(const SelectableParts &selectable)
+void QCPAxis::setSelectableParts(const SelectableParts &selectable)
 {
-  mSelectable = selectable;
+  mSelectableParts = selectable;
 }
 
 /*!
@@ -581,30 +528,30 @@ void QCPAxis::setSelectable(const SelectableParts &selectable)
   QCustomPlot::setInteractions contains iSelectAxes. You only need to call this function when you
   wish to change the selection state manually.
   
-  This function can change the selection state of a part even when \ref setSelectable was set to a
-  value that actually excludes the part.
+  This function can change the selection state of a part, independent of the \ref setSelectableParts setting.
   
   emits the \ref selectionChanged signal when \a selected is different from the previous selection state.
   
-  \see SelectablePart, setSelectable, selectTest, setSelectedBasePen, setSelectedTickPen, setSelectedSubTickPen,
+  \see SelectablePart, setSelectableParts, selectTest, setSelectedBasePen, setSelectedTickPen, setSelectedSubTickPen,
   setSelectedTickLabelFont, setSelectedLabelFont, setSelectedTickLabelColor, setSelectedLabelColor
 */
-void QCPAxis::setSelected(const SelectableParts &selected)
+void QCPAxis::setSelectedParts(const SelectableParts &selected)
 {
-  if (mSelected != selected)
+  if (mSelectedParts != selected)
   {
-    if (mSelected.testFlag(spTickLabels) != selected.testFlag(spTickLabels))
+    if (mSelectedParts.testFlag(spTickLabels) != selected.testFlag(spTickLabels))
       mLabelCache.clear();
-    mSelected = selected;
-    emit selectionChanged(mSelected);
+    mSelectedParts = selected;
+    emit selectionChanged(mSelectedParts);
   }
 }
 
 /*!
   \overload
+  
   Sets the lower and upper bound of the axis range.
   
-  To invert the direction of an axis range, use \ref setRangeReversed.
+  To invert the direction of an axis, use \ref setRangeReversed.
   
   There is also a slot to set a range, see \ref setRange(const QCPRange &range).
 */
@@ -623,21 +570,20 @@ void QCPAxis::setRange(double lower, double upper)
   {
     mRange = mRange.sanitizedForLinScale();
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
 /*!
   \overload
+  
   Sets the range of the axis.
-
-  \param position the \a position coordinate indicates together with the \a alignment parameter, where
-  the new range will be positioned.
-  \param size defines the size (upper-lower) of the new axis range.
-  \param alignment determines how \a position is to be interpreted.\n
-  If \a alignment is Qt::AlignLeft, \a position will be the lower bound of the range.\n
-  If \a alignment is Qt::AlignRight, \a position will be the upper bound of the range.\n
-  If \a alignment is Qt::AlignCenter, the new range will be centered around \a position.\n
-  Any other values for \a alignment will default to Qt::AlignCenter.
+  
+  The \a position coordinate indicates together with the \a alignment parameter, where the new
+  range will be positioned. \a size defines the size of the new axis range. \a alignment may be
+  Qt::AlignLeft, Qt::AlignRight or Qt::AlignCenter. This will cause the left border, right border,
+  or center of the range to be aligned with \a position. Any other values of \a alignment will
+  default to Qt::AlignCenter.
 */
 void QCPAxis::setRange(double position, double size, Qt::AlignmentFlag alignment)
 {
@@ -650,7 +596,7 @@ void QCPAxis::setRange(double position, double size, Qt::AlignmentFlag alignment
 }
 
 /*!
-  Sets the lower bound of the axis range, independently of the upper bound.
+  Sets the lower bound of the axis range. The upper bound is not changed.
   \see setRange
 */
 void QCPAxis::setRangeLower(double lower)
@@ -666,11 +612,12 @@ void QCPAxis::setRangeLower(double lower)
   {
     mRange = mRange.sanitizedForLinScale();
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
 /*!
-  Sets the upper bound of the axis range, independently of the lower bound.
+  Sets the upper bound of the axis range. The lower bound is not changed.
   \see setRange
 */
 void QCPAxis::setRangeUpper(double upper)
@@ -686,70 +633,26 @@ void QCPAxis::setRangeUpper(double upper)
   {
     mRange = mRange.sanitizedForLinScale();
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
 /*!
   Sets whether the axis range (direction) is displayed reversed. Normally, the values on horizontal
   axes increase left to right, on vertical axes bottom to top. When \a reversed is set to true, the
-  direction of increasing values is inverted. Note that the range and data interface stays the same
-  for reversed axes, e.g. the \a lower part of the \ref setRange interface will still reference the
-  mathematically smaller number than the \a upper part.
+  direction of increasing values is inverted.
+
+  Note that the range and data interface stays the same for reversed axes, e.g. the \a lower part
+  of the \ref setRange interface will still reference the mathematically smaller number than the \a
+  upper part.
 */
 void QCPAxis::setRangeReversed(bool reversed)
 {
-  mRangeReversed = reversed;
-}
-
-/*!
-  Sets whether the grid of this axis is drawn antialiased or not.
-  
-  Note that this setting may be overridden by \ref QCustomPlot::setAntialiasedElements and \ref
-  QCustomPlot::setNotAntialiasedElements.
-*/
-void QCPAxis::setAntialiasedGrid(bool enabled)
-{
-  mGrid->setAntialiased(enabled);
-}
-
-/*!
-  Sets whether the sub grid of this axis is drawn antialiased or not.
-  
-  Note that this setting may be overridden by \ref QCustomPlot::setAntialiasedElements and \ref
-  QCustomPlot::setNotAntialiasedElements.
-*/
-void QCPAxis::setAntialiasedSubGrid(bool enabled)
-{
-  mGrid->setAntialiasedSubGrid(enabled);
-}
-
-/*!
-  Sets whether the zero line of this axis is drawn antialiased or not.
-  
-  Note that this setting may be overridden by \ref QCustomPlot::setAntialiasedElements and \ref
-  QCustomPlot::setNotAntialiasedElements.
-*/
-void QCPAxis::setAntialiasedZeroLine(bool enabled)
-{
-  mGrid->setAntialiasedZeroLine(enabled);
-}
-
-/*!
-  Sets whether the grid lines are visible.
-  \see setSubGrid, setGridPen, setZeroLinePen
-*/
-void QCPAxis::setGrid(bool show)
-{
-  mGrid->setVisible(show);
-}
-
-/*!
-  Sets whether the sub grid lines are visible.
-  \see setGrid, setSubGridPen, setZeroLinePen
-*/
-void QCPAxis::setSubGrid(bool show)
-{
-  mGrid->setSubGridVisible(show);
+  if (mRangeReversed != reversed)
+  {
+    mRangeReversed = reversed;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -757,35 +660,49 @@ void QCPAxis::setSubGrid(bool show)
   generated tick step or a tick step provided manually via \ref setTickStep, see \ref setAutoTickStep).
   
   If \a on is set to false, you must provide the tick positions manually via \ref setTickVector.
-  For these manual ticks you may let QCPAxis generate the appropriate labels automatically
-  by setting/leaving \ref setAutoTickLabels true. If you also wish to control the displayed labels
-  manually, set \ref setAutoTickLabels to false and provide the label strings with \ref setTickVectorLabels.
+  For these manual ticks you may let QCPAxis generate the appropriate labels automatically by
+  leaving \ref setAutoTickLabels set to true. If you also wish to control the displayed labels
+  manually, set \ref setAutoTickLabels to false and provide the label strings with \ref
+  setTickVectorLabels.
   
   If you need dynamically calculated tick vectors (and possibly tick label vectors), set the
   vectors in a slot connected to the \ref ticksRequest signal.
 */
 void QCPAxis::setAutoTicks(bool on)
 {
-  mAutoTicks = on;
+  if (mAutoTicks != on)
+  {
+    mAutoTicks = on;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
-  When \ref setAutoTickStep is true, \a approximateCount determines how many ticks should be generated
-  in the visible range approximately.
+  When \ref setAutoTickStep is true, \a approximateCount determines how many ticks should be
+  generated in the visible range, approximately.
+  
+  It's not guaranteed that this number of ticks is met exactly, but approximately within a
+  tolerance of about two.
   
   Only values greater than zero are accepted as \a approximateCount.
 */
 void QCPAxis::setAutoTickCount(int approximateCount)
 {
-  if (approximateCount > 0)
-    mAutoTickCount = approximateCount;
-  else
-    qDebug() << Q_FUNC_INFO << "approximateCount must be greater than zero:" << approximateCount;
+  if (mAutoTickCount != approximateCount)
+  {
+    if (approximateCount > 0)
+    {
+      mAutoTickCount = approximateCount;
+      mCachedMarginValid = false;
+    } else
+      qDebug() << Q_FUNC_INFO << "approximateCount must be greater than zero:" << approximateCount;
+  }
 }
 
 /*!
-  Sets whether the tick labels are generated automatically depending on the tick label type
-  (\ref ltNumber or \ref ltDateTime).
+  Sets whether the tick labels are generated automatically. Depending on the tick label type (\ref
+  ltNumber or \ref ltDateTime), the labels will either show the coordinate as floating point
+  number (\ref setNumberFormat), or a date/time formatted according to \ref setDateTimeFormat.
   
   If \a on is set to false, you should provide the tick labels via \ref setTickVectorLabels. This
   is usually used in a combination with \ref setAutoTicks set to false for complete control over
@@ -797,59 +714,86 @@ void QCPAxis::setAutoTickCount(int approximateCount)
 */
 void QCPAxis::setAutoTickLabels(bool on)
 {
-  mAutoTickLabels = on;
+  if (mAutoTickLabels != on)
+  {
+    mAutoTickLabels = on;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
   Sets whether the tick step, i.e. the interval between two (major) ticks, is calculated
   automatically. If \a on is set to true, the axis finds a tick step that is reasonable for human
-  readable plots. This means the tick step mantissa is chosen such that it's either a multiple of
-  two or ends in 0.5. The number of ticks the algorithm aims for within the visible range can be
-  set with \ref setAutoTickCount. It's not guaranteed that this number of ticks is met exactly, but
-  approximately within a tolerance of two or three.
+  readable plots. 
+
+  The number of ticks the algorithm aims for within the visible range can be set with \ref
+  setAutoTickCount.
   
   If \a on is set to false, you may set the tick step manually with \ref setTickStep.
 */
 void QCPAxis::setAutoTickStep(bool on)
 {
-  mAutoTickStep = on;
+  if (mAutoTickStep != on)
+  {
+    mAutoTickStep = on;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
-  Sets whether the number of sub ticks in one tick interval is determined automatically.
-  This works, as long as the tick step mantissa is a multiple of 0.5 (which it is, when
-  \ref setAutoTickStep is enabled).\n
+  Sets whether the number of sub ticks in one tick interval is determined automatically. This
+  works, as long as the tick step mantissa is a multiple of 0.5. When \ref setAutoTickStep is
+  enabled, this is always the case.
+  
   When \a on is set to false, you may set the sub tick count with \ref setSubTickCount manually.
 */
 void QCPAxis::setAutoSubTicks(bool on)
 {
-  mAutoSubTicks = on;
+  if (mAutoSubTicks != on)
+  {
+    mAutoSubTicks = on;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
-  Sets whether tick marks are displayed. Setting \a show to false does not imply, that tick labels
-  are invisible, too. To achieve that, see \ref setTickLabels.
+  Sets whether tick marks are displayed.
+
+  Note that setting \a show to false does not imply that tick labels are invisible, too. To achieve
+  that, see \ref setTickLabels.
 */
 void QCPAxis::setTicks(bool show)
 {
-  mTicks = show;
+  if (mTicks != show)
+  {
+    mTicks = show;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
-  Sets whether tick labels are displayed.
+  Sets whether tick labels are displayed. Tick labels are the numbers drawn next to tick marks.
 */
 void QCPAxis::setTickLabels(bool show)
 {
-  mTickLabels = show;
+  if (mTickLabels != show)
+  {
+    mTickLabels = show;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
-  Sets the distance between the axis base line (or any tick marks pointing outward) and the tick labels.
+  Sets the distance between the axis base line (including any outward ticks) and the tick labels.
   \see setLabelPadding, setPadding
 */
 void QCPAxis::setTickLabelPadding(int padding)
 {
-  mTickLabelPadding = padding;
+  if (mTickLabelPadding != padding)
+  {
+    mTickLabelPadding = padding;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -859,60 +803,74 @@ void QCPAxis::setTickLabelPadding(int padding)
   
   If \a type is set to \ref ltDateTime, the format specifications of \ref setDateTimeFormat apply.
   
-  In QCustomPlot, date/time coordinates are double numbers representing the seconds since
+  In QCustomPlot, date/time coordinates are <tt>double</tt> numbers representing the seconds since
   1970-01-01T00:00:00 UTC. This format can be retrieved from QDateTime objects with the
   QDateTime::toTime_t() function. Since this only gives a resolution of one second, there is also
   the QDateTime::toMSecsSinceEpoch() function which returns the timespan described above in
   milliseconds. Divide its return value by 1000.0 to get a value with the format needed for
-  date/time plotting, this time with a resolution of one millisecond.
+  date/time plotting, with a resolution of one millisecond.
   
-  Using the toMSecsSinceEpoch function allows dates that go back to 2nd January 4713 B.C. (i.e. a
-  negative number), unlike the toTime_t approach which works with unsigned integers and thus only
-  goes back to 1st January 1970.
+  Using the toMSecsSinceEpoch function allows dates that go back to 2nd January 4713 B.C.
+  (represented by a negative number), unlike the toTime_t function, which works with unsigned
+  integers and thus only goes back to 1st January 1970. So both for range and accuracy, use of
+  toMSecsSinceEpoch()/1000.0 should be preferred as key coordinate for date/time axes.
+  
+  \see setTickLabels
 */
 void QCPAxis::setTickLabelType(LabelType type)
 {
-  mTickLabelType = type;
+  if (mTickLabelType != type)
+  {
+    mTickLabelType = type;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
-  Sets the font of the tick labels, i.e. the numbers drawn next to tick marks.
+  Sets the font of the tick labels.
   
-  \see setTickLabelColor
+  \see setTickLabels, setTickLabelColor
 */
 void QCPAxis::setTickLabelFont(const QFont &font)
 {
   if (font != mTickLabelFont)
   {
     mTickLabelFont = font;
+    mCachedMarginValid = false;
     mLabelCache.clear();
   }
 }
 
 /*!
-  Sets the color of the tick labels, i.e. the numbers drawn next to tick marks.
+  Sets the color of the tick labels.
   
-  \see setTickLabelFont
+  \see setTickLabels, setTickLabelFont
 */
 void QCPAxis::setTickLabelColor(const QColor &color)
 {
   if (color != mTickLabelColor)
   {
     mTickLabelColor = color;
+    mCachedMarginValid = false;
     mLabelCache.clear();
   }
 }
 
 /*!
-  Sets the rotation of the tick labels, i.e. the numbers drawn next to tick marks. If \a degrees
-  is zero, the labels are drawn normally. Else, the tick labels are drawn rotated by \a degrees
-  clockwise. The specified angle is bound to values from -90 to 90 degrees.
+  Sets the rotation of the tick labels. If \a degrees is zero, the labels are drawn normally. Else,
+  the tick labels are drawn rotated by \a degrees clockwise. The specified angle is bound to values
+  from -90 to 90 degrees.
+  
+  If \a degrees is exactly -90, 0 or 90, the tick labels are centered on the tick coordinate. For
+  other angles, the label is drawn with an offset such that it seems to point toward or away from
+  the tick mark.
 */
 void QCPAxis::setTickLabelRotation(double degrees)
 {
   if (!qFuzzyIsNull(degrees-mTickLabelRotation))
   {
     mTickLabelRotation = qBound(-90.0, degrees, 90.0);
+    mCachedMarginValid = false;
     mLabelCache.clear();
   }
 }
@@ -920,11 +878,17 @@ void QCPAxis::setTickLabelRotation(double degrees)
 /*!
   Sets the format in which dates and times are displayed as tick labels, if \ref setTickLabelType is \ref ltDateTime.
   for details about the \a format string, see the documentation of QDateTime::toString().
+  
   Newlines can be inserted with "\n".
 */
 void QCPAxis::setDateTimeFormat(const QString &format)
 {
-  mDateTimeFormat = format;
+  if (mDateTimeFormat != format)
+  {
+    mDateTimeFormat = format;
+    mCachedMarginValid = false;
+    mLabelCache.clear();
+  }
 }
 
 /*!
@@ -965,13 +929,19 @@ void QCPAxis::setDateTimeFormat(const QString &format)
 */
 void QCPAxis::setNumberFormat(const QString &formatCode)
 {
-  if (formatCode.length() < 1) return;
+  if (formatCode.isEmpty())
+  {
+    qDebug() << Q_FUNC_INFO << "Passed formatCode is empty";
+    return;
+  }
+  mLabelCache.clear();
+  mCachedMarginValid = false;
   
   // interpret first char as number format char:
   QString allowedFormatChars = "eEfgG";
   if (allowedFormatChars.contains(formatCode.at(0)))
   {
-    mNumberFormatChar = formatCode.at(0).toAscii();
+    mNumberFormatChar = formatCode.at(0).toLatin1();
   } else
   {
     qDebug() << Q_FUNC_INFO << "Invalid number format code (first char not in 'eEfgG'):" << formatCode;
@@ -1014,19 +984,23 @@ void QCPAxis::setNumberFormat(const QString &formatCode)
 }
 
 /*!
-  Sets the precision of the numbers drawn as tick labels. See QLocale::toString(double i, char f,
-  int prec) for details. The effect of precisions are most notably for number Formats starting with
-  'e', see \ref setNumberFormat
+  Sets the precision of the tick label numbers. See QLocale::toString(double i, char f, int prec)
+  for details. The effect of precisions are most notably for number Formats starting with 'e', see
+  \ref setNumberFormat
 
   If the scale type (\ref setScaleType) is \ref stLogarithmic and the number format (\ref
   setNumberFormat) uses the 'b' format code (beautifully typeset decimal powers), the display
   usually is "1 [multiplication sign] 10 [superscript] n", which looks unnatural for logarithmic
-  scaling (the "1 [multiplication sign]" part). To only display the decimal power, set \a precision
-  to zero.
+  scaling (the redundant "1 [multiplication sign]" part). To only display the decimal power "10
+  [superscript] n", set \a precision to zero.
 */
 void QCPAxis::setNumberPrecision(int precision)
 {
-  mNumberPrecision = precision;
+  if (mNumberPrecision != precision)
+  {
+    mNumberPrecision = precision;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -1036,26 +1010,31 @@ void QCPAxis::setNumberPrecision(int precision)
 */
 void QCPAxis::setTickStep(double step)
 {
-  mTickStep = step;
+  if (mTickStep != step)
+  {
+    mTickStep = step;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
   If you want full control over what ticks (and possibly labels) the axes show, this function is
   used to set the coordinates at which ticks will appear.\ref setAutoTicks must be disabled, else
-  the provided tick vector will be overwritten with automatically generated tick coordinates. The
-  labels of the ticks can either be generated automatically when \ref setAutoTickLabels is left
-  enabled, or be set manually with \ref setTickVectorLabels, when \ref setAutoTickLabels is
-  disabled.
+  the provided tick vector will be overwritten with automatically generated tick coordinates upon
+  replot. The labels of the ticks can be generated automatically when \ref setAutoTickLabels is
+  left enabled. If it is disabled, you can set the labels manually with \ref setTickVectorLabels.
   
-  \a vec is a vector containing the positions of the ticks.
+  \a vec is a vector containing the positions of the ticks, in plot coordinates.
   
-  \warning \a vec must be sorted in ascending order.
+  \warning \a vec must be sorted in ascending order, no additional checks are made to ensure this.
 
   \see setTickVectorLabels
 */
 void QCPAxis::setTickVector(const QVector<double> &vec)
 {
+  // don't check whether mTickVector != vec here, because it takes longer than we would save
   mTickVector = vec;
+  mCachedMarginValid = false;
 }
 
 /*!
@@ -1065,37 +1044,78 @@ void QCPAxis::setTickVector(const QVector<double> &vec)
   \ref setAutoTicks and \ref setAutoTickLabels first.)
   
   \a vec is a vector containing the labels of the ticks. The entries correspond to the respective
-  indices in the tick vector, passed via \ref setTickVector. So the label in vec[i] will appear at
-  the coordinate given by the tick vector index i.
+  indices in the tick vector, passed via \ref setTickVector.
   
   \see setTickVector
 */
 void QCPAxis::setTickVectorLabels(const QVector<QString> &vec)
 {
+  // don't check whether mTickVectorLabels != vec here, because it takes longer than we would save
   mTickVectorLabels = vec;
+  mCachedMarginValid = false;
 }
 
 /*!
   Sets the length of the ticks in pixels. \a inside is the length the ticks will reach inside the
   plot and \a outside is the length they will reach outside the plot. If \a outside is greater than
-  zero, the tick labels will increase their distance to the axis accordingly, so they won't collide
-  with the ticks.
+  zero, the tick labels and axis label will increase their distance to the axis accordingly, so
+  they won't collide with the ticks.
+  
   \see setSubTickLength
 */
 void QCPAxis::setTickLength(int inside, int outside)
 {
-  mTickLengthIn = inside;
-  mTickLengthOut = outside;
+  if (mTickLengthIn != inside)
+  {
+    mTickLengthIn = inside;
+  }
+  if (mTickLengthOut != outside)
+  {
+    mTickLengthOut = outside;
+    mCachedMarginValid = false; // only outside tick length can change margin
+  }
+}
+
+/*!
+  Sets the length of the inward ticks in pixels. \a inside is the length the ticks will reach
+  inside the plot.
+  
+  \see setTickLengthOut, setSubTickLength
+*/
+void QCPAxis::setTickLengthIn(int inside)
+{
+  if (mTickLengthIn != inside)
+  {
+    mTickLengthIn = inside;
+  }
+}
+
+/*!
+  Sets the length of the outward ticks in pixels. \a outside is the length the ticks will reach
+  outside the plot. If \a outside is greater than zero, the tick labels and axis label will
+  increase their distance to the axis accordingly, so they won't collide with the ticks.
+  
+  \see setTickLengthIn, setSubTickLength
+*/
+void QCPAxis::setTickLengthOut(int outside)
+{
+  if (mTickLengthOut != outside)
+  {
+    mTickLengthOut = outside;
+    mCachedMarginValid = false; // only outside tick length can change margin
+  }
 }
 
 /*!
   Sets the number of sub ticks in one (major) tick step. A sub tick count of three for example,
   divides the tick intervals in four sub intervals.
   
-  By default, the number of sub ticks is chosen automatically in a reasonable manner as long as
-  the mantissa of the tick step is a multiple of 0.5 (which it is, when \ref setAutoTickStep is enabled).
-  If you want to disable automatic sub ticks and use this function to set the count manually, see
-  \ref setAutoSubTicks.
+  By default, the number of sub ticks is chosen automatically in a reasonable manner as long as the
+  mantissa of the tick step is a multiple of 0.5. When \ref setAutoTickStep is enabled, this is
+  always the case.
+
+  If you want to disable automatic sub tick count and use this function to set the count manually,
+  see \ref setAutoSubTicks.
 */
 void QCPAxis::setSubTickCount(int count)
 {
@@ -1103,16 +1123,52 @@ void QCPAxis::setSubTickCount(int count)
 }
 
 /*!
-  Sets the length of the subticks in pixels. \a inside is the length the subticks will reach inside the
-  plot and \a outside is the length they will reach outside the plot. If \a outside is greater than
-  zero, the tick labels will increase their distance to the axis accordingly, so they won't collide
-  with the ticks.
-  \see setTickLength
+  Sets the length of the subticks in pixels. \a inside is the length the subticks will reach inside
+  the plot and \a outside is the length they will reach outside the plot. If \a outside is greater
+  than zero, the tick labels and axis label will increase their distance to the axis accordingly,
+  so they won't collide with the ticks.
 */
 void QCPAxis::setSubTickLength(int inside, int outside)
 {
-  mSubTickLengthIn = inside;
-  mSubTickLengthOut = outside;
+  if (mSubTickLengthIn != inside)
+  {
+    mSubTickLengthIn = inside;
+  }
+  if (mSubTickLengthOut != outside)
+  {
+    mSubTickLengthOut = outside;
+    mCachedMarginValid = false; // only outside tick length can change margin
+  }
+}
+
+/*!
+  Sets the length of the inward subticks in pixels. \a inside is the length the subticks will reach inside
+  the plot.
+  
+  \see setSubTickLengthOut, setTickLength
+*/
+void QCPAxis::setSubTickLengthIn(int inside)
+{
+  if (mSubTickLengthIn != inside)
+  {
+    mSubTickLengthIn = inside;
+  }
+}
+
+/*!
+  Sets the length of the outward subticks in pixels. \a outside is the length the subticks will reach
+  outside the plot. If \a outside is greater than zero, the tick labels will increase their
+  distance to the axis accordingly, so they won't collide with the ticks.
+  
+  \see setSubTickLengthIn, setTickLength
+*/
+void QCPAxis::setSubTickLengthOut(int outside)
+{
+  if (mSubTickLengthOut != outside)
+  {
+    mSubTickLengthOut = outside;
+    mCachedMarginValid = false; // only outside tick length can change margin
+  }
 }
 
 /*!
@@ -1126,38 +1182,8 @@ void QCPAxis::setBasePen(const QPen &pen)
 }
 
 /*!
-  Sets the pen, grid lines are drawn with.
-  \see setSubGridPen, setZeroLinePen
-*/
-void QCPAxis::setGridPen(const QPen &pen)
-{
-  mGrid->setPen(pen);
-}
-
-/*!
-  Sets the pen, the sub grid lines are drawn with.
-  (By default, subgrid drawing needs to be enabled first with \ref setSubGrid.)
-  \see setGridPen, setZeroLinePen
-*/
-void QCPAxis::setSubGridPen(const QPen &pen)
-{
-  mGrid->setSubGridPen(pen);
-}
-
-/*!
-  Sets the pen with which a single grid-like line will be drawn at value position zero. The line
-  will be drawn instead of a grid line at that position, and not on top. To disable the drawing of
-  a zero-line, set \a pen to Qt::NoPen. Then, if \ref setGrid is enabled, a grid line will be
-  drawn instead.
-  \see setGrid, setGridPen
-*/
-void QCPAxis::setZeroLinePen(const QPen &pen)
-{
-  mGrid->setZeroLinePen(pen);
-}
-
-/*!
   Sets the pen, tick marks will be drawn with.
+  
   \see setTickLength, setBasePen
 */
 void QCPAxis::setTickPen(const QPen &pen)
@@ -1167,6 +1193,7 @@ void QCPAxis::setTickPen(const QPen &pen)
 
 /*!
   Sets the pen, subtick marks will be drawn with.
+  
   \see setSubTickCount, setSubTickLength, setBasePen
 */
 void QCPAxis::setSubTickPen(const QPen &pen)
@@ -1181,7 +1208,11 @@ void QCPAxis::setSubTickPen(const QPen &pen)
 */
 void QCPAxis::setLabelFont(const QFont &font)
 {
-  mLabelFont = font;
+  if (mLabelFont != font)
+  {
+    mLabelFont = font;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
@@ -1195,44 +1226,66 @@ void QCPAxis::setLabelColor(const QColor &color)
 }
 
 /*!
-  Sets the axis label that will be shown below/above or next to the axis, depending on its orientation.
+  Sets the text of the axis label that will be shown below/above or next to the axis, depending on
+  its orientation. To disable axis labels, pass an empty string as \a str.
 */
 void QCPAxis::setLabel(const QString &str)
 {
-  mLabel = str;
+  if (mLabel != str)
+  {
+    mLabel = str;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
   Sets the distance between the tick labels and the axis label.
+  
   \see setTickLabelPadding, setPadding
 */
 void QCPAxis::setLabelPadding(int padding)
 {
-  mLabelPadding = padding;
+  if (mLabelPadding != padding)
+  {
+    mLabelPadding = padding;
+    mCachedMarginValid = false;
+  }
 }
 
 /*!
   Sets the padding of the axis.
 
-  When \ref QCustomPlot::setAutoMargin is enabled, the padding is the additional distance to the
-  respective widget border, that is left blank. If \a padding is zero (default), the auto margin
-  mechanism will find a margin that the axis label (or tick label, if no axis label is set) barely
-  fits inside the QCustomPlot widget. To give the label closest to the border some freedom,
-  increase \a padding.
+  When \ref QCPAxisRect::setAutoMargins is enabled, the padding is the additional outer most space,
+  that is left blank.
   
-  The axis padding has no meaning if \ref QCustomPlot::setAutoMargin is disabled.
+  The axis padding has no meaning if \ref QCPAxisRect::setAutoMargins is disabled.
   
   \see setLabelPadding, setTickLabelPadding
 */
 void QCPAxis::setPadding(int padding)
 {
-  mPadding = padding;
+  if (mPadding != padding)
+  {
+    mPadding = padding;
+    mCachedMarginValid = false;
+  }
+}
+
+/*!
+  Sets the offset the axis has to its axis rect side.
+  
+  If an axis rect side has multiple axes, only the offset of the inner most axis has meaning. The offset of the other axes
+  is controlled automatically, to place the axes at appropriate positions to prevent them from overlapping.
+*/
+void QCPAxis::setOffset(int offset)
+{
+  mOffset = offset;
 }
 
 /*!
   Sets the font that is used for tick labels when they are selected.
   
-  \see setTickLabelFont, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setTickLabelFont, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedTickLabelFont(const QFont &font)
 {
@@ -1240,23 +1293,25 @@ void QCPAxis::setSelectedTickLabelFont(const QFont &font)
   {
     mSelectedTickLabelFont = font;
     mLabelCache.clear();
+    // don't set mCachedMarginValid to false here because margin calculation is always done with non-selected fonts
   }
 }
 
 /*!
   Sets the font that is used for the axis label when it is selected.
   
-  \see setLabelFont, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setLabelFont, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedLabelFont(const QFont &font)
 {
   mSelectedLabelFont = font;
+  // don't set mCachedMarginValid to false here because margin calculation is always done with non-selected fonts
 }
 
 /*!
   Sets the color that is used for tick labels when they are selected.
   
-  \see setTickLabelColor, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setTickLabelColor, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedTickLabelColor(const QColor &color)
 {
@@ -1270,7 +1325,7 @@ void QCPAxis::setSelectedTickLabelColor(const QColor &color)
 /*!
   Sets the color that is used for the axis label when it is selected.
   
-  \see setLabelColor, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setLabelColor, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedLabelColor(const QColor &color)
 {
@@ -1280,7 +1335,7 @@ void QCPAxis::setSelectedLabelColor(const QColor &color)
 /*!
   Sets the pen that is used to draw the axis base line when selected.
   
-  \see setBasePen, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setBasePen, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedBasePen(const QPen &pen)
 {
@@ -1290,7 +1345,7 @@ void QCPAxis::setSelectedBasePen(const QPen &pen)
 /*!
   Sets the pen that is used to draw the (major) ticks when selected.
   
-  \see setTickPen, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setTickPen, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedTickPen(const QPen &pen)
 {
@@ -1300,11 +1355,41 @@ void QCPAxis::setSelectedTickPen(const QPen &pen)
 /*!
   Sets the pen that is used to draw the subticks when selected.
   
-  \see setSubTickPen, setSelectable, setSelected, QCustomPlot::setInteractions
+  \see setSubTickPen, setSelectableParts, setSelectedParts, QCustomPlot::setInteractions
 */
 void QCPAxis::setSelectedSubTickPen(const QPen &pen)
 {
   mSelectedSubTickPen = pen;
+}
+
+/*!
+  Sets the style for the lower axis ending. See the documentation of QCPLineEnding for available
+  styles.
+  
+  For horizontal axes, this method refers to the left ending, for vertical axes the bottom ending.
+  Note that this meaning does not change when the axis range is reversed with \ref
+  setRangeReversed.
+  
+  \see setUpperEnding
+*/
+void QCPAxis::setLowerEnding(const QCPLineEnding &ending)
+{
+  mLowerEnding = ending;
+}
+
+/*!
+  Sets the style for the upper axis ending. See the documentation of QCPLineEnding for available
+  styles.
+  
+  For horizontal axes, this method refers to the right ending, for vertical axes the top ending.
+  Note that this meaning does not change when the axis range is reversed with \ref
+  setRangeReversed.
+  
+  \see setLowerEnding
+*/
+void QCPAxis::setUpperEnding(const QCPLineEnding &ending)
+{
+  mUpperEnding = ending;
 }
 
 /*!
@@ -1325,6 +1410,7 @@ void QCPAxis::moveRange(double diff)
     mRange.lower *= diff;
     mRange.upper *= diff;
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
@@ -1336,7 +1422,6 @@ void QCPAxis::moveRange(double diff)
 */
 void QCPAxis::scaleRange(double factor, double center)
 {
-  
   if (mScaleType == stLinear)
   {
     QCPRange newRange;
@@ -1354,39 +1439,45 @@ void QCPAxis::scaleRange(double factor, double center)
       if (QCPRange::validRange(newRange))
         mRange = newRange.sanitizedForLogScale();
     } else
-      qDebug() << Q_FUNC_INFO << "center of scaling operation doesn't lie in same logarithmic sign domain as range:" << center;
+      qDebug() << Q_FUNC_INFO << "Center of scaling operation doesn't lie in same logarithmic sign domain as range:" << center;
   }
+  mCachedMarginValid = false;
   emit rangeChanged(mRange);
 }
 
 /*!
-  Sets the range of this axis to have a certain scale \a ratio to \a otherAxis. For example, if \a
-  ratio is 1, this axis is the \a yAxis and \a otherAxis is \a xAxis, graphs plotted with those
-  axes will appear in a 1:1 ratio, independent of the aspect ratio the axis rect has. This is an
-  operation that changes the range of this axis once, it doesn't fix the scale ratio indefinitely.
-  Consequently calling this function in the constructor won't have the desired effect, since the
-  widget's dimensions aren't defined yet, and a resizeEvent will follow.
+  Scales the range of this axis to have a certain scale \a ratio to \a otherAxis. The scaling will
+  be done around the center of the current axis range.
+
+  For example, if \a ratio is 1, this axis is the \a yAxis and \a otherAxis is \a xAxis, graphs
+  plotted with those axes will appear in a 1:1 aspect ratio, independent of the aspect ratio the
+  axis rect has.
+
+  This is an operation that changes the range of this axis once, it doesn't fix the scale ratio
+  indefinitely. Note that calling this function in the constructor of the QCustomPlot's parent
+  won't have the desired effect, since the widget dimensions aren't defined yet, and a resizeEvent
+  will follow.
 */
 void QCPAxis::setScaleRatio(const QCPAxis *otherAxis, double ratio)
 {
   int otherPixelSize, ownPixelSize;
   
   if (otherAxis->orientation() == Qt::Horizontal)
-    otherPixelSize = otherAxis->mAxisRect.width();
+    otherPixelSize = otherAxis->axisRect()->width();
   else
-    otherPixelSize = otherAxis->mAxisRect.height();
+    otherPixelSize = otherAxis->axisRect()->height();
   
   if (orientation() == Qt::Horizontal)
-    ownPixelSize = mAxisRect.width();
+    ownPixelSize = axisRect()->width();
   else
-    ownPixelSize = mAxisRect.height();
+    ownPixelSize = axisRect()->height();
   
-  double newRangeSize = ratio*otherAxis->mRange.size()*ownPixelSize/(double)otherPixelSize;
+  double newRangeSize = ratio*otherAxis->range().size()*ownPixelSize/(double)otherPixelSize;
   setRange(range().center(), newRangeSize, Qt::AlignCenter);
 }
 
 /*!
-  Transforms \a value (in pixel coordinates of the QCustomPlot widget) to axis coordinates.
+  Transforms \a value, in pixel coordinates of the QCustomPlot widget, to axis coordinates.
 */
 double QCPAxis::pixelToCoord(double value) const
 {
@@ -1395,36 +1486,36 @@ double QCPAxis::pixelToCoord(double value) const
     if (mScaleType == stLinear)
     {
       if (!mRangeReversed)
-        return (value-mAxisRect.left())/(double)mAxisRect.width()*mRange.size()+mRange.lower;
+        return (value-mAxisRect->left())/(double)mAxisRect->width()*mRange.size()+mRange.lower;
       else
-        return -(value-mAxisRect.left())/(double)mAxisRect.width()*mRange.size()+mRange.upper;
+        return -(value-mAxisRect->left())/(double)mAxisRect->width()*mRange.size()+mRange.upper;
     } else // mScaleType == stLogarithmic
     {
       if (!mRangeReversed)
-        return pow(mRange.upper/mRange.lower, (value-mAxisRect.left())/(double)mAxisRect.width())*mRange.lower;
+        return pow(mRange.upper/mRange.lower, (value-mAxisRect->left())/(double)mAxisRect->width())*mRange.lower;
       else
-        return pow(mRange.upper/mRange.lower, (mAxisRect.left()-value)/(double)mAxisRect.width())*mRange.upper;
+        return pow(mRange.upper/mRange.lower, (mAxisRect->left()-value)/(double)mAxisRect->width())*mRange.upper;
     }
   } else // orientation() == Qt::Vertical
   {
     if (mScaleType == stLinear)
     {
       if (!mRangeReversed)
-        return (mAxisRect.bottom()-value)/(double)mAxisRect.height()*mRange.size()+mRange.lower;
+        return (mAxisRect->bottom()-value)/(double)mAxisRect->height()*mRange.size()+mRange.lower;
       else
-        return -(mAxisRect.bottom()-value)/(double)mAxisRect.height()*mRange.size()+mRange.upper;
+        return -(mAxisRect->bottom()-value)/(double)mAxisRect->height()*mRange.size()+mRange.upper;
     } else // mScaleType == stLogarithmic
     {
       if (!mRangeReversed)
-        return pow(mRange.upper/mRange.lower, (mAxisRect.bottom()-value)/(double)mAxisRect.height())*mRange.lower;
+        return pow(mRange.upper/mRange.lower, (mAxisRect->bottom()-value)/(double)mAxisRect->height())*mRange.lower;
       else
-        return pow(mRange.upper/mRange.lower, (value-mAxisRect.bottom())/(double)mAxisRect.height())*mRange.upper;
+        return pow(mRange.upper/mRange.lower, (value-mAxisRect->bottom())/(double)mAxisRect->height())*mRange.upper;
     }
   }
 }
 
 /*!
-  Transforms \a value (in coordinates of the axis) to pixel coordinates of the QCustomPlot widget.
+  Transforms \a value, in coordinates of the axis, to pixel coordinates of the QCustomPlot widget.
 */
 double QCPAxis::coordToPixel(double value) const
 {
@@ -1433,21 +1524,21 @@ double QCPAxis::coordToPixel(double value) const
     if (mScaleType == stLinear)
     {
       if (!mRangeReversed)
-        return (value-mRange.lower)/mRange.size()*mAxisRect.width()+mAxisRect.left();
+        return (value-mRange.lower)/mRange.size()*mAxisRect->width()+mAxisRect->left();
       else
-        return (mRange.upper-value)/mRange.size()*mAxisRect.width()+mAxisRect.left();
+        return (mRange.upper-value)/mRange.size()*mAxisRect->width()+mAxisRect->left();
     } else // mScaleType == stLogarithmic
     {
       if (value >= 0 && mRange.upper < 0) // invalid value for logarithmic scale, just draw it outside visible range
-        return !mRangeReversed ? mAxisRect.right()+200 : mAxisRect.left()-200;
+        return !mRangeReversed ? mAxisRect->right()+200 : mAxisRect->left()-200;
       else if (value <= 0 && mRange.upper > 0) // invalid value for logarithmic scale, just draw it outside visible range
-        return !mRangeReversed ? mAxisRect.left()-200 : mAxisRect.right()+200;
+        return !mRangeReversed ? mAxisRect->left()-200 : mAxisRect->right()+200;
       else
       {
         if (!mRangeReversed)
-          return baseLog(value/mRange.lower)/baseLog(mRange.upper/mRange.lower)*mAxisRect.width()+mAxisRect.left();
+          return baseLog(value/mRange.lower)/baseLog(mRange.upper/mRange.lower)*mAxisRect->width()+mAxisRect->left();
         else
-          return baseLog(mRange.upper/value)/baseLog(mRange.upper/mRange.lower)*mAxisRect.width()+mAxisRect.left();
+          return baseLog(mRange.upper/value)/baseLog(mRange.upper/mRange.lower)*mAxisRect->width()+mAxisRect->left();
       }
     }
   } else // orientation() == Qt::Vertical
@@ -1455,21 +1546,21 @@ double QCPAxis::coordToPixel(double value) const
     if (mScaleType == stLinear)
     {
       if (!mRangeReversed)
-        return mAxisRect.bottom()-(value-mRange.lower)/mRange.size()*mAxisRect.height();
+        return mAxisRect->bottom()-(value-mRange.lower)/mRange.size()*mAxisRect->height();
       else
-        return mAxisRect.bottom()-(mRange.upper-value)/mRange.size()*mAxisRect.height();
+        return mAxisRect->bottom()-(mRange.upper-value)/mRange.size()*mAxisRect->height();
     } else // mScaleType == stLogarithmic
     {     
       if (value >= 0 && mRange.upper < 0) // invalid value for logarithmic scale, just draw it outside visible range
-        return !mRangeReversed ? mAxisRect.top()-200 : mAxisRect.bottom()+200;
+        return !mRangeReversed ? mAxisRect->top()-200 : mAxisRect->bottom()+200;
       else if (value <= 0 && mRange.upper > 0) // invalid value for logarithmic scale, just draw it outside visible range
-        return !mRangeReversed ? mAxisRect.bottom()+200 : mAxisRect.top()-200;
+        return !mRangeReversed ? mAxisRect->bottom()+200 : mAxisRect->top()-200;
       else
       {
         if (!mRangeReversed)
-          return mAxisRect.bottom()-baseLog(value/mRange.lower)/baseLog(mRange.upper/mRange.lower)*mAxisRect.height();
+          return mAxisRect->bottom()-baseLog(value/mRange.lower)/baseLog(mRange.upper/mRange.lower)*mAxisRect->height();
         else
-          return mAxisRect.bottom()-baseLog(mRange.upper/value)/baseLog(mRange.upper/mRange.lower)*mAxisRect.height();
+          return mAxisRect->bottom()-baseLog(mRange.upper/value)/baseLog(mRange.upper/mRange.lower)*mAxisRect->height();
       }
     }
   }
@@ -1477,14 +1568,14 @@ double QCPAxis::coordToPixel(double value) const
 
 /*!
   Returns the part of the axis that is hit by \a pos (in pixels). The return value of this function
-  is independent of the user-selectable parts defined with \ref setSelectable. Further, this
+  is independent of the user-selectable parts defined with \ref setSelectableParts. Further, this
   function does not change the current selection state of the axis.
   
   If the axis is not visible (\ref setVisible), this function always returns \ref spNone.
   
-  \see setSelected, setSelectable, QCustomPlot::setInteractions
+  \see setSelectedParts, setSelectableParts, QCustomPlot::setInteractions
 */
-QCPAxis::SelectablePart QCPAxis::selectTest(const QPointF &pos) const
+QCPAxis::SelectablePart QCPAxis::getPartAt(const QPointF &pos) const
 {
   if (!mVisible)
     return spNone;
@@ -1499,16 +1590,111 @@ QCPAxis::SelectablePart QCPAxis::selectTest(const QPointF &pos) const
     return spNone;
 }
 
+/* inherits documentation from base class */
+double QCPAxis::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
+{
+  if (!mParentPlot) return -1;
+  SelectablePart part = getPartAt(pos);
+  if ((onlySelectable && !mSelectableParts.testFlag(part)) || part == spNone)
+    return -1;
+  
+  if (details)
+    details->setValue(part);
+  return mParentPlot->selectionTolerance()*0.99;
+}
+
+/*!
+  Returns a list of all the plottables that have this axis as key or value axis.
+  
+  If you are only interested in plottables of type QCPGraph, see \ref graphs.
+  
+  \see graphs, items
+*/
+QList<QCPAbstractPlottable*> QCPAxis::plottables() const
+{
+  QList<QCPAbstractPlottable*> result;
+  if (!mParentPlot) return result;
+  
+  for (int i=0; i<mParentPlot->mPlottables.size(); ++i)
+  {
+    if (mParentPlot->mPlottables.at(i)->keyAxis() == this ||mParentPlot->mPlottables.at(i)->valueAxis() == this)
+      result.append(mParentPlot->mPlottables.at(i));
+  }
+  return result;
+}
+
+/*!
+  Returns a list of all the graphs that have this axis as key or value axis.
+  
+  \see plottables, items
+*/
+QList<QCPGraph*> QCPAxis::graphs() const
+{
+  QList<QCPGraph*> result;
+  if (!mParentPlot) return result;
+  
+  for (int i=0; i<mParentPlot->mGraphs.size(); ++i)
+  {
+    if (mParentPlot->mGraphs.at(i)->keyAxis() == this || mParentPlot->mGraphs.at(i)->valueAxis() == this)
+      result.append(mParentPlot->mGraphs.at(i));
+  }
+  return result;
+}
+
+/*!
+  Returns a list of all the items that are associated with this axis. An item is considered
+  associated with an axis if at least one of its positions uses the axis as key or value axis.
+  
+  \see plottables, graphs
+*/
+QList<QCPAbstractItem*> QCPAxis::items() const
+{
+  QList<QCPAbstractItem*> result;
+  if (!mParentPlot) return result;
+  
+  for (int itemId=0; itemId<mParentPlot->mItems.size(); ++itemId)
+  {
+    QList<QCPItemPosition*> positions = mParentPlot->mItems.at(itemId)->positions();
+    for (int posId=0; posId<positions.size(); ++itemId)
+    {
+      if (positions.at(posId)->keyAxis() == this || positions.at(posId)->valueAxis() == this)
+      {
+        result.append(mParentPlot->mItems.at(itemId));
+        break;
+      }
+    }
+  }
+  return result;
+}
+
+/*!
+  Transforms a margin side to the logically corresponding axis type. (QCP::msLeft to
+  QCPAxis::atLeft, QCP::msRight to QCPAxis::atRight, etc.)
+*/
+QCPAxis::AxisType QCPAxis::marginSideToAxisType(QCP::MarginSide side)
+{
+  switch (side)
+  {
+    case QCP::msLeft: return atLeft;
+    case QCP::msRight: return atRight;
+    case QCP::msTop: return atTop;
+    case QCP::msBottom: return atBottom;
+    default: break;
+  }
+  qDebug() << Q_FUNC_INFO << "Invalid margin side passed:" << (int)side;
+  return atLeft;
+}
+
 /*! \internal
   
-  This function is called before the grid and axis is drawn, in order to prepare the tick vector,
-  sub tick vector and tick label vector. If \ref setAutoTicks is set to true, appropriate tick
-  values are determined automatically via \ref generateAutoTicks. If it's set to false, the signal
-  ticksRequest is emitted, which can be used to provide external tick positions. Then the sub tick
-  vectors and tick label vectors are created.
+  This function is called to prepare the tick vector, sub tick vector and tick label vector. If
+  \ref setAutoTicks is set to true, appropriate tick values are determined automatically via \ref
+  generateAutoTicks. If it's set to false, the signal ticksRequest is emitted, which can be used to
+  provide external tick positions. Then the sub tick vectors and tick label vectors are created.
 */
 void QCPAxis::setupTickVectors()
 {
+  if (!mParentPlot) return;
   if ((!mTicks && !mTickLabels && !mGrid->visible()) || mRange.size() <= 0) return;
   
   // fill tick vectors, either by auto generating or by notifying user to fill the vectors himself
@@ -1559,8 +1745,8 @@ void QCPAxis::setupTickVectors()
   }
 
   // generate tick labels according to tick positions:
-  mExponentialChar = mParentPlot->locale().exponential();   // will be needed when drawing the numbers generated here, in drawTickLabel()
-  mPositiveSignChar = mParentPlot->locale().positiveSign(); // will be needed when drawing the numbers generated here, in drawTickLabel()
+  mExponentialChar = mParentPlot->locale().exponential();   // will be needed when drawing the numbers generated here, in getTickLabelData()
+  mPositiveSignChar = mParentPlot->locale().positiveSign(); // will be needed when drawing the numbers generated here, in getTickLabelData()
   if (mAutoTickLabels)
   {
     int vecsize = mTickVector.size();
@@ -1596,10 +1782,10 @@ void QCPAxis::setupTickVectors()
   
   If \ref setAutoTicks is set to true, this function is called by \ref setupTickVectors to
   generate reasonable tick positions (and subtick count). The algorithm tries to create
-  approximately <tt>mAutoTickCount</tt> ticks (set via \ref setAutoTickCount), taking into account,
-  that tick mantissas that are divisable by two or end in .5 are nice to look at and practical in
-  linear scales. If the scale is logarithmic, one tick is generated at every power of the current
-  logarithm base, set via \ref setScaleLogBase.
+  approximately <tt>mAutoTickCount</tt> ticks (set via \ref setAutoTickCount).
+ 
+  If the scale is logarithmic, \ref setAutoTickCount is ignored, and one tick is generated at every
+  power of the current logarithm base, set via \ref setScaleLogBase.
 */
 void QCPAxis::generateAutoTicks()
 {
@@ -1624,8 +1810,11 @@ void QCPAxis::generateAutoTicks()
     if (mAutoSubTicks)
       mSubTickCount = calculateAutoSubTickCount(mTickStep);
     // Generate tick positions according to mTickStep:
-    int firstStep = floor(mRange.lower/mTickStep);
-    int lastStep = ceil(mRange.upper/mTickStep);
+    // TODO: replace (firstStep+i)*mTickStep with mRange.lower-fmod(mRange.lower, mTickStep)+i*mTickStep (buffer first summand)
+    //       and test that it gives same results. Then get rid of firstStep and lastStep calculation
+    //       tickcount must then be set to ceil((mRange.upper-mRange.lower+fmod(mRange.lower, mTickStep)/mTickStep)+1 (re-use buffered summand from before)
+    qint64 firstStep = floor(mRange.lower/mTickStep);
+    qint64 lastStep = ceil(mRange.upper/mTickStep);
     int tickcount = lastStep-firstStep+1;
     if (tickcount < 0) tickcount = 0;
     mTickVector.resize(tickcount);
@@ -1698,7 +1887,7 @@ int QCPAxis::calculateAutoSubTickCount(double tickStep) const
   if (fracPart < epsilon || 1.0-fracPart < epsilon)
   {
     if (1.0-fracPart < epsilon)
-      intPart++;
+      ++intPart;
     switch (intPart)
     {
       case 1: result = 4; break; // 1.0 -> 0.2 substep
@@ -1737,23 +1926,23 @@ int QCPAxis::calculateAutoSubTickCount(double tickStep) const
 
 /*! \internal
   
-  The main draw function of an axis, called by QCustomPlot::draw for each axis. Draws axis
-  baseline, major ticks, subticks, tick labels and axis label.
+  Draws the axis with the specified \a painter.
   
   The selection boxes (mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox) are set
   here, too.
 */
 void QCPAxis::draw(QCPPainter *painter)
 {
+  if (!mParentPlot) return;
   QPoint origin;
   if (mAxisType == atLeft)
-    origin = mAxisRect.bottomLeft();
+    origin = mAxisRect->bottomLeft()+QPoint(-mOffset, 0);
   else if (mAxisType == atRight)
-    origin = mAxisRect.bottomRight();
+    origin = mAxisRect->bottomRight()+QPoint(+mOffset, 0);
   else if (mAxisType == atTop)
-    origin = mAxisRect.topLeft();
+    origin = mAxisRect->topLeft()+QPoint(0, -mOffset);
   else if (mAxisType == atBottom)
-    origin = mAxisRect.bottomLeft();
+    origin = mAxisRect->bottomLeft()+QPoint(0, +mOffset);
   
   double xCor = 0, yCor = 0; // paint system correction, for pixel exact matches (affects baselines and ticks of top/right axes)
   switch (mAxisType)
@@ -1769,11 +1958,15 @@ void QCPAxis::draw(QCPPainter *painter)
   double t; // helper variable, result of coordinate-to-pixel transforms
 
   // draw baseline:
+  QLineF baseLine;
   painter->setPen(getBasePen());
   if (orientation() == Qt::Horizontal)
-    painter->drawLine(QLineF(origin+QPointF(xCor, yCor), origin+QPointF(mAxisRect.width()+xCor, yCor)));
+    baseLine.setPoints(origin+QPointF(xCor, yCor), origin+QPointF(mAxisRect->width()+xCor, yCor));
   else
-    painter->drawLine(QLineF(origin+QPointF(xCor, yCor), origin+QPointF(xCor, -mAxisRect.height()+yCor)));
+    baseLine.setPoints(origin+QPointF(xCor, yCor), origin+QPointF(xCor, -mAxisRect->height()+yCor));
+  if (mRangeReversed)
+    baseLine = QLineF(baseLine.p2(), baseLine.p1()); // won't make a difference for line itself, but for line endings later
+  painter->drawLine(baseLine);
   
   // draw ticks:
   if (mTicks)
@@ -1822,6 +2015,17 @@ void QCPAxis::draw(QCPPainter *painter)
   }
   margin += qMax(0, qMax(mTickLengthOut, mSubTickLengthOut));
   
+  // draw axis base endings:
+  bool antialiasingBackup = painter->antialiasing();
+  painter->setAntialiasing(true); // always want endings to be antialiased, even if base and ticks themselves aren't
+  painter->setBrush(QBrush(basePen().color()));
+  QVector2D baseLineVector(baseLine.dx(), baseLine.dy());
+  if (mLowerEnding.style() != QCPLineEnding::esNone)
+    mLowerEnding.draw(painter, QVector2D(baseLine.p1())-baseLineVector.normalized()*mLowerEnding.realLength()*(mLowerEnding.inverted()?-1:1), -baseLineVector);
+  if (mUpperEnding.style() != QCPLineEnding::esNone)
+    mUpperEnding.draw(painter, QVector2D(baseLine.p2())+baseLineVector.normalized()*mUpperEnding.realLength()*(mUpperEnding.inverted()?-1:1), baseLineVector);
+  painter->setAntialiasing(antialiasingBackup);
+  
   // tick labels:
   QSize tickLabelsSize(0, 0); // size of largest tick label, for offset calculation of axis label
   if (mTickLabels)
@@ -1853,21 +2057,21 @@ void QCPAxis::draw(QCPPainter *painter)
       QTransform oldTransform = painter->transform();
       painter->translate((origin.x()-margin-labelBounds.height()), origin.y());
       painter->rotate(-90);
-      painter->drawText(0, 0, mAxisRect.height(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
+      painter->drawText(0, 0, mAxisRect->height(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
       painter->setTransform(oldTransform);
     }
     else if (mAxisType == atRight)
     {
       QTransform oldTransform = painter->transform();
-      painter->translate((origin.x()+margin+labelBounds.height()), origin.y()-mAxisRect.height());
+      painter->translate((origin.x()+margin+labelBounds.height()), origin.y()-mAxisRect->height());
       painter->rotate(90);
-      painter->drawText(0, 0, mAxisRect.height(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
+      painter->drawText(0, 0, mAxisRect->height(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
       painter->setTransform(oldTransform);
     }
     else if (mAxisType == atTop)
-      painter->drawText(origin.x(), origin.y()-margin-labelBounds.height(), mAxisRect.width(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
+      painter->drawText(origin.x(), origin.y()-margin-labelBounds.height(), mAxisRect->width(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
     else if (mAxisType == atBottom)
-      painter->drawText(origin.x(), origin.y()+margin, mAxisRect.width(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
+      painter->drawText(origin.x(), origin.y()+margin, mAxisRect->width(), labelBounds.height(), Qt::TextDontClip | Qt::AlignCenter, mLabel);
   }
   
   // set selection boxes:
@@ -1879,26 +2083,27 @@ void QCPAxis::draw(QCPPainter *painter)
   int selLabelOffset = selTickLabelOffset+selTickLabelSize+mLabelPadding;
   if (mAxisType == atLeft)
   {
-    mAxisSelectionBox.setCoords(mAxisRect.left()-selAxisOutSize, mAxisRect.top(), mAxisRect.left()+selAxisInSize, mAxisRect.bottom());
-    mTickLabelsSelectionBox.setCoords(mAxisRect.left()-selTickLabelOffset-selTickLabelSize, mAxisRect.top(), mAxisRect.left()-selTickLabelOffset, mAxisRect.bottom());
-    mLabelSelectionBox.setCoords(mAxisRect.left()-selLabelOffset-selLabelSize, mAxisRect.top(), mAxisRect.left()-selLabelOffset, mAxisRect.bottom());
+    mAxisSelectionBox.setCoords(origin.x()-selAxisOutSize, mAxisRect->top(), origin.x()+selAxisInSize, mAxisRect->bottom());
+    mTickLabelsSelectionBox.setCoords(origin.x()-selTickLabelOffset-selTickLabelSize, mAxisRect->top(), origin.x()-selTickLabelOffset, mAxisRect->bottom());
+    mLabelSelectionBox.setCoords(origin.x()-selLabelOffset-selLabelSize, mAxisRect->top(), origin.x()-selLabelOffset, mAxisRect->bottom());
   } else if (mAxisType == atRight)
   {
-    mAxisSelectionBox.setCoords(mAxisRect.right()-selAxisInSize, mAxisRect.top(), mAxisRect.right()+selAxisOutSize, mAxisRect.bottom());
-    mTickLabelsSelectionBox.setCoords(mAxisRect.right()+selTickLabelOffset+selTickLabelSize, mAxisRect.top(), mAxisRect.right()+selTickLabelOffset, mAxisRect.bottom());
-    mLabelSelectionBox.setCoords(mAxisRect.right()+selLabelOffset+selLabelSize, mAxisRect.top(), mAxisRect.right()+selLabelOffset, mAxisRect.bottom());
+    mAxisSelectionBox.setCoords(origin.x()-selAxisInSize, mAxisRect->top(), origin.x()+selAxisOutSize, mAxisRect->bottom());
+    mTickLabelsSelectionBox.setCoords(origin.x()+selTickLabelOffset+selTickLabelSize, mAxisRect->top(), origin.x()+selTickLabelOffset, mAxisRect->bottom());
+    mLabelSelectionBox.setCoords(origin.x()+selLabelOffset+selLabelSize, mAxisRect->top(), origin.x()+selLabelOffset, mAxisRect->bottom());
   } else if (mAxisType == atTop)
   {
-    mAxisSelectionBox.setCoords(mAxisRect.left(), mAxisRect.top()-selAxisOutSize, mAxisRect.right(), mAxisRect.top()+selAxisInSize);
-    mTickLabelsSelectionBox.setCoords(mAxisRect.left(), mAxisRect.top()-selTickLabelOffset-selTickLabelSize, mAxisRect.right(), mAxisRect.top()-selTickLabelOffset);
-    mLabelSelectionBox.setCoords(mAxisRect.left(), mAxisRect.top()-selLabelOffset-selLabelSize, mAxisRect.right(), mAxisRect.top()-selLabelOffset);
+    mAxisSelectionBox.setCoords(mAxisRect->left(), origin.y()-selAxisOutSize, mAxisRect->right(), origin.y()+selAxisInSize);
+    mTickLabelsSelectionBox.setCoords(mAxisRect->left(), origin.y()-selTickLabelOffset-selTickLabelSize, mAxisRect->right(), origin.y()-selTickLabelOffset);
+    mLabelSelectionBox.setCoords(mAxisRect->left(), origin.y()-selLabelOffset-selLabelSize, mAxisRect->right(), origin.y()-selLabelOffset);
   } else if (mAxisType == atBottom)
   {
-    mAxisSelectionBox.setCoords(mAxisRect.left(), mAxisRect.bottom()-selAxisInSize, mAxisRect.right(), mAxisRect.bottom()+selAxisOutSize);
-    mTickLabelsSelectionBox.setCoords(mAxisRect.left(), mAxisRect.bottom()+selTickLabelOffset+selTickLabelSize, mAxisRect.right(), mAxisRect.bottom()+selTickLabelOffset);
-    mLabelSelectionBox.setCoords(mAxisRect.left(), mAxisRect.bottom()+selLabelOffset+selLabelSize, mAxisRect.right(), mAxisRect.bottom()+selLabelOffset);
+    mAxisSelectionBox.setCoords(mAxisRect->left(), origin.y()-selAxisInSize, mAxisRect->right(), origin.y()+selAxisOutSize);
+    mTickLabelsSelectionBox.setCoords(mAxisRect->left(), origin.y()+selTickLabelOffset+selTickLabelSize, mAxisRect->right(), origin.y()+selTickLabelOffset);
+    mLabelSelectionBox.setCoords(mAxisRect->left(), origin.y()+selLabelOffset+selLabelSize, mAxisRect->right(), origin.y()+selLabelOffset);
   }
   // draw hitboxes for debug purposes:
+  //painter->setBrush(Qt::NoBrush);
   //painter->drawRects(QVector<QRect>() << mAxisSelectionBox << mTickLabelsSelectionBox << mLabelSelectionBox);
 }
 
@@ -1912,24 +2117,27 @@ void QCPAxis::draw(QCPPainter *painter)
   at which the label should be drawn.
   
   In order to later draw the axis label in a place that doesn't overlap with the tick labels, the
-  largest tick label size is needed. This is acquired by passing a \a tickLabelsSize to all \ref
-  drawTickLabel calls during the process of drawing all tick labels of one axis. \a tickLabelSize
-  is only expanded, if the drawn label exceeds the value \a tickLabelsSize currently holds.
+  largest tick label size is needed. This is acquired by passing a \a tickLabelsSize to the \ref
+  drawTickLabel calls during the process of drawing all tick labels of one axis. In every call, \a
+  tickLabelsSize is expanded, if the drawn label exceeds the value \a tickLabelsSize currently
+  holds.
   
   The label is drawn with the font and pen that are currently set on the \a painter. To draw
-  superscripted powers, the font is temporarily made smaller by a fixed factor.
+  superscripted powers, the font is temporarily made smaller by a fixed factor (see \ref
+  getTickLabelData).
 */
 void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceToAxis, const QString &text, QSize *tickLabelsSize)
 {
   // warning: if you change anything here, also adapt getMaxTickLabelSize() accordingly!
+  if (!mParentPlot) return;
   QSize finalSize;
   QPointF labelAnchor;
   switch (mAxisType)
   {
-    case atLeft:   labelAnchor = QPointF(mAxisRect.left()-distanceToAxis, position); break;
-    case atRight:  labelAnchor = QPointF(mAxisRect.right()+distanceToAxis, position); break;
-    case atTop:    labelAnchor = QPointF(position, mAxisRect.top()-distanceToAxis); break;
-    case atBottom: labelAnchor = QPointF(position, mAxisRect.bottom()+distanceToAxis); break;
+    case atLeft:   labelAnchor = QPointF(mAxisRect->left()-distanceToAxis-mOffset, position); break;
+    case atRight:  labelAnchor = QPointF(mAxisRect->right()+distanceToAxis+mOffset, position); break;
+    case atTop:    labelAnchor = QPointF(position, mAxisRect->top()-distanceToAxis-mOffset); break;
+    case atBottom: labelAnchor = QPointF(position, mAxisRect->bottom()+distanceToAxis+mOffset); break;
   }
   if (parentPlot()->plottingHints().testFlag(QCP::phCacheLabels) && !painter->modes().testFlag(QCPPainter::pmNoCaching)) // label caching enabled
   {
@@ -1951,13 +2159,13 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
     // if label would be partly clipped by widget border on sides, don't draw it:
     if (orientation() == Qt::Horizontal)
     {
-      if (labelAnchor.x()+cachedLabel->offset.x()+cachedLabel->pixmap.width() > mParentPlot->mViewport.right() ||
-          labelAnchor.x()+cachedLabel->offset.x() < mParentPlot->mViewport.left())
+      if (labelAnchor.x()+cachedLabel->offset.x()+cachedLabel->pixmap.width() > mParentPlot->viewport().right() ||
+          labelAnchor.x()+cachedLabel->offset.x() < mParentPlot->viewport().left())
         return;
     } else
     {
-      if (labelAnchor.y()+cachedLabel->offset.y()+cachedLabel->pixmap.height() > mParentPlot->mViewport.bottom() ||
-          labelAnchor.y()+cachedLabel->offset.y() < mParentPlot->mViewport.top())
+      if (labelAnchor.y()+cachedLabel->offset.y()+cachedLabel->pixmap.height() > mParentPlot->viewport().bottom() ||
+          labelAnchor.y()+cachedLabel->offset.y() < mParentPlot->viewport().top())
         return;
     }
     painter->drawPixmap(labelAnchor+cachedLabel->offset, cachedLabel->pixmap);
@@ -1969,13 +2177,13 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
     // if label would be partly clipped by widget border on sides, don't draw it:
     if (orientation() == Qt::Horizontal)
     {
-      if (finalPosition.x()+(labelData.rotatedTotalBounds.width()+labelData.rotatedTotalBounds.left()) > mParentPlot->mViewport.right() ||
-          finalPosition.x()+labelData.rotatedTotalBounds.left() < mParentPlot->mViewport.left())
+      if (finalPosition.x()+(labelData.rotatedTotalBounds.width()+labelData.rotatedTotalBounds.left()) > mParentPlot->viewport().right() ||
+          finalPosition.x()+labelData.rotatedTotalBounds.left() < mParentPlot->viewport().left())
         return;
     } else
     {
-      if (finalPosition.y()+(labelData.rotatedTotalBounds.height()+labelData.rotatedTotalBounds.top()) > mParentPlot->mViewport.bottom() ||
-          finalPosition.y()+labelData.rotatedTotalBounds.top() < mParentPlot->mViewport.top())
+      if (finalPosition.y()+(labelData.rotatedTotalBounds.height()+labelData.rotatedTotalBounds.top()) > mParentPlot->viewport().bottom() ||
+          finalPosition.y()+labelData.rotatedTotalBounds.top() < mParentPlot->viewport().top())
         return;
     }
     drawTickLabel(painter, finalPosition.x(), finalPosition.y(), labelData);
@@ -1994,9 +2202,9 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
   This is a \ref placeTickLabel helper function.
   
   Draws the tick label specified in \a labelData with \a painter at the pixel positions \a x and \a
-  y. This function is used by \ref placeTickLabel to create cached tick labels or to directly draw
-  the labels on the QCustomPlot surface when label caching is disabled (when QCP::phCacheLabels
-  plotting hint is not set).
+  y. This function is used by \ref placeTickLabel to create new tick labels for the cache, or to
+  directly draw the labels on the QCustomPlot surface when label caching is disabled, i.e. when
+  QCP::phCacheLabels plotting hint is not set.
 */
 void QCPAxis::drawTickLabel(QCPPainter *painter, double x, double y, const QCPAxis::TickLabelData &labelData) const
 {
@@ -2018,6 +2226,7 @@ void QCPAxis::drawTickLabel(QCPPainter *painter, double x, double y, const QCPAx
     painter->drawText(labelData.baseBounds.width()+1, 0, labelData.expBounds.width(), labelData.expBounds.height(), Qt::TextDontClip,  labelData.expPart);
   } else
   {
+    painter->setFont(labelData.baseFont);
     painter->drawText(0, 0, labelData.totalBounds.width(), labelData.totalBounds.height(), Qt::TextDontClip | Qt::AlignHCenter, labelData.basePart);
   }
   
@@ -2031,8 +2240,8 @@ void QCPAxis::drawTickLabel(QCPPainter *painter, double x, double y, const QCPAx
   This is a \ref placeTickLabel helper function.
   
   Transforms the passed \a text and \a font to a tickLabelData structure that can then be further
-  processed by \ref getTickLabelDrawOffset and \ref drawTickLabel. Thus it splits the text into base
-  and exponent if necessary (see \ref setNumberFormat) and calculates appropriate bounding boxes.
+  processed by \ref getTickLabelDrawOffset and \ref drawTickLabel. It splits the text into base and
+  exponent if necessary (see \ref setNumberFormat) and calculates appropriate bounding boxes.
 */
 QCPAxis::TickLabelData QCPAxis::getTickLabelData(const QFont &font, const QString &text) const
 {
@@ -2197,10 +2406,10 @@ QPointF QCPAxis::getTickLabelDrawOffset(const QCPAxis::TickLabelData &labelData)
 
 /*! \internal
   
-  Simulates the steps done by \ref drawTickLabel by calculating bounding boxes of the text label to
-  be drawn, depending on number format etc. Since we only want the largest tick label for the
-  margin calculation, the passed \a tickLabelsSize isn't overridden with the calculated label size,
-  but only expanded, if it's currently set to a smaller width/height.
+  Simulates the steps done by \ref placeTickLabel by calculating bounding boxes of the text label
+  to be drawn, depending on number format etc. Since only the largest tick label is wanted for the
+  margin calculation, the passed \a tickLabelsSize is only expanded, if it's currently set to a
+  smaller width/height.
 */
 void QCPAxis::getMaxTickLabelSize(const QFont &font, const QString &text,  QSize *tickLabelsSize) const
 {
@@ -2223,63 +2432,27 @@ void QCPAxis::getMaxTickLabelSize(const QFont &font, const QString &text,  QSize
     tickLabelsSize->setHeight(finalSize.height());
 }
 
-/*! \internal
-  
-  Handles the selection \a event and returns true when the selection event hit any parts of the
-  axis. If the selection state of any parts of the axis was changed, the output parameter \a
-  modified is set to true.
-  
-  When \a additiveSelecton is true, any new selections become selected in addition to the recent
-  selections. The recent selections are not cleared. Further, clicking on one object multiple times
-  in additive selection mode, toggles the selection of that object on and off.
-  
-  To indicate that an event deselects the axis (i.e. the parts that are deselectable by the user,
-  see \ref setSelectable), pass 0 as \a event.
-*/
-bool QCPAxis::handleAxisSelection(QMouseEvent *event, bool additiveSelection, bool &modified)
+/* inherits documentation from base class */
+void QCPAxis::selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged)
 {
-  bool selectionFound = false;
-  if (event)
+  Q_UNUSED(event)
+  SelectablePart part = details.value<SelectablePart>();
+  if (mSelectableParts.testFlag(part))
   {
-    SelectablePart selectedAxisPart = selectTest(event->pos());
-    if (selectedAxisPart == spNone || !selectable().testFlag(selectedAxisPart))
-    {
-      // deselect parts that are changeable (selectable):
-      SelectableParts newState = selected() & ~selectable();
-      if (newState != selected() && !additiveSelection)
-      {
-        modified = true;
-        setSelected(newState);
-      }
-    } else
-    {
-      selectionFound = true;
-      if (additiveSelection)
-      {
-        // additive selection, so toggle selected part:
-        setSelected(selected() ^ selectedAxisPart);
-        modified = true;
-      } else
-      {
-        // not additive selection, so select part and deselect all others that are changeable (selectable):
-        SelectableParts newState = (selected() & ~selectable()) | selectedAxisPart;
-        if (newState != selected())
-        {
-          modified = true;
-          setSelected(newState);
-        }
-      }
-    }
-  } else // event == 0, so deselect all changeable parts
-  {
-    SelectableParts newState = selected() & ~selectable();
-    if (newState != selected())
-    {
-      modified = true;
-      setSelected(newState);
-    }
+    SelectableParts selBefore = mSelectedParts;
+    setSelectedParts(additive ? mSelectedParts^part : part);
+    if (selectionStateChanged)
+      *selectionStateChanged = mSelectedParts != selBefore;
   }
-  return selectionFound;
+}
+
+/* inherits documentation from base class */
+void QCPAxis::deselectEvent(bool *selectionStateChanged)
+{
+  SelectableParts selBefore = mSelectedParts;
+  setSelectedParts(mSelectedParts & ~mSelectableParts);
+  if (selectionStateChanged)
+    *selectionStateChanged = mSelectedParts != selBefore;
 }
 
 /*! \internal
@@ -2289,8 +2462,9 @@ bool QCPAxis::handleAxisSelection(QMouseEvent *event, bool additiveSelection, bo
 
   This is the antialiasing state the painter passed to the \ref draw method is in by default.
   
-  This function takes into account the local setting of the antialiasing flag as well as
-  the overrides set e.g. with \ref QCustomPlot::setNotAntialiasedElements.
+  This function takes into account the local setting of the antialiasing flag as well as the
+  overrides set with \ref QCustomPlot::setAntialiasedElements and \ref
+  QCustomPlot::setNotAntialiasedElements.
   
   \see setAntialiased
 */
@@ -2305,7 +2479,7 @@ void QCPAxis::applyDefaultAntialiasingHint(QCPPainter *painter) const
   the current range. The return values are indices of the tick vector, not the positions of the
   ticks themselves.
   
-  The actual use of this function is when we have an externally provided tick vector, which might
+  The actual use of this function is when an external tick vector is provided, since it might
   exceed far beyond the currently displayed range, and would cause unnecessary calculations e.g. of
   subticks.
   
@@ -2313,8 +2487,7 @@ void QCPAxis::applyDefaultAntialiasingHint(QCPPainter *painter) const
   smaller than lowIndex. There is one case, where this function returns indices that are not really
   visible in the current axis range: When the tick spacing is larger than the axis range size and
   one tick is below the axis range and the next tick is already above the axis range. Because in
-  such cases we still want to know that tick pair whose span we are looking at to draw proper
-  subticks.
+  such cases it is usually desirable to know the tick pair, to draw proper subticks.
 */
 void QCPAxis::visibleTickBounds(int &lowIndex, int &highIndex) const
 {
@@ -2380,7 +2553,7 @@ double QCPAxis::basePow(double value) const
 */
 QPen QCPAxis::getBasePen() const
 {
-  return mSelected.testFlag(spAxis) ? mSelectedBasePen : mBasePen;
+  return mSelectedParts.testFlag(spAxis) ? mSelectedBasePen : mBasePen;
 }
 
 /*! \internal
@@ -2390,7 +2563,7 @@ QPen QCPAxis::getBasePen() const
 */
 QPen QCPAxis::getTickPen() const
 {
-  return mSelected.testFlag(spAxis) ? mSelectedTickPen : mTickPen;
+  return mSelectedParts.testFlag(spAxis) ? mSelectedTickPen : mTickPen;
 }
 
 /*! \internal
@@ -2400,7 +2573,7 @@ QPen QCPAxis::getTickPen() const
 */
 QPen QCPAxis::getSubTickPen() const
 {
-  return mSelected.testFlag(spAxis) ? mSelectedSubTickPen : mSubTickPen;
+  return mSelectedParts.testFlag(spAxis) ? mSelectedSubTickPen : mSubTickPen;
 }
 
 /*! \internal
@@ -2410,7 +2583,7 @@ QPen QCPAxis::getSubTickPen() const
 */
 QFont QCPAxis::getTickLabelFont() const
 {
-  return mSelected.testFlag(spTickLabels) ? mSelectedTickLabelFont : mTickLabelFont;
+  return mSelectedParts.testFlag(spTickLabels) ? mSelectedTickLabelFont : mTickLabelFont;
 }
 
 /*! \internal
@@ -2420,7 +2593,7 @@ QFont QCPAxis::getTickLabelFont() const
 */
 QFont QCPAxis::getLabelFont() const
 {
-  return mSelected.testFlag(spAxisLabel) ? mSelectedLabelFont : mLabelFont;
+  return mSelectedParts.testFlag(spAxisLabel) ? mSelectedLabelFont : mLabelFont;
 }
 
 /*! \internal
@@ -2430,7 +2603,7 @@ QFont QCPAxis::getLabelFont() const
 */
 QColor QCPAxis::getTickLabelColor() const
 {
-  return mSelected.testFlag(spTickLabels) ? mSelectedTickLabelColor : mTickLabelColor;
+  return mSelectedParts.testFlag(spTickLabels) ? mSelectedTickLabelColor : mTickLabelColor;
 }
 
 /*! \internal
@@ -2440,26 +2613,28 @@ QColor QCPAxis::getTickLabelColor() const
 */
 QColor QCPAxis::getLabelColor() const
 {
-  return mSelected.testFlag(spAxisLabel) ? mSelectedLabelColor : mLabelColor;
+  return mSelectedParts.testFlag(spAxisLabel) ? mSelectedLabelColor : mLabelColor;
 }
 
 /*! \internal
   
-  Simulates the steps of \ref draw by calculating all appearing text bounding boxes. From this
-  information, the appropriate margin for this axis is determined, so nothing is drawn beyond the
-  widget border in the actual \ref draw function (if \ref QCustomPlot::setAutoMargin is set to
-  true).
+  Returns the appropriate outward margin for this axis. It is needed if \ref
+  QCPAxisRect::setAutoMargins is set to true on the parent axis rect. An axis with axis type \ref
+  atLeft will return an appropriate left margin, \ref atBottom will return an appropriate bottom
+  margin and so forth. For the calculation, this function goes through similar steps as \ref draw,
+  so changing one function likely requires the modification of the other one as well.
   
-  The margin consists of: tick label padding, tick label size, label padding, label size. The
-  return value is the calculated margin for this axis. Thus, an axis with axis type \ref atLeft
-  will return an appropriate left margin, \ref atBottom will return an appropriate bottom margin
-  and so forth.
+  The margin consists of the outward tick length, tick label padding, tick label size, label
+  padding, label size, and padding.
   
-  \warning if anything is changed in this function, make sure it's synchronized with the actual
-  drawing function \ref draw.
+  The margin is cached internally, so repeated calls while leaving the axis range, fonts, etc.
+  unchanged are very fast.
 */
-int QCPAxis::calculateMargin() const
+int QCPAxis::calculateMargin()
 {
+  if (mCachedMarginValid)
+    return mCachedMargin;
+  
   // run through similar steps as QCPAxis::draw, and caluclate margin needed to fit axis and its labels
   int margin = 0;
   
@@ -2467,20 +2642,17 @@ int QCPAxis::calculateMargin() const
   {
     int lowTick, highTick;
     visibleTickBounds(lowTick, highTick);
-    // get length of tick marks reaching outside axis rect:
-    margin += qMax(0, qMax(mTickLengthOut, mSubTickLengthOut));
+    // get length of tick marks pointing outwards:
+    if (mTicks)
+      margin += qMax(0, qMax(mTickLengthOut, mSubTickLengthOut));
     // calculate size of tick labels:
     QSize tickLabelsSize(0, 0);
     if (mTickLabels)
     {
-      for (int i=lowTick; i <= highTick; ++i)
-      {
+      for (int i=lowTick; i<=highTick; ++i)
         getMaxTickLabelSize(mTickLabelFont, mTickVectorLabels.at(i), &tickLabelsSize); // don't use getTickLabelFont() because we don't want margin to possibly change on selection
-      }
-      if (orientation() == Qt::Horizontal)
-        margin += tickLabelsSize.height() + mTickLabelPadding;
-      else
-        margin += tickLabelsSize.width() + mTickLabelPadding;
+      margin += orientation() == Qt::Horizontal ? tickLabelsSize.height() : tickLabelsSize.width();
+      margin += mTickLabelPadding;
     }
     // calculate size of axis label (only height needed, because left/right labels are rotated by 90 degrees):
     if (!mLabel.isEmpty())
@@ -2492,8 +2664,15 @@ int QCPAxis::calculateMargin() const
     }
   }
   margin += mPadding;
-  
-  if (margin < 15) // need a bit of margin if no axis text is shown at all (i.e. only baseline and tick lines, or no axis at all)
-    margin = 15;
+
+  mCachedMargin = margin;
+  mCachedMarginValid = true;
   return margin;
 }
+
+/* inherits documentation from base class */
+QCP::Interaction QCPAxis::selectionCategory() const
+{
+  return QCP::iSelectAxes;
+}
+

@@ -6,10 +6,11 @@
 # If compiling your application in release mode, you should link with qcustomplot.
 #
 # In your project's HEADERS, you may use either the amalgamated header qcustomplot.h or all separated headers.
-# (note that qmake undestands *.h if you choose the latter option.)
+# (note that qmake undestands "*.h" if you choose the latter option.)
 #
 
 QT += core gui
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TEMPLATE = lib
 CONFIG += qt staticlib debug_and_release build_all
@@ -18,11 +19,11 @@ VERSION = 0.9.0
 TARGET = qcustomplot
 CONFIG(debug, debug|release) {
   TARGET = $$join(TARGET,,,d) # if compiling in debug mode, append a "d" to the library name
-  MOC_DIR= build-debug
-  OBJECTS_DIR= build-debug
+  MOC_DIR = build-debug
+  OBJECTS_DIR = build-debug
 } else {
-  MOC_DIR= build-release
-  OBJECTS_DIR= build-release
+  MOC_DIR = build-release
+  OBJECTS_DIR = build-release
 }
 
 HEADERS += \
@@ -31,11 +32,11 @@ painter.h \
 layer.h \
 range.h \
 axis.h \
-legend.h \
 plottable.h \
 item.h \
 lineending.h \
 core.h \
+layout.h \
 plottables/plottable-graph.h \
 plottables/plottable-curve.h \
 plottables/plottable-bars.h \
@@ -48,18 +49,21 @@ items/item-text.h \
 items/item-ellipse.h \
 items/item-pixmap.h \
 items/item-tracer.h \
-items/item-bracket.h
+items/item-bracket.h \
+layoutelements/layoutelement-axisrect.h \
+    layoutelements/layoutelement-legend.h \
+    layoutelements/layoutelement-plottitle.h
 
 SOURCES += \
 painter.cpp \
 layer.cpp \
 range.cpp \
 axis.cpp \
-legend.cpp \
 plottable.cpp \
 item.cpp \
 lineending.cpp \
 core.cpp \
+layout.cpp \
 plottables/plottable-graph.cpp \
 plottables/plottable-curve.cpp \
 plottables/plottable-bars.cpp \
@@ -72,9 +76,11 @@ items/item-text.cpp \
 items/item-ellipse.cpp \
 items/item-pixmap.cpp \
 items/item-tracer.cpp \
-items/item-bracket.cpp
+items/item-bracket.cpp \
+layoutelements/layoutelement-axisrect.cpp \
+    layoutelements/layoutelement-legend.cpp \
+    layoutelements/layoutelement-plottitle.cpp
 
 OTHER_FILES += \
     ../changenotes.txt \
-    ../todo.txt \
-    ../sketches.txt
+    ../todo.txt

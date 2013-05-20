@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
-**  QCustomPlot, a simple to use, modern plotting widget for Qt           **
-**  Copyright (C) 2011, 2012 Emanuel Eichhammer                           **
+**  QCustomPlot, an easy to use, modern plotting widget for Qt            **
+**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,7 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 09.06.12                                             **
+**             Date: 19.05.13                                             **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_LINEENDING_H
@@ -31,6 +32,7 @@ class QCPPainter;
 
 class QCP_LIB_DECL QCPLineEnding
 {
+  Q_GADGET
 public:
   /*!
     Defines the type of ending decoration for line-like items, e.g. an arrow.
@@ -43,6 +45,7 @@ public:
     
     \see QCPItemLine::setHead, QCPItemLine::setTail, QCPItemCurve::setHead, QCPItemCurve::setTail
   */
+  Q_ENUMS(EndingStyle)
   enum EndingStyle { esNone          ///< No ending decoration
                      ,esFlatArrow    ///< A filled arrow head with a straight/flat back (a triangle)
                      ,esSpikeArrow   ///< A filled arrow head with an indented back
@@ -51,6 +54,8 @@ public:
                      ,esSquare       ///< A filled square
                      ,esDiamond      ///< A filled diamond (45° rotated square)
                      ,esBar          ///< A bar perpendicular to the line
+                     ,esHalfBar      ///< A bar perpendicular to the line sticking out to one side
+                     ,esSkewedBar    ///< A bar that is skewed (skew controllable via \ref setLength)
                    };
   
   QCPLineEnding();
@@ -70,10 +75,12 @@ public:
   
   // non-property methods:
   double boundingDistance() const;
+  double realLength() const;
   void draw(QCPPainter *painter, const QVector2D &pos, const QVector2D &dir) const;
   void draw(QCPPainter *painter, const QVector2D &pos, double angle) const;
   
 protected:
+  // property members:
   EndingStyle mStyle;
   double mWidth, mLength;
   bool mInverted;

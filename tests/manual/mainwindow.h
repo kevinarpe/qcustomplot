@@ -1,8 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtCore>
-#include <QtGui>
+#include <QMainWindow>
+#include <QTimer>
+#include <QHBoxLayout>
+#include <QDir>
+
 #include "../../src/qcp.h"
 
 namespace Ui {
@@ -27,6 +30,15 @@ public:
   void setupDateTest(QCustomPlot *customPlot);
   void setupTickLabelTest(QCustomPlot *customPlot);
   void setupDaqPerformance(QCustomPlot *customPlot);
+  void setupLayoutTest(QCustomPlot* customPlot);
+  void setupMultiAxisTest(QCustomPlot* customPlot);
+  void setupLayoutElementBugTest(QCustomPlot *customPlot);
+  void setupMarginGroupTest(QCustomPlot* customPlot);
+  void setupInsetLayoutTest(QCustomPlot* customPlot);
+  void setupLegendTest(QCustomPlot *customPlot);
+  void setupMultiAxisRectInteractions(QCustomPlot *customPlot);
+  // testbed:
+  void setupTestbed(QCustomPlot *customPlot);
   
   // presets:
   void presetInteractive(QCustomPlot *customPlot);
@@ -35,8 +47,6 @@ public:
   void labelItemAnchors(QCPAbstractItem *item, double fontSize=8, bool circle=true, bool labelBelow=true);
   void showSelectTestColorMap(QCustomPlot *customPlot);
   
-  // testbed:
-  void setupTestbed(QCustomPlot *customPlot);
   
   // special use cases test:
   void setupIntegerTickStepCase(QCustomPlot *customPlot);
@@ -46,7 +56,7 @@ public slots:
   void selectTestColorMapRefresh();
   void mouseMoveRotateTickLabels(QMouseEvent *event);
   void tickLabelTestTimerSlot();
-  
+  void setupMultiAxisRectInteractionsMouseMove(QMouseEvent *event);
   void daqPerformanceDataSlot();
   void daqPerformanceReplotSlot();
   
