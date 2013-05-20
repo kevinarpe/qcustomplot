@@ -31,7 +31,6 @@
 #endif
 #define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(0, 0, 0)
 
-#include <QtNumeric>
 #include <QObject>
 #include <QWeakPointer>
 #include <QWidget>
@@ -51,6 +50,7 @@
 #include <QCache>
 #include <QMargins>
 #include <qmath.h>
+#include <qnumeric.h>
 #include <limits>
 
 // decl definitions for shared library compilation/usage:

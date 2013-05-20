@@ -48,7 +48,7 @@
   This documentation is especially helpful as a reference, when you're familiar with the basic
   concept of how to use %QCustomPlot and you wish to learn more about specific functionality.
  
-  \section simpleoverview Simplified Class Overview
+  \section mainpage-simpleoverview Simplified Class Overview
   
   \image latex ClassesOverviewSimplified.png "" width=1.2\textwidth
   \image html ClassesOverviewSimplified.png
@@ -59,7 +59,7 @@
   xAxis2 and yAxis2, and are of type QCPAxis. QCustomPlot supports an arbitrary number of axes and axis rects, see the
   documentation of QCPAxisRect for details.
 
-  \section plottables Plottables
+  \section mainpage-plottables Plottables
   
   \a Plottables are classes that display any kind of data inside the QCustomPlot. They all derive
   from QCPAbstractPlottable. For example, the QCPGraph class is a plottable that displays a graph
@@ -86,7 +86,7 @@
   All further interfacing with plottables (e.g how to set data) is specific to the plottable type.
   See the documentations of the subclasses: QCPGraph, QCPCurve, QCPBars, QCPStatisticalBox.
 
-  \section axes Controlling the Axes
+  \section mainpage-axes Controlling the Axes
   
   As mentioned, QCustomPlot has four axes by default: \a xAxis (bottom), \a yAxis (left), \a xAxis2
   (top), \a yAxis2 (right).
@@ -109,7 +109,7 @@
   QCPAxisRect::setAutoMargins to exclude the respective margin sides, set the margins manually with
   QCPAxisRect::setMargins. The main axis rect can be reached with QCustomPlot::axisRect().
   
-  \section legend Plot Legend
+  \section mainpage-legend Plot Legend
   
   Every QCustomPlot owns one QCPLegend (as \a legend) by default. A legend is a small layout
   element inside the plot which lists the plottables with an icon of the plottable line/symbol and
@@ -126,7 +126,7 @@
   Multiple legends are supported via the layout system (as a QCPLegend simply is a normal layout
   element).
   
-  \section userinteraction User Interactions
+  \section mainpage-userinteraction User Interactions
   
   QCustomPlot supports dragging axis ranges with the mouse (\ref
   QCPAxisRect::setRangeDrag), zooming axis ranges with the mouse wheel (\ref
@@ -139,7 +139,7 @@
   doubleClicked. See \ref QCustomPlot::plottableClick, \ref QCustomPlot::plottableDoubleClick
   and \ref QCustomPlot::axisClick for example.
   
-  \section items Items
+  \section mainpage-items Items
   
   Apart from plottables there is another category of plot objects that are important: Items. The
   base class of all items is QCPAbstractItem. An item sets itself apart from plottables in that
@@ -157,7 +157,7 @@
   For a more detailed introduction, see the QCPAbstractItem documentation, and from there the
   documentations of the individual built-in items, to find out how to use them.
   
-  \section performancetweaks Performance Tweaks
+  \section mainpage-performancetweaks Performance Tweaks
   
   Although QCustomPlot is quite fast, some features like translucent fills, antialiasing and thick
   lines can cause a significant slow down. Here are some thoughts on how to increase performance.
@@ -188,7 +188,7 @@
   \li Set the \a copy parameter of the setData functions to false, so only pointers get
   transferred. (Relevant only if preparing data maps with a large number of points, i.e. over 10000)
   
-  \section Preprocessor Define Flags
+  \section mainpage-flags Preprocessor Define Flags
   
   QCustomPlot understands some preprocessor defines that are useful for debugging and compilation:
   <dl>
