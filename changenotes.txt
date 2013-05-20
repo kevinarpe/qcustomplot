@@ -1,4 +1,12 @@
-#### Version 1.0.0 released on  ####
+#### Version 1.0.0-beta released on 19.05.13 ####
+
+  Quick Summary:
+    - Layout system for multiple axis rects in one plot
+    - Multiple axes per side
+    - Qt5 compatibility
+    - More flexible and consistent scatter configuration with QCPScatterStyle
+    - Various interface cleanups/refactoring
+    - Pixmap-cached axis labels for improved replot performance
 
   Changes that break backward compatibility:
     - QCustomPlot::axisRect() changed meaning due to the extensive changes to how axes and axis rects are handled

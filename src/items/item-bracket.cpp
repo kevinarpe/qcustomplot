@@ -20,7 +20,7 @@
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.WorksLikeClockwork.com/                   **
 **             Date: 19.05.13                                             **
-**          Version: 1.0.0                                                **
+**          Version: 1.0.0-beta                                           **
 ****************************************************************************/
 
 #include "item-bracket.h"
