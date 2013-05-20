@@ -31,6 +31,7 @@
 #endif
 #define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(0, 0, 0)
 
+#include <QtNumeric>
 #include <QObject>
 #include <QWeakPointer>
 #include <QWidget>
@@ -145,9 +146,7 @@ Q_DECLARE_FLAGS(Interactions, Interaction)
 */
 inline bool isInvalidData(double value)
 {
-  return (!isnan(value) &&
-          value != std::numeric_limits<double>::infinity() &&
-          value != -std::numeric_limits<double>::infinity());
+  return (!qIsNaN(value) && !qIsInf(value));
 }
 
 /*! \internal
