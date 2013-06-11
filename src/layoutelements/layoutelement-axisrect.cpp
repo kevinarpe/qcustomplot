@@ -51,7 +51,7 @@
   accessed via \ref axis by providing the respective axis type (\ref QCPAxis::AxisType) and index.
   If you need all axes in the axis rect, use \ref axes. The top and right axes are set to be
   invisible initially (QCPAxis::setVisible). To add more axes to a side, use \ref addAxis or \ref
-  addAxes, to remove an axis, use \ref removeAxis.
+  addAxes. To remove an axis, use \ref removeAxis.
   
   The axis rect layerable itself only draws a background pixmap or color, if specified (\ref
   setBackground). It is placed on the "background" layer initially (see \ref QCPLayer for an
@@ -70,7 +70,8 @@
   QCP::iRangeZoom.
   
   \image html AxisRectSpacingOverview.png
-  <center>Overview of the spacings and paddings that define the geometry of an axis.</center>
+  <center>Overview of the spacings and paddings that define the geometry of an axis. The dashed
+  line on the far left indicates the viewport/widget border.</center>
 */
 
 /* start documentation of inline functions */
@@ -306,6 +307,8 @@ QCPAxis *QCPAxisRect::addAxis(QCPAxis::AxisType type)
 /*!
   Adds a new axis with \ref addAxis to each axis rect side specified in \a types. This may be an
   <tt>or</tt>-combination of QCPAxis::AxisType, so axes can be added to multiple sides at once.
+  
+  Returns a list of the added axes.
   
   \see addAxis, setupFullAxesBox
 */
