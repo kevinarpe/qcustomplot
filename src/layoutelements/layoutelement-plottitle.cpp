@@ -104,7 +104,7 @@ QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot, const QString &text) :
 }
 
 /*!
-  Sets the text that will be displayed to \a text. Multiple lines can be created by insertion of "\\n".
+  Sets the text that will be displayed to \a text. Multiple lines can be created by insertion of "\n".
   
   \see setFont, setTextColor
 */

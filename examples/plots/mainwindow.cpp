@@ -1295,7 +1295,7 @@ void MainWindow::screenShot()
 #else
   QPixmap pm = qApp->primaryScreen()->grabWindow(qApp->desktop()->winId(), this->x()+2, this->y()+2, this->frameGeometry().width()-4, this->frameGeometry().height()-4);
 #endif
-  QString fileName = "qcustomplot-"+demoName.toLower()+".png";
+  QString fileName = demoName.toLower()+".png";
   fileName.replace(" ", "");
   pm.save("./screenshots/"+fileName);
   qApp->quit();
@@ -1308,7 +1308,7 @@ void MainWindow::allScreenShots()
 #else
   QPixmap pm = qApp->primaryScreen()->grabWindow(qApp->desktop()->winId(), this->x()+2, this->y()+2, this->frameGeometry().width()-4, this->frameGeometry().height()-4);
 #endif
-  QString fileName = "qcustomplot-"+demoName.toLower()+".png";
+  QString fileName = demoName.toLower()+".png";
   fileName.replace(" ", "");
   pm.save("./screenshots/"+fileName);
   
