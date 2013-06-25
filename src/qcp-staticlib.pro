@@ -82,5 +82,5 @@ layoutelements/layoutelement-axisrect.cpp \
     layoutelements/layoutelement-plottitle.cpp
 
 OTHER_FILES += \
-    ../changenotes.txt \
+    ../changelog.txt \
     ../todo.txt
