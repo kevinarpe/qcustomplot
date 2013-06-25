@@ -31,6 +31,7 @@
 #endif
 #define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(0, 0, 0)
 
+// amalgamation: include begin
 #include <QObject>
 #include <QWeakPointer>
 #include <QWidget>
@@ -40,7 +41,6 @@
 #include <QPixmap>
 #include <QVector>
 #include <QString>
-#include <QPrinter>
 #include <QDateTime>
 #include <QMultiMap>
 #include <QFlags>
@@ -50,8 +50,15 @@
 #include <QCache>
 #include <QMargins>
 #include <qmath.h>
-#include <qnumeric.h>
 #include <limits>
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#  include <qnumeric.h>
+#  include <QPrinter>
+#else
+#  include <QtNumeric>
+#  include <QtPrintSupport>
+#endif
+// amalgamation: include end
 
 // decl definitions for shared library compilation/usage:
 #if defined(QCUSTOMPLOT_COMPILE_LIBRARY)
