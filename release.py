@@ -50,7 +50,7 @@ os.chdir("./temp")
 printinfo("Building full QCustomPlot package")
 distutils.dir_util.copy_tree("../documentation/html", "./documentation/html")
 shutil.copy2("../documentation/qthelp/qcustomplot.qch", "./documentation/")
-for f in ["../qcustomplot.h", "../qcustomplot.cpp", "../GPL.txt", "../changenotes.txt"]:
+for f in ["../qcustomplot.h", "../qcustomplot.cpp", "../GPL.txt", "../changelog.txt"]:
   shutil.copy2(f, "./")
 distutils.dir_util.copy_tree("../examples", "./examples")
 os.chdir("./examples/plots");
@@ -63,7 +63,7 @@ subprocess.call("rm -r *", shell=True)
 
 # source only:
 printinfo("Building QCustomPlot-source package")
-for f in ["../qcustomplot.h", "../qcustomplot.cpp", "../GPL.txt", "../changenotes.txt"]:
+for f in ["../qcustomplot.h", "../qcustomplot.cpp", "../GPL.txt", "../changelog.txt"]:
   shutil.copy2(f, "./")
 subprocess.call("find . -name .gitignore -exec rm -f \"{}\" \;", shell=True)
 subprocess.call(tarcommand+" QCustomPlot-source"+tarsuffix+" *", shell=True)
