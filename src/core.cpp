@@ -93,8 +93,8 @@
   
   Their range is handled by the simple QCPRange class. You can set the range with the
   QCPAxis::setRange function. By default, the axes represent a linear scale. To set a logarithmic
-  scale, set QCPAxis::setScaleType to QCPAxis::stLogarithmic. The logarithm base can be set freely
-  with QCPAxis::setScaleLogBase.
+  scale, set \ref QCPAxis::setScaleType to \ref QCPAxis::stLogarithmic. The logarithm base can be set freely
+  with \ref QCPAxis::setScaleLogBase.
   
   By default, an axis automatically creates and labels ticks in a sensible manner. See the
   following functions for tick manipulation:\n QCPAxis::setTicks, QCPAxis::setAutoTicks,
@@ -106,8 +106,8 @@
   
   The distance of an axis backbone to the respective viewport border is called its margin.
   Normally, the margins are calculated automatically. To change this, set
-  QCPAxisRect::setAutoMargins to exclude the respective margin sides, set the margins manually with
-  QCPAxisRect::setMargins. The main axis rect can be reached with QCustomPlot::axisRect().
+  \ref QCPAxisRect::setAutoMargins to exclude the respective margin sides, set the margins manually with
+  \ref QCPAxisRect::setMargins. The main axis rect can be reached with \ref QCustomPlot::axisRect().
   
   \section mainpage-legend Plot Legend
   
@@ -157,33 +157,43 @@
   For a more detailed introduction, see the QCPAbstractItem documentation, and from there the
   documentations of the individual built-in items, to find out how to use them.
   
+  \section mainpage-layoutelements Layout elements and layouts
+  
+  QCustomPlot uses an internal layout system to provide dynamic sizing and positioning of objects like
+  the axis rect(s), legends and the plot title. They are all based on \ref QCPLayoutElement and are arranged by
+  placing them inside a \ref QCPLayout.
+  
+  Details on this topic are given on the dedicated page about \ref thelayoutsystem "the layout system".
+  
   \section mainpage-performancetweaks Performance Tweaks
   
   Although QCustomPlot is quite fast, some features like translucent fills, antialiasing and thick
-  lines can cause a significant slow down. Here are some thoughts on how to increase performance.
-  By far the most time is spent in the drawing functions, specifically the drawing of graphs. For
-  maximum performance, consider the following (most recommended/effective measures first):
+  lines can cause a significant slow down. If you notice this in your application, here are some
+  thoughts on how to increase performance. By far the most time is spent in the drawing functions,
+  specifically the drawing of graphs. For maximum performance, consider the following (most
+  recommended/effective measures first):
   
-  \li use Qt 4.8.0 and up. Performance has doubled or tripled with respect to Qt 4.7.4. However QPainter was broken,
-  drawing pixel precise things, e.g. scatters, isn't possible with Qt 4.8.0/1. So it's a performance vs. plot
-  quality tradeoff when switching to Qt 4.8.
+  \li use Qt 4.8.0 and up. Performance has doubled or tripled with respect to Qt 4.7.4. However
+  QPainter was broken and drawing pixel precise things, e.g. scatters, isn't possible with Qt >=
+  4.8.0. So it's a performance vs. plot quality tradeoff when switching to Qt 4.8.
   \li To increase responsiveness during dragging, consider setting \ref QCustomPlot::setNoAntialiasingOnDrag to true.
   \li On X11 (GNU/Linux), avoid the slow native drawing system, use raster by supplying
   "-graphicssystem raster" as command line argument or calling QApplication::setGraphicsSystem("raster")
   before creating the QApplication object. (Only available for Qt versions before 5.0)
   \li On all operating systems, use OpenGL hardware acceleration by supplying "-graphicssystem
-  opengl" as command line argument or calling QApplication::setGraphicsSystem("opengl"). If OpenGL
-  is available, this will slightly decrease the quality of antialiasing, but extremely increase
-  performance especially with alpha (semi-transparent) fills, much antialiasing and a large
-  QCustomPlot drawing surface. Note however, that the maximum frame rate might be constrained by
-  the vertical sync frequency of your monitor (VSync can be disabled in the graphics card driver
-  configuration). So for simple plots (where the potential framerate is far above 60 frames per
-  second), OpenGL acceleration might achieve numerically lower frame rates than the other
-  graphics systems, because they are not capped at the VSync frequency.
+  opengl" as command line argument or calling QApplication::setGraphicsSystem("opengl") (Only
+  available for Qt versions before 5.0). If OpenGL is available, this will slightly decrease the
+  quality of antialiasing, but extremely increase performance especially with alpha
+  (semi-transparent) fills, much antialiasing and a large QCustomPlot drawing surface. Note
+  however, that the maximum frame rate might be constrained by the vertical sync frequency of your
+  monitor (VSync can be disabled in the graphics card driver configuration). So for simple plots
+  (where the potential framerate is far above 60 frames per second), OpenGL acceleration might
+  achieve numerically lower frame rates than the other graphics systems, because they are not
+  capped at the VSync frequency.
   \li Avoid any kind of alpha (transparency), especially in fills
   \li Avoid lines with a pen width greater than one
-  \li Avoid any kind of antialiasing, especially in graph lines (see QCustomPlot::setNotAntialiasedElements)
-  \li Avoid repeatedly setting the complete data set with QCPGraph::setData. Use QCPGraph::addData instead, if most
+  \li Avoid any kind of antialiasing, especially in graph lines (see \ref QCustomPlot::setNotAntialiasedElements)
+  \li Avoid repeatedly setting the complete data set with \ref QCPGraph::setData. Use \ref QCPGraph::addData instead, if most
   data points stay unchanged, e.g. in a running measurement.
   \li Set the \a copy parameter of the setData functions to false, so only pointers get
   transferred. (Relevant only if preparing data maps with a large number of points, i.e. over 10000)
@@ -206,7 +216,6 @@
 
 /*! \page classoverview Class Overview
   
-  \image latex ClassesOverview.png "Overview of all classes and their relations" width=1.2\textwidth
   \image html ClassesOverview.png "Overview of all classes and their relations"
   
 */
