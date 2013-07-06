@@ -147,6 +147,7 @@ void MainWindow::setupSimpleDemo(QCustomPlot *customPlot)
     y1[i] = exp(-i/150.0);             // exponential envelope
   }
   // configure right and top axis to show ticks but no labels:
+  // (see QCPAxisRect::setupFullAxesBox for a quicker method to do this)
   customPlot->xAxis2->setVisible(true);
   customPlot->xAxis2->setTickLabels(false);
   customPlot->yAxis2->setVisible(true);
