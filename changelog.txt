@@ -56,6 +56,7 @@
     - Added new default layers "background" and "legend" (QCPAxisRect draws its background on the "background" layer, QCPLegend is on the "legend" layer by default)
     - Custom scatter style via QCP::ssCustom and respective setCustomScatter functions that take a QPainterPath
     - Filled scatters via QCPScatterStyle::setBrush
+    - Added QCustomPlot::toPainter method, to allow rendering with existing painter
 
   Bugfixes:
     - Fixed compile error on ARM
