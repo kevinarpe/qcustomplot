@@ -2517,6 +2517,10 @@ QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
   The plot is sized to \a width and \a height in pixels. If the \a painter's scale is not 1.0, the resulting plot will
   appear scaled accordingly.
   
+  \note If you are restricted to using a QPainter (instead of QCPPainter), create a temporary QPicture and open a QCPPainter
+  on it. Then call \ref toPainter with this QCPPainter. After ending the paint operation on the picture, draw it with
+  the QPainter. This will reproduce the painter actions the QCPPainter took, with a QPainter.
+  
   \see toPixmap
 */
 void QCustomPlot::toPainter(QCPPainter *painter, int width, int height)
