@@ -48,7 +48,14 @@ for qmakecommand in qmakeVersions:
   if subprocess.call("./plot-examples", shell=True) != 0:
     printerror("Execution unsuccessful")
   os.chdir("../..")
-
+  # text-document-integration example:
+  printinfo("examples/text-document-integration")
+  os.chdir("examples/text-document-integration")
+  runQmakeMake(qmakecommand)
+  if subprocess.call("./text-document-integration", shell=True) != 0:
+    printerror("Execution unsuccessful")
+  os.chdir("../..")
+  
   os.chdir("..")
 
   # ================== QCustomPlot-sharedlib and -source package ==================
