@@ -2281,7 +2281,7 @@ void QCustomPlot::wheelEvent(QWheelEvent *event)
   This is the main draw function. It draws the entire plot, including background pixmap, with the
   specified \a painter. Note that it does not fill the background with the background brush (as the
   user may specify with \ref setBackground(const QBrush &brush)), this is up to the respective
-  functions calling this method (e.g. \ref replot and \ref toPixmap).
+  functions calling this method (e.g. \ref replot, \ref toPixmap and \ref toPainter).
 */
 void QCustomPlot::draw(QCPPainter *painter)
 {
@@ -2465,10 +2465,11 @@ bool QCustomPlot::saveRastered(const QString &fileName, int width, int height, d
   The plot is sized to \a width and \a height in pixels and scaled with \a scale. (width 100 and
   scale 2.0 lead to a full resolution pixmap with width 200.)
   
-  \see saveRastered, saveBmp, savePng, saveJpg, savePdf
+  \see toPainter, saveRastered, saveBmp, savePng, saveJpg, savePdf
 */
 QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
 {
+  // this method is somewhat similar to toPainter. Change something here, and a change in toPainter might be necessary, too. 
   int newWidth, newHeight;
   if (width == 0 || height == 0)
   {
@@ -2508,4 +2509,41 @@ QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
     return QPixmap();
   }
   return result;
+}
+
+/*!
+  Renders the plot using the passed \a painter.
+  
+  The plot is sized to \a width and \a height in pixels. If the \a painter's scale is not 1.0, the resulting plot will
+  appear scaled accordingly.
+  
+  \see toPixmap
+*/
+void QCustomPlot::toPainter(QCPPainter *painter, int width, int height)
+{
+  // this method is somewhat similar to toPixmap. Change something here, and a change in toPixmap might be necessary, too. 
+  int newWidth, newHeight;
+  if (width == 0 || height == 0)
+  {
+    newWidth = this->width();
+    newHeight = this->height();
+  } else
+  {
+    newWidth = width;
+    newHeight = height;
+  }
+
+  if (painter->isActive())
+  {
+    QRect oldViewport = viewport();
+    setViewport(QRect(0, 0, newWidth, newHeight));
+    painter->setMode(QCPPainter::pmNoCaching);
+    // warning: the following is different in toPixmap, because a solid background color is applied there via QPixmap::fill
+    // here, we need to do this via QPainter::fillRect.
+    if (mBackgroundBrush.style() != Qt::NoBrush)
+      painter->fillRect(mViewport, mBackgroundBrush);
+    draw(painter);
+    setViewport(oldViewport);
+  } else
+    qDebug() << Q_FUNC_INFO << "Passed painter is not active";
 }

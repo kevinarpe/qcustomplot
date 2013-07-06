@@ -56,7 +56,7 @@
 #  include <QPrinter>
 #else
 #  include <QtNumeric>
-#  include <QtPrintSupport>
+#  include <QPrinter> // change this to QtPrintSupport as soon as Qt fixes bug with deprecated QUrl methods
 #endif
 // amalgamation: include end
 
