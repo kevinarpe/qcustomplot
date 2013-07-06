@@ -18,7 +18,7 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
+**  Website/Contact: http://www.qcustomplot.com/                          **
 **             Date: 19.05.13                                             **
 **          Version: 1.0.0-beta                                           **
 ****************************************************************************/

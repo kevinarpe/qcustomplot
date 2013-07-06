@@ -18,7 +18,7 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
+**  Website/Contact: http://www.qcustomplot.com/                          **
 **             Date: 19.05.13                                             **
 **          Version: 1.0.0-beta                                           **
 ****************************************************************************/
@@ -43,7 +43,7 @@
   QCustomPlot and just want to start using it, it's recommended to look at the tutorials and
   examples at
  
-  http://www.WorksLikeClockWork.com/index.php/components/qt-plotting-widget
+  http://www.qcustomplot.com/
  
   This documentation is especially helpful as a reference, when you're familiar with the basic
   concept of how to use %QCustomPlot and you wish to learn more about specific functionality.
@@ -230,7 +230,7 @@
   interacts with the user.
   
   For tutorials on how to use QCustomPlot, see the website\n
-  http://www.WorksLikeClockWork.com/index.php/components/qt-plotting-widget
+  http://www.qcustomplot.com/
 */
 
 /* start of documentation of inline functions */
