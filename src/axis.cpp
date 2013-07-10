@@ -1815,9 +1815,8 @@ void QCPAxis::generateAutoTicks()
     int tickcount = lastStep-firstStep+1;
     if (tickcount < 0) tickcount = 0;
     mTickVector.resize(tickcount);
-    double firstStepCoord = firstStep*mTickStep;
     for (int i=0; i<tickcount; ++i)
-      mTickVector[i] = firstStepCoord+i*mTickStep;
+      mTickVector[i] = (firstStep+i)*mTickStep;
   } else // mScaleType == stLogarithmic
   {
     // Generate tick positions according to logbase scaling:
