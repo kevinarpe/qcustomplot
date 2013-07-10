@@ -65,6 +65,7 @@
     - Fixed bug that caused wrong clipping of axis ticks and subticks when the ticks were given manually by QCPAxis::setTickVector
     - Fixed Qt5 crash when dragging graph out of view (iterator out of bounds in QCPGraph::getVisibleDataBounds)
     - Fixed QCPItemText not scaling properly when using scaled raster export
+    - Fixed bug that clipped the rightmost pixel column of tick labels when caching activated (only visible on windows for superscript exponents)
 
   Other:
     - Opened up non-amalgamated project structure to public via git repository
