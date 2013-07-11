@@ -13,7 +13,7 @@ def runQmakeMake(qmakecommand):
   if subprocess.call("make -j4", shell=True) != 0:
     printerror("make failed"); sys.exit(1)
 
-qmakeVersions = ["qmake474", "qmake480", "qmake481", "qmake483", "qmake501", "qmake502"]
+qmakeVersions = ["qmake464", "qmake474", "qmake480", "qmake481", "qmake483", "qmake501", "qmake502"]
 for qmakecommand in qmakeVersions:
 
   try:

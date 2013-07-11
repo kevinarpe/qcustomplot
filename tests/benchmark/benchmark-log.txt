@@ -141,3 +141,21 @@ QCPGraph_RemoveDataBetween    52.05 +/- 17.50 ms
 QCPGraph_Standard             17.18 +/- 3.66 ms
 
 
+*** Benchmark on 2013-07-12 00:47 ***
+Platform: Linux-3.5.0-36-generic-i686-athlon-with-LinuxMint-14-nadia, dermanu on manulinux
+Qt Version: 4.6.4
+Git Branch: dev
+Git Head: c3d3e88 - Added extra pixel to tick label cache pixmap width, to include anti-aliasing that seems to go beyond the QFontMetric's bounding box
+Rounds: 20
+QCPAxis_TickLabels             8.87 +/- 8.05 ms
+QCPAxis_TickLabelsCached       4.71 +/- 1.30 ms
+QCPGraph_AddData              90.10 +/- 0.89 ms
+QCPGraph_ManyLines           572.10 +/- 10.50 ms
+QCPGraph_ManyOffScreenLines    5.46 +/- 0.92 ms
+QCPGraph_ManyPoints          632.55 +/- 114.07 ms
+QCPGraph_RemoveDataAfter      84.60 +/- 2.73 ms
+QCPGraph_RemoveDataBefore     35.70 +/- 0.46 ms
+QCPGraph_RemoveDataBetween   107.25 +/- 2.05 ms
+QCPGraph_Standard             34.10 +/- 4.30 ms
+
+

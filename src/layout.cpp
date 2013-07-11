@@ -788,7 +788,9 @@ QList<QCPLayoutElement*> QCPLayout::elements(bool recursive) const
 {
   int c = elementCount();
   QList<QCPLayoutElement*> result;
+#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
   result.reserve(c);
+#endif
   for (int i=0; i<c; ++i)
     result.append(elementAt(i));
   if (recursive)
@@ -1518,7 +1520,9 @@ QList<QCPLayoutElement*> QCPLayoutGrid::elements(bool recursive) const
   QList<QCPLayoutElement*> result;
   int colC = columnCount();
   int rowC = rowCount();
+#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
   result.reserve(colC*rowC);
+#endif
   for (int row=0; row<rowC; ++row)
   {
     for (int col=0; col<colC; ++col)
