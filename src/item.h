@@ -56,6 +56,9 @@ protected:
   int mAnchorId;
   QSet<QCPItemPosition*> mChildren;
   
+  // introduced virtual methods:
+  virtual QCPItemPosition *toQCPItemPosition() { return 0; }
+  
   // non-virtual methods:
   void addChild(QCPItemPosition* pos); // called from pos when this anchor is set as parent
   void removeChild(QCPItemPosition *pos); // called from pos when its parent anchor is reset or pos deleted
@@ -113,6 +116,9 @@ protected:
   QWeakPointer<QCPAxisRect> mAxisRect;
   double mKey, mValue;
   QCPItemAnchor *mParentAnchor;
+  
+  // reimplemented virtual methods:
+  virtual QCPItemPosition *toQCPItemPosition() { return this; }
   
 private:
   Q_DISABLE_COPY(QCPItemPosition)
