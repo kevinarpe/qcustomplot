@@ -269,10 +269,12 @@ bool QCPItemPosition::setParentAnchor(QCPItemAnchor *parentAnchor, bool keepPixe
       currentParent = currentParentPos->mParentAnchor;
     } else
     {
-      // is a QCPItemAnchor, can't have further parent, so just compare parent items
+      // is a QCPItemAnchor, can't have further parent. Now make sure the parent items aren't the
+      // same, to prevent a position being child of an anchor which itself depends on the position,
+      // because they're both on the same item:
       if (currentParent->mParentItem == mParentItem)
       {
-        qDebug() << Q_FUNC_INFO << "can't create recursive parent-child-relationship" << reinterpret_cast<quintptr>(parentAnchor);
+        qDebug() << Q_FUNC_INFO << "can't set parent to be an anchor which itself depends on this position" << reinterpret_cast<quintptr>(parentAnchor);
         return false;
       }
       break;

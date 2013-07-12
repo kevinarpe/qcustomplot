@@ -607,7 +607,7 @@ void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool c
       p.setDashPattern(QVector<qreal>()<<1<<3);
 #endif
       circ->setPen(p);
-      if (anchors.at(i)->toQCPItemPosition())
+      if (dynamic_cast<QCPItemPosition*>(anchors.at(i)))
       {
         QCPItemEllipse *circ2 = new QCPItemEllipse(item->parentPlot());
         item->parentPlot()->addItem(circ2);
