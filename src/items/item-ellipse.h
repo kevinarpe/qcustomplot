@@ -70,9 +70,10 @@ public:
   QCPItemAnchor * const bottom;
   QCPItemAnchor * const bottomLeftRim;
   QCPItemAnchor * const left;
+  QCPItemAnchor * const center;
   
 protected:
-  enum AnchorIndex {aiTopLeftRim, aiTop, aiTopRightRim, aiRight, aiBottomRightRim, aiBottom, aiBottomLeftRim, aiLeft};
+  enum AnchorIndex {aiTopLeftRim, aiTop, aiTopRightRim, aiRight, aiBottomRightRim, aiBottom, aiBottomLeftRim, aiLeft, aiCenter};
   
   // property members:
   QPen mPen, mSelectedPen;

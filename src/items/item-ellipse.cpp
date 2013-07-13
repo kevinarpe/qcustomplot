@@ -56,7 +56,8 @@ QCPItemEllipse::QCPItemEllipse(QCustomPlot *parentPlot) :
   bottomRightRim(createAnchor("bottomRightRim", aiBottomRightRim)),
   bottom(createAnchor("bottom", aiBottom)),
   bottomLeftRim(createAnchor("bottomLeftRim", aiBottomLeftRim)),
-  left(createAnchor("left", aiLeft))
+  left(createAnchor("left", aiLeft)),
+  center(createAnchor("center", aiCenter))
 {
   topLeft->setCoords(0, 1);
   bottomRight->setCoords(1, 0);
@@ -155,7 +156,7 @@ void QCPItemEllipse::draw(QCPPainter *painter)
     painter->setPen(mainPen());
     painter->setBrush(mainBrush());
 #ifdef __EXCEPTIONS
-    try
+    try // drawEllipse sometimes throws exceptions if ellipse is too big
     {
 #endif
       painter->drawEllipse(ellipseRect);
@@ -182,7 +183,8 @@ QPointF QCPItemEllipse::anchorPixelPoint(int anchorId) const
     case aiBottomRightRim: return rect.center()+(rect.bottomRight()-rect.center())*1/qSqrt(2);
     case aiBottom:         return (rect.bottomLeft()+rect.bottomRight())*0.5;
     case aiBottomLeftRim:  return rect.center()+(rect.bottomLeft()-rect.center())*1/qSqrt(2);
-    case aiLeft:           return (rect.topLeft()+rect.bottomLeft())*0.5;;
+    case aiLeft:           return (rect.topLeft()+rect.bottomLeft())*0.5;
+    case aiCenter:         return (rect.topLeft()+rect.bottomRight())*0.5;
   }
   
   qDebug() << Q_FUNC_INFO << "invalid anchorId" << anchorId;

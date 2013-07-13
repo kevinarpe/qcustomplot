@@ -57,6 +57,7 @@
     - Custom scatter style via QCP::ssCustom and respective setCustomScatter functions that take a QPainterPath
     - Filled scatters via QCPScatterStyle::setBrush
     - Added QCustomPlot::toPainter method, to allow rendering with existing painter
+    - QCPItemEllipse now provides a center anchor
 
   Bugfixes:
     - Fixed compile error on ARM
@@ -66,6 +67,7 @@
     - Fixed Qt5 crash when dragging graph out of view (iterator out of bounds in QCPGraph::getVisibleDataBounds)
     - Fixed QCPItemText not scaling properly when using scaled raster export
     - Fixed bug that clipped the rightmost pixel column of tick labels when caching activated (only visible on windows for superscript exponents)
+    - Restored support for -no-RTTI compilation
 
   Other:
     - Opened up non-amalgamated project structure to public via git repository
