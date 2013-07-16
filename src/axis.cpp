@@ -2125,6 +2125,7 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
 {
   // warning: if you change anything here, also adapt getMaxTickLabelSize() accordingly!
   if (!mParentPlot) return;
+  if (text.isEmpty()) return;
   QSize finalSize;
   QPointF labelAnchor;
   switch (mAxisType)
