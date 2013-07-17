@@ -1616,7 +1616,7 @@ QSize QCPLayoutGrid::maximumSizeHint() const
   for (int i=0; i<maxRowHeights.size(); ++i)
     result.setHeight(qMin(result.height()+maxRowHeights.at(i), QWIDGETSIZE_MAX));
   result.rwidth() += qMax(0, columnCount()-1) * mColumnSpacing + mMargins.left() + mMargins.right();
-  result.rheight() += qMax(0,rowCount()-1) * mRowSpacing + mMargins.top() + mMargins.bottom();
+  result.rheight() += qMax(0, rowCount()-1) * mRowSpacing + mMargins.top() + mMargins.bottom();
   return result;
 }
 

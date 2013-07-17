@@ -70,7 +70,7 @@
   QCPAxis::coordToPixel. However, you must then take care about the orientation of the axis
   yourself.
   
-  Here are some important membery you inherit from QCPAbstractPlottable:
+  Here are some important members you inherit from QCPAbstractPlottable:
   <table>
   <tr>
     <td>QCustomPlot *\b mParentPlot</td>

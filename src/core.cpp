@@ -1050,6 +1050,8 @@ QList<QCPAbstractPlottable*> QCustomPlot::selectedPlottables() const
   (QCPAbstractPlottable::setSelectable) are considered.
   
   If there is no plottable at \a pos, the return value is 0.
+  
+  \see itemAt, layoutElementAt
 */
 QCPAbstractPlottable *QCustomPlot::plottableAt(const QPointF &pos, bool onlySelectable) const
 {
@@ -1374,6 +1376,8 @@ QList<QCPAbstractItem*> QCustomPlot::selectedItems() const
   considered.
   
   If there is no item at \a pos, the return value is 0.
+  
+  \see plottableAt, layoutElementAt
 */
 QCPAbstractItem *QCustomPlot::itemAt(const QPointF &pos, bool onlySelectable) const
 {
@@ -1688,6 +1692,8 @@ QList<QCPAxisRect*> QCustomPlot::axisRects() const
   
   Only visible elements are used. If \ref QCPLayoutElement::setVisible on the element itself or on
   any of its parent elements is set to false, it will not be considered.
+  
+  \see itemAt, plottableAt
 */
 QCPLayoutElement *QCustomPlot::layoutElementAt(const QPointF &pos) const
 {
