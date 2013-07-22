@@ -37,6 +37,8 @@
 /*! \class QCPData
   \brief Holds the data of one single data point for QCPGraph.
   
+  The container for storing multiple data points is \ref QCPDataMap.
+  
   The stored data is:
   \li \a key: coordinate on the key axis of this data point
   \li \a value: coordinate on the value axis of this data point

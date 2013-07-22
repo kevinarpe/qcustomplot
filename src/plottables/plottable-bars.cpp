@@ -36,6 +36,8 @@
 /*! \class QCPBarData
   \brief Holds the data of one single data point (one bar) for QCPBars.
   
+  The container for storing multiple data points is \ref QCPBarDataMap.
+  
   The stored data is:
   \li \a key: coordinate on the key axis of this bar
   \li \a value: height coordinate on the value axis of this bar

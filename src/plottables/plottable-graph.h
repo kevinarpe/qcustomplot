@@ -22,7 +22,7 @@
 **             Date: 19.05.13                                             **
 **          Version: 1.0.0-beta                                           **
 ****************************************************************************/
-
+/*! \file */
 #ifndef QCP_PLOTTABLE_GRAPH_H
 #define QCP_PLOTTABLE_GRAPH_H
 

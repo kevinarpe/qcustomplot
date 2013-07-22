@@ -37,6 +37,8 @@
 /*! \class QCPCurveData
   \brief Holds the data of one single data point for QCPCurve.
   
+  The container for storing multiple data points is \ref QCPCurveDataMap.
+  
   The stored data is:
   \li \a t: the free parameter of the curve at this curve point (cp. the mathematical vector <em>(x(t), y(t))</em>)
   \li \a key: coordinate on the key axis of this curve point
