@@ -1610,7 +1610,7 @@ QSize QCPLayoutGrid::maximumSizeHint() const
   QVector<int> maxColWidths, maxRowHeights;
   getMaximumRowColSizes(&maxColWidths, &maxRowHeights);
   
-  QSize result(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+  QSize result(0, 0);
   for (int i=0; i<maxColWidths.size(); ++i)
     result.setWidth(qMin(result.width()+maxColWidths.at(i), QWIDGETSIZE_MAX));
   for (int i=0; i<maxRowHeights.size(); ++i)
