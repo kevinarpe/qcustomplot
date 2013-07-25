@@ -440,10 +440,7 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
 bool QCPAbstractPlottable::addToLegend()
 {
   if (!mParentPlot || !mParentPlot->legend)
-  {
-    qDebug() << Q_FUNC_INFO << "No parent plot or no parent plot legend set";
     return false;
-  }
   
   if (!mParentPlot->legend->hasItemWithPlottable(this))
   {
