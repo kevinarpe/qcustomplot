@@ -10,6 +10,7 @@
     - Restored support for -no-RTTI compilation
     - Empty manual tick labels are handled more gracefully (no QPainter qDebug messages anymore)
     - Fixed type ambiguity in QCPLineEnding::draw causing compile error on ARM
+    - Fixed bug of grid layouts not propagating the minimum size from their child elements to the parent layout correctly 
 
 #### Version 1.0.0-beta released on 19.05.13 ####
 
