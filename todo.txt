@@ -1,7 +1,5 @@
 NEXT RELEASE:
 
-- make example project for multi-axis and multi-axis-rect
-
 FUTURE RELEASE:
 
 - document public interface member vars (legend, xAxis, yAxis,...)

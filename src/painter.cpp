@@ -33,8 +33,8 @@
   \brief QPainter subclass used internally
   
   This internal class is used to provide some extended functionality e.g. for tweaking position
-  consistency between antialiased and non-antialiased painting and drawing common shapes (like
-  scatter symbols). Further it provides workarounds for QPainter quirks.
+  consistency between antialiased and non-antialiased painting. Further it provides workarounds
+  for QPainter quirks.
   
   \warning This class intentionally hides non-virtual functions of QPainter, e.g. setPen, save and
   restore. So while it is possible to pass a QCPPainter instance to a function that expects a

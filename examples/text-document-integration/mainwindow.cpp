@@ -60,9 +60,9 @@ void MainWindow::setupPlot()
   QVector<double> x(250), y0(250), y1(250);
   for (int i=0; i<250; ++i)
   {
-  x[i] = i;
-  y0[i] = exp(-i/150.0)*cos(i/10.0); // exponentially decaying cosine
-  y1[i] = exp(-i/150.0); // exponential envelope
+    x[i] = i;
+    y0[i] = exp(-i/150.0)*cos(i/10.0); // exponentially decaying cosine
+    y1[i] = exp(-i/150.0); // exponential envelope
   }
   // configure right and top axis to show ticks but no labels:
   // (see QCPAxisRect::setupFullAxesBox for a quicker method to do this)
