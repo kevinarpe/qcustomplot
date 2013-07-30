@@ -306,7 +306,7 @@
           <y:Geometry height="20.66790481920009" width="137.80000000000007" x="666.3000000000048" y="457.6546273023985"/>
           <y:Fill color="#FFFFFFE6" color2="#D4D4D4CC" transparent="false"/>
           <y:BorderStyle color="#123EA2" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" modelName="custom" textColor="#000000" visible="true" width="64.462890625" x="36.66855468750009" y="1.3495774096000446">QCPCurve<y:LabelModel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" modelName="custom" textColor="#000000" visible="true" width="64.462890625" x="36.66855468749998" y="1.3495774096000446">QCPCurve<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
             <y:ModelParameter>
@@ -332,7 +332,7 @@
           <y:Geometry height="20.66790481920009" width="137.80000000000007" x="666.3000000000046" y="482.30925460479847"/>
           <y:Fill color="#FFFFFFE6" color2="#D4D4D4CC" transparent="false"/>
           <y:BorderStyle color="#123EA2" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" modelName="custom" textColor="#000000" visible="true" width="55.83203125" x="40.98398437499998" y="1.3495774096000162">QCPBars<y:LabelModel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" modelName="custom" textColor="#000000" visible="true" width="55.83203125" x="40.98398437499998" y="1.3495774096000446">QCPBars<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
             <y:ModelParameter>
@@ -358,7 +358,7 @@
           <y:Geometry height="20.66790481920009" width="137.80000000000007" x="666.3000000000046" y="506.9638819071987"/>
           <y:Fill color="#FFFFFFE6" color2="#D4D4D4CC" transparent="false"/>
           <y:BorderStyle color="#123EA2" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" modelName="custom" textColor="#000000" visible="true" width="111.02734375" x="13.386328124999977" y="1.3495774096000446">QCPStatisticalBox<y:LabelModel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" modelName="custom" textColor="#000000" visible="true" width="111.02734375" x="13.386328124999977" y="1.3495774096001014">QCPStatisticalBox<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
             <y:ModelParameter>
@@ -384,7 +384,7 @@
           <y:Geometry height="20.667904819200075" width="137.80000000000007" x="666.3000000000027" y="82.65575165439895"/>
           <y:Fill color="#FFFFFFE6" color2="#D4D4D4CC" transparent="false"/>
           <y:BorderStyle color="#123EA2" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" modelName="custom" textColor="#000000" visible="true" width="129.255859375" x="4.272070312499977" y="1.3495774096000446">QCPItemStraightLine<y:LabelModel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" modelName="custom" textColor="#000000" visible="true" width="129.255859375" x="4.272070312500091" y="1.3495774096000446">QCPItemStraightLine<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
             <y:ModelParameter>
@@ -717,7 +717,6 @@
       </data>
     </node>
     <edge id="e0" source="n2" target="n1">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="245.5875473078662" ty="-29.00000000000034"/>
@@ -728,7 +727,6 @@
       </data>
     </edge>
     <edge id="e1" source="n4" target="n3">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -739,7 +737,6 @@
       </data>
     </edge>
     <edge id="e2" source="n3" target="n2">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0">
@@ -752,7 +749,6 @@
       </data>
     </edge>
     <edge id="e3" source="n5" target="n1">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="245.51414698786607" ty="10.999999999999204"/>
@@ -763,7 +759,6 @@
       </data>
     </edge>
     <edge id="e4" source="n9" target="n3">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -774,7 +769,6 @@
       </data>
     </edge>
     <edge id="e5" source="n10" target="n11">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -785,7 +779,6 @@
       </data>
     </edge>
     <edge id="e6" source="n11" target="n12">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -796,7 +789,6 @@
       </data>
     </edge>
     <edge id="e7" source="n12" target="n13">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -807,7 +799,6 @@
       </data>
     </edge>
     <edge id="e8" source="n1" target="n0">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -818,7 +809,6 @@
       </data>
     </edge>
     <edge id="e9" source="n7" target="n0">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="151.2999999999986" ty="0.6703704270114486">
@@ -831,7 +821,6 @@
       </data>
     </edge>
     <edge id="e10" source="n14" target="n22">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -842,7 +831,6 @@
       </data>
     </edge>
     <edge id="e11" source="n22" target="n15">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -853,7 +841,6 @@
       </data>
     </edge>
     <edge id="e12" source="n15" target="n17">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -864,7 +851,6 @@
       </data>
     </edge>
     <edge id="e13" source="n18" target="n20">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -875,7 +861,6 @@
       </data>
     </edge>
     <edge id="e14" source="n17" target="n18">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -886,7 +871,6 @@
       </data>
     </edge>
     <edge id="e15" source="n20" target="n16">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -897,7 +881,6 @@
       </data>
     </edge>
     <edge id="e16" source="n16" target="n21">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -908,7 +891,6 @@
       </data>
     </edge>
     <edge id="e17" source="n21" target="n19">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -919,7 +901,6 @@
       </data>
     </edge>
     <edge id="e18" source="n19" target="n7">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0">
@@ -932,7 +913,6 @@
       </data>
     </edge>
     <edge id="e19" source="n25" target="n1">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="245.63170923772452" ty="0.822119107011531">
@@ -945,7 +925,6 @@
       </data>
     </edge>
     <edge id="e20" source="n8" target="n1">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0">
@@ -959,7 +938,6 @@
       </data>
     </edge>
     <edge id="e21" source="n26" target="n25">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -970,7 +948,6 @@
       </data>
     </edge>
     <edge id="e22" source="n10" target="n6">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0">
@@ -983,7 +960,6 @@
       </data>
     </edge>
     <edge id="e23" source="n23" target="n0">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-68.92192382812493" sy="0.0" tx="151.2999999999986" ty="-0.31266957298856823">
@@ -996,7 +972,6 @@
       </data>
     </edge>
     <edge id="e24" source="n24" target="n0">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="150.75551940667071" ty="82.51999999999998"/>
@@ -1007,7 +982,6 @@
       </data>
     </edge>
     <edge id="e25" source="n6" target="n0">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="151.4157421778708" ty="41.25999999999999"/>
