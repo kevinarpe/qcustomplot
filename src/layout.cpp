@@ -657,7 +657,7 @@ double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVa
 */
 void QCPLayoutElement::parentPlotInitialized(QCustomPlot *parentPlot)
 {
-  QList<QCPLayoutElement*> els = elements();
+  QList<QCPLayoutElement*> els = elements(false);
   for (int i=0; i<els.size(); ++i)
   {
     if (!els.at(i)->parentPlot())

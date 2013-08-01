@@ -1675,7 +1675,7 @@ QList<QCPAxisRect*> QCustomPlot::axisRects() const
   
   while (!elementStack.isEmpty())
   {
-    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements();
+    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements(false);
     for (int i=0; i<subElements.size(); ++i)
     {
       if (QCPLayoutElement *element = subElements.at(i))
@@ -1706,7 +1706,7 @@ QCPLayoutElement *QCustomPlot::layoutElementAt(const QPointF &pos) const
   while (searchSubElements && current)
   {
     searchSubElements = false;
-    const QList<QCPLayoutElement*> elements = current->elements();
+    const QList<QCPLayoutElement*> elements = current->elements(false);
     for (int i=0; i<elements.size(); ++i)
     {
       if (elements.at(i) && elements.at(i)->realVisibility() && elements.at(i)->selectTest(pos, false) >= 0)
@@ -1760,7 +1760,7 @@ QList<QCPLegend*> QCustomPlot::selectedLegends() const
   
   while (!elementStack.isEmpty())
   {
-    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements();
+    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements(false);
     for (int i=0; i<subElements.size(); ++i)
     {
       if (QCPLayoutElement *element = subElements.at(i))
