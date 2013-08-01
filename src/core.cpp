@@ -37,8 +37,10 @@
 #include "plottables/plottable-graph.h"
 #include "item.h"
 
-/*! \mainpage %QCustomPlot Documentation
- 
+/*! \mainpage %QCustomPlot 1.0.0 Documentation
+
+  \image html qcp-doc-logo.png
+  
   Below is a brief overview of and guide to the classes and their relations. If you are new to
   QCustomPlot and just want to start using it, it's recommended to look at the tutorials and
   examples at
@@ -47,17 +49,13 @@
  
   This documentation is especially helpful as a reference, when you're familiar with the basic
   concept of how to use %QCustomPlot and you wish to learn more about specific functionality.
- 
-  \section mainpage-simpleoverview Simplified Class Overview
-  
-  \image latex ClassesOverviewSimplified.png "" width=1.2\textwidth
-  \image html ClassesOverviewSimplified.png
-  <center>Simplified diagram of most important classes, view the \ref classoverview "Class Overview" to see a full overview.</center>
+  See the \ref classoverview "class overview" for diagrams explaining the relationships between
+  the most important classes of the QCustomPlot library.
   
   The central widget which displays the plottables and axes on its surface is QCustomPlot. Every
   QCustomPlot contains four axes by default. They can be accessed via the members xAxis, yAxis,
-  xAxis2 and yAxis2, and are of type QCPAxis. QCustomPlot supports an arbitrary number of axes and axis rects, see the
-  documentation of QCPAxisRect for details.
+  xAxis2 and yAxis2, and are of type QCPAxis. QCustomPlot supports an arbitrary number of axes and
+  axis rects, see the documentation of QCPAxisRect for details.
 
   \section mainpage-plottables Plottables
   
@@ -216,7 +214,13 @@
 
 /*! \page classoverview Class Overview
   
-  \image html ClassesOverview.png "Overview of all classes and their relations"
+  The following diagrams may help to gain a deeper understanding of the relationships between classes that make up
+  the QCustomPlot library. The diagrams are not exhaustive, so only the classes deemed most relevant are shown.
+  
+  \section classoverview-relations Class Relationship Diagram
+  \image html RelationOverview.png "Overview of most important classes and their relations"
+  \section classoverview-inheritance Class Inheritance Tree
+  \image html InheritanceOverview.png "Inheritance tree of most important classes"
   
 */
 
