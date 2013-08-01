@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_ITEM_H
@@ -55,6 +55,9 @@ protected:
   QCPAbstractItem *mParentItem;
   int mAnchorId;
   QSet<QCPItemPosition*> mChildren;
+  
+  // introduced virtual methods:
+  virtual QCPItemPosition *toQCPItemPosition() { return 0; }
   
   // non-virtual methods:
   void addChild(QCPItemPosition* pos); // called from pos when this anchor is set as parent
@@ -113,6 +116,9 @@ protected:
   QWeakPointer<QCPAxisRect> mAxisRect;
   double mKey, mValue;
   QCPItemAnchor *mParentAnchor;
+  
+  // reimplemented virtual methods:
+  virtual QCPItemPosition *toQCPItemPosition() { return this; }
   
 private:
   Q_DISABLE_COPY(QCPItemPosition)

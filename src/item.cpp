@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 #include "item.h"
@@ -258,7 +258,7 @@ bool QCPItemPosition::setParentAnchor(QCPItemAnchor *parentAnchor, bool keepPixe
   QCPItemAnchor *currentParent = parentAnchor;
   while (currentParent)
   {
-    if (QCPItemPosition *currentParentPos = dynamic_cast<QCPItemPosition*>(currentParent))
+    if (QCPItemPosition *currentParentPos = currentParent->toQCPItemPosition())
     {
       // is a QCPItemPosition, might have further parent, so keep iterating
       if (currentParentPos == this)
@@ -269,10 +269,12 @@ bool QCPItemPosition::setParentAnchor(QCPItemAnchor *parentAnchor, bool keepPixe
       currentParent = currentParentPos->mParentAnchor;
     } else
     {
-      // is a QCPItemAnchor, can't have further parent, so just compare parent items
+      // is a QCPItemAnchor, can't have further parent. Now make sure the parent items aren't the
+      // same, to prevent a position being child of an anchor which itself depends on the position,
+      // because they're both on the same item:
       if (currentParent->mParentItem == mParentItem)
       {
-        qDebug() << Q_FUNC_INFO << "can't create recursive parent-child-relationship" << reinterpret_cast<quintptr>(parentAnchor);
+        qDebug() << Q_FUNC_INFO << "can't set parent to be an anchor which itself depends on this position" << reinterpret_cast<quintptr>(parentAnchor);
         return false;
       }
       break;

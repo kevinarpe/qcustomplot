@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 /************************************************************************************************************
@@ -76,6 +76,7 @@ public:
   void setupSimpleItemDemo(QCustomPlot *customPlot);
   void setupItemDemo(QCustomPlot *customPlot);
   void setupStyledDemo(QCustomPlot *customPlot);
+  void setupAdvancedAxesDemo(QCustomPlot *customPlot);
   
   void setupPlayground(QCustomPlot *customPlot);
   

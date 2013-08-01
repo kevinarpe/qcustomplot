@@ -10,6 +10,7 @@ private slots:
   
   void specializedGraphInterface();
   void dataManipulation();
+  void channelFill();
   
 private:
   QCustomPlot *mPlot;

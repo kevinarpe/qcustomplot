@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 #include "plottable.h"
@@ -70,7 +70,7 @@
   QCPAxis::coordToPixel. However, you must then take care about the orientation of the axis
   yourself.
   
-  Here are some important membery you inherit from QCPAbstractPlottable:
+  Here are some important members you inherit from QCPAbstractPlottable:
   <table>
   <tr>
     <td>QCustomPlot *\b mParentPlot</td>
@@ -440,10 +440,7 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
 bool QCPAbstractPlottable::addToLegend()
 {
   if (!mParentPlot || !mParentPlot->legend)
-  {
-    qDebug() << Q_FUNC_INFO << "No parent plot or no parent plot legend set";
     return false;
-  }
   
   if (!mParentPlot->legend->hasItemWithPlottable(this))
   {

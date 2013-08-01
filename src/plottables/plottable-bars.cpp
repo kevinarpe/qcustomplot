@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 #include "plottable-bars.h"
@@ -35,6 +35,8 @@
 
 /*! \class QCPBarData
   \brief Holds the data of one single data point (one bar) for QCPBars.
+  
+  The container for storing multiple data points is \ref QCPBarDataMap.
   
   The stored data is:
   \li \a key: coordinate on the key axis of this bar

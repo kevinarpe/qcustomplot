@@ -152,3 +152,25 @@ void TestQCPGraph::dataManipulation()
   QCOMPARE((mGraph->data()->begin()+6).value().value, 6.0);
 }
 
+void TestQCPGraph::channelFill()
+{
+  QCPGraph *otherGraph = mPlot->addGraph();
+  
+  mGraph->setBrush(Qt::black);
+  mGraph->setChannelFillGraph(otherGraph);
+  mPlot->replot();
+  
+  mGraph->setData(QVector<double>()<<1<<2<<3<<4, QVector<double>()<<4<<2<<2.5<<6);
+  mPlot->replot();
+  
+  otherGraph->setData(QVector<double>()<<-2<<-1.5<<-1<<-0.5, QVector<double>()<<1<<1.2<<1.3<<1.4);
+  mPlot->replot();
+  
+  mGraph->clearData();
+  mPlot->replot();
+  
+  mPlot->removeGraph(otherGraph);
+  QCOMPARE(mGraph->channelFillGraph(), (QCPGraph*)0);
+  mPlot->replot();
+}
+

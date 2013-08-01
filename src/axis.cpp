@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 #include "axis.h"
@@ -1810,18 +1810,13 @@ void QCPAxis::generateAutoTicks()
     if (mAutoSubTicks)
       mSubTickCount = calculateAutoSubTickCount(mTickStep);
     // Generate tick positions according to mTickStep:
-    // TODO: replace (firstStep+i)*mTickStep with mRange.lower-fmod(mRange.lower, mTickStep)+i*mTickStep (buffer first summand)
-    //       and test that it gives same results. Then get rid of firstStep and lastStep calculation
-    //       tickcount must then be set to ceil((mRange.upper-mRange.lower+fmod(mRange.lower, mTickStep)/mTickStep)+1 (re-use buffered summand from before)
     qint64 firstStep = floor(mRange.lower/mTickStep);
     qint64 lastStep = ceil(mRange.upper/mTickStep);
     int tickcount = lastStep-firstStep+1;
     if (tickcount < 0) tickcount = 0;
     mTickVector.resize(tickcount);
     for (int i=0; i<tickcount; ++i)
-    {
       mTickVector[i] = (firstStep+i)*mTickStep;
-    }
   } else // mScaleType == stLogarithmic
   {
     // Generate tick positions according to logbase scaling:
@@ -2130,6 +2125,7 @@ void QCPAxis::placeTickLabel(QCPPainter *painter, double position, int distanceT
 {
   // warning: if you change anything here, also adapt getMaxTickLabelSize() accordingly!
   if (!mParentPlot) return;
+  if (text.isEmpty()) return;
   QSize finalSize;
   QPointF labelAnchor;
   switch (mAxisType)
@@ -2281,7 +2277,7 @@ QCPAxis::TickLabelData QCPAxis::getTickLabelData(const QFont &font, const QStrin
     // calculate bounding rects of base part, exponent part and total one:
     result.baseBounds = QFontMetrics(result.baseFont).boundingRect(0, 0, 0, 0, Qt::TextDontClip, result.basePart);
     result.expBounds = QFontMetrics(result.expFont).boundingRect(0, 0, 0, 0, Qt::TextDontClip, result.expPart);
-    result.totalBounds = result.baseBounds.adjusted(0, 0, result.expBounds.width(), 0);
+    result.totalBounds = result.baseBounds.adjusted(0, 0, result.expBounds.width()+2, 0); // +2 consists of the 1 pixel spacing between base and exponent (see drawTickLabel) and an extra pixel to include AA
   } else // useBeautifulPowers == false
   {
     result.basePart = text;

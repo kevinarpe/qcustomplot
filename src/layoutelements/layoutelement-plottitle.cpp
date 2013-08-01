@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 #include "layoutelement-plottitle.h"
@@ -104,7 +104,7 @@ QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot, const QString &text) :
 }
 
 /*!
-  Sets the text that will be displayed to \a text. Multiple lines can be created by insertion of "\\n".
+  Sets the text that will be displayed to \a text. Multiple lines can be created by insertion of "\n".
   
   \see setFont, setTextColor
 */

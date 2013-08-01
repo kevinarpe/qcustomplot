@@ -23,7 +23,7 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui
 OTHER_FILES += \
 ../../todo.txt \
-../../changenotes.txt
+../../changelog.txt
 
 LIBS += -L../../src
 CONFIG(debug, debug|release) {

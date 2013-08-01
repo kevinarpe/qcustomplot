@@ -1,29 +1,8 @@
 NEXT RELEASE:
 
-Migration FAQ:
-- setPlotTitle is gone, how do I set a plot title now?
-  A plot title now is a layout element. You can add a title like this:
-  customPlot->plotLayout()->insertRow(0); // inserts an empty row above the default axis rect
-  customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(customPlot, "Your Plot Title"));
-  
-- where did setupFullAxesBox, setRangeDrag, setMargin etc. go?
-  Many functions related to the axis rect moved to the QCPAxisRect class. You can reach the default axis rect via
-  customPlot->axisRect()
-  from there, you can use the functions like you're used to.
-
-- enable/disable range zoom and drag?
-  By default, the QCPAxisRect::setRangeZoom/Drag are now set to Qt::Horizontal|Qt::Vertical. To enable range zooming/dragging, all you need
-  to do now is set the corresponding interaction flag: customPlot->setInteractions(QCP::iRangeZoom | QCP::iRangeDrag);
-
-- where did setSelected/setSelectable on QCPAxis and QCPLegend go?
-  they're now called setSelectedParts/setSelectableParts reflecting the fact, that they don't handle a bool but an enum with multiple possible parts.
-  
-- What happened to scatter styles and colors, for example on QCPGraph and QCPCurve?
-  They're now handled by QCPScatterStyle. When old code said setScatterStyle(QCP::ssCircle), you now write setScatterStyle(QCPScatterStyle::ssCircle).
-  For more details what's behind that and the new possibilities, see the documentation of QCPScatterStyle.
-
 FUTURE RELEASE:
 
+- rich text support in QCPItemText
 - document public interface member vars (legend, xAxis, yAxis,...)
 - selection rect mechanism
 - more options for tick-generation algorithm (integers, other stepping, range end only at ticks, date/time specific steps...)

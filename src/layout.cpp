@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 #include "layout.h"
@@ -629,7 +629,17 @@ QList<QCPLayoutElement*> QCPLayoutElement::elements(bool recursive) const
   return QList<QCPLayoutElement*>();
 }
 
-/* inherits documentation from base class */
+/*!
+  Layout elements are sensitive to events inside their outer rect. If \a pos is within the outer
+  rect, this method returns a value corresponding to 0.99 times the parent plot's selection
+  tolerance. However, layout elements are not selectable by default. So if \ref onlySelectable is
+  true, -1.0 is returned.
+  
+  See \ref QCPLayerable::selectTest for a general explanation of this virtual method.
+  
+  QCPLayoutElement subclasses may reimplement this method to provide more specific selection test
+  behaviour.
+*/
 double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   Q_UNUSED(details)
@@ -644,7 +654,7 @@ double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVa
     else
     {
       qDebug() << Q_FUNC_INFO << "parent plot not defined";
-      return 3;
+      return -1;
     }
   } else
     return -1;
@@ -657,7 +667,7 @@ double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVa
 */
 void QCPLayoutElement::parentPlotInitialized(QCustomPlot *parentPlot)
 {
-  QList<QCPLayoutElement*> els = elements();
+  QList<QCPLayoutElement*> els = elements(false);
   for (int i=0; i<els.size(); ++i)
   {
     if (!els.at(i)->parentPlot())
@@ -788,7 +798,9 @@ QList<QCPLayoutElement*> QCPLayout::elements(bool recursive) const
 {
   int c = elementCount();
   QList<QCPLayoutElement*> result;
+#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
   result.reserve(c);
+#endif
   for (int i=0; i<c; ++i)
     result.append(elementAt(i));
   if (recursive)
@@ -864,19 +876,6 @@ void QCPLayout::clear()
       removeAt(i);
   }
   simplify();
-}
-
-/*!
-  Since layouts usually are invisible and only responsible for positioning and sizing of child
-  elements, they are not selectable or mouse-hittable by default. So this function always returns
-  -1. Specific Layout subclasses may override this behaviour.
-*/
-double QCPLayout::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
-{
-  Q_UNUSED(pos)
-  Q_UNUSED(onlySelectable)
-  Q_UNUSED(details)
-  return -1;
 }
 
 /*!
@@ -1518,7 +1517,9 @@ QList<QCPLayoutElement*> QCPLayoutGrid::elements(bool recursive) const
   QList<QCPLayoutElement*> result;
   int colC = columnCount();
   int rowC = rowCount();
+#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
   result.reserve(colC*rowC);
+#endif
   for (int row=0; row<rowC; ++row)
   {
     for (int col=0; col<colC; ++col)
@@ -1606,13 +1607,13 @@ QSize QCPLayoutGrid::maximumSizeHint() const
   QVector<int> maxColWidths, maxRowHeights;
   getMaximumRowColSizes(&maxColWidths, &maxRowHeights);
   
-  QSize result(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+  QSize result(0, 0);
   for (int i=0; i<maxColWidths.size(); ++i)
     result.setWidth(qMin(result.width()+maxColWidths.at(i), QWIDGETSIZE_MAX));
   for (int i=0; i<maxRowHeights.size(); ++i)
     result.setHeight(qMin(result.height()+maxRowHeights.at(i), QWIDGETSIZE_MAX));
   result.rwidth() += qMax(0, columnCount()-1) * mColumnSpacing + mMargins.left() + mMargins.right();
-  result.rheight() += qMax(0,rowCount()-1) * mRowSpacing + mMargins.top() + mMargins.bottom();
+  result.rheight() += qMax(0, rowCount()-1) * mRowSpacing + mMargins.top() + mMargins.bottom();
   return result;
 }
 
@@ -1914,6 +1915,31 @@ bool QCPLayoutInset::take(QCPLayoutElement *element)
   } else
     qDebug() << Q_FUNC_INFO << "Can't take null element";
   return false;
+}
+
+/*!
+  The inset layout is sensitive to events only at areas where its child elements are sensitive. If
+  the selectTest method of any of the child elements returns a positive number for \a pos, this
+  method returns a value corresponding to 0.99 times the parent plot's selection tolerance. The
+  inset layout is not selectable itself by default. So if \ref onlySelectable is true, -1.0 is
+  returned.
+  
+  See \ref QCPLayerable::selectTest for a general explanation of this virtual method.
+*/
+double QCPLayoutInset::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
+{
+  Q_UNUSED(details)
+  if (onlySelectable)
+    return -1;
+  
+  for (int i=0; i<mElements.size(); ++i)
+  {
+    // inset layout shall only return positive selectTest, if actually an inset object is at pos
+    // else it would block the entire underlying QCPAxisRect with its surface.
+    if (mElements.at(i)->selectTest(pos, onlySelectable) >= 0)
+      return mParentPlot->selectionTolerance()*0.99;
+  }
+  return -1;
 }
 
 /*!

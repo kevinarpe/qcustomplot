@@ -36,7 +36,7 @@ if not os.path.isfile(config.executable):
 # Setup and start the actual benchmark loops
 results = defaultdict(list)
 namePattern = re.compile("RESULT : Benchmark::([^(]+)\\(\\):")
-resultPattern = re.compile("\\s*(\\d+(\\.\\d+)?) msecs per iteration.*")
+resultPattern = re.compile("\\s*(\\d+(\\.\\d+)?) msecs? per iteration.*")
 qtVersionPattern = re.compile(".*Qt (\\d+\\.\\d+?\\.\\d+?).*")
 maxNameLength = 0
 qtVersion = ""

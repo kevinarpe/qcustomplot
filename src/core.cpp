@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 /*! \file */
@@ -37,29 +37,27 @@
 #include "plottables/plottable-graph.h"
 #include "item.h"
 
-/*! \mainpage %QCustomPlot Documentation
- 
+/*! \mainpage %QCustomPlot 1.0.0 Documentation
+
+  \image html qcp-doc-logo.png
+  
   Below is a brief overview of and guide to the classes and their relations. If you are new to
   QCustomPlot and just want to start using it, it's recommended to look at the tutorials and
   examples at
  
-  http://www.WorksLikeClockWork.com/index.php/components/qt-plotting-widget
+  http://www.qcustomplot.com/
  
   This documentation is especially helpful as a reference, when you're familiar with the basic
   concept of how to use %QCustomPlot and you wish to learn more about specific functionality.
- 
-  \section simpleoverview Simplified Class Overview
-  
-  \image latex ClassesOverviewSimplified.png "" width=1.2\textwidth
-  \image html ClassesOverviewSimplified.png
-  <center>Simplified diagram of most important classes, view the \ref classoverview "Class Overview" to see a full overview.</center>
+  See the \ref classoverview "class overview" for diagrams explaining the relationships between
+  the most important classes of the QCustomPlot library.
   
   The central widget which displays the plottables and axes on its surface is QCustomPlot. Every
   QCustomPlot contains four axes by default. They can be accessed via the members xAxis, yAxis,
-  xAxis2 and yAxis2, and are of type QCPAxis. QCustomPlot supports an arbitrary number of axes and axis rects, see the
-  documentation of QCPAxisRect for details.
+  xAxis2 and yAxis2, and are of type QCPAxis. QCustomPlot supports an arbitrary number of axes and
+  axis rects, see the documentation of QCPAxisRect for details.
 
-  \section plottables Plottables
+  \section mainpage-plottables Plottables
   
   \a Plottables are classes that display any kind of data inside the QCustomPlot. They all derive
   from QCPAbstractPlottable. For example, the QCPGraph class is a plottable that displays a graph
@@ -86,15 +84,15 @@
   All further interfacing with plottables (e.g how to set data) is specific to the plottable type.
   See the documentations of the subclasses: QCPGraph, QCPCurve, QCPBars, QCPStatisticalBox.
 
-  \section axes Controlling the Axes
+  \section mainpage-axes Controlling the Axes
   
   As mentioned, QCustomPlot has four axes by default: \a xAxis (bottom), \a yAxis (left), \a xAxis2
   (top), \a yAxis2 (right).
   
   Their range is handled by the simple QCPRange class. You can set the range with the
   QCPAxis::setRange function. By default, the axes represent a linear scale. To set a logarithmic
-  scale, set QCPAxis::setScaleType to QCPAxis::stLogarithmic. The logarithm base can be set freely
-  with QCPAxis::setScaleLogBase.
+  scale, set \ref QCPAxis::setScaleType to \ref QCPAxis::stLogarithmic. The logarithm base can be set freely
+  with \ref QCPAxis::setScaleLogBase.
   
   By default, an axis automatically creates and labels ticks in a sensible manner. See the
   following functions for tick manipulation:\n QCPAxis::setTicks, QCPAxis::setAutoTicks,
@@ -106,10 +104,10 @@
   
   The distance of an axis backbone to the respective viewport border is called its margin.
   Normally, the margins are calculated automatically. To change this, set
-  QCPAxisRect::setAutoMargins to exclude the respective margin sides, set the margins manually with
-  QCPAxisRect::setMargins. The main axis rect can be reached with QCustomPlot::axisRect().
+  \ref QCPAxisRect::setAutoMargins to exclude the respective margin sides, set the margins manually with
+  \ref QCPAxisRect::setMargins. The main axis rect can be reached with \ref QCustomPlot::axisRect().
   
-  \section legend Plot Legend
+  \section mainpage-legend Plot Legend
   
   Every QCustomPlot owns one QCPLegend (as \a legend) by default. A legend is a small layout
   element inside the plot which lists the plottables with an icon of the plottable line/symbol and
@@ -126,7 +124,7 @@
   Multiple legends are supported via the layout system (as a QCPLegend simply is a normal layout
   element).
   
-  \section userinteraction User Interactions
+  \section mainpage-userinteraction User Interactions
   
   QCustomPlot supports dragging axis ranges with the mouse (\ref
   QCPAxisRect::setRangeDrag), zooming axis ranges with the mouse wheel (\ref
@@ -139,7 +137,7 @@
   doubleClicked. See \ref QCustomPlot::plottableClick, \ref QCustomPlot::plottableDoubleClick
   and \ref QCustomPlot::axisClick for example.
   
-  \section items Items
+  \section mainpage-items Items
   
   Apart from plottables there is another category of plot objects that are important: Items. The
   base class of all items is QCPAbstractItem. An item sets itself apart from plottables in that
@@ -157,38 +155,48 @@
   For a more detailed introduction, see the QCPAbstractItem documentation, and from there the
   documentations of the individual built-in items, to find out how to use them.
   
-  \section performancetweaks Performance Tweaks
+  \section mainpage-layoutelements Layout elements and layouts
+  
+  QCustomPlot uses an internal layout system to provide dynamic sizing and positioning of objects like
+  the axis rect(s), legends and the plot title. They are all based on \ref QCPLayoutElement and are arranged by
+  placing them inside a \ref QCPLayout.
+  
+  Details on this topic are given on the dedicated page about \ref thelayoutsystem "the layout system".
+  
+  \section mainpage-performancetweaks Performance Tweaks
   
   Although QCustomPlot is quite fast, some features like translucent fills, antialiasing and thick
-  lines can cause a significant slow down. Here are some thoughts on how to increase performance.
-  By far the most time is spent in the drawing functions, specifically the drawing of graphs. For
-  maximum performance, consider the following (most recommended/effective measures first):
+  lines can cause a significant slow down. If you notice this in your application, here are some
+  thoughts on how to increase performance. By far the most time is spent in the drawing functions,
+  specifically the drawing of graphs. For maximum performance, consider the following (most
+  recommended/effective measures first):
   
-  \li use Qt 4.8.0 and up. Performance has doubled or tripled with respect to Qt 4.7.4. However QPainter was broken,
-  drawing pixel precise things, e.g. scatters, isn't possible with Qt 4.8.0/1. So it's a performance vs. plot
-  quality tradeoff when switching to Qt 4.8.
+  \li use Qt 4.8.0 and up. Performance has doubled or tripled with respect to Qt 4.7.4. However
+  QPainter was broken and drawing pixel precise things, e.g. scatters, isn't possible with Qt >=
+  4.8.0. So it's a performance vs. plot quality tradeoff when switching to Qt 4.8.
   \li To increase responsiveness during dragging, consider setting \ref QCustomPlot::setNoAntialiasingOnDrag to true.
   \li On X11 (GNU/Linux), avoid the slow native drawing system, use raster by supplying
   "-graphicssystem raster" as command line argument or calling QApplication::setGraphicsSystem("raster")
   before creating the QApplication object. (Only available for Qt versions before 5.0)
   \li On all operating systems, use OpenGL hardware acceleration by supplying "-graphicssystem
-  opengl" as command line argument or calling QApplication::setGraphicsSystem("opengl"). If OpenGL
-  is available, this will slightly decrease the quality of antialiasing, but extremely increase
-  performance especially with alpha (semi-transparent) fills, much antialiasing and a large
-  QCustomPlot drawing surface. Note however, that the maximum frame rate might be constrained by
-  the vertical sync frequency of your monitor (VSync can be disabled in the graphics card driver
-  configuration). So for simple plots (where the potential framerate is far above 60 frames per
-  second), OpenGL acceleration might achieve numerically lower frame rates than the other
-  graphics systems, because they are not capped at the VSync frequency.
+  opengl" as command line argument or calling QApplication::setGraphicsSystem("opengl") (Only
+  available for Qt versions before 5.0). If OpenGL is available, this will slightly decrease the
+  quality of antialiasing, but extremely increase performance especially with alpha
+  (semi-transparent) fills, much antialiasing and a large QCustomPlot drawing surface. Note
+  however, that the maximum frame rate might be constrained by the vertical sync frequency of your
+  monitor (VSync can be disabled in the graphics card driver configuration). So for simple plots
+  (where the potential framerate is far above 60 frames per second), OpenGL acceleration might
+  achieve numerically lower frame rates than the other graphics systems, because they are not
+  capped at the VSync frequency.
   \li Avoid any kind of alpha (transparency), especially in fills
   \li Avoid lines with a pen width greater than one
-  \li Avoid any kind of antialiasing, especially in graph lines (see QCustomPlot::setNotAntialiasedElements)
-  \li Avoid repeatedly setting the complete data set with QCPGraph::setData. Use QCPGraph::addData instead, if most
+  \li Avoid any kind of antialiasing, especially in graph lines (see \ref QCustomPlot::setNotAntialiasedElements)
+  \li Avoid repeatedly setting the complete data set with \ref QCPGraph::setData. Use \ref QCPGraph::addData instead, if most
   data points stay unchanged, e.g. in a running measurement.
   \li Set the \a copy parameter of the setData functions to false, so only pointers get
   transferred. (Relevant only if preparing data maps with a large number of points, i.e. over 10000)
   
-  \section Preprocessor Define Flags
+  \section mainpage-flags Preprocessor Define Flags
   
   QCustomPlot understands some preprocessor defines that are useful for debugging and compilation:
   <dl>
@@ -206,8 +214,13 @@
 
 /*! \page classoverview Class Overview
   
-  \image latex ClassesOverview.png "Overview of all classes and their relations" width=1.2\textwidth
-  \image html ClassesOverview.png "Overview of all classes and their relations"
+  The following diagrams may help to gain a deeper understanding of the relationships between classes that make up
+  the QCustomPlot library. The diagrams are not exhaustive, so only the classes deemed most relevant are shown.
+  
+  \section classoverview-relations Class Relationship Diagram
+  \image html RelationOverview.png "Overview of most important classes and their relations"
+  \section classoverview-inheritance Class Inheritance Tree
+  \image html InheritanceOverview.png "Inheritance tree of most important classes"
   
 */
 
@@ -221,7 +234,7 @@
   interacts with the user.
   
   For tutorials on how to use QCustomPlot, see the website\n
-  http://www.WorksLikeClockWork.com/index.php/components/qt-plotting-widget
+  http://www.qcustomplot.com/
 */
 
 /* start of documentation of inline functions */
@@ -1041,6 +1054,8 @@ QList<QCPAbstractPlottable*> QCustomPlot::selectedPlottables() const
   (QCPAbstractPlottable::setSelectable) are considered.
   
   If there is no plottable at \a pos, the return value is 0.
+  
+  \see itemAt, layoutElementAt
 */
 QCPAbstractPlottable *QCustomPlot::plottableAt(const QPointF &pos, bool onlySelectable) const
 {
@@ -1365,6 +1380,8 @@ QList<QCPAbstractItem*> QCustomPlot::selectedItems() const
   considered.
   
   If there is no item at \a pos, the return value is 0.
+  
+  \see plottableAt, layoutElementAt
 */
 QCPAbstractItem *QCustomPlot::itemAt(const QPointF &pos, bool onlySelectable) const
 {
@@ -1658,7 +1675,7 @@ QList<QCPAxisRect*> QCustomPlot::axisRects() const
   
   while (!elementStack.isEmpty())
   {
-    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements();
+    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements(false);
     for (int i=0; i<subElements.size(); ++i)
     {
       if (QCPLayoutElement *element = subElements.at(i))
@@ -1679,6 +1696,8 @@ QList<QCPAxisRect*> QCustomPlot::axisRects() const
   
   Only visible elements are used. If \ref QCPLayoutElement::setVisible on the element itself or on
   any of its parent elements is set to false, it will not be considered.
+  
+  \see itemAt, plottableAt
 */
 QCPLayoutElement *QCustomPlot::layoutElementAt(const QPointF &pos) const
 {
@@ -1687,7 +1706,7 @@ QCPLayoutElement *QCustomPlot::layoutElementAt(const QPointF &pos) const
   while (searchSubElements && current)
   {
     searchSubElements = false;
-    const QList<QCPLayoutElement*> elements = current->elements();
+    const QList<QCPLayoutElement*> elements = current->elements(false);
     for (int i=0; i<elements.size(); ++i)
     {
       if (elements.at(i) && elements.at(i)->realVisibility() && elements.at(i)->selectTest(pos, false) >= 0)
@@ -1741,7 +1760,7 @@ QList<QCPLegend*> QCustomPlot::selectedLegends() const
   
   while (!elementStack.isEmpty())
   {
-    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements();
+    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements(false);
     for (int i=0; i<subElements.size(); ++i)
     {
       if (QCPLayoutElement *element = subElements.at(i))
@@ -2272,7 +2291,7 @@ void QCustomPlot::wheelEvent(QWheelEvent *event)
   This is the main draw function. It draws the entire plot, including background pixmap, with the
   specified \a painter. Note that it does not fill the background with the background brush (as the
   user may specify with \ref setBackground(const QBrush &brush)), this is up to the respective
-  functions calling this method (e.g. \ref replot and \ref toPixmap).
+  functions calling this method (e.g. \ref replot, \ref toPixmap and \ref toPainter).
 */
 void QCustomPlot::draw(QCPPainter *painter)
 {
@@ -2456,10 +2475,11 @@ bool QCustomPlot::saveRastered(const QString &fileName, int width, int height, d
   The plot is sized to \a width and \a height in pixels and scaled with \a scale. (width 100 and
   scale 2.0 lead to a full resolution pixmap with width 200.)
   
-  \see saveRastered, saveBmp, savePng, saveJpg, savePdf
+  \see toPainter, saveRastered, saveBmp, savePng, saveJpg, savePdf
 */
 QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
 {
+  // this method is somewhat similar to toPainter. Change something here, and a change in toPainter might be necessary, too. 
   int newWidth, newHeight;
   if (width == 0 || height == 0)
   {
@@ -2499,4 +2519,45 @@ QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
     return QPixmap();
   }
   return result;
+}
+
+/*!
+  Renders the plot using the passed \a painter.
+  
+  The plot is sized to \a width and \a height in pixels. If the \a painter's scale is not 1.0, the resulting plot will
+  appear scaled accordingly.
+  
+  \note If you are restricted to using a QPainter (instead of QCPPainter), create a temporary QPicture and open a QCPPainter
+  on it. Then call \ref toPainter with this QCPPainter. After ending the paint operation on the picture, draw it with
+  the QPainter. This will reproduce the painter actions the QCPPainter took, with a QPainter.
+  
+  \see toPixmap
+*/
+void QCustomPlot::toPainter(QCPPainter *painter, int width, int height)
+{
+  // this method is somewhat similar to toPixmap. Change something here, and a change in toPixmap might be necessary, too. 
+  int newWidth, newHeight;
+  if (width == 0 || height == 0)
+  {
+    newWidth = this->width();
+    newHeight = this->height();
+  } else
+  {
+    newWidth = width;
+    newHeight = height;
+  }
+
+  if (painter->isActive())
+  {
+    QRect oldViewport = viewport();
+    setViewport(QRect(0, 0, newWidth, newHeight));
+    painter->setMode(QCPPainter::pmNoCaching);
+    // warning: the following is different in toPixmap, because a solid background color is applied there via QPixmap::fill
+    // here, we need to do this via QPainter::fillRect.
+    if (mBackgroundBrush.style() != Qt::NoBrush)
+      painter->fillRect(mViewport, mBackgroundBrush);
+    draw(painter);
+    setViewport(oldViewport);
+  } else
+    qDebug() << Q_FUNC_INFO << "Passed painter is not active";
 }

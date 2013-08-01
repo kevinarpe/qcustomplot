@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_PAINTER_H
@@ -42,7 +42,7 @@ public:
     drawn with the pen and brush specified with \ref setPen and \ref setBrush.
   */
   Q_ENUMS(ScatterShape)
-  enum ScatterShape { ssNone       ///< \enumimage{ssNone.png} no scatter symbols are drawn (e.g. in QCPGraph, data only represented with lines)
+  enum ScatterShape { ssNone       ///< no scatter symbols are drawn (e.g. in QCPGraph, data only represented with lines)
                       ,ssDot       ///< \enumimage{ssDot.png} a single pixel (use \ref ssDisc or \ref ssCircle if you want a round shape with a certain radius)
                       ,ssCross     ///< \enumimage{ssCross.png} a cross
                       ,ssPlus      ///< \enumimage{ssPlus.png} a plus
@@ -58,8 +58,8 @@ public:
                       ,ssCrossCircle      ///< \enumimage{ssCrossCircle.png} a circle with a cross inside
                       ,ssPlusCircle       ///< \enumimage{ssPlusCircle.png} a circle with a plus inside
                       ,ssPeace     ///< \enumimage{ssPeace.png} a circle, with one vertical and two downward diagonal lines
-                      ,ssPixmap    ///< \enumimage{ssPixmap.png} a custom pixmap specified by setScatterPixmap, centered on the data point coordinates
-                      ,ssCustom    ///< \enumimage{ssCustom.png} custom painter operations are performed per scatter (As QPainterPath, see \ref setCustomPath)
+                      ,ssPixmap    ///< a custom pixmap specified by setScatterPixmap, centered on the data point coordinates
+                      ,ssCustom    ///< custom painter operations are performed per scatter (As QPainterPath, see \ref setCustomPath)
                     };
 
   QCPScatterStyle();

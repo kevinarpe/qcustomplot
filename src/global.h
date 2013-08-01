@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 /*! \file */
 #ifndef QCP_GLOBAL_H
@@ -31,6 +31,7 @@
 #endif
 #define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(0, 0, 0)
 
+// amalgamation: include begin
 #include <QObject>
 #include <QWeakPointer>
 #include <QWidget>
@@ -40,7 +41,6 @@
 #include <QPixmap>
 #include <QVector>
 #include <QString>
-#include <QPrinter>
 #include <QDateTime>
 #include <QMultiMap>
 #include <QFlags>
@@ -51,6 +51,14 @@
 #include <QMargins>
 #include <qmath.h>
 #include <limits>
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#  include <qnumeric.h>
+#  include <QPrinter>
+#else
+#  include <QtNumeric>
+#  include <QPrinter> // change this to QtPrintSupport as soon as Qt fixes bug with deprecated QUrl methods
+#endif
+// amalgamation: include end
 
 // decl definitions for shared library compilation/usage:
 #if defined(QCUSTOMPLOT_COMPILE_LIBRARY)
@@ -129,7 +137,7 @@ Q_DECLARE_FLAGS(PlottingHints, PlottingHint)
 enum Interaction { iRangeDrag         = 0x001 ///< <tt>0x001</tt> Axis ranges are draggable (see \ref QCPAxisRect::setRangeDrag, \ref QCPAxisRect::setRangeDragAxes)
                    ,iRangeZoom        = 0x002 ///< <tt>0x002</tt> Axis ranges are zoomable with the mouse wheel (see \ref QCPAxisRect::setRangeZoom, \ref QCPAxisRect::setRangeZoomAxes)
                    ,iMultiSelect      = 0x004 ///< <tt>0x004</tt> The user can select multiple objects by holding the modifier set by \ref QCustomPlot::setMultiSelectModifier while clicking
-                   ,iSelectPlottables = 0x008 ///< <tt>0x008</tt> Plottables are selectable
+                   ,iSelectPlottables = 0x008 ///< <tt>0x008</tt> Plottables are selectable (e.g. graphs, curves, bars,... see QCPAbstractPlottable)
                    ,iSelectAxes       = 0x010 ///< <tt>0x010</tt> Axes are selectable (or parts of them, see QCPAxis::setSelectableParts)
                    ,iSelectLegend     = 0x020 ///< <tt>0x020</tt> Legends are selectable (or their child items, see QCPLegend::setSelectableParts)
                    ,iSelectItems      = 0x040 ///< <tt>0x040</tt> Items are selectable (Rectangles, Arrows, Textitems, etc. see \ref QCPAbstractItem)
@@ -145,9 +153,7 @@ Q_DECLARE_FLAGS(Interactions, Interaction)
 */
 inline bool isInvalidData(double value)
 {
-  return (!isnan(value) &&
-          value != std::numeric_limits<double>::infinity() &&
-          value != -std::numeric_limits<double>::infinity());
+  return (!qIsNaN(value) && !qIsInf(value));
 }
 
 /*! \internal

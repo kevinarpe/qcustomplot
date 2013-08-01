@@ -18,9 +18,9 @@
 **                                                                        **
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
-**  Website/Contact: http://www.WorksLikeClockwork.com/                   **
-**             Date: 19.05.13                                             **
-**          Version: 1.0.0-beta                                           **
+**  Website/Contact: http://www.qcustomplot.com/                          **
+**             Date: 01.08.13                                             **
+**          Version: 1.0.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_LAYOUTELEMENT_AXISRECT_H
@@ -105,7 +105,7 @@ public:
   
   // reimplemented virtual methods:
   virtual void update();
-  virtual QList<QCPLayoutElement*> elements(bool recursive=false) const;
+  virtual QList<QCPLayoutElement*> elements(bool recursive) const;
 
 protected:
   // property members:

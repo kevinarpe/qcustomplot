@@ -109,7 +109,7 @@ void MainWindow::genItemEllipse()
   customPlot->addItem(ellipse);
   ellipse->setBrush(defaultBrush);
   ellipse->topLeft->setCoords(-0.15, 1.1);
-  ellipse->bottomRight->setCoords(1.15, 0);
+  ellipse->bottomRight->setCoords(1.1, 0);
   labelItemAnchors(ellipse);
   customPlot->savePng(dir.filePath("QCPItemEllipse.png"), 300, 200);
 }
