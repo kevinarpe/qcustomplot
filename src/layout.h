@@ -164,9 +164,6 @@ public:
   bool remove(QCPLayoutElement* element);
   void clear();
   
-  // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const;
-  
 protected:
   // introduced virtual methods:
   virtual void updateLayout();
@@ -280,6 +277,7 @@ public:
   virtual QCPLayoutElement* takeAt(int index);
   virtual bool take(QCPLayoutElement* element);
   virtual void simplify() {}
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
   // non-virtual methods:
   void addElement(QCPLayoutElement *element, Qt::Alignment alignment);

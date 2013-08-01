@@ -377,6 +377,7 @@ void MainWindow::setupSelectTest(QCustomPlot *customPlot)
 
 void MainWindow::setupDateTest(QCustomPlot *customPlot)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
   customPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
   QCPGraph *g = customPlot->addGraph();
   g->addData(QDateTime(QDate(350,5,21), QTime(0, 0)).toMSecsSinceEpoch()/1000.0, 1);
@@ -384,6 +385,7 @@ void MainWindow::setupDateTest(QCustomPlot *customPlot)
   g->addData(QDateTime(QDate(740,5,21), QTime(0, 0)).toMSecsSinceEpoch()/1000.0, 4);
   g->addData(QDateTime(QDate(1000,5,21), QTime(0, 0)).toMSecsSinceEpoch()/1000.0, 8);
   g->rescaleAxes();
+#endif
 }
 
 void MainWindow::setupTickLabelTest(QCustomPlot *customPlot)
@@ -575,8 +577,6 @@ void MainWindow::setupInsetLayoutTest(QCustomPlot *customPlot)
   customPlot->axisRect(0)->insetLayout()->addElement(insetAxRect, Qt::AlignRight|Qt::AlignTop);
   insetAxRect->setupFullAxesBox(true);
   insetAxRect->setBackground(QBrush(QColor(240, 240, 240)));
-  
-  
 }
 
 void MainWindow::setupLegendTest(QCustomPlot *customPlot)
@@ -801,6 +801,7 @@ void MainWindow::setupMultiAxisRectInteractionsMouseMove(QMouseEvent *event)
 
 void MainWindow::daqPerformanceDataSlot()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
   qint64 currentMillisecond = QDateTime::currentMSecsSinceEpoch();
   static qint64 lastMillisecond = currentMillisecond;
   static int ptsInThisMillisecond = 0;
@@ -816,10 +817,12 @@ void MainWindow::daqPerformanceDataSlot()
     ptsInThisMillisecond = 0;
     lastMillisecond = currentMillisecond;
   }
+#endif
 }
 
 void MainWindow::daqPerformanceReplotSlot()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
   double lastX = 0;
   if (mCustomPlot->graph(0)->data()->end() != mCustomPlot->graph(0)->data()->begin())
     lastX = (mCustomPlot->graph(0)->data()->end()-1).key();
@@ -838,6 +841,7 @@ void MainWindow::daqPerformanceReplotSlot()
     lastDataPoints = dataPoints;
   }
   ui->statusBar->showMessage(QString("Data Points: %1, Data Frequency: %2").arg(dataPoints).arg(dataPointFrequency));
+#endif
 }
 
 void MainWindow::integerTickStepCase_xRangeChanged(QCPRange newRange)

@@ -629,7 +629,17 @@ QList<QCPLayoutElement*> QCPLayoutElement::elements(bool recursive) const
   return QList<QCPLayoutElement*>();
 }
 
-/* inherits documentation from base class */
+/*!
+  Layout elements are sensitive to events inside their outer rect. If \a pos is within the outer
+  rect, this method returns a value corresponding to 0.99 times the parent plot's selection
+  tolerance. However, layout elements are not selectable by default. So if \ref onlySelectable is
+  true, -1.0 is returned.
+  
+  See \ref QCPLayerable::selectTest for a general explanation of this virtual method.
+  
+  QCPLayoutElement subclasses may reimplement this method to provide more specific selection test
+  behaviour.
+*/
 double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   Q_UNUSED(details)
@@ -644,7 +654,7 @@ double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVa
     else
     {
       qDebug() << Q_FUNC_INFO << "parent plot not defined";
-      return 3;
+      return -1;
     }
   } else
     return -1;
@@ -866,19 +876,6 @@ void QCPLayout::clear()
       removeAt(i);
   }
   simplify();
-}
-
-/*!
-  Since layouts usually are invisible and only responsible for positioning and sizing of child
-  elements, they are not selectable or mouse-hittable by default. So this function always returns
-  -1. Specific Layout subclasses may override this behaviour.
-*/
-double QCPLayout::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
-{
-  Q_UNUSED(pos)
-  Q_UNUSED(onlySelectable)
-  Q_UNUSED(details)
-  return -1;
 }
 
 /*!
@@ -1918,6 +1915,31 @@ bool QCPLayoutInset::take(QCPLayoutElement *element)
   } else
     qDebug() << Q_FUNC_INFO << "Can't take null element";
   return false;
+}
+
+/*!
+  The inset layout is sensitive to events only at areas where its child elements are sensitive. If
+  the selectTest method of any of the child elements returns a positive number for \a pos, this
+  method returns a value corresponding to 0.99 times the parent plot's selection tolerance. The
+  inset layout is not selectable itself by default. So if \ref onlySelectable is true, -1.0 is
+  returned.
+  
+  See \ref QCPLayerable::selectTest for a general explanation of this virtual method.
+*/
+double QCPLayoutInset::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
+{
+  Q_UNUSED(details)
+  if (onlySelectable)
+    return -1;
+  
+  for (int i=0; i<mElements.size(); ++i)
+  {
+    // inset layout shall only return positive selectTest, if actually an inset object is at pos
+    // else it would block the entire underlying QCPAxisRect with its surface.
+    if (mElements.at(i)->selectTest(pos, onlySelectable) >= 0)
+      return mParentPlot->selectionTolerance()*0.99;
+  }
+  return -1;
 }
 
 /*!
