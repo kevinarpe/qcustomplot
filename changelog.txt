@@ -1,4 +1,4 @@
-#### Version 1.0.0 released on  ####
+#### Version 1.0.0 released on 01.08.13 ####
 
   Added features:
     - Added QCustomPlot::toPainter method, to allow rendering with existing painter
@@ -10,7 +10,8 @@
     - Restored support for -no-RTTI compilation
     - Empty manual tick labels are handled more gracefully (no QPainter qDebug messages anymore)
     - Fixed type ambiguity in QCPLineEnding::draw causing compile error on ARM
-    - Fixed bug of grid layouts not propagating the minimum size from their child elements to the parent layout correctly 
+    - Fixed bug of grid layouts not propagating the minimum size from their child elements to the parent layout correctly
+    - Fixed bug of child elements (e.g. axis rects) of inset layouts not properly receiving mouse events
 
 #### Version 1.0.0-beta released on 19.05.13 ####
 
