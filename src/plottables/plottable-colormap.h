@@ -83,7 +83,7 @@ public:
   
   // non-property methods:
   virtual void clearData();
-  virtual double selectTest(const QPointF &pos) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
   QCPColorMapData *mData;
@@ -94,7 +94,7 @@ protected:
   virtual void updateGradient(int levels);
   virtual void updateMapImage();
   virtual void draw(QCPPainter *painter);
-  virtual void drawLegendIcon(QCPPainter *painter, const QRect &rect) const;
+  virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
   
   QRgb wavelengthToRgb(double nm);
   

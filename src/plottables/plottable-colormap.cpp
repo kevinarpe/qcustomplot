@@ -241,7 +241,7 @@ void QCPColorMap::clearData()
 }
 
 /* inherits documentation from base class */
-double QCPColorMap::selectTest(const QPointF &pos) const
+double QCPColorMap::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
   return -1; // DBG
 }
@@ -296,7 +296,7 @@ void QCPColorMap::draw(QCPPainter *painter)
 }
 
 /* inherits documentation from base class */
-void QCPColorMap::drawLegendIcon(QCPPainter *painter, const QRect &rect) const
+void QCPColorMap::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
   // draw filled rect:
   applyDefaultAntialiasingHint(painter);
