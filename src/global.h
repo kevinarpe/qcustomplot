@@ -153,7 +153,7 @@ Q_DECLARE_FLAGS(Interactions, Interaction)
 */
 inline bool isInvalidData(double value)
 {
-  return (!qIsNaN(value) && !qIsInf(value));
+  return qIsNaN(value) || qIsInf(value);
 }
 
 /*! \internal
