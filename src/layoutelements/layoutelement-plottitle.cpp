@@ -35,8 +35,8 @@
 /*! \class QCPPlotTitle
   \brief A layout element displaying a plot title text
   
-  A simple layout element which shows a text. The text may be specified with \ref setText, the
-  formatting can be controlled with \ref setFont and \ref setTextColor.
+  The text may be specified with \ref setText, theformatting can be controlled with \ref setFont
+  and \ref setTextColor.
   
   A plot title can be added as follows:
   \code
