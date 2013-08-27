@@ -83,8 +83,8 @@
   complex hierarchies may be created, offering very flexible arrangements.
   
   <div style="text-align:center">
-  <div style="display:inline-block; margin-left:auto; margin-right:auto"><img src="LayoutsystemSketch0.png"></div>
-  <div style="display:inline-block; margin-left:auto; margin-right:auto"><img src="LayoutsystemSketch1.png"></div>
+  <div style="display:inline-block; margin-left:auto; margin-right:auto">\image html LayoutsystemSketch0.png ""</div>
+  <div style="display:inline-block; margin-left:auto; margin-right:auto">\image html LayoutsystemSketch1.png ""</div>
   <div style="clear:both"></div>
   <div style="display:inline-block; max-width:1000px; text-align:justify">
   Sketch of the default QCPLayoutGrid accessible via \ref QCustomPlot::plotLayout. The left image
@@ -631,7 +631,7 @@ QList<QCPLayoutElement*> QCPLayoutElement::elements(bool recursive) const
 /*!
   Layout elements are sensitive to events inside their outer rect. If \a pos is within the outer
   rect, this method returns a value corresponding to 0.99 times the parent plot's selection
-  tolerance. However, layout elements are not selectable by default. So if \ref onlySelectable is
+  tolerance. However, layout elements are not selectable by default. So if \a onlySelectable is
   true, -1.0 is returned.
   
   See \ref QCPLayerable::selectTest for a general explanation of this virtual method.
@@ -1920,7 +1920,7 @@ bool QCPLayoutInset::take(QCPLayoutElement *element)
   The inset layout is sensitive to events only at areas where its child elements are sensitive. If
   the selectTest method of any of the child elements returns a positive number for \a pos, this
   method returns a value corresponding to 0.99 times the parent plot's selection tolerance. The
-  inset layout is not selectable itself by default. So if \ref onlySelectable is true, -1.0 is
+  inset layout is not selectable itself by default. So if \a onlySelectable is true, -1.0 is
   returned.
   
   See \ref QCPLayerable::selectTest for a general explanation of this virtual method.

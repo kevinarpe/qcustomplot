@@ -193,7 +193,7 @@ TAB_SIZE               = 2
 # You can put \n's in the value part of an alias to insert newlines.
 
 ALIASES += overload="This is an overloaded function.\n" 
-ALIASES += enumimage{1}="<img src=\"\1\" style=\"float:left;margin-right:10px;\">" 
+ALIASES += enumimage{1}="\image html \1 \"\""
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C
 # sources only. Doxygen will then generate output that is more tailored for C.
@@ -673,7 +673,8 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see
 # the \image command).
 
-IMAGE_PATH             += documentation/html
+IMAGE_PATH             += documentation/images
+IMAGE_PATH             += other/doc-image-generator/images
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

@@ -60,6 +60,12 @@ div.image {
   text-align: center;
 }
 
+/* enumerator images */
+td > div.image {
+  float: left;
+  margin-right: 10px;
+}
+
 div.title {
   font-size: 160%;
   font-weight: bold;

@@ -1,5 +1,7 @@
 NEXT RELEASE:
 
+- document QCPItemAnchor::toQCPItemPosition()
+
 FUTURE RELEASE:
 
 - rich text support in QCPItemText
