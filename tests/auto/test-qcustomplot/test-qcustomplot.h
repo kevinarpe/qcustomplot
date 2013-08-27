@@ -8,7 +8,8 @@ private slots:
   void init();
   void cleanup();
   
-  void rescaleAxes();
+  void rescaleAxes_GraphVisibility();
+  void rescaleAxes_FlatGraph();
   
 private:
   QCustomPlot *mPlot;
