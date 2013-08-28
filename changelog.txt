@@ -4,6 +4,9 @@
     - using define flag QCUSTOMPLOT_CHECK_DATA caused debug output when data was correct, instead of invalid (fixed QCP::isInvalidData)
     - documentation images are now properly shown when viewed with Qt Assistant
     - fixed various documentation mistakes
+    
+  Other:
+    - Adapted documentation style sheet to better match Qt5 documentation
 
 #### Version 1.0.0 released on 01.08.13 ####
 
