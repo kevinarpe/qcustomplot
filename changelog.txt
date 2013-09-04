@@ -1,4 +1,4 @@
-#### Version 1.0.1 released on ####
+#### Version 1.0.1 released on 05.09.13 ####
 
   Bugfixes:
     - using define flag QCUSTOMPLOT_CHECK_DATA caused debug output when data was correct, instead of invalid (fixed QCP::isInvalidData)
