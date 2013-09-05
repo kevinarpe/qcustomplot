@@ -1,8 +1,11 @@
 NEXT RELEASE:
 
+- document QCPItemAnchor::toQCPItemPosition()
+
 FUTURE RELEASE:
 
 - rich text support in QCPItemText
+- individual selectability of plottable data. Try to find a common interface for all plottables. Selections in new class QCPDataSelection
 - document public interface member vars (legend, xAxis, yAxis,...)
 - selection rect mechanism
 - more options for tick-generation algorithm (integers, other stepping, range end only at ticks, date/time specific steps...)

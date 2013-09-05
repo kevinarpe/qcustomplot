@@ -8,7 +8,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 DEFINES += QCUSTOMPLOT_COMPILE_LIBRARY
 TEMPLATE = lib
 CONFIG += shared debug_and_release build_all
-VERSION = 1.0.0
+VERSION = 1.0.1
 
 TARGET = qcustomplot
 CONFIG(debug, debug|release) {
@@ -19,7 +19,7 @@ CONFIG(debug, debug|release) {
   QMAKE_TARGET_PRODUCT = "QCustomPlot"
   QMAKE_TARGET_DESCRIPTION = "Plotting library for Qt"
 }
-QMAKE_TARGET_COMPANY = "www.WorksLikeClockwork.com"
+QMAKE_TARGET_COMPANY = "www.qcustomplot.com"
 QMAKE_TARGET_COPYRIGHT = "Copyright (C) by Emanuel Eichhammer"
 
 SOURCES += ../../qcustomplot.cpp

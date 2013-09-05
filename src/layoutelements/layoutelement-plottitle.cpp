@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 01.08.13                                             **
-**          Version: 1.0.0                                                **
+**             Date: 05.09.13                                             **
+**          Version: 1.0.1                                                **
 ****************************************************************************/
 
 #include "layoutelement-plottitle.h"
@@ -35,8 +35,8 @@
 /*! \class QCPPlotTitle
   \brief A layout element displaying a plot title text
   
-  A simple layout element which shows a text. The text may be specified with \ref setText, the
-  formatting can be controlled with \ref setFont and \ref setTextColor.
+  The text may be specified with \ref setText, theformatting can be controlled with \ref setFont
+  and \ref setTextColor.
   
   A plot title can be added as follows:
   \code

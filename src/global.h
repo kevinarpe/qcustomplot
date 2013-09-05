@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 01.08.13                                             **
-**          Version: 1.0.0                                                **
+**             Date: 05.09.13                                             **
+**          Version: 1.0.1                                                **
 ****************************************************************************/
 /*! \file */
 #ifndef QCP_GLOBAL_H
@@ -153,7 +153,7 @@ Q_DECLARE_FLAGS(Interactions, Interaction)
 */
 inline bool isInvalidData(double value)
 {
-  return (!qIsNaN(value) && !qIsInf(value));
+  return qIsNaN(value) || qIsInf(value);
 }
 
 /*! \internal
