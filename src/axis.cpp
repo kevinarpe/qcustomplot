@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 #include "axis.h"
@@ -321,6 +321,13 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   be synchronized.
 */
 
+/*! \fn void QCPAxis::rangeChanged(const QCPRange &newRange, const QCPRange &oldRange)
+  \overload
+  
+  Additionally to the new range, this signal also provides the previous range held by the axis as
+  \a oldRange.
+*/
+
 /*! \fn void QCPAxis::selectionChanged(QCPAxis::SelectableParts selection)
   
   This signal is emitted when the selection state of this axis has changed, either by user interaction
@@ -365,6 +372,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mTickLabelColor(Qt::black),
   mSelectedTickLabelColor(Qt::blue),
   mDateTimeFormat("hh:mm:ss\ndd.MM.yy"),
+  mDateTimeSpec(Qt::LocalTime),
   mNumberPrecision(6),
   mNumberFormatChar('g'),
   mNumberBeautifulPowers(true),
@@ -494,6 +502,7 @@ void QCPAxis::setRange(const QCPRange &range)
     return;
   
   if (!QCPRange::validRange(range)) return;
+  QCPRange oldRange = mRange;
   if (mScaleType == stLogarithmic)
   {
     mRange = range.sanitizedForLogScale();
@@ -503,6 +512,7 @@ void QCPAxis::setRange(const QCPRange &range)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
@@ -561,6 +571,7 @@ void QCPAxis::setRange(double lower, double upper)
     return;
   
   if (!QCPRange::validRange(lower, upper)) return;
+  QCPRange oldRange = mRange;
   mRange.lower = lower;
   mRange.upper = upper;
   if (mScaleType == stLogarithmic)
@@ -572,6 +583,7 @@ void QCPAxis::setRange(double lower, double upper)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
@@ -604,6 +616,7 @@ void QCPAxis::setRangeLower(double lower)
   if (mRange.lower == lower)
     return;
   
+  QCPRange oldRange = mRange;
   mRange.lower = lower;
   if (mScaleType == stLogarithmic)
   {
@@ -614,6 +627,7 @@ void QCPAxis::setRangeLower(double lower)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
@@ -625,6 +639,7 @@ void QCPAxis::setRangeUpper(double upper)
   if (mRange.upper == upper)
     return;
   
+  QCPRange oldRange = mRange;
   mRange.upper = upper;
   if (mScaleType == stLogarithmic)
   {
@@ -635,6 +650,7 @@ void QCPAxis::setRangeUpper(double upper)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
@@ -880,6 +896,8 @@ void QCPAxis::setTickLabelRotation(double degrees)
   for details about the \a format string, see the documentation of QDateTime::toString().
   
   Newlines can be inserted with "\n".
+  
+  \see setDateTimeSpec
 */
 void QCPAxis::setDateTimeFormat(const QString &format)
 {
@@ -889,6 +907,21 @@ void QCPAxis::setDateTimeFormat(const QString &format)
     mCachedMarginValid = false;
     mLabelCache.clear();
   }
+}
+
+/*!
+  Sets the time spec that is used for the date time values when \ref setTickLabelType is \ref
+  ltDateTime.
+
+  The default value of QDateTime objects (and also QCustomPlot) is <tt>Qt::LocalTime</tt>. However,
+  if the date time values passed to QCustomPlot are given in the UTC spec, set \a
+  timeSpec to <tt>Qt::UTC</tt> to get the correct axis labels.
+  
+  \see setDateTimeFormat
+*/
+void QCPAxis::setDateTimeSpec(const Qt::TimeSpec &timeSpec)
+{
+  mDateTimeSpec = timeSpec;
 }
 
 /*!
@@ -1401,6 +1434,7 @@ void QCPAxis::setUpperEnding(const QCPLineEnding &ending)
 */
 void QCPAxis::moveRange(double diff)
 {
+  QCPRange oldRange = mRange;
   if (mScaleType == stLinear)
   {
     mRange.lower += diff;
@@ -1412,6 +1446,7 @@ void QCPAxis::moveRange(double diff)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
@@ -1422,6 +1457,7 @@ void QCPAxis::moveRange(double diff)
 */
 void QCPAxis::scaleRange(double factor, double center)
 {
+  QCPRange oldRange = mRange;
   if (mScaleType == stLinear)
   {
     QCPRange newRange;
@@ -1443,6 +1479,7 @@ void QCPAxis::scaleRange(double factor, double center)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
@@ -1474,6 +1511,43 @@ void QCPAxis::setScaleRatio(const QCPAxis *otherAxis, double ratio)
   
   double newRangeSize = ratio*otherAxis->range().size()*ownPixelSize/(double)otherPixelSize;
   setRange(range().center(), newRangeSize, Qt::AlignCenter);
+}
+
+/*!
+  Changes the axis range such that all plottables associated with this axis are fully visible in
+  that dimension.
+  
+  \see QCPAbstractPlottable::rescaleAxes, QCustomPlot::rescaleAxes
+*/
+void QCPAxis::rescale(bool onlyVisiblePlottables)
+{
+  QList<QCPAbstractPlottable*> p = plottables();
+  QCPRange newRange;
+  bool haveRange = false;
+  for (int i=0; i<p.size(); ++i)
+  {
+    if (!p.at(i)->realVisibility() && onlyVisiblePlottables)
+      continue;
+    QCPRange plottableRange;
+    bool validRange;
+    QCPAbstractPlottable::SignDomain signDomain = QCPAbstractPlottable::sdBoth;
+    if (mScaleType == stLogarithmic)
+      signDomain = (mRange.upper < 0 ? QCPAbstractPlottable::sdNegative : QCPAbstractPlottable::sdPositive);
+    if (p.at(i)->keyAxis() == this)
+      plottableRange = p.at(i)->getKeyRange(validRange, signDomain);
+    else
+      plottableRange = p.at(i)->getValueRange(validRange, signDomain);
+    if (validRange)
+    {
+      if (!haveRange)
+        newRange = plottableRange;
+      else
+        newRange.expand(plottableRange);
+      haveRange = true;
+    }
+  }
+  if (haveRange)
+    setRange(newRange);
 }
 
 /*!
@@ -1655,7 +1729,7 @@ QList<QCPAbstractItem*> QCPAxis::items() const
   for (int itemId=0; itemId<mParentPlot->mItems.size(); ++itemId)
   {
     QList<QCPItemPosition*> positions = mParentPlot->mItems.at(itemId)->positions();
-    for (int posId=0; posId<positions.size(); ++itemId)
+    for (int posId=0; posId<positions.size(); ++posId)
     {
       if (positions.at(posId)->keyAxis() == this || positions.at(posId)->valueAxis() == this)
       {
@@ -1760,9 +1834,9 @@ void QCPAxis::setupTickVectors()
       for (int i=mLowestVisibleTick; i<=mHighestVisibleTick; ++i)
       {
 #if QT_VERSION < QT_VERSION_CHECK(4, 7, 0) // use fromMSecsSinceEpoch function if available, to gain sub-second accuracy on tick labels (e.g. for format "hh:mm:ss:zzz")
-        mTickVectorLabels[i] = mParentPlot->locale().toString(QDateTime::fromTime_t(mTickVector.at(i)), mDateTimeFormat);
+        mTickVectorLabels[i] = mParentPlot->locale().toString(QDateTime::fromTime_t(mTickVector.at(i)).toTimeSpec(mDateTimeSpec), mDateTimeFormat);
 #else
-        mTickVectorLabels[i] = mParentPlot->locale().toString(QDateTime::fromMSecsSinceEpoch(mTickVector.at(i)*1000), mDateTimeFormat);
+        mTickVectorLabels[i] = mParentPlot->locale().toString(QDateTime::fromMSecsSinceEpoch(mTickVector.at(i)*1000).toTimeSpec(mDateTimeSpec), mDateTimeFormat);
 #endif
       }
     }

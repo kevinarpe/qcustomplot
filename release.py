@@ -21,7 +21,8 @@ if raw_input("\033[1;31m"+"This will call 'git clean -dxf' which will completely
   printinfo("Aborted.");
   sys.exit(1);
 
-os.chdir(sys.path[0]) # change current working dir to script dir
+baseDir = sys.path[0];
+os.chdir(baseDir) # change current working dir to script dir
 
 # clean working dir:
 printinfo("Cleaning working directory...")
@@ -43,43 +44,52 @@ subprocess.call("./run-doxygen.sh", shell=True)
 
 # build release packages in temp directory:
 print ""
-os.mkdir("./temp")
-os.chdir("./temp")
+tempDir = baseDir+"/temp"
+os.mkdir(tempDir)
 
 # full:
+os.mkdir(tempDir+"/qcustomplot")
+os.chdir(tempDir+"/qcustomplot")
 printinfo("Building full QCustomPlot package")
-distutils.dir_util.copy_tree("../documentation/html", "./documentation/html")
-shutil.copy2("../documentation/qthelp/qcustomplot.qch", "./documentation/")
-for f in ["../qcustomplot.h", "../qcustomplot.cpp", "../GPL.txt", "../changelog.txt"]:
+distutils.dir_util.copy_tree(baseDir+"/documentation/html", "./documentation/html")
+shutil.copy2(baseDir+"/documentation/qthelp/qcustomplot.qch", "./documentation/")
+for f in [baseDir+"/qcustomplot.h", baseDir+"/qcustomplot.cpp", baseDir+"/GPL.txt", baseDir+"/changelog.txt"]:
   shutil.copy2(f, "./")
-distutils.dir_util.copy_tree("../examples", "./examples")
+distutils.dir_util.copy_tree(baseDir+"/examples", "./examples")
 os.chdir("./examples/plots");
 shutil.rmtree("./screenshots")
 os.chdir("../../");
 subprocess.call("find . -name .gitignore -exec rm -f \"{}\" \;", shell=True)
+os.chdir(tempDir)
 subprocess.call(tarcommand+" QCustomPlot"+tarsuffix+" *", shell=True)
-shutil.move("QCustomPlot"+tarsuffix, "../")
-subprocess.call("rm -r *", shell=True)
+shutil.move("QCustomPlot"+tarsuffix, baseDir+"/")
+shutil.rmtree("./qcustomplot")
 
 # source only:
+os.mkdir(tempDir+"/qcustomplot-source")
+os.chdir(tempDir+"/qcustomplot-source")
 printinfo("Building QCustomPlot-source package")
-for f in ["../qcustomplot.h", "../qcustomplot.cpp", "../GPL.txt", "../changelog.txt"]:
+for f in [baseDir+"/qcustomplot.h", baseDir+"/qcustomplot.cpp", baseDir+"/GPL.txt", baseDir+"/changelog.txt"]:
   shutil.copy2(f, "./")
 subprocess.call("find . -name .gitignore -exec rm -f \"{}\" \;", shell=True)
+os.chdir(tempDir)
 subprocess.call(tarcommand+" QCustomPlot-source"+tarsuffix+" *", shell=True)
-shutil.move("QCustomPlot-source"+tarsuffix, "../")
-subprocess.call("rm -r *", shell=True)
+shutil.move("QCustomPlot-source"+tarsuffix, baseDir+"/")
+shutil.rmtree("./qcustomplot-source")
 
 # shared lib:
+os.mkdir(tempDir+"/qcustomplot-sharedlib")
+os.chdir(tempDir+"/qcustomplot-sharedlib")
 printinfo("Building QCustomPlot-sharedlib package")
-distutils.dir_util.copy_tree("../sharedlib/", "./")
+distutils.dir_util.copy_tree(baseDir+"/sharedlib/", "./")
 subprocess.call("find . -name .gitignore -exec rm -f \"{}\" \;", shell=True)
+os.chdir(tempDir)
 subprocess.call(tarcommand+" QCustomPlot-sharedlib"+tarsuffix+" *", shell=True)
-shutil.move("QCustomPlot-sharedlib"+tarsuffix, "../")
-subprocess.call("rm -r *", shell=True)
+shutil.move("QCustomPlot-sharedlib"+tarsuffix, baseDir+"/")
+shutil.rmtree("./qcustomplot-sharedlib")
 
 # clean up:
-os.chdir("../")
+os.chdir(baseDir)
 os.rmdir("./temp")
 printinfo("done")
 

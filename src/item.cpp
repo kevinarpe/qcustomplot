@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 #include "item.h"
@@ -54,6 +54,20 @@
   To learn how to provide anchors in your own item subclasses, see the subclassing section of the
   QCPAbstractItem documentation.
 */
+
+/* start documentation of inline functions */
+
+/*! \fn virtual QCPItemPosition *QCPItemAnchor::toQCPItemPosition()
+  
+  Returns 0 if this instance is merely a QCPItemAnchor, and a valid pointer of type QCPItemPosition* if
+  it actually is a QCPItemPosition (which is a subclass of QCPItemAnchor).
+  
+  This safe downcast functionality could also be achieved with a dynamic_cast. However, QCustomPlot avoids
+  dynamic_cast to work with projects that don't have RTTI support enabled (e.g. -fno-rtti flag with
+  gcc compiler).
+*/
+
+/* end documentation of inline functions */
 
 /*!
   Creates a new QCPItemAnchor. You shouldn't create QCPItemAnchor instances directly, even if
@@ -184,6 +198,12 @@ QCPItemPosition::~QCPItemPosition()
   // unregister as child in parent:
   if (mParentAnchor)
     mParentAnchor->removeChild(this);
+}
+
+/* can't make this a header inline function, because QPointer breaks with forward declared types, see QTBUG-29588 */
+QCPAxisRect *QCPItemPosition::axisRect() const
+{
+  return mAxisRect.data();
 }
 
 /*!
@@ -763,6 +783,12 @@ QCPAbstractItem::~QCPAbstractItem()
 {
   // don't delete mPositions because every position is also an anchor and thus in mAnchors
   qDeleteAll(mAnchors);
+}
+
+/* can't make this a header inline function, because QPointer breaks with forward declared types, see QTBUG-29588 */
+QCPAxisRect *QCPAbstractItem::clipAxisRect() const
+{
+  return mClipAxisRect.data();
 }
 
 /*!

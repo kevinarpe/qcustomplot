@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_LAYER_H
@@ -108,7 +108,7 @@ protected:
   // property members:
   bool mVisible;
   QCustomPlot *mParentPlot;
-  QWeakPointer<QCPLayerable> mParentLayerable;
+  QPointer<QCPLayerable> mParentLayerable;
   QCPLayer *mLayer;
   bool mAntialiased;
   

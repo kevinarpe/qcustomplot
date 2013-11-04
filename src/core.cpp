@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 /*! \file */
@@ -37,7 +37,7 @@
 #include "plottables/plottable-graph.h"
 #include "item.h"
 
-/*! \mainpage %QCustomPlot 1.0.1 Documentation
+/*! \mainpage %QCustomPlot 1.1.0 Documentation
 
   \image html qcp-doc-logo.png
   
@@ -1837,27 +1837,24 @@ void QCustomPlot::replot()
 }
 
 /*!
-  Rescales the axes such that all plottables (like graphs) in the plot are fully visible. It does
-  this by calling \ref QCPAbstractPlottable::rescaleAxes on all plottables.
+  Rescales the axes such that all plottables (like graphs) in the plot are fully visible.
   
-  if \a onlyVisible is set to true, only the plottables that have their visibility set to true
+  if \a onlyVisiblePlottables is set to true, only the plottables that have their visibility set to true
   (QCPLayerable::setVisible), will be used to rescale the axes.
   
-  \see QCPAbstractPlottable::rescaleAxes
+  \see QCPAbstractPlottable::rescaleAxes, QCPAxis::rescale
 */
-void QCustomPlot::rescaleAxes(bool onlyVisible)
+void QCustomPlot::rescaleAxes(bool onlyVisiblePlottables)
 {
-  if (mPlottables.isEmpty()) return;
-  bool firstPlottable = true;
+  // get a list of all axes in the plot:
+  QList<QCPAxis*> axes;
+  QList<QCPAxisRect*> rects = axisRects();
+  for (int i=0; i<rects.size(); ++i)
+    axes << rects.at(i)->axes();
   
-  for (int i=0; i<mPlottables.size(); ++i)
-  {
-    if (mPlottables.at(i)->realVisibility() || !onlyVisible)
-    {
-      mPlottables.at(i)->rescaleAxes(!firstPlottable); // onlyEnlarge disabled on first plottable
-      firstPlottable = false;
-    }
-  }
+  // call rescale on all axes:
+  for (int i=0; i<axes.size(); ++i)
+    axes.at(i)->rescale(onlyVisiblePlottables);
 }
 
 /*!
@@ -1889,11 +1886,20 @@ void QCustomPlot::rescaleAxes(bool onlyVisible)
   aren't defined yet inside the constructor, so you would get an image that has strange
   widths/heights.
   
+  \note On Android systems, this method does nothing and issues an according qDebug warning message.
+  
   \see savePng, saveBmp, saveJpg, saveRastered
 */
 bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width, int height)
 {
   bool success = false;
+#ifdef QT_NO_PRINTER
+  Q_UNUSED(fileName)
+  Q_UNUSED(noCosmeticPen)
+  Q_UNUSED(width)
+  Q_UNUSED(height)
+  qDebug() << Q_FUNC_INFO << "Qt was built without printer support (QT_NO_PRINTER). PDF not created.";
+#else
   int newWidth, newHeight;
   if (width == 0 || height == 0)
   {
@@ -1929,6 +1935,7 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
     success = true;
   }
   setViewport(oldViewport);
+#endif // QT_NO_PRINTER
   return success;
 }
 

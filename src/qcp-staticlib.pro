@@ -6,7 +6,7 @@
 # If compiling your application in release mode, you should link with qcustomplot.
 #
 # In your project's HEADERS, you may use either the amalgamated header qcustomplot.h or all separated headers.
-# (note that qmake undestands "*.h" if you choose the latter option.)
+# (note that qmake understands "*.h" if you choose the latter option.)
 #
 
 QT += core gui
@@ -15,7 +15,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 TEMPLATE = lib
 CONFIG += qt staticlib debug_and_release build_all
 
-VERSION = 0.9.0
+VERSION = 1.1.0
 TARGET = qcustomplot
 CONFIG(debug, debug|release) {
   TARGET = $$join(TARGET,,,d) # if compiling in debug mode, append a "d" to the library name

@@ -78,7 +78,6 @@ void TestQCPAxisRect::axisRemovalConsequencesToPlottables()
   QVERIFY(mPlot->axisRect()->removeAxis(mPlot->xAxis));
   QTest::ignoreMessage(QtDebugMsg, "virtual void QCPGraph::draw(QCPPainter*) invalid key or value axis ");
   mPlot->replot();
-  QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleKeyAxis(bool) const invalid key axis ");
   mPlot->rescaleAxes();
   QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleKeyAxis(bool) const invalid key axis ");
   graph->rescaleAxes();
@@ -136,8 +135,6 @@ void TestQCPAxisRect::axisRectRemovalConsequencesToPlottables()
   QCOMPARE(mPlot->plotLayout()->elementCount(), 0);
   QTest::ignoreMessage(QtDebugMsg, "virtual void QCPGraph::draw(QCPPainter*) invalid key or value axis ");
   mPlot->replot();
-  QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleKeyAxis(bool) const invalid key axis ");
-  QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleValueAxis(bool) const invalid value axis ");
   mPlot->rescaleAxes();
   QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleKeyAxis(bool) const invalid key axis ");
   QTest::ignoreMessage(QtDebugMsg, "void QCPAbstractPlottable::rescaleValueAxis(bool) const invalid value axis ");

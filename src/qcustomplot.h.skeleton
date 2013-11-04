@@ -19,17 +19,12 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 #ifndef QCUSTOMPLOT_H
 #define QCUSTOMPLOT_H
-
-#ifdef QT_DISABLE_DEPRECATED_BEFORE
-#  undef QT_DISABLE_DEPRECATED_BEFORE
-#endif
-#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(0, 0, 0)
 
 //amalgamation: place header includes
 

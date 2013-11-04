@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 #include "plottable-graph.h"
@@ -436,14 +436,14 @@ void QCPGraph::setChannelFillGraph(QCPGraph *targetGraph)
   if (targetGraph == this)
   {
     qDebug() << Q_FUNC_INFO << "targetGraph is this graph itself";
-    mChannelFillGraph.clear();
+    mChannelFillGraph = 0;
     return;
   }
   // prevent setting channel target to a graph not in the plot:
   if (targetGraph && targetGraph->mParentPlot != mParentPlot)
   {
     qDebug() << Q_FUNC_INFO << "targetGraph not in same plot";
-    mChannelFillGraph.clear();
+    mChannelFillGraph = 0;
     return;
   }
   

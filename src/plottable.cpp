@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 #include "plottable.h"
@@ -91,7 +91,7 @@
     <td>QBrush \b mSelectedBrush</td>
     <td>The generic brush that should be used when the plottable is selected (hint: \ref mainBrush gives you the right brush, depending on selection state).</td>
   </tr><tr>
-    <td>QWeakPointer<QCPAxis>\b mKeyAxis, \b mValueAxis</td>
+    <td>QPointer<QCPAxis>\b mKeyAxis, \b mValueAxis</td>
     <td>The key and value axes this plottable is attached to. Call their QCPAxis::coordToPixel functions to translate coordinates to pixels in either the key or value dimension.
         Make sure to check whether the weak pointer is null before using it. If one of the axes is null, don't draw the plottable.</td>
   </tr><tr>
@@ -358,7 +358,7 @@ void QCPAbstractPlottable::setSelected(bool selected)
   multiple plottables in their entirety by multiple calls to rescaleAxes where the first call has
   \a onlyEnlarge set to false (the default), and all subsequent set to true.
   
-  \see rescaleKeyAxis, rescaleValueAxis, QCustomPlot::rescaleAxes
+  \see rescaleKeyAxis, rescaleValueAxis, QCustomPlot::rescaleAxes, QCPAxis::rescale
 */
 void QCPAbstractPlottable::rescaleAxes(bool onlyEnlarge) const
 {
@@ -380,23 +380,21 @@ void QCPAbstractPlottable::rescaleKeyAxis(bool onlyEnlarge) const
   if (keyAxis->scaleType() == QCPAxis::stLogarithmic)
     signDomain = (keyAxis->range().upper < 0 ? sdNegative : sdPositive);
   
-  bool validRange;
-  QCPRange newRange = getKeyRange(validRange, signDomain);
-  if (validRange)
+  bool rangeValid;
+  QCPRange newRange = getKeyRange(rangeValid, signDomain);
+  if (rangeValid)
   {
     if (onlyEnlarge)
-    {
-      if (keyAxis->range().lower < newRange.lower)
-        newRange.lower = keyAxis->range().lower;
-      if (keyAxis->range().upper > newRange.upper)
-        newRange.upper = keyAxis->range().upper;
-    }
+      newRange.expand(keyAxis->range());
     keyAxis->setRange(newRange);
   }
 }
 
 /*!
   Rescales the value axis of the plottable so the whole plottable is visible.
+  
+  Returns true if the axis was actually scaled. This might not be the case if this plottable has an
+  invalid range, e.g. because it has no data points.
   
   See \ref rescaleAxes for detailed behaviour.
 */
@@ -409,18 +407,12 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
   if (valueAxis->scaleType() == QCPAxis::stLogarithmic)
     signDomain = (valueAxis->range().upper < 0 ? sdNegative : sdPositive);
   
-  bool validRange;
-  QCPRange newRange = getValueRange(validRange, signDomain);
-  
-  if (validRange)
+  bool rangeValid;
+  QCPRange newRange = getValueRange(rangeValid, signDomain);
+  if (rangeValid)
   {
     if (onlyEnlarge)
-    {
-      if (valueAxis->range().lower < newRange.lower)
-        newRange.lower = valueAxis->range().lower;
-      if (valueAxis->range().upper > newRange.upper)
-        newRange.upper = valueAxis->range().upper;
-    }
+      newRange.expand(valueAxis->range());
     valueAxis->setRange(newRange);
   }
 }

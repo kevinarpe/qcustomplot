@@ -19,21 +19,16 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 /*! \file */
 #ifndef QCP_GLOBAL_H
 #define QCP_GLOBAL_H
 
-#ifdef QT_DISABLE_DEPRECATED_BEFORE
-#  undef QT_DISABLE_DEPRECATED_BEFORE
-#endif
-#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(0, 0, 0)
-
 // amalgamation: include begin
 #include <QObject>
-#include <QWeakPointer>
+#include <QPointer>
 #include <QWidget>
 #include <QPainter>
 #include <QPaintEvent>
@@ -56,7 +51,7 @@
 #  include <QPrinter>
 #else
 #  include <QtNumeric>
-#  include <QPrinter> // change this to QtPrintSupport as soon as Qt fixes bug with deprecated QUrl methods
+#  include <QtPrintSupport>
 #endif
 // amalgamation: include end
 

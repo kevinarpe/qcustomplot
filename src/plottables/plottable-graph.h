@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 /*! \file */
 #ifndef QCP_PLOTTABLE_GRAPH_H
@@ -140,9 +140,9 @@ public:
   using QCPAbstractPlottable::rescaleAxes;
   using QCPAbstractPlottable::rescaleKeyAxis;
   using QCPAbstractPlottable::rescaleValueAxis;
-  virtual void rescaleAxes(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
-  virtual void rescaleKeyAxis(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
-  virtual void rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
+  void rescaleAxes(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
+  void rescaleKeyAxis(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
+  void rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
   
 protected:
   // property members:
@@ -153,7 +153,7 @@ protected:
   ErrorType mErrorType;
   double mErrorBarSize;
   bool mErrorBarSkipSymbol;
-  QWeakPointer<QCPGraph> mChannelFillGraph;
+  QPointer<QCPGraph> mChannelFillGraph;
   
   // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);

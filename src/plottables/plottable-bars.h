@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 /*! \file */
 #ifndef QCP_PLOTTABLE_BARS_H
@@ -97,7 +97,7 @@ protected:
   // property members:
   QCPBarDataMap *mData;
   double mWidth;
-  QWeakPointer<QCPBars> mBarBelow, mBarAbove;
+  QPointer<QCPBars> mBarBelow, mBarAbove;
   
   // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);

@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_RANGE_H
@@ -39,6 +39,8 @@ public:
   double size() const;
   double center() const;
   void normalize();
+  void expand(const QCPRange &otherRange);
+  QCPRange expanded(const QCPRange &otherRange) const;
   QCPRange sanitizedForLogScale() const;
   QCPRange sanitizedForLinScale() const;
   bool contains(double value) const;

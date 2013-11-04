@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_LAYOUTELEMENT_AXISRECT_H
@@ -116,7 +116,7 @@ protected:
   Qt::AspectRatioMode mBackgroundScaledMode;
   QCPLayoutInset *mInsetLayout;
   Qt::Orientations mRangeDrag, mRangeZoom;
-  QWeakPointer<QCPAxis> mRangeDragHorzAxis, mRangeDragVertAxis, mRangeZoomHorzAxis, mRangeZoomVertAxis;
+  QPointer<QCPAxis> mRangeDragHorzAxis, mRangeDragVertAxis, mRangeZoomHorzAxis, mRangeZoomVertAxis;
   double mRangeZoomFactorHorz, mRangeZoomFactorVert;
   // non-property members:
   QCPRange mDragStartHorzRange, mDragStartVertRange;

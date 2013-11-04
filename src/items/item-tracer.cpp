@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 #include "item-tracer.h"
@@ -339,8 +339,7 @@ void QCPItemTracer::updatePosition()
           position->setCoords(last.key(), last.value().value);
         else
         {
-          QCPDataMap::const_iterator it = first;
-          it = mGraph->data()->lowerBound(mGraphKey);
+          QCPDataMap::const_iterator it = mGraph->data()->lowerBound(mGraphKey);
           if (it != first) // mGraphKey is somewhere between iterators
           {
             QCPDataMap::const_iterator prevIt = it-1;

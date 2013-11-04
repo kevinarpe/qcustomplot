@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_AXIS_H
@@ -209,6 +209,7 @@ public:
   QColor tickLabelColor() const { return mTickLabelColor; }
   double tickLabelRotation() const { return mTickLabelRotation; }
   QString dateTimeFormat() const { return mDateTimeFormat; }
+  Qt::TimeSpec dateTimeSpec() const { return mDateTimeSpec; }
   QString numberFormat() const;
   int numberPrecision() const { return mNumberPrecision; }
   double tickStep() const { return mTickStep; }
@@ -263,6 +264,7 @@ public:
   void setTickLabelColor(const QColor &color);
   void setTickLabelRotation(double degrees);
   void setDateTimeFormat(const QString &format);
+  void setDateTimeSpec(const Qt::TimeSpec &timeSpec);
   void setNumberFormat(const QString &formatCode);
   void setNumberPrecision(int precision);
   void setTickStep(double step);
@@ -304,6 +306,7 @@ public:
   void moveRange(double diff);
   void scaleRange(double factor, double center);
   void setScaleRatio(const QCPAxis *otherAxis, double ratio=1.0);
+  void rescale(bool onlyVisiblePlottables=false);
   double pixelToCoord(double value) const;
   double coordToPixel(double value) const;
   SelectablePart getPartAt(const QPointF &pos) const;
@@ -316,6 +319,7 @@ public:
 signals:
   void ticksRequest();
   void rangeChanged(const QCPRange &newRange);
+  void rangeChanged(const QCPRange &newRange, const QCPRange &oldRange);
   void selectionChanged(const QCPAxis::SelectableParts &parts);
 
 protected:
@@ -353,6 +357,7 @@ protected:
   QFont mTickLabelFont, mSelectedTickLabelFont;
   QColor mTickLabelColor, mSelectedTickLabelColor;
   QString mDateTimeFormat;
+  Qt::TimeSpec mDateTimeSpec;
   int mNumberPrecision;
   char mNumberFormatChar;
   bool mNumberBeautifulPowers;

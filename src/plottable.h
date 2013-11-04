@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 05.09.13                                             **
-**          Version: 1.0.1                                                **
+**             Date: 04.11.13                                             **
+**          Version: 1.1.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_PLOTTABLE_H
@@ -29,9 +29,9 @@
 #include "global.h"
 #include "range.h"
 #include "layer.h"
+#include "axis.h"
 
 class QCPPainter;
-class QCPAxis;
 
 class QCP_LIB_DECL QCPAbstractPlottable : public QCPLayerable
 {
@@ -109,7 +109,7 @@ protected:
   bool mAntialiasedFill, mAntialiasedScatters, mAntialiasedErrorBars;
   QPen mPen, mSelectedPen;
   QBrush mBrush, mSelectedBrush;
-  QWeakPointer<QCPAxis> mKeyAxis, mValueAxis;
+  QPointer<QCPAxis> mKeyAxis, mValueAxis;
   bool mSelectable, mSelected;
   
   // reimplemented virtual methods:
@@ -142,6 +142,7 @@ private:
   Q_DISABLE_COPY(QCPAbstractPlottable)
   
   friend class QCustomPlot;
+  friend class QCPAxis;
   friend class QCPPlottableLegendItem;
 };
 
