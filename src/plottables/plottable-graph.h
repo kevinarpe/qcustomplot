@@ -140,9 +140,9 @@ public:
   using QCPAbstractPlottable::rescaleAxes;
   using QCPAbstractPlottable::rescaleKeyAxis;
   using QCPAbstractPlottable::rescaleValueAxis;
-  virtual void rescaleAxes(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
-  virtual void rescaleKeyAxis(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
-  virtual void rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
+  void rescaleAxes(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
+  void rescaleKeyAxis(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
+  void rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
   
 protected:
   // property members:
