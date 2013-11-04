@@ -499,7 +499,7 @@ QList<QCPAbstractItem *> QCPAxisRect::items() const
       continue;
     }
     QList<QCPItemPosition*> positions = mParentPlot->mItems.at(itemId)->positions();
-    for (int posId=0; posId<positions.size(); ++itemId)
+    for (int posId=0; posId<positions.size(); ++posId)
     {
       if (positions.at(posId)->axisRect() == this ||
           positions.at(posId)->keyAxis()->axisRect() == this ||
