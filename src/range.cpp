@@ -101,6 +101,36 @@ void QCPRange::normalize()
 }
 
 /*! 
+  Expands this range such that \a otherRange is contained in the new range. It is assumed that both
+  this range and \a otherRange are normalized (see \ref normalize).
+  
+  If \a otherRange is already inside the current range, this function does nothing.
+  
+  \see expanded
+*/
+void QCPRange::expand(const QCPRange &otherRange)
+{
+  if (lower > otherRange.lower)
+    lower = otherRange.lower;
+  if (upper < otherRange.upper)
+    upper = otherRange.upper;
+}
+
+
+/*! 
+  Returns an expanded range that contains this and \a otherRange. It is assumed that both this
+  range and \a otherRange are normalized (see \ref normalize).
+  
+  \see expand
+*/
+QCPRange QCPRange::expanded(const QCPRange &otherRange) const
+{
+  QCPRange result = *this;
+  result.expand(otherRange);
+  return result;
+}
+
+/*! 
   Returns a sanitized version of the range. Sanitized means for logarithmic scales, that
   the range won't span the positive and negative sign domain, i.e. contain zero. Further
   \a lower will always be numerically smaller (or equal) to \a upper.

@@ -142,6 +142,7 @@ private:
   Q_DISABLE_COPY(QCPAbstractPlottable)
   
   friend class QCustomPlot;
+  friend class QCPAxis;
   friend class QCPPlottableLegendItem;
 };
 
