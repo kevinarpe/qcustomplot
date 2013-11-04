@@ -6,7 +6,7 @@
 # If compiling your application in release mode, you should link with qcustomplot.
 #
 # In your project's HEADERS, you may use either the amalgamated header qcustomplot.h or all separated headers.
-# (note that qmake undestands "*.h" if you choose the latter option.)
+# (note that qmake understands "*.h" if you choose the latter option.)
 #
 
 QT += core gui

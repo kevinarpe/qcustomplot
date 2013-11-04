@@ -17,7 +17,7 @@ execTestSuffix = "& sleep 1; kill $!"; # appended to test execution command line
 if config.interactive:
   execTestSuffix = "";
 
-# define print functions:
+# define functions:
 def printinfo(message):
   print "\033[1;36m"+message+"\033[1;m"
 
@@ -30,8 +30,17 @@ def runQmakeMake(qmakecommand):
   if subprocess.call("make -j4", shell=True) != 0:
     printerror("make failed"); sys.exit(1)
 
+def runExample(examplePath, executableName):
+  workingDirectory = os.getcwd()
+  printinfo(examplePath)
+  os.chdir(examplePath)
+  runQmakeMake(qmakecommand)
+  if subprocess.call("./"+executableName+execTestSuffix, shell=True) != 0:
+    printerror("Execution unsuccessful")
+  os.chdir(workingDirectory)
+
 # main test loop:
-qmakeVersions = ["qmake464", "qmake474", "qmake480", "qmake481", "qmake483", "qmake501", "qmake502"]
+qmakeVersions = ["qmake464", "qmake474", "qmake480", "qmake481", "qmake483", "qmake501", "qmake502", "qmake511", "qmake520"]
 if (config.qt > 0):
   qmakeVersions = ["qmake"+str(config.qt)];
 for qmakecommand in qmakeVersions:
@@ -42,78 +51,49 @@ for qmakecommand in qmakeVersions:
   except:
     printinfo("Qt version of '"+qmakecommand+"' not found, skipping.");
     continue
-  os.chdir(sys.path[0]) # change current working dir to script dir
-  os.mkdir("./temp")
-  os.chdir("./temp")
+  baseDir = sys.path[0];
+  tempDir = baseDir+"/temp"
+  os.mkdir(tempDir)
 
   # ================== QCustomPlot full ==================
   printinfo("QCustomPlot full:")
-  os.mkdir("QCustomPlot")
-  os.chdir("QCustomPlot")
-  shutil.copy2("../../QCustomPlot.tar.gz", "./")
+  os.chdir(tempDir)
+  shutil.copy2(baseDir+"/QCustomPlot.tar.gz", "./")
   if subprocess.call("tar -xf QCustomPlot.tar.gz", shell=True) != 0:
     printerror("Failed to untar QCustomPlot.tar.gz"); sys.exit(1)
-
-  # plots examples:
-  printinfo("examples/plots")
-  os.chdir("examples/plots")
-  runQmakeMake(qmakecommand)
-  if subprocess.call("./plot-examples"+execTestSuffix, shell=True) != 0:
-    printerror("Execution unsuccessful")
-  os.chdir("../..")
+  os.chdir(tempDir+"/qcustomplot")
+  # test examples:
+  runExample("examples/plots", "plot-examples")
   if not config.short:
-    # interactions example:
-    printinfo("examples/interactions")
-    os.chdir("examples/interactions")
-    runQmakeMake(qmakecommand)
-    if subprocess.call("./interaction-example"+execTestSuffix, shell=True) != 0:
-      printerror("Execution unsuccessful")
-    os.chdir("../..")
-    # text-document-integration example:
-    printinfo("examples/text-document-integration")
-    os.chdir("examples/text-document-integration")
-    runQmakeMake(qmakecommand)
-    if subprocess.call("./text-document-integration"+execTestSuffix, shell=True) != 0:
-      printerror("Execution unsuccessful")
-    os.chdir("../..")
-    # scrollbar-axis-range-control example:
-    printinfo("examples/scrollbar-axis-range-control")
-    os.chdir("examples/scrollbar-axis-range-control")
-    runQmakeMake(qmakecommand)
-    if subprocess.call("./scrollbar-axis-range-control"+execTestSuffix, shell=True) != 0:
-      printerror("Execution unsuccessful")
-    os.chdir("../..")
-  
-  os.chdir("..")
+    runExample("examples/interactions", "interaction-example")
+    runExample("examples/text-document-integration", "text-document-integration")
+    runExample("examples/scrollbar-axis-range-control", "scrollbar-axis-range-control")
+  os.chdir(tempDir)
 
   # ================== QCustomPlot-sharedlib and -source package ==================
   if not config.short:
     printinfo("QCustomPlot sharedlib and source:")
-    os.mkdir("QCustomPlot-sharedlib")
-    os.chdir("QCustomPlot-sharedlib")
-    shutil.copy2("../../QCustomPlot-sharedlib.tar.gz", "./")
+    os.chdir(tempDir)
+    shutil.copy2(baseDir+"/QCustomPlot-sharedlib.tar.gz", "./")
     if subprocess.call("tar -xf QCustomPlot-sharedlib.tar.gz", shell=True) != 0:
       printerror("Failed to untar QCustomPlot-sharedlib.tar.gz"); sys.exit(1)
-    os.chdir("..") # untar qcustomplot source directly in "temp/" because sharedlib expects it two dirs above pro file
-    shutil.copy2("../QCustomPlot-source.tar.gz", "./")
+    shutil.copy2(baseDir+"/QCustomPlot-source.tar.gz", "./")
     if subprocess.call("tar -xf QCustomPlot-source.tar.gz", shell=True) != 0:
       printerror("Failed to untar QCustomPlot-source.tar.gz"); sys.exit(1)
-    os.chdir("QCustomPlot-sharedlib")
+    shutil.copy2(tempDir+"/qcustomplot-source/qcustomplot.h", tempDir+"/")   # copy qcp source to dir above sharedlib dir (sharedlib code expects it two dirs above source files)
+    shutil.copy2(tempDir+"/qcustomplot-source/qcustomplot.cpp", tempDir+"/") # copy qcp source to dir above sharedlib dir (sharedlib code expects it two dirs above source files)
     # sharedlib compile:
     printinfo("sharedlib-compilation")
-    os.chdir("sharedlib-compilation")
+    os.chdir(tempDir+"/qcustomplot-sharedlib/sharedlib-compilation")
     runQmakeMake(qmakecommand)
     subprocess.call("cp libqcustomplot* ../sharedlib-usage", shell=True)
-    os.chdir("..");
     # sharedlib use:
     printinfo("sharedlib-usage")
-    os.chdir("sharedlib-usage");
+    os.chdir(tempDir+"/qcustomplot-sharedlib/sharedlib-usage")
     runQmakeMake(qmakecommand)
     if subprocess.call("export LD_LIBRARY_PATH=.; ./sharedlib-usage"+execTestSuffix, shell=True) != 0:
       printerror("Execution unsuccessful")
-    os.chdir("..")
-
-    os.chdir("..")
+    os.chdir(tempDir)
 
   # ================== Cleanup ==================
   answer = ""
@@ -123,7 +103,7 @@ for qmakecommand in qmakeVersions:
     else:
       printinfo("Enter 'q' and hit return to stop release test, enter nothing to continue with next qt version...")
     answer = raw_input()
-  os.chdir("..")
+  os.chdir(baseDir)
   shutil.rmtree("./temp")
   printinfo("cleaned up")
   if (answer == "q"):
