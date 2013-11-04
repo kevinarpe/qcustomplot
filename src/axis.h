@@ -317,6 +317,7 @@ public:
 signals:
   void ticksRequest();
   void rangeChanged(const QCPRange &newRange);
+  void rangeChanged(const QCPRange &newRange, const QCPRange &oldRange);
   void selectionChanged(const QCPAxis::SelectableParts &parts);
 
 protected:

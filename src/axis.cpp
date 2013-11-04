@@ -321,6 +321,13 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   be synchronized.
 */
 
+/*! \fn void QCPAxis::rangeChanged(const QCPRange &newRange, const QCPRange &oldRange)
+  \overload
+  
+  Additionally to the new range, this signal also provides the previous range held by the axis as
+  \a oldRange.
+*/
+
 /*! \fn void QCPAxis::selectionChanged(QCPAxis::SelectableParts selection)
   
   This signal is emitted when the selection state of this axis has changed, either by user interaction
@@ -494,6 +501,7 @@ void QCPAxis::setRange(const QCPRange &range)
     return;
   
   if (!QCPRange::validRange(range)) return;
+  QCPRange oldRange = mRange;
   if (mScaleType == stLogarithmic)
   {
     mRange = range.sanitizedForLogScale();
@@ -503,6 +511,7 @@ void QCPAxis::setRange(const QCPRange &range)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
@@ -561,6 +570,7 @@ void QCPAxis::setRange(double lower, double upper)
     return;
   
   if (!QCPRange::validRange(lower, upper)) return;
+  QCPRange oldRange = mRange;
   mRange.lower = lower;
   mRange.upper = upper;
   if (mScaleType == stLogarithmic)
@@ -572,6 +582,7 @@ void QCPAxis::setRange(double lower, double upper)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
@@ -604,6 +615,7 @@ void QCPAxis::setRangeLower(double lower)
   if (mRange.lower == lower)
     return;
   
+  QCPRange oldRange = mRange;
   mRange.lower = lower;
   if (mScaleType == stLogarithmic)
   {
@@ -614,6 +626,7 @@ void QCPAxis::setRangeLower(double lower)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
@@ -625,6 +638,7 @@ void QCPAxis::setRangeUpper(double upper)
   if (mRange.upper == upper)
     return;
   
+  QCPRange oldRange = mRange;
   mRange.upper = upper;
   if (mScaleType == stLogarithmic)
   {
@@ -635,6 +649,7 @@ void QCPAxis::setRangeUpper(double upper)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
@@ -1401,6 +1416,7 @@ void QCPAxis::setUpperEnding(const QCPLineEnding &ending)
 */
 void QCPAxis::moveRange(double diff)
 {
+  QCPRange oldRange = mRange;
   if (mScaleType == stLinear)
   {
     mRange.lower += diff;
@@ -1412,6 +1428,7 @@ void QCPAxis::moveRange(double diff)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
@@ -1422,6 +1439,7 @@ void QCPAxis::moveRange(double diff)
 */
 void QCPAxis::scaleRange(double factor, double center)
 {
+  QCPRange oldRange = mRange;
   if (mScaleType == stLinear)
   {
     QCPRange newRange;
@@ -1443,6 +1461,7 @@ void QCPAxis::scaleRange(double factor, double center)
   }
   mCachedMarginValid = false;
   emit rangeChanged(mRange);
+  emit rangeChanged(mRange, oldRange);
 }
 
 /*!
