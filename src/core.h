@@ -153,7 +153,7 @@ public:
   QCPAxisRect* axisRect(int index=0) const;
   QList<QCPAxisRect*> axisRects() const;
   QCPLayoutElement* layoutElementAt(const QPointF &pos) const;
-  Q_SLOT void rescaleAxes(bool onlyVisible=false);
+  Q_SLOT void rescaleAxes(bool onlyVisiblePlottables=false);
   
   QList<QCPAxis*> selectedAxes() const;
   QList<QCPLegend*> selectedLegends() const;

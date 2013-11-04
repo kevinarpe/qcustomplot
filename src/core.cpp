@@ -1837,27 +1837,24 @@ void QCustomPlot::replot()
 }
 
 /*!
-  Rescales the axes such that all plottables (like graphs) in the plot are fully visible. It does
-  this by calling \ref QCPAbstractPlottable::rescaleAxes on all plottables.
+  Rescales the axes such that all plottables (like graphs) in the plot are fully visible.
   
-  if \a onlyVisible is set to true, only the plottables that have their visibility set to true
+  if \a onlyVisiblePlottables is set to true, only the plottables that have their visibility set to true
   (QCPLayerable::setVisible), will be used to rescale the axes.
   
-  \see QCPAbstractPlottable::rescaleAxes
+  \see QCPAbstractPlottable::rescaleAxes, QCPAxis::rescale
 */
-void QCustomPlot::rescaleAxes(bool onlyVisible)
+void QCustomPlot::rescaleAxes(bool onlyVisiblePlottables)
 {
-  if (mPlottables.isEmpty()) return;
-  bool firstPlottable = true;
+  // get a list of all axes in the plot:
+  QList<QCPAxis*> axes;
+  QList<QCPAxisRect*> rects = axisRects();
+  for (int i=0; i<rects.size(); ++i)
+    axes << rects.at(i)->axes();
   
-  for (int i=0; i<mPlottables.size(); ++i)
-  {
-    if (mPlottables.at(i)->realVisibility() || !onlyVisible)
-    {
-      mPlottables.at(i)->rescaleAxes(!firstPlottable); // onlyEnlarge disabled on first plottable
-      firstPlottable = false;
-    }
-  }
+  // call rescale on all axes:
+  for (int i=0; i<axes.size(); ++i)
+    axes.at(i)->rescale(onlyVisiblePlottables);
 }
 
 /*!
