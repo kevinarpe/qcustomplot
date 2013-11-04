@@ -28,12 +28,12 @@
 
 #include "global.h"
 #include "layer.h"
+#include "axis.h"
 
 class QCPPainter;
 class QCustomPlot;
 class QCPItemPosition;
 class QCPAbstractItem;
-class QCPAxis;
 class QCPAxisRect;
 
 class QCP_LIB_DECL QCPItemAnchor
@@ -97,7 +97,7 @@ public:
   QPointF coords() const { return QPointF(mKey, mValue); }
   QCPAxis *keyAxis() const { return mKeyAxis.data(); }
   QCPAxis *valueAxis() const { return mValueAxis.data(); }
-  QCPAxisRect *axisRect() const { return mAxisRect.data(); }
+  QCPAxisRect *axisRect() const;
   virtual QPointF pixelPoint() const;
   
   // setters:
@@ -112,8 +112,8 @@ public:
 protected:
   // property members:
   PositionType mPositionType;
-  QWeakPointer<QCPAxis> mKeyAxis, mValueAxis;
-  QWeakPointer<QCPAxisRect> mAxisRect;
+  QPointer<QCPAxis> mKeyAxis, mValueAxis;
+  QPointer<QCPAxisRect> mAxisRect;
   double mKey, mValue;
   QCPItemAnchor *mParentAnchor;
   
@@ -141,7 +141,7 @@ public:
   
   // getters:
   bool clipToAxisRect() const { return mClipToAxisRect; }
-  QCPAxisRect *clipAxisRect() const { return mClipAxisRect.data(); }
+  QCPAxisRect *clipAxisRect() const;
   bool selectable() const { return mSelectable; }
   bool selected() const { return mSelected; }
   
@@ -167,7 +167,7 @@ signals:
 protected:
   // property members:
   bool mClipToAxisRect;
-  QWeakPointer<QCPAxisRect> mClipAxisRect;
+  QPointer<QCPAxisRect> mClipAxisRect;
   QList<QCPItemPosition*> mPositions;
   QList<QCPItemAnchor*> mAnchors;
   bool mSelectable, mSelected;

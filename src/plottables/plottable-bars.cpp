@@ -500,22 +500,22 @@ void QCPBars::connectBars(QCPBars *lower, QCPBars *upper)
   {
     // disconnect old bar below upper:
     if (upper->mBarBelow && upper->mBarBelow.data()->mBarAbove.data() == upper)
-      upper->mBarBelow.data()->mBarAbove.clear();
-    upper->mBarBelow.clear();
+      upper->mBarBelow.data()->mBarAbove = 0;
+    upper->mBarBelow = 0;
   } else if (!upper) // disconnect lower at top
   {
     // disconnect old bar above lower:
     if (lower->mBarAbove && lower->mBarAbove.data()->mBarBelow.data() == lower)
-      lower->mBarAbove.data()->mBarBelow.clear();
-    lower->mBarAbove.clear();
+      lower->mBarAbove.data()->mBarBelow = 0;
+    lower->mBarAbove = 0;
   } else // connect lower and upper
   {
     // disconnect old bar above lower:
     if (lower->mBarAbove && lower->mBarAbove.data()->mBarBelow.data() == lower)
-      lower->mBarAbove.data()->mBarBelow.clear();
+      lower->mBarAbove.data()->mBarBelow = 0;
     // disconnect old bar below upper:
     if (upper->mBarBelow && upper->mBarBelow.data()->mBarAbove.data() == upper)
-      upper->mBarBelow.data()->mBarAbove.clear();
+      upper->mBarBelow.data()->mBarAbove = 0;
     lower->mBarAbove = upper;
     upper->mBarBelow = lower;
   }

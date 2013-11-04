@@ -91,7 +91,7 @@
     <td>QBrush \b mSelectedBrush</td>
     <td>The generic brush that should be used when the plottable is selected (hint: \ref mainBrush gives you the right brush, depending on selection state).</td>
   </tr><tr>
-    <td>QWeakPointer<QCPAxis>\b mKeyAxis, \b mValueAxis</td>
+    <td>QPointer<QCPAxis>\b mKeyAxis, \b mValueAxis</td>
     <td>The key and value axes this plottable is attached to. Call their QCPAxis::coordToPixel functions to translate coordinates to pixels in either the key or value dimension.
         Make sure to check whether the weak pointer is null before using it. If one of the axes is null, don't draw the plottable.</td>
   </tr><tr>

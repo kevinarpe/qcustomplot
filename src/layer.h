@@ -108,7 +108,7 @@ protected:
   // property members:
   bool mVisible;
   QCustomPlot *mParentPlot;
-  QWeakPointer<QCPLayerable> mParentLayerable;
+  QPointer<QCPLayerable> mParentLayerable;
   QCPLayer *mLayer;
   bool mAntialiased;
   

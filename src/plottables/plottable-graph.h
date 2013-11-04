@@ -153,7 +153,7 @@ protected:
   ErrorType mErrorType;
   double mErrorBarSize;
   bool mErrorBarSkipSymbol;
-  QWeakPointer<QCPGraph> mChannelFillGraph;
+  QPointer<QCPGraph> mChannelFillGraph;
   
   // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);

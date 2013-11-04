@@ -186,6 +186,12 @@ QCPItemPosition::~QCPItemPosition()
     mParentAnchor->removeChild(this);
 }
 
+/* can't make this a header inline function, because QPointer breaks with forward declared types, see QTBUG-29588 */
+QCPAxisRect *QCPItemPosition::axisRect() const
+{
+  return mAxisRect.data();
+}
+
 /*!
   Sets the type of the position. The type defines how the coordinates passed to \ref setCoords
   should be handled and how the QCPItemPosition should behave in the plot.
@@ -763,6 +769,12 @@ QCPAbstractItem::~QCPAbstractItem()
 {
   // don't delete mPositions because every position is also an anchor and thus in mAnchors
   qDeleteAll(mAnchors);
+}
+
+/* can't make this a header inline function, because QPointer breaks with forward declared types, see QTBUG-29588 */
+QCPAxisRect *QCPAbstractItem::clipAxisRect() const
+{
+  return mClipAxisRect.data();
 }
 
 /*!

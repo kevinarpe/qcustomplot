@@ -97,7 +97,7 @@ protected:
   // property members:
   QCPBarDataMap *mData;
   double mWidth;
-  QWeakPointer<QCPBars> mBarBelow, mBarAbove;
+  QPointer<QCPBars> mBarBelow, mBarAbove;
   
   // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);

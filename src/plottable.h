@@ -29,9 +29,9 @@
 #include "global.h"
 #include "range.h"
 #include "layer.h"
+#include "axis.h"
 
 class QCPPainter;
-class QCPAxis;
 
 class QCP_LIB_DECL QCPAbstractPlottable : public QCPLayerable
 {
@@ -109,7 +109,7 @@ protected:
   bool mAntialiasedFill, mAntialiasedScatters, mAntialiasedErrorBars;
   QPen mPen, mSelectedPen;
   QBrush mBrush, mSelectedBrush;
-  QWeakPointer<QCPAxis> mKeyAxis, mValueAxis;
+  QPointer<QCPAxis> mKeyAxis, mValueAxis;
   bool mSelectable, mSelected;
   
   // reimplemented virtual methods:
