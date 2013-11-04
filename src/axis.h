@@ -209,6 +209,7 @@ public:
   QColor tickLabelColor() const { return mTickLabelColor; }
   double tickLabelRotation() const { return mTickLabelRotation; }
   QString dateTimeFormat() const { return mDateTimeFormat; }
+  Qt::TimeSpec dateTimeSpec() const { return mDateTimeSpec; }
   QString numberFormat() const;
   int numberPrecision() const { return mNumberPrecision; }
   double tickStep() const { return mTickStep; }
@@ -263,6 +264,7 @@ public:
   void setTickLabelColor(const QColor &color);
   void setTickLabelRotation(double degrees);
   void setDateTimeFormat(const QString &format);
+  void setDateTimeSpec(const Qt::TimeSpec &timeSpec);
   void setNumberFormat(const QString &formatCode);
   void setNumberPrecision(int precision);
   void setTickStep(double step);
@@ -355,6 +357,7 @@ protected:
   QFont mTickLabelFont, mSelectedTickLabelFont;
   QColor mTickLabelColor, mSelectedTickLabelColor;
   QString mDateTimeFormat;
+  Qt::TimeSpec mDateTimeSpec;
   int mNumberPrecision;
   char mNumberFormatChar;
   bool mNumberBeautifulPowers;
