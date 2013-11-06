@@ -762,7 +762,7 @@ int QCPLayoutElement::calculateAutoMargin(QCP::MarginSide side)
 /* end documentation of pure virtual functions */
 
 /*!
-  Creates an instance of QCPLayoutElement and sets default values. Note that since QCPLayoutElement
+  Creates an instance of QCPLayout and sets default values. Note that since QCPLayout
   is an abstract base class, it can't be instantiated directly.
 */
 QCPLayout::QCPLayout()
