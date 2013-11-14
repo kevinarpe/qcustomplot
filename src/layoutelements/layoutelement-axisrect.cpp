@@ -354,9 +354,9 @@ bool QCPAxisRect::removeAxis(QCPAxis *axis)
 }
 
 /*!
-  Convenience function to create an axis on each side that doesn't have any axes yet, and assign
-  the top/right axes the following properties of the bottom/left axes (even if they already existed
-  and weren't created by this function):
+  Convenience function to create an axis on each side that doesn't have any axes yet and set their
+  visibility to true. Further, the top/right axes are assigned the following properties of the
+  bottom/left axes:
   
   \li range (\ref QCPAxis::setRange)
   \li range reversed (\ref QCPAxis::setRangeReversed)
@@ -368,11 +368,16 @@ bool QCPAxisRect::removeAxis(QCPAxis *axis)
   \li auto sub ticks (\ref QCPAxis::setAutoSubTicks)
   \li tick step (\ref QCPAxis::setTickStep)
   \li auto tick step (\ref QCPAxis::setAutoTickStep)
+  \li number format (\ref QCPAxis::setNumberFormat)
+  \li number precision (\ref QCPAxis::setNumberPrecision)
+  \li tick label type (\ref QCPAxis::setTickLabelType)
+  \li date time format (\ref QCPAxis::setDateTimeFormat)
+  \li date time spec (\ref QCPAxis::setDateTimeSpec)
   
   Tick labels (\ref QCPAxis::setTickLabels) of the right and top axes are set to false.
 
-  If \a connectRanges is true, the rangeChanged signals of the bottom and left axes are connected
-  to the \ref QCPAxis::setRange slots of the top and right axes.
+  If \a connectRanges is true, the \ref QCPAxis::rangeChanged "rangeChanged" signals of the bottom
+  and left axes are connected to the \ref QCPAxis::setRange slots of the top and right axes.
 */
 void QCPAxisRect::setupFullAxesBox(bool connectRanges)
 {
@@ -397,37 +402,44 @@ void QCPAxisRect::setupFullAxesBox(bool connectRanges)
   else
     yAxis2 = axis(QCPAxis::atRight);
   
+  xAxis->setVisible(true);
+  yAxis->setVisible(true);
   xAxis2->setVisible(true);
-  xAxis2->setTickLabels(false);
-  if (xAxis)
-  {
-    xAxis2->setAutoSubTicks(xAxis->autoSubTicks());
-    xAxis2->setAutoTickCount(xAxis->autoTickCount());
-    xAxis2->setAutoTickStep(xAxis->autoTickStep());
-    xAxis2->setScaleType(xAxis->scaleType());
-    xAxis2->setScaleLogBase(xAxis->scaleLogBase());
-    xAxis2->setTicks(xAxis->ticks());
-    xAxis2->setSubTickCount(xAxis->subTickCount());
-    xAxis2->setTickStep(xAxis->tickStep());
-    xAxis2->setRange(xAxis->range());
-    xAxis2->setRangeReversed(xAxis->rangeReversed());
-  }
-  
   yAxis2->setVisible(true);
+  xAxis2->setTickLabels(false);
   yAxis2->setTickLabels(false);
-  if (yAxis)
-  {
-    yAxis2->setAutoSubTicks(yAxis->autoSubTicks());
-    yAxis2->setAutoTickCount(yAxis->autoTickCount());
-    yAxis2->setAutoTickStep(yAxis->autoTickStep());
-    yAxis2->setScaleType(yAxis->scaleType());
-    yAxis2->setScaleLogBase(yAxis->scaleLogBase());
-    yAxis2->setTicks(yAxis->ticks());
-    yAxis2->setSubTickCount(yAxis->subTickCount());
-    yAxis2->setTickStep(yAxis->tickStep());
-    yAxis2->setRange(yAxis->range());
-    yAxis2->setRangeReversed(yAxis->rangeReversed());
-  }
+  
+  xAxis2->setRange(xAxis->range());
+  xAxis2->setRangeReversed(xAxis->rangeReversed());
+  xAxis2->setScaleType(xAxis->scaleType());
+  xAxis2->setScaleLogBase(xAxis->scaleLogBase());
+  xAxis2->setTicks(xAxis->ticks());
+  xAxis2->setAutoTickCount(xAxis->autoTickCount());
+  xAxis2->setSubTickCount(xAxis->subTickCount());
+  xAxis2->setAutoSubTicks(xAxis->autoSubTicks());
+  xAxis2->setTickStep(xAxis->tickStep());
+  xAxis2->setAutoTickStep(xAxis->autoTickStep());
+  xAxis2->setNumberFormat(xAxis->numberFormat());
+  xAxis2->setNumberPrecision(xAxis->numberPrecision());
+  xAxis2->setTickLabelType(xAxis->tickLabelType());
+  xAxis2->setDateTimeFormat(xAxis->dateTimeFormat());
+  xAxis2->setDateTimeSpec(xAxis->dateTimeSpec());
+
+  yAxis2->setRange(yAxis->range());
+  yAxis2->setRangeReversed(yAxis->rangeReversed());
+  yAxis2->setScaleType(yAxis->scaleType());
+  yAxis2->setScaleLogBase(yAxis->scaleLogBase());
+  yAxis2->setTicks(yAxis->ticks());
+  yAxis2->setAutoTickCount(yAxis->autoTickCount());
+  yAxis2->setSubTickCount(yAxis->subTickCount());
+  yAxis2->setAutoSubTicks(yAxis->autoSubTicks());
+  yAxis2->setTickStep(yAxis->tickStep());
+  yAxis2->setAutoTickStep(yAxis->autoTickStep());
+  yAxis2->setNumberFormat(yAxis->numberFormat());
+  yAxis2->setNumberPrecision(yAxis->numberPrecision());
+  yAxis2->setTickLabelType(yAxis->tickLabelType());
+  yAxis2->setDateTimeFormat(yAxis->dateTimeFormat());
+  yAxis2->setDateTimeSpec(yAxis->dateTimeSpec());
   
   if (connectRanges)
   {
