@@ -37,6 +37,7 @@ public:
   void setupInsetLayoutTest(QCustomPlot* customPlot);
   void setupLegendTest(QCustomPlot *customPlot);
   void setupMultiAxisRectInteractions(QCustomPlot *customPlot);
+  void setupAdaptiveSamplingTest(QCustomPlot *customPlot);
   // testbed:
   void setupTestbed(QCustomPlot *customPlot);
   

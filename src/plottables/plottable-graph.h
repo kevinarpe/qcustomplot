@@ -68,6 +68,7 @@ class QCP_LIB_DECL QCPGraph : public QCPAbstractPlottable
   Q_PROPERTY(double errorBarSize READ errorBarSize WRITE setErrorBarSize)
   Q_PROPERTY(bool errorBarSkipSymbol READ errorBarSkipSymbol WRITE setErrorBarSkipSymbol)
   Q_PROPERTY(QCPGraph* channelFillGraph READ channelFillGraph WRITE setChannelFillGraph)
+  Q_PROPERTY(bool adaptiveSampling READ adaptiveSampling WRITE setAdaptiveSampling)
   /// \endcond
 public:
   /*!
@@ -106,6 +107,7 @@ public:
   double errorBarSize() const { return mErrorBarSize; }
   bool errorBarSkipSymbol() const { return mErrorBarSkipSymbol; }
   QCPGraph *channelFillGraph() const { return mChannelFillGraph.data(); }
+  bool adaptiveSampling() const { return mAdaptiveSampling; }
   
   // setters:
   void setData(QCPDataMap *data, bool copy=false);
@@ -123,6 +125,7 @@ public:
   void setErrorBarSize(double size);
   void setErrorBarSkipSymbol(bool enabled);
   void setChannelFillGraph(QCPGraph *targetGraph);
+  void setAdaptiveSampling(bool enabled);
   
   // non-property methods:
   void addData(const QCPDataMap &dataMap);
@@ -154,6 +157,7 @@ protected:
   double mErrorBarSize;
   bool mErrorBarSkipSymbol;
   QPointer<QCPGraph> mChannelFillGraph;
+  bool mAdaptiveSampling;
   
   // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
@@ -179,6 +183,7 @@ protected:
   void getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void drawError(QCPPainter *painter, double x, double y, const QCPData &data) const;
   void getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper, int &count) const;
+  void applyAdaptiveSampling(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void addFillBasePoints(QVector<QPointF> *lineData) const;
   void removeFillBasePoints(QVector<QPointF> *lineData) const;
   QPointF lowerFillBasePoint(double lowerKey) const;

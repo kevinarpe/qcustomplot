@@ -31,7 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupInsetLayoutTest(mCustomPlot);
   //setupLegendTest(mCustomPlot);
   //setupMultiAxisRectInteractions(mCustomPlot);
-  setupTestbed(mCustomPlot);
+  setupAdaptiveSamplingTest(mCustomPlot);
+  //setupTestbed(mCustomPlot);
 }
 
 MainWindow::~MainWindow()
@@ -623,6 +624,29 @@ void MainWindow::setupMultiAxisRectInteractions(QCustomPlot *customPlot)
   r3->insetLayout()->addElement(inset, Qt::AlignRight|Qt::AlignTop);
   
   connect(mCustomPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(setupMultiAxisRectInteractionsMouseMove(QMouseEvent*)));
+}
+
+void MainWindow::setupAdaptiveSamplingTest(QCustomPlot *customPlot)
+{
+  qsrand(1);
+  QCPGraph *g = customPlot->addGraph();
+  
+  int n = 200000;
+  QVector<double> x(n), y(n);
+  for (int i=0; i<n; ++i)
+  {
+    x[i] = i/(double)(n-1)*10 + qrand()/(double)RAND_MAX*0.9999;
+    y[i] = qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX));
+    if (qrand()%(n/25) == 0)
+      y[i] = qrand()/(double)RAND_MAX*7;
+  }
+  
+  g->setData(x, y);
+  g->setAdaptiveSampling(true);
+  customPlot->setPlottingHint(QCP::phFastPolylines, true);
+  customPlot->rescaleAxes();
+  customPlot->xAxis->scaleRange(10, customPlot->xAxis->range().center());
+  customPlot->yAxis->scaleRange(10, customPlot->yAxis->range().center());
 }
 
 void MainWindow::presetInteractive(QCustomPlot *customPlot)

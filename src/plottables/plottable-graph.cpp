@@ -140,6 +140,7 @@ QCPGraph::QCPGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   setErrorBarSize(6);
   setErrorBarSkipSymbol(true);
   setChannelFillGraph(0);
+  setAdaptiveSampling(false);
 }
 
 QCPGraph::~QCPGraph()
@@ -450,6 +451,11 @@ void QCPGraph::setChannelFillGraph(QCPGraph *targetGraph)
   mChannelFillGraph = targetGraph;
 }
 
+void QCPGraph::setAdaptiveSampling(bool enabled)
+{
+  mAdaptiveSampling = enabled;
+}
+
 /*!
   Adds the provided data points in \a dataMap to the current data.
   \see removeData
@@ -667,6 +673,10 @@ void QCPGraph::draw(QCPPainter *painter)
   
   // fill vectors with data appropriate to plot style:
   getPlotData(lineData, pointData);
+  
+  // possibly reduce displayed point density:
+  if (mAdaptiveSampling)
+    applyAdaptiveSampling(lineData, pointData);
   
   // check data validity if flag set:
 #ifdef QCUSTOMPLOT_CHECK_DATA
@@ -1505,6 +1515,59 @@ void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMa
   {
     ++it;
     ++count;
+  }
+}
+
+void QCPGraph::applyAdaptiveSampling(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
+{
+  if (lineData && lineData->size() > 1)
+  {
+    QVector<QPointF> newLineData;
+    double minValue = lineData->first().y();
+    double maxValue = minValue;
+    int currentPixelStartIndex = 0;
+    double currentPixel = lineData->first().x();
+    for (int i=1; i<lineData->size(); ++i)
+    {
+      if (lineData->at(i).x()-currentPixel < 1.0) // data point is still within same pixel, so skip it and expand value span of this pixel if necessary
+      {
+        if (lineData->at(i).y() < minValue)
+          minValue = lineData->at(i).y();
+        else if (lineData->at(i).y() > maxValue)
+          maxValue = lineData->at(i).y();
+      } else // new pixel started
+      {
+        if (i-currentPixelStartIndex >= 2) // last pixel had multiple data points, consolidate them
+        {
+          //lineData->remove(currentPixelStartIndex, i-currentPixelStartIndex-2); // keep 2 points to draw value span of pixel
+          newLineData << QPointF(currentPixel, minValue) << QPointF(currentPixel, maxValue);
+          //(*lineData)[currentPixelStartIndex] = QPointF(currentPixel, minValue);
+          //(*lineData)[currentPixelStartIndex+1] = QPointF(currentPixel, maxValue);
+          //i -= i-currentPixelStartIndex-2;
+        } else
+          newLineData << lineData->at(currentPixelStartIndex);
+        minValue = lineData->at(i).y();
+        maxValue = minValue;
+        currentPixelStartIndex = i;
+        currentPixel = lineData->at(i).x();
+      }
+    }
+    // handle last interval:
+    if (lineData->size()-currentPixelStartIndex >= 2) // last pixel had more than two data points, consolidate them
+    {
+      //lineData->remove(currentPixelStartIndex, lineData->size()-currentPixelStartIndex-2); // keep 2 points to draw value span of pixel
+      //(*lineData)[currentPixelStartIndex] = QPointF(currentPixel, minValue);
+      //(*lineData)[currentPixelStartIndex+1] = QPointF(currentPixel, maxValue);
+      newLineData << QPointF(currentPixel, minValue) << QPointF(currentPixel, maxValue);
+    } else
+      newLineData << lineData->at(currentPixelStartIndex);
+    
+    *lineData = newLineData;
+    qDebug() << "point count:" << lineData->size(); // DBG
+  }
+  if (pointData)
+  {
+    
   }
 }
 
