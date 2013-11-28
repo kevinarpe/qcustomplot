@@ -174,9 +174,10 @@ protected:
   virtual void drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) const;
   
   // non-virtual methods:
+  void getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *scatterData) const;
   void getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void getScatterPlotData(QVector<QCPData> *pointData) const;
-  void getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
+  void getLinePlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterPoints) const;
   void getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
   void getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
