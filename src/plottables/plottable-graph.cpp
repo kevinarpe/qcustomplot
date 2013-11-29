@@ -1348,38 +1348,34 @@ void QCPGraph::drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) 
 
 void QCPGraph::getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *scatterData) const
 {
-  // TODO: if (mAdaptiveSampling && dataCount > 2) // need at least 3 data points to work.
-  if (lineData)
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  // get visible data range:
+  QCPDataMap::const_iterator lower, upper;
+  int dataCount = 0;
+  getVisibleDataBounds(lower, upper, dataCount);
+  if (dataCount == 0)
+    return;
+  
+  int keyPixelSpan = qAbs(keyAxis->coordToPixel(lower.key())-keyAxis->coordToPixel(upper.key()));
+  if (mAdaptiveSampling && dataCount > 2*keyPixelSpan+2) // use adaptive sampling only if there are at least two points per pixel on average
   {
-    QCPAxis *keyAxis = mKeyAxis.data();
-    QCPAxis *valueAxis = mValueAxis.data();
-    if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
-    
-    // get visible data range:
-    QCPDataMap::const_iterator lower, upper;
-    int dataCount = 0;
-    getVisibleDataBounds(lower, upper, dataCount);
-    if (dataCount > 0)
+    if (lineData)
     {
-      //lineData->reserve(dataCount+2); // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
-      //lineData->resize(dataCount);
-      //if (scatterData)
-      //  scatterData->resize(dataCount);
-      
       double keyEpsilon = 0; // interval of one pixel on screen when mapped to plot key coordinates
       if (keyAxis->orientation() == Qt::Vertical)
         keyEpsilon = qAbs(keyAxis->pixelToCoord(keyAxis->axisRect()->bottom())-keyAxis->pixelToCoord(keyAxis->axisRect()->bottom()+1));
       else
         keyEpsilon = qAbs(keyAxis->pixelToCoord(keyAxis->axisRect()->left())-keyAxis->pixelToCoord(keyAxis->axisRect()->left()+1));
       
-      // position data points:
       QCPDataMap::const_iterator it = lower;
       QCPDataMap::const_iterator upperEnd = upper+1;
       double minValue = it.value().value;
       double maxValue = it.value().value;
       QCPDataMap::const_iterator currentIntervalStart = it;
-      double currentIntervalStartCoord = it.key();
-      int intervalDataCount = 0;
+      double currentIntervalStartCoord = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(lower.key()));
+      int intervalDataCount = 1;
       ++it; // advance iterator to second data point because adaptive sampling works in 1 point retrospect
       while (it != upperEnd)
       {
@@ -1393,27 +1389,97 @@ void QCPGraph::getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *sca
         } else // new pixel started
         {
           if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them
-            (*lineData) << QCPData(currentIntervalStartCoord+keyEpsilon*0.25, minValue) << QCPData(currentIntervalStartCoord+keyEpsilon*0.75, maxValue);
-          else
-            (*lineData) << QCPData(currentIntervalStart.key(), currentIntervalStart.value().value);
+          {
+            lineData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.25, minValue));
+            lineData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.75, maxValue));
+          } else
+            lineData->append(QCPData(currentIntervalStart.key(), currentIntervalStart.value().value));
           minValue = it.value().value;
           maxValue = it.value().value;
           currentIntervalStart = it;
-          currentIntervalStartCoord = it.key();
+          currentIntervalStartCoord = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(it.key()));
+          intervalDataCount = 1;
         }
         ++it;
       }
       // handle last interval:
       if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them
-        (*lineData) << QCPData(currentIntervalStartCoord+keyEpsilon*0.25, minValue) << QCPData(currentIntervalStartCoord+keyEpsilon*0.75, maxValue);
-      else
-        (*lineData) << QCPData(currentIntervalStart.key(), currentIntervalStart.value().value);
+      {
+        lineData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.25, minValue));
+        lineData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.75, maxValue));
+      } else
+        lineData->append(QCPData(currentIntervalStart.key(), currentIntervalStart.value().value));
     }
-  }
-  
-  if (scatterData)
+    
+    if (scatterData)
+    {
+      double keyEpsilon = 0; // interval of one pixel on screen when mapped to plot key coordinates
+      if (keyAxis->orientation() == Qt::Vertical)
+        keyEpsilon = qAbs(keyAxis->pixelToCoord(keyAxis->axisRect()->bottom())-keyAxis->pixelToCoord(keyAxis->axisRect()->bottom()+1));
+      else
+        keyEpsilon = qAbs(keyAxis->pixelToCoord(keyAxis->axisRect()->left())-keyAxis->pixelToCoord(keyAxis->axisRect()->left()+1));
+      
+      QCPDataMap::const_iterator it = lower;
+      QCPDataMap::const_iterator upperEnd = upper+1;
+      double minValue = it.value().value;
+      double maxValue = it.value().value;
+      QCPDataMap::const_iterator currentIntervalStart = it;
+      double currentIntervalStartCoord = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(lower.key()));
+      int intervalDataCount = 1;
+      ++it; // advance iterator to second data point because adaptive sampling works in 1 point retrospect
+      while (it != upperEnd)
+      {
+        if (it.key() < currentIntervalStartCoord+keyEpsilon) // data point is still within same pixel, so skip it and expand value span of this pixel if necessary
+        {
+          if (it.value().value < minValue)
+            minValue = it.value().value;
+          else if (it.value().value > maxValue)
+            maxValue = it.value().value;
+          ++intervalDataCount;
+        } else // new pixel started
+        {
+          if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them
+          {
+            scatterData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.25, minValue));
+            scatterData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.75, maxValue));
+          } else
+            scatterData->append(QCPData(currentIntervalStart.key(), currentIntervalStart.value().value));
+          minValue = it.value().value;
+          maxValue = it.value().value;
+          currentIntervalStart = it;
+          currentIntervalStartCoord = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(it.key()));
+          intervalDataCount = 1;
+        }
+        ++it;
+      }
+      // handle last interval:
+      if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them
+      {
+        scatterData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.25, minValue));
+        scatterData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.75, maxValue));
+      } else
+        scatterData->append(QCPData(currentIntervalStart.key(), currentIntervalStart.value().value));
+    }
+  } else // don't use adaptive sampling algorithm, transfer points one-to-one from the map into the output parameters
   {
-    // TODO
+    QVector<QCPData> *dataVector = 0;
+    if (lineData)
+      dataVector = lineData;
+    else if (scatterData)
+      dataVector = scatterData;
+    if (dataVector)
+    {
+      QCPDataMap::const_iterator it = lower;
+      QCPDataMap::const_iterator upperEnd = upper+1;
+      dataVector->reserve(dataCount);
+      while (it != upperEnd)
+      {
+        dataVector->append(it.value());
+        ++it;
+      }
+    }
+    if (lineData && scatterData)
+      *scatterData = *dataVector;
   }
 }
 
