@@ -64,6 +64,7 @@ public slots:
   void integerTickStepCase_xRangeChanged(QCPRange newRange);
   void integerTickStepCase_yRangeChanged(QCPRange newRange);
   
+  void mouseWheel(QWheelEvent *event);
 private:
   Ui::MainWindow *ui;
   QCustomPlot *mCustomPlot;

@@ -661,6 +661,7 @@ void MainWindow::presetInteractive(QCustomPlot *customPlot)
                               QCP::iMultiSelect);
   customPlot->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
   customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+  connect(customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel(QWheelEvent*)), Qt::UniqueConnection);
 }
 
 void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool circle, bool labelBelow)
@@ -902,4 +903,13 @@ void MainWindow::integerTickStepCase_yRangeChanged(QCPRange newRange)
     mTickStep = (int)((tickStepMantissa/10.0)*5)/5.0*10*magnitudeFactor;
   }
   mCustomPlot->yAxis->setTickStep(qCeil(mTickStep));
+}
+void MainWindow::mouseWheel(QWheelEvent *event)
+{
+  if (event->pos().x() < 50)
+    mCustomPlot->axisRect()->setRangeZoom(Qt::Vertical);
+  else if (event->pos().y() > mCustomPlot->height()-50)
+    mCustomPlot->axisRect()->setRangeZoom(Qt::Horizontal);
+  else
+    mCustomPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
 }
