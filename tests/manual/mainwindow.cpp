@@ -628,25 +628,39 @@ void MainWindow::setupMultiAxisRectInteractions(QCustomPlot *customPlot)
 
 void MainWindow::setupAdaptiveSamplingTest(QCustomPlot *customPlot)
 {
-  qsrand(1);
-  QCPGraph *g = customPlot->addGraph();
-  
-  int n = 200000;
-  QVector<double> x(n), y(n);
-  for (int i=0; i<n; ++i)
-  {
-    x[i] = i/(double)(n-1)*10 + qrand()/(double)RAND_MAX*0.9999;
-    y[i] = qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX));
-    if (qrand()%(n/25) == 0)
-      y[i] = qrand()/(double)RAND_MAX*7;
-  }
-  
-  g->setData(x, y);
-  g->setAdaptiveSampling(true);
-  customPlot->setPlottingHint(QCP::phFastPolylines, true);
-  customPlot->rescaleAxes();
-  customPlot->xAxis->scaleRange(10, customPlot->xAxis->range().center());
-  customPlot->yAxis->scaleRange(10, customPlot->yAxis->range().center());
+  //int lastn = 0;
+  //for (int r=0; r<=140; ++r)
+  //{
+    qsrand(1);
+    QCPGraph *g = customPlot->addGraph();
+    int n = 200000;
+    //n = exp(r*0.1);
+    //if (n == lastn) continue;
+    //lastn = n;
+    QVector<double> x(n), y(n);
+    for (int i=0; i<n; ++i)
+    {
+      //x[i] = i/(double)(n-1)*10 + qrand()/(double)RAND_MAX*0.9999;
+      x[i] = i/(double)(n-1)*10;
+      y[i] = qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX));
+      if (n > 25 && qrand()%(n/25) == 0)
+        y[i] = qrand()/(double)RAND_MAX*7; // generate outliers (must be preserved in adaptive-sampling-algorithm)
+    }
+    
+    g->setData(x, y);
+    g->setScatterStyle(QCPScatterStyle::ssCircle);
+    //g->setLineStyle(QCPGraph::lsNone);
+    g->setAdaptiveSampling(true);
+    customPlot->setPlottingHint(QCP::phFastPolylines, true);
+    customPlot->rescaleAxes();
+    customPlot->xAxis->scaleRange(1, customPlot->xAxis->range().center());
+    customPlot->yAxis->scaleRange(1, customPlot->yAxis->range().center());
+    //QElapsedTimer timer;
+    //timer.start();
+    //QPixmap pm = customPlot->toPixmap(500, 500);
+    //qDebug() << n << timer.nsecsElapsed()/1e6;
+    //customPlot->clearGraphs();
+  //}
 }
 
 void MainWindow::presetInteractive(QCustomPlot *customPlot)
@@ -904,6 +918,7 @@ void MainWindow::integerTickStepCase_yRangeChanged(QCPRange newRange)
   }
   mCustomPlot->yAxis->setTickStep(qCeil(mTickStep));
 }
+
 void MainWindow::mouseWheel(QWheelEvent *event)
 {
   if (event->pos().x() < 50)

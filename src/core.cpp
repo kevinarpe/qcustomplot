@@ -1914,9 +1914,9 @@ void QCustomPlot::replot()
   
 #ifdef QCUSTOMPLOT_TIMED_REPLOT
   nsecsSum += timer.nsecsElapsed();
-  if (frameNumber % 20 == 0)
+  if (frameNumber % 50 == 0)
   {
-    qDebug() << "QCustomPlot Replot duration" << (nsecsSum/20.0/1000)/1000.0 << "ms during frames" << frameNumber-19 << "to" << frameNumber;
+    qDebug() << "QCustomPlot Replot duration" << (nsecsSum/50.0/1000)/1000.0 << "ms during frames" << frameNumber-49 << "to" << frameNumber;
     nsecsSum = 0;
   }
   frameNumber++;
