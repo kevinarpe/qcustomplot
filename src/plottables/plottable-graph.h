@@ -176,12 +176,12 @@ protected:
   // non-virtual methods:
   void getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *scatterData) const;
   void getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
-  void getScatterPlotData(QVector<QCPData> *pointData) const;
+  void getScatterPlotData(QVector<QCPData> *scatterPoints) const;
   void getLinePlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterPoints) const;
-  void getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
-  void getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
-  void getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
-  void getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
+  void getStepLeftPlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterPoints) const;
+  void getStepRightPlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterPoints) const;
+  void getStepCenterPlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterPoints) const;
+  void getImpulsePlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterPoints) const;
   void drawError(QCPPainter *painter, double x, double y, const QCPData &data) const;
   void getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper, int &count) const;
   void applyAdaptiveSampling(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
