@@ -637,24 +637,30 @@ void MainWindow::setupAdaptiveSamplingTest(QCustomPlot *customPlot)
     //n = exp(r*0.1);
     //if (n == lastn) continue;
     //lastn = n;
-    QVector<double> x(n), y(n);
+    QVector<double> x, y;
     for (int i=0; i<n; ++i)
     {
-      //x[i] = i/(double)(n-1)*10 + qrand()/(double)RAND_MAX*0.9999;
-      x[i] = i/(double)(n-1)*10;
-      y[i] = qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX));
+      //x << i/(double)(n-1)*10 + qrand()/(double)RAND_MAX*0.9999;
+      x << i/(double)(n-1)*10;
+      y << qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX));
       if (n > 25 && qrand()%(n/25) == 0)
-        y[i] = qrand()/(double)RAND_MAX*7; // generate outliers (must be preserved in adaptive-sampling-algorithm)
+        y << qrand()/(double)RAND_MAX*7; // generate outliers (must be preserved in adaptive-sampling-algorithm)
+      else
+        y << qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX));
     }
-    
+    x << 11;
+    y << 1;
+    x.prepend(-1);
+    y.prepend(1);
     g->setData(x, y);
-    g->setScatterStyle(QCPScatterStyle::ssCircle);
-    //g->setLineStyle(QCPGraph::lsNone);
+    //g->setScatterStyle(QCPScatterStyle::ssCircle);
+    g->setLineStyle(QCPGraph::lsLine);
     g->setAdaptiveSampling(true);
     customPlot->setPlottingHint(QCP::phFastPolylines, true);
     customPlot->rescaleAxes();
     customPlot->xAxis->scaleRange(1, customPlot->xAxis->range().center());
     customPlot->yAxis->scaleRange(1, customPlot->yAxis->range().center());
+    
     //QElapsedTimer timer;
     //timer.start();
     //QPixmap pm = customPlot->toPixmap(500, 500);

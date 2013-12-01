@@ -1226,44 +1226,51 @@ void QCPGraph::getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *sca
       QCPDataMap::const_iterator upperEnd = upper+1;
       double minValue = it.value().value;
       double maxValue = it.value().value;
-      QCPDataMap::const_iterator currentIntervalStart = it;
-      double currentIntervalStartCoord = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(lower.key()));
+      QCPDataMap::const_iterator currentIntervalFirstPoint = it;
+      double currentIntervalStartKey = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(lower.key()));
+      double lastIntervalEndKey = currentIntervalStartKey;
       int intervalDataCount = 1;
       ++it; // advance iterator to second data point because adaptive sampling works in 1 point retrospect
       while (it != upperEnd)
       {
-        if (it.key() < currentIntervalStartCoord+keyEpsilon) // data point is still within same pixel, so skip it and expand value span of this pixel if necessary
+        if (it.key() < currentIntervalStartKey+keyEpsilon) // data point is still within same pixel, so skip it and expand value span of this cluster if necessary
         {
           if (it.value().value < minValue)
             minValue = it.value().value;
           else if (it.value().value > maxValue)
             maxValue = it.value().value;
           ++intervalDataCount;
-        } else // new pixel started
+        } else // new pixel interval started
         {
-          if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them
+          if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them to a cluster
           {
-            lineData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.25, minValue));
-            lineData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.75, maxValue));
+            if (lastIntervalEndKey < currentIntervalStartKey-keyEpsilon) // last point is further away, so first point of this cluster must be at a real data point
+              lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.2, currentIntervalFirstPoint.value().value));
+            lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.25, minValue));
+            lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.75, maxValue));
+            if (it.key() > currentIntervalStartKey+keyEpsilon*2) // new pixel started further away from previous cluster, so make sure the last point of the cluster is at a real data point
+              lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.8, (it-1).value().value));
           } else
-            lineData->append(QCPData(currentIntervalStart.key(), currentIntervalStart.value().value));
+            lineData->append(QCPData(currentIntervalFirstPoint.key(), currentIntervalFirstPoint.value().value));
+          lastIntervalEndKey = (it-1).value().key;
           minValue = it.value().value;
           maxValue = it.value().value;
-          currentIntervalStart = it;
-          currentIntervalStartCoord = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(it.key()));
+          currentIntervalFirstPoint = it;
+          currentIntervalStartKey = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(it.key()));
           intervalDataCount = 1;
         }
         ++it;
       }
       // handle last interval:
-      if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them
+      if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them to a cluster
       {
-        lineData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.25, minValue));
-        lineData->append(QCPData(currentIntervalStartCoord+keyEpsilon*0.75, maxValue));
+        if (lastIntervalEndKey < currentIntervalStartKey-keyEpsilon) // last point wasn't a cluster, so first point of this cluster must be at a real data point
+          lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.2, currentIntervalFirstPoint.value().value));
+        lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.25, minValue));
+        lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.75, maxValue));
       } else
-        lineData->append(QCPData(currentIntervalStart.key(), currentIntervalStart.value().value));
+        lineData->append(QCPData(currentIntervalFirstPoint.key(), currentIntervalFirstPoint.value().value));
     }
-    
     if (scatterData)
     {
       double keyEpsilon = 0; // interval of one pixel on screen when mapped to plot key coordinates
