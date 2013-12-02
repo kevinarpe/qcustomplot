@@ -140,7 +140,7 @@ QCPGraph::QCPGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   setErrorBarSize(6);
   setErrorBarSkipSymbol(true);
   setChannelFillGraph(0);
-  setAdaptiveSampling(false);
+  setAdaptiveSampling(true);
 }
 
 QCPGraph::~QCPGraph()
