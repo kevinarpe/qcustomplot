@@ -1961,7 +1961,8 @@ void QCustomPlot::rescaleAxes(bool onlyVisiblePlottables)
   aren't defined yet inside the constructor, so you would get an image that has strange
   widths/heights.
   
-  \note On Android systems, this method does nothing and issues an according qDebug warning message.
+  \note On Android systems, this method does nothing and issues an according qDebug warning
+  message. This is also the case if for other reasons the define flag QT_NO_PRINTER is set.
   
   \see savePng, saveBmp, saveJpg, saveRastered
 */
@@ -1990,6 +1991,7 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   printer.setOutputFileName(fileName);
   printer.setOutputFormat(QPrinter::PdfFormat);
   printer.setFullPage(true);
+  printer.setColorMode(QPrinter::Color);
   QRect oldViewport = viewport();
   setViewport(QRect(0, 0, newWidth, newHeight));
   printer.setPaperSize(viewport().size(), QPrinter::DevicePixel);
