@@ -548,7 +548,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   mBackgroundScaled(true),
   mBackgroundScaledMode(Qt::KeepAspectRatioByExpanding),
   mCurrentLayer(0),
-  mPlottingHints(QCP::phCacheLabels),
+  mPlottingHints(QCP::phCacheLabels|QCP::phForceRepaint),
   mMultiSelectModifier(Qt::ControlModifier),
   mPaintBuffer(size()),
   mMouseEventElement(0),
@@ -597,10 +597,6 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   legend->setLayer("legend");
   
   setViewport(rect()); // needs to be called after mPlotLayout has been created
-  
-#ifdef Q_OS_WIN
-  setPlottingHint(QCP::phForceRepaint);
-#endif
   
   replot();
 }
