@@ -1957,12 +1957,15 @@ void QCustomPlot::rescaleAxes(bool onlyVisiblePlottables)
   aren't defined yet inside the constructor, so you would get an image that has strange
   widths/heights.
   
+  \a pdfCreator and \a pdfTitle may be used to set the according metadata fields in the resulting
+  PDF file.
+  
   \note On Android systems, this method does nothing and issues an according qDebug warning
   message. This is also the case if for other reasons the define flag QT_NO_PRINTER is set.
   
   \see savePng, saveBmp, saveJpg, saveRastered
 */
-bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width, int height)
+bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width, int height, const QString &pdfCreator, const QString &pdfTitle)
 {
   bool success = false;
 #ifdef QT_NO_PRINTER
@@ -1988,6 +1991,8 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   printer.setOutputFormat(QPrinter::PdfFormat);
   printer.setFullPage(true);
   printer.setColorMode(QPrinter::Color);
+  printer.printEngine()->setProperty(QPrintEngine::PPK_Creator, pdfCreator);
+  printer.printEngine()->setProperty(QPrintEngine::PPK_DocumentName, pdfTitle);
   QRect oldViewport = viewport();
   setViewport(QRect(0, 0, newWidth, newHeight));
   printer.setPaperSize(viewport().size(), QPrinter::DevicePixel);
