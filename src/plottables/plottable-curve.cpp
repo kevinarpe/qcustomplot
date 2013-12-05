@@ -657,7 +657,7 @@ QPointF QCPCurve::outsideCoordsToPixels(double key, double value, int region, QR
 }
 
 /* inherits documentation from base class */
-QCPRange QCPCurve::getKeyRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPCurve::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
 {
   QCPRange range;
   bool haveLower = false;
@@ -685,12 +685,12 @@ QCPRange QCPCurve::getKeyRange(bool &validRange, SignDomain inSignDomain) const
     ++it;
   }
   
-  validRange = haveLower && haveUpper;
+  foundRange = haveLower && haveUpper;
   return range;
 }
 
 /* inherits documentation from base class */
-QCPRange QCPCurve::getValueRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPCurve::getValueRange(bool &foundRange, SignDomain inSignDomain) const
 {
   QCPRange range;
   bool haveLower = false;
@@ -718,6 +718,6 @@ QCPRange QCPCurve::getValueRange(bool &validRange, SignDomain inSignDomain) cons
     ++it;
   }
   
-  validRange = haveLower && haveUpper;
+  foundRange = haveLower && haveUpper;
   return range;
 }

@@ -522,7 +522,7 @@ void QCPBars::connectBars(QCPBars *lower, QCPBars *upper)
 }
 
 /* inherits documentation from base class */
-QCPRange QCPBars::getKeyRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPBars::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
 {
   QCPRange range;
   bool haveLower = false;
@@ -550,12 +550,12 @@ QCPRange QCPBars::getKeyRange(bool &validRange, SignDomain inSignDomain) const
     ++it;
   }
   
-  validRange = haveLower && haveUpper;
+  foundRange = haveLower && haveUpper;
   return range;
 }
 
 /* inherits documentation from base class */
-QCPRange QCPBars::getValueRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPBars::getValueRange(bool &foundRange, SignDomain inSignDomain) const
 {
   QCPRange range;
   bool haveLower = true; // set to true, because 0 should always be visible in bar charts
@@ -583,6 +583,6 @@ QCPRange QCPBars::getValueRange(bool &validRange, SignDomain inSignDomain) const
     ++it;
   }
   
-  validRange = range.lower < range.upper;
+  foundRange = true; // return true because bar charts always have the 0-line visible
   return range;
 }

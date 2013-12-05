@@ -600,10 +600,10 @@ void QCPGraph::rescaleKeyAxis(bool onlyEnlarge, bool includeErrorBars) const
   if (keyAxis->scaleType() == QCPAxis::stLogarithmic)
     signDomain = (keyAxis->range().upper < 0 ? sdNegative : sdPositive);
   
-  bool validRange;
-  QCPRange newRange = getKeyRange(validRange, signDomain, includeErrorBars);
+  bool foundRange;
+  QCPRange newRange = getKeyRange(foundRange, signDomain, includeErrorBars);
   
-  if (validRange)
+  if (foundRange)
   {
     if (onlyEnlarge)
     {
@@ -636,10 +636,10 @@ void QCPGraph::rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const
   if (valueAxis->scaleType() == QCPAxis::stLogarithmic)
     signDomain = (valueAxis->range().upper < 0 ? sdNegative : sdPositive);
   
-  bool validRange;
-  QCPRange newRange = getValueRange(validRange, signDomain, includeErrorBars);
+  bool foundRange;
+  QCPRange newRange = getValueRange(foundRange, signDomain, includeErrorBars);
   
-  if (validRange)
+  if (foundRange)
   {
     if (onlyEnlarge)
     {
@@ -1989,28 +1989,28 @@ int QCPGraph::findIndexBelowY(const QVector<QPointF> *data, double y) const
 }
 
 /* inherits documentation from base class */
-QCPRange QCPGraph::getKeyRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPGraph::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
 {
   // just call the specialized version which takes an additional argument whether error bars
   // should also be taken into consideration for range calculation. We set this to true here.
-  return getKeyRange(validRange, inSignDomain, true);
+  return getKeyRange(foundRange, inSignDomain, true);
 }
 
 /* inherits documentation from base class */
-QCPRange QCPGraph::getValueRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPGraph::getValueRange(bool &foundRange, SignDomain inSignDomain) const
 {
   // just call the specialized version which takes an additional argument whether error bars
   // should also be taken into consideration for range calculation. We set this to true here.
-  return getValueRange(validRange, inSignDomain, true);
+  return getValueRange(foundRange, inSignDomain, true);
 }
 
 /*! \overload
   
   Allows to specify whether the error bars should be included in the range calculation.
   
-  \see getKeyRange(bool &validRange, SignDomain inSignDomain)
+  \see getKeyRange(bool &foundRange, SignDomain inSignDomain)
 */
-QCPRange QCPGraph::getKeyRange(bool &validRange, SignDomain inSignDomain, bool includeErrors) const
+QCPRange QCPGraph::getKeyRange(bool &foundRange, SignDomain inSignDomain, bool includeErrors) const
 {
   QCPRange range;
   bool haveLower = false;
@@ -2106,7 +2106,7 @@ QCPRange QCPGraph::getKeyRange(bool &validRange, SignDomain inSignDomain, bool i
     }
   }
   
-  validRange = haveLower && haveUpper;
+  foundRange = haveLower && haveUpper;
   return range;
 }
 
@@ -2114,9 +2114,9 @@ QCPRange QCPGraph::getKeyRange(bool &validRange, SignDomain inSignDomain, bool i
   
   Allows to specify whether the error bars should be included in the range calculation.
   
-  \see getValueRange(bool &validRange, SignDomain inSignDomain)
+  \see getValueRange(bool &foundRange, SignDomain inSignDomain)
 */
-QCPRange QCPGraph::getValueRange(bool &validRange, SignDomain inSignDomain, bool includeErrors) const
+QCPRange QCPGraph::getValueRange(bool &foundRange, SignDomain inSignDomain, bool includeErrors) const
 {
   QCPRange range;
   bool haveLower = false;
@@ -2212,6 +2212,6 @@ QCPRange QCPGraph::getValueRange(bool &validRange, SignDomain inSignDomain, bool
     }
   }
   
-  validRange = haveLower && haveUpper;
+  foundRange = haveLower && haveUpper;
   return range;
 }

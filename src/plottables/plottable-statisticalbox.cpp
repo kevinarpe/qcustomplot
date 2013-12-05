@@ -412,9 +412,9 @@ void QCPStatisticalBox::drawOutliers(QCPPainter *painter) const
 }
 
 /* inherits documentation from base class */
-QCPRange QCPStatisticalBox::getKeyRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPStatisticalBox::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
 {
-  validRange = mWidth > 0;
+  foundRange = true;
   if (inSignDomain == sdBoth)
   {
     return QCPRange(mKey-mWidth*0.5, mKey+mWidth*0.5);
@@ -426,7 +426,7 @@ QCPRange QCPStatisticalBox::getKeyRange(bool &validRange, SignDomain inSignDomai
       return QCPRange(mKey-mWidth*0.5, mKey);
     else
     {
-      validRange = false;
+      foundRange = false;
       return QCPRange();
     }
   } else if (inSignDomain == sdPositive)
@@ -437,67 +437,52 @@ QCPRange QCPStatisticalBox::getKeyRange(bool &validRange, SignDomain inSignDomai
       return QCPRange(mKey, mKey+mWidth*0.5);
     else
     {
-      validRange = false;
+      foundRange = false;
       return QCPRange();
     }
   }
-  validRange = false;
+  foundRange = false;
   return QCPRange();
 }
 
 /* inherits documentation from base class */
-QCPRange QCPStatisticalBox::getValueRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPStatisticalBox::getValueRange(bool &foundRange, SignDomain inSignDomain) const
 {
-  if (inSignDomain == sdBoth)
+  QVector<double> values; // values that must be considered (i.e. all outliers and the five box-parameters)
+  values.reserve(mOutliers.size() + 5);
+  values << mMaximum << mUpperQuartile << mMedian << mLowerQuartile << mMinimum;
+  values << mOutliers;
+  // go through values and find the ones in legal range:
+  bool haveUpper = false;
+  bool haveLower = false;
+  double upper = 0;
+  double lower = 0;
+  for (int i=0; i<values.size(); ++i)
   {
-    double lower = qMin(mMinimum, qMin(mMedian, mLowerQuartile));
-    double upper = qMax(mMaximum, qMax(mMedian, mUpperQuartile));
-    for (int i=0; i<mOutliers.size(); ++i)
+    if ((inSignDomain == sdNegative && values.at(i) < 0) ||
+        (inSignDomain == sdPositive && values.at(i) > 0) ||
+        (inSignDomain == sdBoth))
     {
-      if (mOutliers.at(i) < lower)
-        lower = mOutliers.at(i);
-      if (mOutliers.at(i) > upper)
-        upper = mOutliers.at(i);
-    }
-    validRange = upper > lower;
-    return QCPRange(lower, upper);
-  } else
-  {
-    QVector<double> values; // values that must be considered (i.e. all outliers and the five box-parameters)
-    values.reserve(mOutliers.size() + 5);
-    values << mMaximum << mUpperQuartile << mMedian << mLowerQuartile << mMinimum;
-    values << mOutliers;
-    // go through values and find the ones in legal range:
-    bool haveUpper = false;
-    bool haveLower = false;
-    double upper = 0;
-    double lower = 0;
-    for (int i=0; i<values.size(); ++i)
-    {
-      if ((inSignDomain == sdNegative && values.at(i) < 0) ||
-          (inSignDomain == sdPositive && values.at(i) > 0))
+      if (values.at(i) > upper || !haveUpper)
       {
-        if (values.at(i) > upper || !haveUpper)
-        {
-          upper = values.at(i);
-          haveUpper = true;
-        }
-        if (values.at(i) < lower || !haveLower)
-        {
-          lower = values.at(i);
-          haveLower = true;
-        }
+        upper = values.at(i);
+        haveUpper = true;
+      }
+      if (values.at(i) < lower || !haveLower)
+      {
+        lower = values.at(i);
+        haveLower = true;
       }
     }
-    // return the bounds if we found some sensible values:
-    if (haveLower && haveUpper && lower < upper)
-    {
-      validRange = true;
-      return QCPRange(lower, upper);
-    } else
-    {
-      validRange = false;
-      return QCPRange();
-    }
+  }
+  // return the bounds if we found some sensible values:
+  if (haveLower && haveUpper)
+  {
+    foundRange = true;
+    return QCPRange(lower, upper);
+  } else // might happen if all values are in other sign domain
+  {
+    foundRange = false;
+    return QCPRange();
   }
 }

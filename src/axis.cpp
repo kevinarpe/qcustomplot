@@ -1539,15 +1539,15 @@ void QCPAxis::rescale(bool onlyVisiblePlottables)
     if (!p.at(i)->realVisibility() && onlyVisiblePlottables)
       continue;
     QCPRange plottableRange;
-    bool validRange;
+    bool currentFoundRange;
     QCPAbstractPlottable::SignDomain signDomain = QCPAbstractPlottable::sdBoth;
     if (mScaleType == stLogarithmic)
       signDomain = (mRange.upper < 0 ? QCPAbstractPlottable::sdNegative : QCPAbstractPlottable::sdPositive);
     if (p.at(i)->keyAxis() == this)
-      plottableRange = p.at(i)->getKeyRange(validRange, signDomain);
+      plottableRange = p.at(i)->getKeyRange(currentFoundRange, signDomain);
     else
-      plottableRange = p.at(i)->getValueRange(validRange, signDomain);
-    if (validRange)
+      plottableRange = p.at(i)->getValueRange(currentFoundRange, signDomain);
+    if (currentFoundRange)
     {
       if (!haveRange)
         newRange = plottableRange;
