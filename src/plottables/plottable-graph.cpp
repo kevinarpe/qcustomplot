@@ -1206,13 +1206,20 @@ void QCPGraph::getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *sca
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
+  getVisibleDataBounds(lower, upper);
+  int keyPixelSpan = 0;
+  int maxCount = 0;
   int dataCount = 0;
-  getVisibleDataBounds(lower, upper, dataCount);
-  if (dataCount == 0)
-    return;
+  if (mAdaptiveSampling)
+  {
+    keyPixelSpan = qAbs(keyAxis->coordToPixel(lower.key())-keyAxis->coordToPixel(upper.key()));
+    maxCount = 2*keyPixelSpan+2;
+    dataCount = countDataInBounds(lower, upper, maxCount);
+    if (dataCount == 0)
+      return;
+  }
   
-  int keyPixelSpan = qAbs(keyAxis->coordToPixel(lower.key())-keyAxis->coordToPixel(upper.key()));
-  if (mAdaptiveSampling && dataCount > 2*keyPixelSpan+2) // use adaptive sampling only if there are at least two points per pixel on average
+  if (mAdaptiveSampling && dataCount >= maxCount) // use adaptive sampling only if there are at least two points per pixel on average
   {
     if (lineData)
     {
@@ -1447,30 +1454,25 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
 
 /*!  \internal
   
-  called by the specific plot data generating functions "get(...)PlotData" to determine which data
-  range is visible, so only that needs to be processed.
+  called by \ref getPreparedData to determine which data (key) range is visible at the current key
+  axis range setting, so only that needs to be processed.
   
   \a lower returns an iterator to the lowest data point that needs to be taken into account when
-  plotting. Note that in order to get a clean plot all the way to the edge of the axes, \a lower
-  may still be outside the visible range.
+  plotting. Note that in order to get a clean plot all the way to the edge of the axis rect, \a
+  lower may still be just outside the visible range.
   
   \a upper returns an iterator to the highest data point. Same as before, \a upper may also lie
-  outside of the visible range.
+  just outside of the visible range.
   
-  \a count number of data points that need plotting, i.e. points between \a lower and \a upper,
-  including them. This is useful for allocating the array of <tt>QPointF</tt>s in the specific
-  drawing functions.
-  
-  if the graph contains no data, \a count is zero and both \a lower and \a upper point to constEnd.
+  if the graph contains no data, both \a lower and \a upper point to constEnd.
 */
-void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper, int &count) const
+void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper) const
 {
   if (!mKeyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
   if (mData->isEmpty())
   {
     lower = mData->constEnd();
     upper = mData->constEnd();
-    count = 0;
     return;
   }
   
@@ -1482,68 +1484,30 @@ void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMa
   
   lower = (lowoutlier ? lbound-1 : lbound); // data point range that will be actually drawn
   upper = (highoutlier ? ubound : ubound-1); // data point range that will be actually drawn
+}
+
+/*!  \internal
   
-  // count number of points in range lower to upper (including them), so we can allocate array for them in draw functions:
+  Counts the number of data points between \a lower and \a upper (including them), up to a maximum
+  of \a maxCount.
+  
+  This function is used by \ref getPreparedData to determine whether adaptive sampling shall be
+  used (if enabled via \ref setAdaptiveSampling) or not. This is also why counting of data points
+  only needs to be done until \a maxCount is reached, which should be set to the number of data
+  points at which adaptive sampling sets in.
+*/
+int QCPGraph::countDataInBounds(const QCPDataMap::const_iterator &lower, const QCPDataMap::const_iterator &upper, int maxCount) const
+{
+  if (upper == mData->constEnd() && lower == mData->constEnd())
+    return 0;
   QCPDataMap::const_iterator it = lower;
-  count = 1;
-  while (it != upper)
+  int count = 1;
+  while (it != upper && count < maxCount)
   {
     ++it;
     ++count;
   }
-}
-
-void QCPGraph::applyAdaptiveSampling(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
-{
-  if (lineData && lineData->size() > 1)
-  {
-    QVector<QPointF> newLineData;
-    double minValue = lineData->first().y();
-    double maxValue = minValue;
-    int currentPixelStartIndex = 0;
-    double currentPixel = lineData->first().x();
-    for (int i=1; i<lineData->size(); ++i)
-    {
-      if (lineData->at(i).x()-currentPixel < 1.0) // data point is still within same pixel, so skip it and expand value span of this pixel if necessary
-      {
-        if (lineData->at(i).y() < minValue)
-          minValue = lineData->at(i).y();
-        else if (lineData->at(i).y() > maxValue)
-          maxValue = lineData->at(i).y();
-      } else // new pixel started
-      {
-        if (i-currentPixelStartIndex >= 2) // last pixel had multiple data points, consolidate them
-        {
-          //lineData->remove(currentPixelStartIndex, i-currentPixelStartIndex-2); // keep 2 points to draw value span of pixel
-          newLineData << QPointF(currentPixel, minValue) << QPointF(currentPixel, maxValue);
-          //(*lineData)[currentPixelStartIndex] = QPointF(currentPixel, minValue);
-          //(*lineData)[currentPixelStartIndex+1] = QPointF(currentPixel, maxValue);
-          //i -= i-currentPixelStartIndex-2;
-        } else
-          newLineData << lineData->at(currentPixelStartIndex);
-        minValue = lineData->at(i).y();
-        maxValue = minValue;
-        currentPixelStartIndex = i;
-        currentPixel = lineData->at(i).x();
-      }
-    }
-    // handle last interval:
-    if (lineData->size()-currentPixelStartIndex >= 2) // last pixel had more than two data points, consolidate them
-    {
-      //lineData->remove(currentPixelStartIndex, lineData->size()-currentPixelStartIndex-2); // keep 2 points to draw value span of pixel
-      //(*lineData)[currentPixelStartIndex] = QPointF(currentPixel, minValue);
-      //(*lineData)[currentPixelStartIndex+1] = QPointF(currentPixel, maxValue);
-      newLineData << QPointF(currentPixel, minValue) << QPointF(currentPixel, maxValue);
-    } else
-      newLineData << lineData->at(currentPixelStartIndex);
-    
-    *lineData = newLineData;
-    qDebug() << "point count:" << lineData->size(); // DBG
-  }
-  if (pointData)
-  {
-    
-  }
+  return count;
 }
 
 /*! \internal

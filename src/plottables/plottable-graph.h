@@ -183,8 +183,8 @@ protected:
   void getStepCenterPlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterPoints) const;
   void getImpulsePlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterPoints) const;
   void drawError(QCPPainter *painter, double x, double y, const QCPData &data) const;
-  void getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper, int &count) const;
-  void applyAdaptiveSampling(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
+  void getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper) const;
+  int countDataInBounds(const QCPDataMap::const_iterator &lower, const QCPDataMap::const_iterator &upper, int maxCount) const;
   void addFillBasePoints(QVector<QPointF> *lineData) const;
   void removeFillBasePoints(QVector<QPointF> *lineData) const;
   QPointF lowerFillBasePoint(double lowerKey) const;
