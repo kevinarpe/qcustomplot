@@ -1199,6 +1199,18 @@ void QCPGraph::drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) 
   }
 }
 
+/*! \internal
+  
+  Returns the \a lineData and \a scatterData that need to be plotted for this graph taking into
+  consideration the current axis ranges and, if \ref setAdaptiveSampling is enabled, local point
+  densities.
+  
+  0 may be passed as \a lineData or \a scatterData to indicate that the respective dataset isn't
+  needed. For example, if the scatter style (\ref setStyle) is \ref QCPScatterStyle::ssNone, \a
+  scatterData should be 0 to prevent unnecessary calculations.
+  
+  This method is used by the various "get(...)PlotData" methods to get the basic working set of data.
+*/
 void QCPGraph::getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *scatterData) const
 {
   QCPAxis *keyAxis = mKeyAxis.data();
@@ -1228,9 +1240,11 @@ void QCPGraph::getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *sca
       double minValue = it.value().value;
       double maxValue = it.value().value;
       QCPDataMap::const_iterator currentIntervalFirstPoint = it;
-      double currentIntervalStartKey = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(lower.key()));
+      int reversedFactor = keyAxis->rangeReversed() ? -1 : 1; // is used to calculate keyEpsilon pixel into the correct direction
+      int reversedRound = keyAxis->rangeReversed() ? 1 : 0; // is used to switch between floor (normal) and ceil (reversed) rounding of currentIntervalStartKey
+      double currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(lower.key())+reversedRound));
       double lastIntervalEndKey = currentIntervalStartKey;
-      double keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0)); // interval of one pixel on screen when mapped to plot key coordinates
+      double keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor)); // interval of one pixel on screen when mapped to plot key coordinates
       bool keyEpsilonVariable = keyAxis->scaleType() == QCPAxis::stLogarithmic; // indicates whether keyEpsilon needs to be updated after every interval (for log axes)
       int intervalDataCount = 1;
       ++it; // advance iterator to second data point because adaptive sampling works in 1 point retrospect
@@ -1259,9 +1273,9 @@ void QCPGraph::getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *sca
           minValue = it.value().value;
           maxValue = it.value().value;
           currentIntervalFirstPoint = it;
-          currentIntervalStartKey = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(it.key()));
+          currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(it.key())+reversedRound));
           if (keyEpsilonVariable)
-            keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0));
+            keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor));
           intervalDataCount = 1;
         }
         ++it;
@@ -1288,8 +1302,10 @@ void QCPGraph::getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *sca
       QCPDataMap::const_iterator minValueIt = it;
       QCPDataMap::const_iterator maxValueIt = it;
       QCPDataMap::const_iterator currentIntervalStart = it;
-      double currentIntervalStartKey = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(lower.key()));
-      double keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0)); // interval of one pixel on screen when mapped to plot key coordinates
+      int reversedFactor = keyAxis->rangeReversed() ? -1 : 1; // is used to calculate keyEpsilon pixel into the correct direction
+      int reversedRound = keyAxis->rangeReversed() ? 1 : 0; // is used to switch between floor (normal) and ceil (reversed) rounding of currentIntervalStartKey
+      double currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(lower.key())+reversedRound));
+      double keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor)); // interval of one pixel on screen when mapped to plot key coordinates
       bool keyEpsilonVariable = keyAxis->scaleType() == QCPAxis::stLogarithmic; // indicates whether keyEpsilon needs to be updated after every interval (for log axes)
       int intervalDataCount = 1;
       ++it; // advance iterator to second data point because adaptive sampling works in 1 point retrospect
@@ -1328,9 +1344,9 @@ void QCPGraph::getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *sca
           minValue = it.value().value;
           maxValue = it.value().value;
           currentIntervalStart = it;
-          currentIntervalStartKey = keyAxis->pixelToCoord((int)keyAxis->coordToPixel(it.key()));
+          currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(it.key())+reversedRound));
           if (keyEpsilonVariable)
-            keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0));
+            keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor));
           intervalDataCount = 1;
         }
         ++it;
