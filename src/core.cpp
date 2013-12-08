@@ -574,6 +574,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   mPlotLayout = new QCPLayoutGrid;
   mPlotLayout->initializeParentPlot(this);
   mPlotLayout->setParent(this); // important because if parent is QWidget, QCPLayout::sizeConstraintsChanged will call QWidget::updateGeometry
+  mPlotLayout->setLayer("main");
   QCPAxisRect *defaultAxisRect = new QCPAxisRect(this, true);
   mPlotLayout->addElement(0, 0, defaultAxisRect);
   xAxis = defaultAxisRect->axis(QCPAxis::atBottom);

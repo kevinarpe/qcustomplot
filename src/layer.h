@@ -42,6 +42,7 @@ class QCP_LIB_DECL QCPLayer : public QObject
   Q_PROPERTY(QString name READ name)
   Q_PROPERTY(int index READ index)
   Q_PROPERTY(QList<QCPLayerable*> children READ children)
+  Q_PROPERTY(bool visible READ visible WRITE setVisible)
   /// \endcond
 public:
   QCPLayer(QCustomPlot* parentPlot, const QString &layerName);
@@ -52,6 +53,10 @@ public:
   QString name() const { return mName; }
   int index() const { return mIndex; }
   QList<QCPLayerable*> children() const { return mChildren; }
+  bool visible() const { return mVisible; }
+  
+  // setters:
+  void setVisible(bool visible);
   
 protected:
   // property members:
@@ -59,6 +64,7 @@ protected:
   QString mName;
   int mIndex;
   QList<QCPLayerable*> mChildren;
+  bool mVisible;
   
   // non-virtual methods:
   void addChild(QCPLayerable *layerable, bool prepend);
