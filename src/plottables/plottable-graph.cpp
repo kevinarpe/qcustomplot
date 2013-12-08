@@ -667,12 +667,12 @@ void QCPGraph::draw(QCPPainter *painter)
   
   // allocate line and (if necessary) point vectors:
   QVector<QPointF> *lineData = new QVector<QPointF>;
-  QVector<QCPData> *pointData = 0;
+  QVector<QCPData> *scatterData = 0;
   if (!mScatterStyle.isNone())
-    pointData = new QVector<QCPData>;
+    scatterData = new QVector<QCPData>;
   
   // fill vectors with data appropriate to plot style:
-  getPlotData(lineData, pointData);
+  getPlotData(lineData, scatterData);
   
   // check data validity if flag set:
 #ifdef QCUSTOMPLOT_CHECK_DATA
@@ -696,13 +696,13 @@ void QCPGraph::draw(QCPPainter *painter)
     drawLinePlot(painter, lineData); // also step plots can be drawn as a line plot
   
   // draw scatters:
-  if (pointData)
-    drawScatterPlot(painter, pointData);
+  if (scatterData)
+    drawScatterPlot(painter, scatterData);
   
   // free allocated line and point vectors:
   delete lineData;
-  if (pointData)
-    delete pointData;
+  if (scatterData)
+    delete scatterData;
 }
 
 /* inherits documentation from base class */
@@ -751,30 +751,30 @@ void QCPGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
   make up steps. If the line style of the graph is \ref lsNone, the \a lineData vector will be left
   untouched.
   
-  \a pointData will be filled with the original data points so \ref drawScatterPlot can draw the
+  \a scatterData will be filled with the original data points so \ref drawScatterPlot can draw the
   scatter symbols accordingly. If no scatters need to be drawn, i.e. the scatter style's shape is
-  \ref QCPScatterStyle::ssNone, pass 0 as \a pointData, and this step will be skipped.
+  \ref QCPScatterStyle::ssNone, pass 0 as \a scatterData, and this step will be skipped.
   
   \see getScatterPlotData, getLinePlotData, getStepLeftPlotData, getStepRightPlotData,
   getStepCenterPlotData, getImpulsePlotData
 */
-void QCPGraph::getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
+void QCPGraph::getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *scatterData) const
 {
   switch(mLineStyle)
   {
-    case lsNone: getScatterPlotData(pointData); break;
-    case lsLine: getLinePlotData(lineData, pointData); break;
-    case lsStepLeft: getStepLeftPlotData(lineData, pointData); break;
-    case lsStepRight: getStepRightPlotData(lineData, pointData); break;
-    case lsStepCenter: getStepCenterPlotData(lineData, pointData); break;
-    case lsImpulse: getImpulsePlotData(lineData, pointData); break;
+    case lsNone: getScatterPlotData(scatterData); break;
+    case lsLine: getLinePlotData(lineData, scatterData); break;
+    case lsStepLeft: getStepLeftPlotData(lineData, scatterData); break;
+    case lsStepRight: getStepRightPlotData(lineData, scatterData); break;
+    case lsStepCenter: getStepCenterPlotData(lineData, scatterData); break;
+    case lsImpulse: getImpulsePlotData(lineData, scatterData); break;
   }
 }
 
 /*! \internal
   
   If line style is \ref lsNone and the scatter style's shape is not \ref QCPScatterStyle::ssNone,
-  this function serves at providing the visible data points in \a pointData, so the \ref
+  this function serves at providing the visible data points in \a scatterData, so the \ref
   drawScatterPlot function can draw the scatter points accordingly.
   
   If line style is not \ref lsNone, this function is not called and the data for the scatter points
@@ -832,10 +832,10 @@ void QCPGraph::getLinePlotData(QVector<QPointF> *linePixelData, QVector<QCPData>
   \internal
   Places the raw data points needed for a step plot with left oriented steps in \a lineData.
 
-  As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
+  As for all plot data retrieval functions, \a scatterData just contains all unaltered data (scatter)
   points that are visible for drawing scatter points, if necessary. If drawing scatter points is
   disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
-  pointData, and the function will skip filling the vector.
+  scatterData, and the function will skip filling the vector.
   
   \see drawLinePlot
 */
@@ -885,10 +885,10 @@ void QCPGraph::getStepLeftPlotData(QVector<QPointF> *linePixelData, QVector<QCPD
   \internal
   Places the raw data points needed for a step plot with right oriented steps in \a lineData.
 
-  As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
+  As for all plot data retrieval functions, \a scatterData just contains all unaltered data (scatter)
   points that are visible for drawing scatter points, if necessary. If drawing scatter points is
   disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
-  pointData, and the function will skip filling the vector.
+  scatterData, and the function will skip filling the vector.
   
   \see drawLinePlot
 */
@@ -938,10 +938,10 @@ void QCPGraph::getStepRightPlotData(QVector<QPointF> *linePixelData, QVector<QCP
   \internal
   Places the raw data points needed for a step plot with centered steps in \a lineData.
 
-  As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
+  As for all plot data retrieval functions, \a scatterData just contains all unaltered data (scatter)
   points that are visible for drawing scatter points, if necessary. If drawing scatter points is
   disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
-  pointData, and the function will skip filling the vector.
+  scatterData, and the function will skip filling the vector.
   
   \see drawLinePlot
 */
@@ -1003,10 +1003,10 @@ void QCPGraph::getStepCenterPlotData(QVector<QPointF> *linePixelData, QVector<QC
   \internal
   Places the raw data points needed for an impulse plot in \a lineData.
 
-  As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
+  As for all plot data retrieval functions, \a scatterData just contains all unaltered data (scatter)
   points that are visible for drawing scatter points, if necessary. If drawing scatter points is
   disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
-  pointData, and the function will skip filling the vector.
+  scatterData, and the function will skip filling the vector.
   
   \see drawImpulsePlot
 */
@@ -1087,14 +1087,14 @@ void QCPGraph::drawFill(QCPPainter *painter, QVector<QPointF> *lineData) const
 
 /*! \internal
   
-  Draws scatter symbols at every data point passed in \a pointData. scatter symbols are independent
+  Draws scatter symbols at every data point passed in \a scatterData. scatter symbols are independent
   of the line style and are always drawn if the scatter style's shape is not \ref
-  QCPScatterStyle::ssNone. Hence, the \a pointData vector is outputted by all "get(...)PlotData"
+  QCPScatterStyle::ssNone. Hence, the \a scatterData vector is outputted by all "get(...)PlotData"
   functions, together with the (line style dependent) line data.
   
   \see drawLinePlot, drawImpulsePlot
 */
-void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData) const
+void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatterData) const
 {
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
@@ -1107,12 +1107,12 @@ void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData)
     painter->setPen(mErrorPen);
     if (keyAxis->orientation() == Qt::Vertical)
     {
-      for (int i=0; i<pointData->size(); ++i)
-        drawError(painter, valueAxis->coordToPixel(pointData->at(i).value), keyAxis->coordToPixel(pointData->at(i).key), pointData->at(i));
+      for (int i=0; i<scatterData->size(); ++i)
+        drawError(painter, valueAxis->coordToPixel(scatterData->at(i).value), keyAxis->coordToPixel(scatterData->at(i).key), scatterData->at(i));
     } else
     {
-      for (int i=0; i<pointData->size(); ++i)
-        drawError(painter, keyAxis->coordToPixel(pointData->at(i).key), valueAxis->coordToPixel(pointData->at(i).value), pointData->at(i));
+      for (int i=0; i<scatterData->size(); ++i)
+        drawError(painter, keyAxis->coordToPixel(scatterData->at(i).key), valueAxis->coordToPixel(scatterData->at(i).value), scatterData->at(i));
     }
   }
   
@@ -1121,12 +1121,12 @@ void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData)
   mScatterStyle.applyTo(painter, mPen);
   if (keyAxis->orientation() == Qt::Vertical)
   {
-    for (int i=0; i<pointData->size(); ++i)
-      mScatterStyle.drawShape(painter, valueAxis->coordToPixel(pointData->at(i).value), keyAxis->coordToPixel(pointData->at(i).key));
+    for (int i=0; i<scatterData->size(); ++i)
+      mScatterStyle.drawShape(painter, valueAxis->coordToPixel(scatterData->at(i).value), keyAxis->coordToPixel(scatterData->at(i).key));
   } else
   {
-    for (int i=0; i<pointData->size(); ++i)
-      mScatterStyle.drawShape(painter, keyAxis->coordToPixel(pointData->at(i).key), valueAxis->coordToPixel(pointData->at(i).value));
+    for (int i=0; i<scatterData->size(); ++i)
+      mScatterStyle.drawShape(painter, keyAxis->coordToPixel(scatterData->at(i).key), valueAxis->coordToPixel(scatterData->at(i).value));
   }
 }
 
@@ -1948,20 +1948,20 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
   if (mLineStyle == lsNone)
   {
     // no line displayed, only calculate distance to scatter points:
-    QVector<QCPData> *pointData = new QVector<QCPData>;
-    getScatterPlotData(pointData);
+    QVector<QCPData> *scatterData = new QVector<QCPData>;
+    getScatterPlotData(scatterData);
     double minDistSqr = std::numeric_limits<double>::max();
     QPointF ptA;
-    QPointF ptB = coordsToPixels(pointData->at(0).key, pointData->at(0).value); // getScatterPlotData returns in plot coordinates, so transform to pixels
-    for (int i=1; i<pointData->size(); ++i)
+    QPointF ptB = coordsToPixels(scatterData->at(0).key, scatterData->at(0).value); // getScatterPlotData returns in plot coordinates, so transform to pixels
+    for (int i=1; i<scatterData->size(); ++i)
     {
       ptA = ptB;
-      ptB = coordsToPixels(pointData->at(i).key, pointData->at(i).value);
+      ptB = coordsToPixels(scatterData->at(i).key, scatterData->at(i).value);
       double currentDistSqr = distSqrToLine(ptA, ptB, pixelPoint);
       if (currentDistSqr < minDistSqr)
         minDistSqr = currentDistSqr;
     }
-    delete pointData;
+    delete scatterData;
     return sqrt(minDistSqr);
   } else
   {

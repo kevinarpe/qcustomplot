@@ -169,13 +169,13 @@ protected:
   
   // introduced virtual methods:
   virtual void drawFill(QCPPainter *painter, QVector<QPointF> *lineData) const;
-  virtual void drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData) const;
+  virtual void drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatterData) const;
   virtual void drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) const;
   virtual void drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) const;
   
   // non-virtual methods:
   void getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *scatterData) const;
-  void getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const;
+  void getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *scatterData) const;
   void getScatterPlotData(QVector<QCPData> *scatterData) const;
   void getLinePlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterData) const;
   void getStepLeftPlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterData) const;
