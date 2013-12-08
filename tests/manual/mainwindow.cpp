@@ -628,45 +628,41 @@ void MainWindow::setupMultiAxisRectInteractions(QCustomPlot *customPlot)
 
 void MainWindow::setupAdaptiveSamplingTest(QCustomPlot *customPlot)
 {
-  //int lastn = 0;
-  //for (int r=0; r<=140; ++r)
-  //{
-    qsrand(1);
-    QCPGraph *g = customPlot->addGraph();
-    int n = 200000;
-    //n = exp(r*0.1);
-    //if (n == lastn) continue;
-    //lastn = n;
-    QVector<double> x, y;
-    for (int i=0; i<n; ++i)
-    {
-      //x << i/(double)(n-1)*10 + qrand()/(double)RAND_MAX*0.9999;
-      x << i/(double)(n-1)*10;
-      y << qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX));
-      if (n > 25 && qrand()%(n/25) == 0)
-        y << qrand()/(double)RAND_MAX*7; // generate outliers (must be preserved in adaptive-sampling-algorithm)
-      else
-        y << qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX));
-    }
-    x << 11;
-    y << 1;
-    x.prepend(-1);
-    y.prepend(1);
-    g->setData(x, y);
-    //g->setScatterStyle(QCPScatterStyle::ssCircle);
-    g->setLineStyle(QCPGraph::lsLine);
-    g->setAdaptiveSampling(true);
-    customPlot->setPlottingHint(QCP::phFastPolylines, true);
-    customPlot->rescaleAxes();
-    customPlot->xAxis->scaleRange(1, customPlot->xAxis->range().center());
-    customPlot->yAxis->scaleRange(1, customPlot->yAxis->range().center());
-    
-    //QElapsedTimer timer;
-    //timer.start();
-    //QPixmap pm = customPlot->toPixmap(500, 500);
-    //qDebug() << n << timer.nsecsElapsed()/1e6;
-    //customPlot->clearGraphs();
-  //}
+  qsrand(1);
+  QCPGraph *g = customPlot->addGraph();
+  int n = 200000;
+  QVector<double> x, y;
+  x << -6;
+  y << 2;
+  for (int i=0; i<n/2; ++i)
+  {
+    x << i/(double)(n/2-1)*4-5;
+    if (qrand()%(n/25) == 0)
+      y << qrand()/(double)RAND_MAX*7; // generate outliers (must be preserved in adaptive-sampling-algorithm)
+    else
+      y << qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX)) + 5*qSin(x[i]);
+  }
+  x << 0.5;
+  y << 2;
+  for (int i=0; i<n/2; ++i)
+  {
+    x << i/(double)(n/2-1)*4+1;
+    if (qrand()%(n/25) == 0)
+      y << qrand()/(double)RAND_MAX*7; // generate outliers (must be preserved in adaptive-sampling-algorithm)
+    else
+      y << qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX)) + qSin(5*x[i]);
+  }
+  x << 6;
+  y << -1;
+  g->setData(x, y);
+  //g->setScatterStyle(QCPScatterStyle::ssPlus);
+  //g->setLineStyle(QCPGraph::lsNone);
+  g->setAdaptiveSampling(true);
+  
+  customPlot->setPlottingHint(QCP::phFastPolylines, true);
+  customPlot->rescaleAxes();
+  customPlot->xAxis->scaleRange(1, customPlot->xAxis->range().center());
+  customPlot->yAxis->scaleRange(1, customPlot->yAxis->range().center());
 }
 
 void MainWindow::presetInteractive(QCustomPlot *customPlot)
