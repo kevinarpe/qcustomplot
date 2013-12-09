@@ -1,3 +1,15 @@
+#### Version 1.1.1 released on 09.12.13 ####
+
+  Bugfixes:
+    - Fixed bug causing legends blocking input events from reaching underlying axis rect even if legend is invisible
+    - Added missing Q_PROPERTY for QCPAxis::setDateTimeSpec
+    - Fixed behaviour of QCPAxisRect::setupFullAxesBox (now transfers more properties from bottom/left to top/right axes and sets visibility of bottom/left axes to true)
+    - Made sure PDF export doesn't default to grayscale output on some systems
+  
+  Other:
+    - Plotting hint QCP::phForceRepaint is now enabled on all systems (and not only on windows) by default
+    - Documentation improvements
+
 #### Version 1.1.0 released on 04.11.13 ####
 
   Added features:

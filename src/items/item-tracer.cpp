@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 04.11.13                                             **
-**          Version: 1.1.0                                                **
+**             Date: 09.12.13                                             **
+**          Version: 1.1.1                                                **
 ****************************************************************************/
 
 #include "item-tracer.h"
@@ -346,7 +346,9 @@ void QCPItemTracer::updatePosition()
             if (mInterpolating)
             {
               // interpolate between iterators around mGraphKey:
-              double slope = (it.value().value-prevIt.value().value)/(it.key()-prevIt.key());
+              double slope = 0;
+              if (!qFuzzyCompare((double)it.key(), (double)prevIt.key()))
+                slope = (it.value().value-prevIt.value().value)/(it.key()-prevIt.key());
               position->setCoords(mGraphKey, (mGraphKey-prevIt.key())*slope+prevIt.value().value);
             } else
             {

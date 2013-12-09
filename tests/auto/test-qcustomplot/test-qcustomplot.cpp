@@ -39,21 +39,44 @@ void TestQCustomPlot::rescaleAxes_GraphVisibility()
 
 void TestQCustomPlot::rescaleAxes_FlatGraph()
 {
-  // test rescaling when first graph is flat:
+  // test rescaling if only one graph is in plot and it's flat:
+  mPlot->xAxis->setRange(10, 11);
+  mPlot->yAxis->setRange(10, 11);
+  mPlot->addGraph();
+  mPlot->graph(0)->setData(QVector<double>()<<2<<2<<2, QVector<double>()<<0<<0<<0);
+  mPlot->rescaleAxes();
+  QCOMPARE(mPlot->xAxis->range().lower, 1.5);
+  QCOMPARE(mPlot->xAxis->range().upper, 2.5);
+  QCOMPARE(mPlot->yAxis->range().lower, -0.5);
+  QCOMPARE(mPlot->yAxis->range().upper, 0.5);
+  
+  // test rescaling when there are multiple graphs with different values but first graph is flat:
+  mPlot->xAxis->setRange(10, 11);
+  mPlot->yAxis->setRange(10, 11);
+  mPlot->addGraph();
+  mPlot->graph(1)->setData(QVector<double>()<<-1<<0<<1, QVector<double>()<<-0.1<<0<<0.1);
+  mPlot->rescaleAxes();
+  QCOMPARE(mPlot->xAxis->range().lower, -1.0);
+  QCOMPARE(mPlot->xAxis->range().upper, 2.0);
+  QCOMPARE(mPlot->yAxis->range().lower, -0.1);
+  QCOMPARE(mPlot->yAxis->range().upper, 0.1);
+}
+
+void TestQCustomPlot::rescaleAxes_MultipleFlatGraphs()
+{
+  // test rescaling when there are multiple flat graphs:
   mPlot->addGraph();
   mPlot->addGraph();
   mPlot->graph(0)->setData(QVector<double>()<<1<<2<<3, QVector<double>()<<0<<0<<0);
-  mPlot->graph(1)->setData(QVector<double>()<<-1<<0<<1, QVector<double>()<<-0.1<<0<<0.1);
+  mPlot->graph(1)->setData(QVector<double>()<<-1<<0<<1, QVector<double>()<<2<<2<<2);
   
   mPlot->rescaleAxes();
   
   QCOMPARE(mPlot->xAxis->range().lower, -1.0);
   QCOMPARE(mPlot->xAxis->range().upper, 3.0);
-  QCOMPARE(mPlot->yAxis->range().lower, -0.1);
-  QCOMPARE(mPlot->yAxis->range().upper, 0.1);
+  QCOMPARE(mPlot->yAxis->range().lower, 0.0);
+  QCOMPARE(mPlot->yAxis->range().upper, 2.0);
 }
-
-
 
 
 

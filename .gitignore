@@ -37,6 +37,11 @@ ui_*.h
 *.dll
 *.exe
 
+# Tool output:
+
+callgrind.out.*
+cachegrind.out.*
+
 # Amalgamated sources:
 
 /qcustomplot.h

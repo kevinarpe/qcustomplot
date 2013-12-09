@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 04.11.13                                             **
-**          Version: 1.1.0                                                **
+**             Date: 09.12.13                                             **
+**          Version: 1.1.1                                                **
 ****************************************************************************/
 
 /*! \file */
@@ -37,7 +37,7 @@
 #include "plottables/plottable-graph.h"
 #include "item.h"
 
-/*! \mainpage %QCustomPlot 1.1.0 Documentation
+/*! \mainpage %QCustomPlot 1.1.1 Documentation
 
   \image html qcp-doc-logo.png
   
@@ -53,9 +53,10 @@
   the most important classes of the QCustomPlot library.
   
   The central widget which displays the plottables and axes on its surface is QCustomPlot. Every
-  QCustomPlot contains four axes by default. They can be accessed via the members xAxis, yAxis,
-  xAxis2 and yAxis2, and are of type QCPAxis. QCustomPlot supports an arbitrary number of axes and
-  axis rects, see the documentation of QCPAxisRect for details.
+  QCustomPlot contains four axes by default. They can be accessed via the members \ref
+  QCustomPlot::xAxis "xAxis", \ref QCustomPlot::yAxis "yAxis", \ref QCustomPlot::xAxis2 "xAxis2"
+  and \ref QCustomPlot::yAxis2 "yAxis2", and are of type QCPAxis. QCustomPlot supports an arbitrary
+  number of axes and axis rects, see the documentation of QCPAxisRect for details.
 
   \section mainpage-plottables Plottables
   
@@ -161,7 +162,7 @@
   the axis rect(s), legends and the plot title. They are all based on \ref QCPLayoutElement and are arranged by
   placing them inside a \ref QCPLayout.
   
-  Details on this topic are given on the dedicated page about \ref thelayoutsystem "the layout system".
+  Details on this topic are given on the dedicated page about \link thelayoutsystem the layout system\endlink.
   
   \section mainpage-performancetweaks Performance Tweaks
   
@@ -451,6 +452,80 @@
 */
 
 /* end of documentation of signals */
+/* start of documentation of public members */
+
+/*! \var QCPAxis *QCustomPlot::xAxis
+
+  A pointer to the primary x Axis (bottom) of the main axis rect of the plot.
+  
+  QCustomPlot offers convenient pointers to the axes (\ref xAxis, \ref yAxis, \ref xAxis2, \ref
+  yAxis2) and the \ref legend. They make it very easy working with plots that only have a single
+  axis rect and at most one axis at each axis rect side. If you use \link thelayoutsystem the
+  layout system\endlink to add multiple axis rects or multiple axes to one side, use the \ref
+  QCPAxisRect::axis interface to access the new axes. If one of the four default axes or the
+  default legend is removed due to manipulation of the layout system (e.g. by removing the main
+  axis rect), the corresponding pointers become 0.
+*/
+
+/*! \var QCPAxis *QCustomPlot::yAxis
+
+  A pointer to the primary y Axis (left) of the main axis rect of the plot.
+  
+  QCustomPlot offers convenient pointers to the axes (\ref xAxis, \ref yAxis, \ref xAxis2, \ref
+  yAxis2) and the \ref legend. They make it very easy working with plots that only have a single
+  axis rect and at most one axis at each axis rect side. If you use \link thelayoutsystem the
+  layout system\endlink to add multiple axis rects or multiple axes to one side, use the \ref
+  QCPAxisRect::axis interface to access the new axes. If one of the four default axes or the
+  default legend is removed due to manipulation of the layout system (e.g. by removing the main
+  axis rect), the corresponding pointers become 0.
+*/
+
+/*! \var QCPAxis *QCustomPlot::xAxis2
+
+  A pointer to the secondary x Axis (top) of the main axis rect of the plot. Secondary axes are
+  invisible by default. Use QCPAxis::setVisible to change this (or use \ref
+  QCPAxisRect::setupFullAxesBox).
+  
+  QCustomPlot offers convenient pointers to the axes (\ref xAxis, \ref yAxis, \ref xAxis2, \ref
+  yAxis2) and the \ref legend. They make it very easy working with plots that only have a single
+  axis rect and at most one axis at each axis rect side. If you use \link thelayoutsystem the
+  layout system\endlink to add multiple axis rects or multiple axes to one side, use the \ref
+  QCPAxisRect::axis interface to access the new axes. If one of the four default axes or the
+  default legend is removed due to manipulation of the layout system (e.g. by removing the main
+  axis rect), the corresponding pointers become 0.
+*/
+
+/*! \var QCPAxis *QCustomPlot::yAxis2
+
+  A pointer to the secondary y Axis (right) of the main axis rect of the plot. Secondary axes are
+  invisible by default. Use QCPAxis::setVisible to change this (or use \ref
+  QCPAxisRect::setupFullAxesBox).
+  
+  QCustomPlot offers convenient pointers to the axes (\ref xAxis, \ref yAxis, \ref xAxis2, \ref
+  yAxis2) and the \ref legend. They make it very easy working with plots that only have a single
+  axis rect and at most one axis at each axis rect side. If you use \link thelayoutsystem the
+  layout system\endlink to add multiple axis rects or multiple axes to one side, use the \ref
+  QCPAxisRect::axis interface to access the new axes. If one of the four default axes or the
+  default legend is removed due to manipulation of the layout system (e.g. by removing the main
+  axis rect), the corresponding pointers become 0.
+*/
+
+/*! \var QCPLegend *QCustomPlot::legend
+
+  A pointer to the default legend of the main axis rect. The legend is invisible by default. Use
+  QCPLegend::setVisible to change this.
+  
+  QCustomPlot offers convenient pointers to the axes (\ref xAxis, \ref yAxis, \ref xAxis2, \ref
+  yAxis2) and the \ref legend. They make it very easy working with plots that only have a single
+  axis rect and at most one axis at each axis rect side. If you use \link thelayoutsystem the
+  layout system\endlink to add multiple legends to the plot, use the layout system interface to
+  access the new legend. For example, legends can be placed inside an axis rect's \ref
+  QCPAxisRect::insetLayout "inset layout", and must then also be accessed via the inset layout. If
+  the default legend is removed due to manipulation of the layout system (e.g. by removing the main
+  axis rect), the corresponding pointer becomes 0.
+*/
+
+/* end of documentation of public members */
 
 /*!
   Constructs a QCustomPlot and sets reasonable default values.
@@ -473,7 +548,7 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   mBackgroundScaled(true),
   mBackgroundScaledMode(Qt::KeepAspectRatioByExpanding),
   mCurrentLayer(0),
-  mPlottingHints(QCP::phCacheLabels),
+  mPlottingHints(QCP::phCacheLabels|QCP::phForceRepaint),
   mMultiSelectModifier(Qt::ControlModifier),
   mPaintBuffer(size()),
   mMouseEventElement(0),
@@ -522,10 +597,6 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   legend->setLayer("legend");
   
   setViewport(rect()); // needs to be called after mPlotLayout has been created
-  
-#ifdef Q_OS_WIN
-  setPlottingHint(QCP::phForceRepaint);
-#endif
   
   replot();
 }
@@ -1886,7 +1957,8 @@ void QCustomPlot::rescaleAxes(bool onlyVisiblePlottables)
   aren't defined yet inside the constructor, so you would get an image that has strange
   widths/heights.
   
-  \note On Android systems, this method does nothing and issues an according qDebug warning message.
+  \note On Android systems, this method does nothing and issues an according qDebug warning
+  message. This is also the case if for other reasons the define flag QT_NO_PRINTER is set.
   
   \see savePng, saveBmp, saveJpg, saveRastered
 */
@@ -1915,6 +1987,7 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   printer.setOutputFileName(fileName);
   printer.setOutputFormat(QPrinter::PdfFormat);
   printer.setFullPage(true);
+  printer.setColorMode(QPrinter::Color);
   QRect oldViewport = viewport();
   setViewport(QRect(0, 0, newWidth, newHeight));
   printer.setPaperSize(viewport().size(), QPrinter::DevicePixel);

@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 04.11.13                                             **
-**          Version: 1.1.0                                                **
+**             Date: 09.12.13                                             **
+**          Version: 1.1.1                                                **
 ****************************************************************************/
 
 #include "layer.h"
@@ -557,7 +557,7 @@ QRect QCPLayerable::clipRect() const
   
   Every selectEvent is preceded by a call to \ref selectTest, which has returned positively (i.e.
   returned a value greater than 0 and less than the selection tolerance of the parent QCustomPlot).
-  The \a details data you output from \ref selectTest is feeded back via \a details here. You may
+  The \a details data you output from \ref selectTest is fed back via \a details here. You may
   use it to transport any kind of information from the selectTest to the possibly subsequent
   selectEvent. Usually \a details is used to transfer which part was clicked, if it is a layerable
   that has multiple individually selectable parts (like QCPAxis). This way selectEvent doesn't need

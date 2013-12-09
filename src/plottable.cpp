@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 04.11.13                                             **
-**          Version: 1.1.0                                                **
+**             Date: 09.12.13                                             **
+**          Version: 1.1.1                                                **
 ****************************************************************************/
 
 #include "plottable.h"
@@ -93,7 +93,7 @@
   </tr><tr>
     <td>QPointer<QCPAxis>\b mKeyAxis, \b mValueAxis</td>
     <td>The key and value axes this plottable is attached to. Call their QCPAxis::coordToPixel functions to translate coordinates to pixels in either the key or value dimension.
-        Make sure to check whether the weak pointer is null before using it. If one of the axes is null, don't draw the plottable.</td>
+        Make sure to check whether the pointer is null before using it. If one of the axes is null, don't draw the plottable.</td>
   </tr><tr>
     <td>bool \b mSelected</td>
     <td>indicates whether the plottable is selected or not.</td>
@@ -386,6 +386,19 @@ void QCPAbstractPlottable::rescaleKeyAxis(bool onlyEnlarge) const
   {
     if (onlyEnlarge)
       newRange.expand(keyAxis->range());
+    if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this axis dimension), shift current range to at least center the plottable
+    {
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      if (keyAxis->scaleType() == QCPAxis::stLinear)
+      {
+        newRange.lower = center-keyAxis->range().size()/2.0;
+        newRange.upper = center+keyAxis->range().size()/2.0;
+      } else // scaleType() == stLogarithmic
+      {
+        newRange.lower = center/qSqrt(keyAxis->range().upper/keyAxis->range().lower);
+        newRange.upper = center*qSqrt(keyAxis->range().upper/keyAxis->range().lower);
+      }
+    }
     keyAxis->setRange(newRange);
   }
 }
@@ -413,6 +426,19 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
   {
     if (onlyEnlarge)
       newRange.expand(valueAxis->range());
+    if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this axis dimension), shift current range to at least center the plottable
+    {
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      if (valueAxis->scaleType() == QCPAxis::stLinear)
+      {
+        newRange.lower = center-valueAxis->range().size()/2.0;
+        newRange.upper = center+valueAxis->range().size()/2.0;
+      } else // scaleType() == stLogarithmic
+      {
+        newRange.lower = center/qSqrt(valueAxis->range().upper/valueAxis->range().lower);
+        newRange.upper = center*qSqrt(valueAxis->range().upper/valueAxis->range().lower);
+      }
+    }
     valueAxis->setRange(newRange);
   }
 }

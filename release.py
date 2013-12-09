@@ -33,7 +33,7 @@ printinfo("Amalgamating sources...")
 subprocess.call("./run-amalgamate.sh", shell=True)
 # generate documentation images:
 printinfo("Generating documentation images...")
-os.chdir("./other/doc-image-generator")
+os.chdir("./documentation/doc-image-generator")
 runQmakeMake("qmake474")
 if subprocess.call("./doc-image-generator", shell=True) != 0:
   printerror("Failed to generate documentation images."); sys.exit(1)

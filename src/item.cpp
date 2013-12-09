@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 04.11.13                                             **
-**          Version: 1.1.0                                                **
+**             Date: 09.12.13                                             **
+**          Version: 1.1.1                                                **
 ****************************************************************************/
 
 #include "item.h"
@@ -219,7 +219,7 @@ QCPAxisRect *QCPItemPosition::axisRect() const
   \li The position is fixed on the QCustomPlot surface, i.e. independent of axis ranges. This
   corresponds to all other types, i.e. \ref ptAbsolute, \ref ptViewportRatio and \ref
   ptAxisRectRatio. They differ only in the way the absolute position is described, see the
-  documentation of PositionType for details. For \ref ptAxisRectRatio, note that you can specify
+  documentation of \ref PositionType for details. For \ref ptAxisRectRatio, note that you can specify
   the axis rect with \ref setAxisRect. By default this is set to the main axis rect.
   
   Note that the position type \ref ptPlotCoords is only available (and sensible) when the position

@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 04.11.13                                             **
-**          Version: 1.1.0                                                **
+**             Date: 09.12.13                                             **
+**          Version: 1.1.1                                                **
 ****************************************************************************/
 
 #include "axis.h"
@@ -683,6 +683,8 @@ void QCPAxis::setRangeReversed(bool reversed)
   
   If you need dynamically calculated tick vectors (and possibly tick label vectors), set the
   vectors in a slot connected to the \ref ticksRequest signal.
+  
+  \see setAutoTickLabels, setAutoSubTicks, setAutoTickCount, setAutoTickStep
 */
 void QCPAxis::setAutoTicks(bool on)
 {
@@ -701,6 +703,8 @@ void QCPAxis::setAutoTicks(bool on)
   tolerance of about two.
   
   Only values greater than zero are accepted as \a approximateCount.
+  
+  \see setAutoTickStep, setAutoTicks, setAutoSubTicks
 */
 void QCPAxis::setAutoTickCount(int approximateCount)
 {
@@ -727,6 +731,8 @@ void QCPAxis::setAutoTickCount(int approximateCount)
   
   If you need dynamically calculated tick vectors (and possibly tick label vectors), set the
   vectors in a slot connected to the \ref ticksRequest signal.
+  
+  \see setAutoTicks
 */
 void QCPAxis::setAutoTickLabels(bool on)
 {
@@ -742,10 +748,12 @@ void QCPAxis::setAutoTickLabels(bool on)
   automatically. If \a on is set to true, the axis finds a tick step that is reasonable for human
   readable plots. 
 
-  The number of ticks the algorithm aims for within the visible range can be set with \ref
+  The number of ticks the algorithm aims for within the visible range can be specified with \ref
   setAutoTickCount.
   
   If \a on is set to false, you may set the tick step manually with \ref setTickStep.
+  
+  \see setAutoTicks, setAutoSubTicks, setAutoTickCount
 */
 void QCPAxis::setAutoTickStep(bool on)
 {
@@ -762,6 +770,8 @@ void QCPAxis::setAutoTickStep(bool on)
   enabled, this is always the case.
   
   When \a on is set to false, you may set the sub tick count with \ref setSubTickCount manually.
+  
+  \see setAutoTickCount, setAutoTicks, setAutoTickStep
 */
 void QCPAxis::setAutoSubTicks(bool on)
 {
@@ -1547,7 +1557,22 @@ void QCPAxis::rescale(bool onlyVisiblePlottables)
     }
   }
   if (haveRange)
+  {
+    if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this axis dimension), shift current range to at least center the plottable
+    {
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      if (mScaleType == stLinear)
+      {
+        newRange.lower = center-mRange.size()/2.0;
+        newRange.upper = center+mRange.size()/2.0;
+      } else // mScaleType == stLogarithmic
+      {
+        newRange.lower = center/qSqrt(mRange.upper/mRange.lower);
+        newRange.upper = center*qSqrt(mRange.upper/mRange.lower);
+      }
+    }
     setRange(newRange);
+  }
 }
 
 /*!
