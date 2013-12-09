@@ -37,6 +37,7 @@ public:
   void setupInsetLayoutTest(QCustomPlot* customPlot);
   void setupLegendTest(QCustomPlot *customPlot);
   void setupMultiAxisRectInteractions(QCustomPlot *customPlot);
+  void setupAdaptiveSamplingTest(QCustomPlot *customPlot);
   // testbed:
   void setupTestbed(QCustomPlot *customPlot);
   
@@ -63,6 +64,7 @@ public slots:
   void integerTickStepCase_xRangeChanged(QCPRange newRange);
   void integerTickStepCase_yRangeChanged(QCPRange newRange);
   
+  void mouseWheel(QWheelEvent *event);
 private:
   Ui::MainWindow *ui;
   QCustomPlot *mCustomPlot;

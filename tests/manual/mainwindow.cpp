@@ -31,7 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupInsetLayoutTest(mCustomPlot);
   //setupLegendTest(mCustomPlot);
   //setupMultiAxisRectInteractions(mCustomPlot);
-  setupTestbed(mCustomPlot);
+  setupAdaptiveSamplingTest(mCustomPlot);
+  //setupTestbed(mCustomPlot);
 }
 
 MainWindow::~MainWindow()
@@ -625,6 +626,45 @@ void MainWindow::setupMultiAxisRectInteractions(QCustomPlot *customPlot)
   connect(mCustomPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(setupMultiAxisRectInteractionsMouseMove(QMouseEvent*)));
 }
 
+void MainWindow::setupAdaptiveSamplingTest(QCustomPlot *customPlot)
+{
+  qsrand(1);
+  QCPGraph *g = customPlot->addGraph();
+  int n = 200000;
+  QVector<double> x, y;
+  x << -6;
+  y << 2;
+  for (int i=0; i<n/2; ++i)
+  {
+    x << i/(double)(n/2-1)*4-5;
+    if (qrand()%(n/25) == 0)
+      y << qrand()/(double)RAND_MAX*7; // generate outliers (must be preserved in adaptive-sampling-algorithm)
+    else
+      y << qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX)) + 5*qSin(x[i]);
+  }
+  x << 0.5;
+  y << 2;
+  for (int i=0; i<n/2; ++i)
+  {
+    x << i/(double)(n/2-1)*4+1;
+    if (qrand()%(n/25) == 0)
+      y << qrand()/(double)RAND_MAX*7; // generate outliers (must be preserved in adaptive-sampling-algorithm)
+    else
+      y << qCos(qrand()/(double)RAND_MAX*2*M_PI)*qSqrt(-2*qLn(qrand()/(double)RAND_MAX)) + qSin(5*x[i]);
+  }
+  x << 6;
+  y << -1;
+  g->setData(x, y);
+  //g->setScatterStyle(QCPScatterStyle::ssPlus);
+  //g->setLineStyle(QCPGraph::lsNone);
+  g->setAdaptiveSampling(true);
+  
+  customPlot->setPlottingHint(QCP::phFastPolylines, true);
+  customPlot->rescaleAxes();
+  customPlot->xAxis->scaleRange(1, customPlot->xAxis->range().center());
+  customPlot->yAxis->scaleRange(1, customPlot->yAxis->range().center());
+}
+
 void MainWindow::presetInteractive(QCustomPlot *customPlot)
 {
   customPlot->setInteractions(QCP::iRangeDrag|
@@ -637,6 +677,7 @@ void MainWindow::presetInteractive(QCustomPlot *customPlot)
                               QCP::iMultiSelect);
   customPlot->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
   customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+  connect(customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel(QWheelEvent*)), Qt::UniqueConnection);
 }
 
 void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool circle, bool labelBelow)
@@ -878,4 +919,14 @@ void MainWindow::integerTickStepCase_yRangeChanged(QCPRange newRange)
     mTickStep = (int)((tickStepMantissa/10.0)*5)/5.0*10*magnitudeFactor;
   }
   mCustomPlot->yAxis->setTickStep(qCeil(mTickStep));
+}
+
+void MainWindow::mouseWheel(QWheelEvent *event)
+{
+  if (event->pos().x() < 50)
+    mCustomPlot->axisRect()->setRangeZoom(Qt::Vertical);
+  else if (event->pos().y() > mCustomPlot->height()-50)
+    mCustomPlot->axisRect()->setRangeZoom(Qt::Horizontal);
+  else
+    mCustomPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
 }

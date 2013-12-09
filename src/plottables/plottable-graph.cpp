@@ -140,6 +140,7 @@ QCPGraph::QCPGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   setErrorBarSize(6);
   setErrorBarSkipSymbol(true);
   setChannelFillGraph(0);
+  setAdaptiveSampling(true);
 }
 
 QCPGraph::~QCPGraph()
@@ -451,6 +452,42 @@ void QCPGraph::setChannelFillGraph(QCPGraph *targetGraph)
 }
 
 /*!
+  Sets whether adaptive sampling shall be used when plotting this graph. QCustomPlot's adaptive
+  sampling technique can drastically improve the replot performance for graphs with a larger number
+  of points (e.g. above 10,000), without notably changing the appearance of the graph.
+  
+  By default, adaptive sampling is enabled. Even if enabled, QCustomPlot decides whether adaptive
+  sampling shall actually be used on a per-graph basis. So leaving adaptive sampling enabled has no
+  disadvantage in almost all cases.
+  
+  \image html adaptive-sampling-line.png "A line plot of 500,000 points without and with adaptive sampling"
+  
+  As can be seen, line plots experience no visual degradation from adaptive sampling. Outliers are
+  reproduced reliably, as well as the overall shape of the data set. The replot time reduces
+  dramatically though. This allows QCustomPlot to display large amounts of data in realtime.
+  
+  \image html adaptive-sampling-scatter.png "A scatter plot of 100,000 points without and with adaptive sampling"
+  
+  Care must be taken when using high-density scatter plots in combination with adaptive sampling.
+  The adaptive sampling algorithm treats scatter plots more carefully than line plots which still
+  gives a significant reduction of replot times, but not quite as much as for line plots. This is
+  because scatter plots inherently need more data points to be preserved in order to still resemble
+  the original, non-adaptive-sampling plot. As shown above, the results still aren't quite
+  identical, as banding occurs for the outer data points. This is in fact intentional, such that
+  the boundaries of the data cloud stay visible to the viewer. How strong the banding appears,
+  depends on the point density, i.e. the number of points in the plot.
+  
+  For some situations with scatter plots it might thus be desirable to manually turn adaptive
+  sampling off. For example, when saving the plot to disk. This can be achieved by setting \a
+  enabled to false before issuing a command like \ref QCustomPlot::savePng, and setting \a enabled
+  back to true afterwards.
+*/
+void QCPGraph::setAdaptiveSampling(bool enabled)
+{
+  mAdaptiveSampling = enabled;
+}
+
+/*!
   Adds the provided data points in \a dataMap to the current data.
   \see removeData
 */
@@ -661,12 +698,12 @@ void QCPGraph::draw(QCPPainter *painter)
   
   // allocate line and (if necessary) point vectors:
   QVector<QPointF> *lineData = new QVector<QPointF>;
-  QVector<QCPData> *pointData = 0;
+  QVector<QCPData> *scatterData = 0;
   if (!mScatterStyle.isNone())
-    pointData = new QVector<QCPData>;
+    scatterData = new QVector<QCPData>;
   
   // fill vectors with data appropriate to plot style:
-  getPlotData(lineData, pointData);
+  getPlotData(lineData, scatterData);
   
   // check data validity if flag set:
 #ifdef QCUSTOMPLOT_CHECK_DATA
@@ -690,13 +727,13 @@ void QCPGraph::draw(QCPPainter *painter)
     drawLinePlot(painter, lineData); // also step plots can be drawn as a line plot
   
   // draw scatters:
-  if (pointData)
-    drawScatterPlot(painter, pointData);
+  if (scatterData)
+    drawScatterPlot(painter, scatterData);
   
   // free allocated line and point vectors:
   delete lineData;
-  if (pointData)
-    delete pointData;
+  if (scatterData)
+    delete scatterData;
 }
 
 /* inherits documentation from base class */
@@ -745,30 +782,30 @@ void QCPGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
   make up steps. If the line style of the graph is \ref lsNone, the \a lineData vector will be left
   untouched.
   
-  \a pointData will be filled with the original data points so \ref drawScatterPlot can draw the
+  \a scatterData will be filled with the original data points so \ref drawScatterPlot can draw the
   scatter symbols accordingly. If no scatters need to be drawn, i.e. the scatter style's shape is
-  \ref QCPScatterStyle::ssNone, pass 0 as \a pointData, and this step will be skipped.
+  \ref QCPScatterStyle::ssNone, pass 0 as \a scatterData, and this step will be skipped.
   
   \see getScatterPlotData, getLinePlotData, getStepLeftPlotData, getStepRightPlotData,
   getStepCenterPlotData, getImpulsePlotData
 */
-void QCPGraph::getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
+void QCPGraph::getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *scatterData) const
 {
   switch(mLineStyle)
   {
-    case lsNone: getScatterPlotData(pointData); break;
-    case lsLine: getLinePlotData(lineData, pointData); break;
-    case lsStepLeft: getStepLeftPlotData(lineData, pointData); break;
-    case lsStepRight: getStepRightPlotData(lineData, pointData); break;
-    case lsStepCenter: getStepCenterPlotData(lineData, pointData); break;
-    case lsImpulse: getImpulsePlotData(lineData, pointData); break;
+    case lsNone: getScatterPlotData(scatterData); break;
+    case lsLine: getLinePlotData(lineData, scatterData); break;
+    case lsStepLeft: getStepLeftPlotData(lineData, scatterData); break;
+    case lsStepRight: getStepRightPlotData(lineData, scatterData); break;
+    case lsStepCenter: getStepCenterPlotData(lineData, scatterData); break;
+    case lsImpulse: getImpulsePlotData(lineData, scatterData); break;
   }
 }
 
 /*! \internal
   
   If line style is \ref lsNone and the scatter style's shape is not \ref QCPScatterStyle::ssNone,
-  this function serves at providing the visible data points in \a pointData, so the \ref
+  this function serves at providing the visible data points in \a scatterData, so the \ref
   drawScatterPlot function can draw the scatter points accordingly.
   
   If line style is not \ref lsNone, this function is not called and the data for the scatter points
@@ -776,89 +813,48 @@ void QCPGraph::getPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointDa
   
   \see drawScatterPlot
 */
-void QCPGraph::getScatterPlotData(QVector<QCPData> *pointData) const
+void QCPGraph::getScatterPlotData(QVector<QCPData> *scatterData) const
 {
-  if (!pointData) return;
-  QCPAxis *keyAxis = mKeyAxis.data();
-  if (!keyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
-  
-  // get visible data range:
-  QCPDataMap::const_iterator lower, upper;
-  int dataCount = 0;
-  getVisibleDataBounds(lower, upper, dataCount);
-  if (dataCount > 0)
-  {
-    // prepare vectors:
-    pointData->resize(dataCount);
-    
-    // position data points:
-    QCPDataMap::const_iterator it = lower;
-    QCPDataMap::const_iterator upperEnd = upper+1;
-    int i = 0;
-    while (it != upperEnd)
-    {
-      (*pointData)[i] = it.value();
-      ++i;
-      ++it;
-    }
-  }
+  getPreparedData(0, scatterData);
 }
 
 /*! \internal
   
-  Places the raw data points needed for a normal linearly connected graph in \a lineData.
+  Places the raw data points needed for a normal linearly connected graph in \a linePixelData.
 
-  As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
+  As for all plot data retrieval functions, \a scatterData just contains all unaltered data (scatter)
   points that are visible for drawing scatter points, if necessary. If drawing scatter points is
   disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
-  pointData, and the function will skip filling the vector.
+  scatterData, and the function will skip filling the vector.
   
   \see drawLinePlot
 */
-void QCPGraph::getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
+void QCPGraph::getLinePlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterData) const
 {
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
-  if (!lineData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
+  if (!linePixelData) { qDebug() << Q_FUNC_INFO << "null pointer passed as linePixelData"; return; }
   
-  // get visible data range:
-  QCPDataMap::const_iterator lower, upper;
-  int dataCount = 0;
-  getVisibleDataBounds(lower, upper, dataCount);
-  if (dataCount > 0)
+  QVector<QCPData> lineData;
+  getPreparedData(&lineData, scatterData);
+  linePixelData->reserve(lineData.size()+2); // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
+  linePixelData->resize(lineData.size());
+  
+  // transform lineData points to pixels:
+  if (keyAxis->orientation() == Qt::Vertical)
   {
-    lineData->reserve(dataCount+2); // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
-    lineData->resize(dataCount);
-    if (pointData)
-      pointData->resize(dataCount);
-    
-    // position data points:
-    QCPDataMap::const_iterator it = lower;
-    QCPDataMap::const_iterator upperEnd = upper+1;
-    int i = 0;
-    if (keyAxis->orientation() == Qt::Vertical)
+    for (int i=0; i<lineData.size(); ++i)
     {
-      while (it != upperEnd)
-      {
-        if (pointData)
-          (*pointData)[i] = it.value();
-        (*lineData)[i].setX(valueAxis->coordToPixel(it.value().value));
-        (*lineData)[i].setY(keyAxis->coordToPixel(it.key()));
-        ++i;
-        ++it;
-      }
-    } else // key axis is horizontal
+      (*linePixelData)[i].setX(valueAxis->coordToPixel(lineData.at(i).value));
+      (*linePixelData)[i].setY(keyAxis->coordToPixel(lineData.at(i).key));
+    }
+  } else // key axis is horizontal
+  {
+    for (int i=0; i<lineData.size(); ++i)
     {
-      while (it != upperEnd)
-      {
-        if (pointData)
-          (*pointData)[i] = it.value();
-        (*lineData)[i].setX(keyAxis->coordToPixel(it.key()));
-        (*lineData)[i].setY(valueAxis->coordToPixel(it.value().value));
-        ++i;
-        ++it;
-      }
+      (*linePixelData)[i].setX(keyAxis->coordToPixel(lineData.at(i).key));
+      (*linePixelData)[i].setY(valueAxis->coordToPixel(lineData.at(i).value));
     }
   }
 }
@@ -867,78 +863,51 @@ void QCPGraph::getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *poi
   \internal
   Places the raw data points needed for a step plot with left oriented steps in \a lineData.
 
-  As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
+  As for all plot data retrieval functions, \a scatterData just contains all unaltered data (scatter)
   points that are visible for drawing scatter points, if necessary. If drawing scatter points is
   disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
-  pointData, and the function will skip filling the vector.
+  scatterData, and the function will skip filling the vector.
   
   \see drawLinePlot
 */
-void QCPGraph::getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
+void QCPGraph::getStepLeftPlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterData) const
 {
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
-  if (!lineData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
+  if (!linePixelData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
   
-  // get visible data range:
-  QCPDataMap::const_iterator lower, upper;
-  int dataCount = 0;
-  getVisibleDataBounds(lower, upper, dataCount);
-  if (dataCount > 0)
+  QVector<QCPData> lineData;
+  getPreparedData(&lineData, scatterData);
+  linePixelData->reserve(lineData.size()*2+2); // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
+  linePixelData->resize(lineData.size()*2);
+  
+  // calculate steps from lineData and transform to pixel coordinates:
+  if (keyAxis->orientation() == Qt::Vertical)
   {
-    lineData->reserve(dataCount*2+2); // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
-    lineData->resize(dataCount*2); // multiplied by 2 because step plot needs two polyline points per one actual data point
-    if (pointData)
-      pointData->resize(dataCount);
-    
-    // position data points:
-    QCPDataMap::const_iterator it = lower;
-    QCPDataMap::const_iterator upperEnd = upper+1;
-    int i = 0;
-    int ipoint = 0;
-    if (keyAxis->orientation() == Qt::Vertical)
+    double lastValue = valueAxis->coordToPixel(lineData.first().value);
+    double key;
+    for (int i=0; i<lineData.size(); ++i)
     {
-      double lastValue = valueAxis->coordToPixel(it.value().value);
-      double key;
-      while (it != upperEnd)
-      {
-        if (pointData)
-        {
-          (*pointData)[ipoint] = it.value();
-          ++ipoint;
-        }
-        key = keyAxis->coordToPixel(it.key());
-        (*lineData)[i].setX(lastValue);
-        (*lineData)[i].setY(key);
-        ++i;
-        lastValue = valueAxis->coordToPixel(it.value().value);
-        (*lineData)[i].setX(lastValue);
-        (*lineData)[i].setY(key);
-        ++i;
-        ++it;
-      }
-    } else // key axis is horizontal
+      key = keyAxis->coordToPixel(lineData.at(i).key);
+      (*linePixelData)[i*2+0].setX(lastValue);
+      (*linePixelData)[i*2+0].setY(key);
+      lastValue = valueAxis->coordToPixel(lineData.at(i).value);
+      (*linePixelData)[i*2+1].setX(lastValue);
+      (*linePixelData)[i*2+1].setY(key);
+    }
+  } else // key axis is horizontal
+  {
+    double lastValue = valueAxis->coordToPixel(lineData.first().value);
+    double key;
+    for (int i=0; i<lineData.size(); ++i)
     {
-      double lastValue = valueAxis->coordToPixel(it.value().value);
-      double key;
-      while (it != upperEnd)
-      {
-        if (pointData)
-        {
-          (*pointData)[ipoint] = it.value();
-          ++ipoint;
-        }
-        key = keyAxis->coordToPixel(it.key());
-        (*lineData)[i].setX(key);
-        (*lineData)[i].setY(lastValue);
-        ++i;
-        lastValue = valueAxis->coordToPixel(it.value().value);
-        (*lineData)[i].setX(key);
-        (*lineData)[i].setY(lastValue);
-        ++i;
-        ++it;
-      }
+      key = keyAxis->coordToPixel(lineData.at(i).key);
+      (*linePixelData)[i*2+0].setX(key);
+      (*linePixelData)[i*2+0].setY(lastValue);
+      lastValue = valueAxis->coordToPixel(lineData.at(i).value);
+      (*linePixelData)[i*2+1].setX(key);
+      (*linePixelData)[i*2+1].setY(lastValue);
     }
   }
 }
@@ -947,78 +916,51 @@ void QCPGraph::getStepLeftPlotData(QVector<QPointF> *lineData, QVector<QCPData> 
   \internal
   Places the raw data points needed for a step plot with right oriented steps in \a lineData.
 
-  As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
+  As for all plot data retrieval functions, \a scatterData just contains all unaltered data (scatter)
   points that are visible for drawing scatter points, if necessary. If drawing scatter points is
   disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
-  pointData, and the function will skip filling the vector.
+  scatterData, and the function will skip filling the vector.
   
   \see drawLinePlot
 */
-void QCPGraph::getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
+void QCPGraph::getStepRightPlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterData) const
 {
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
-  if (!lineData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
+  if (!linePixelData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
   
-  // get visible data range:
-  QCPDataMap::const_iterator lower, upper;
-  int dataCount = 0;
-  getVisibleDataBounds(lower, upper, dataCount);
-  if (dataCount > 0)
+  QVector<QCPData> lineData;
+  getPreparedData(&lineData, scatterData);
+  linePixelData->reserve(lineData.size()*2+2); // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
+  linePixelData->resize(lineData.size()*2);
+  
+  // calculate steps from lineData and transform to pixel coordinates:
+  if (keyAxis->orientation() == Qt::Vertical)
   {
-    lineData->reserve(dataCount*2+2); // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
-    lineData->resize(dataCount*2); // multiplied by 2 because step plot needs two polyline points per one actual data point
-    if (pointData)
-      pointData->resize(dataCount);
-    
-    // position points:
-    QCPDataMap::const_iterator it = lower;
-    QCPDataMap::const_iterator upperEnd = upper+1;
-    int i = 0;
-    int ipoint = 0;
-    if (keyAxis->orientation() == Qt::Vertical)
+    double lastKey = keyAxis->coordToPixel(lineData.first().key);
+    double value;
+    for (int i=0; i<lineData.size(); ++i)
     {
-      double lastKey = keyAxis->coordToPixel(it.key());
-      double value;
-      while (it != upperEnd)
-      {
-        if (pointData)
-        {
-          (*pointData)[ipoint] = it.value();
-          ++ipoint;
-        }
-        value = valueAxis->coordToPixel(it.value().value);
-        (*lineData)[i].setX(value);
-        (*lineData)[i].setY(lastKey);
-        ++i;
-        lastKey = keyAxis->coordToPixel(it.key());
-        (*lineData)[i].setX(value);
-        (*lineData)[i].setY(lastKey);
-        ++i;
-        ++it;
-      }
-    } else // key axis is horizontal
+      value = valueAxis->coordToPixel(lineData.at(i).value);
+      (*linePixelData)[i*2+0].setX(value);
+      (*linePixelData)[i*2+0].setY(lastKey);
+      lastKey = keyAxis->coordToPixel(lineData.at(i).key);
+      (*linePixelData)[i*2+1].setX(value);
+      (*linePixelData)[i*2+1].setY(lastKey);
+    }
+  } else // key axis is horizontal
+  {
+    double lastKey = keyAxis->coordToPixel(lineData.first().key);
+    double value;
+    for (int i=0; i<lineData.size(); ++i)
     {
-      double lastKey = keyAxis->coordToPixel(it.key());
-      double value;
-      while (it != upperEnd)
-      {
-        if (pointData)
-        {
-          (*pointData)[ipoint] = it.value();
-          ++ipoint;
-        }
-        value = valueAxis->coordToPixel(it.value().value);
-        (*lineData)[i].setX(lastKey);
-        (*lineData)[i].setY(value);
-        ++i;
-        lastKey = keyAxis->coordToPixel(it.key());
-        (*lineData)[i].setX(lastKey);
-        (*lineData)[i].setY(value);
-        ++i;
-        ++it;
-      }
+      value = valueAxis->coordToPixel(lineData.at(i).value);
+      (*linePixelData)[i*2+0].setX(lastKey);
+      (*linePixelData)[i*2+0].setY(value);
+      lastKey = keyAxis->coordToPixel(lineData.at(i).key);
+      (*linePixelData)[i*2+1].setX(lastKey);
+      (*linePixelData)[i*2+1].setY(value);
     }
   }
 }
@@ -1027,183 +969,113 @@ void QCPGraph::getStepRightPlotData(QVector<QPointF> *lineData, QVector<QCPData>
   \internal
   Places the raw data points needed for a step plot with centered steps in \a lineData.
 
-  As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
+  As for all plot data retrieval functions, \a scatterData just contains all unaltered data (scatter)
   points that are visible for drawing scatter points, if necessary. If drawing scatter points is
   disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
-  pointData, and the function will skip filling the vector.
+  scatterData, and the function will skip filling the vector.
   
   \see drawLinePlot
 */
-void QCPGraph::getStepCenterPlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
+void QCPGraph::getStepCenterPlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterData) const
 {
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
-  if (!lineData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
+  if (!linePixelData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
   
-  // get visible data range:
-  QCPDataMap::const_iterator lower, upper;
-  int dataCount = 0;
-  getVisibleDataBounds(lower, upper, dataCount);
-  if (dataCount > 0)
+  QVector<QCPData> lineData;
+  getPreparedData(&lineData, scatterData);
+  linePixelData->reserve(lineData.size()*2+2); // added 2 to reserve memory for lower/upper fill base points that might be needed for fill
+  linePixelData->resize(lineData.size()*2);
+  // calculate steps from lineData and transform to pixel coordinates:
+  if (keyAxis->orientation() == Qt::Vertical)
   {
-    // added 2 to reserve memory for lower/upper fill base points that might be needed for base fill
-    // multiplied by 2 because step plot needs two polyline points per one actual data point
-    lineData->reserve(dataCount*2+2);
-    lineData->resize(dataCount*2);
-    if (pointData)
-      pointData->resize(dataCount);
-    
-    // position points:
-    QCPDataMap::const_iterator it = lower;
-    QCPDataMap::const_iterator upperEnd = upper+1;
-    int i = 0;
-    int ipoint = 0;
-    if (keyAxis->orientation() == Qt::Vertical)
+    double lastKey = keyAxis->coordToPixel(lineData.first().key);
+    double lastValue = valueAxis->coordToPixel(lineData.first().value);
+    double key;
+    (*linePixelData)[0].setX(lastValue);
+    (*linePixelData)[0].setY(lastKey);
+    for (int i=1; i<lineData.size(); ++i)
     {
-      double lastKey = keyAxis->coordToPixel(it.key());
-      double lastValue = valueAxis->coordToPixel(it.value().value);
-      double key;
-      if (pointData)
-      {
-        (*pointData)[ipoint] = it.value();
-        ++ipoint;
-      }
-      (*lineData)[i].setX(lastValue);
-      (*lineData)[i].setY(lastKey);
-      ++it;
-      ++i;
-      while (it != upperEnd)
-      {
-        if (pointData)
-        {
-          (*pointData)[ipoint] = it.value();
-          ++ipoint;
-        }
-        key = (keyAxis->coordToPixel(it.key())-lastKey)*0.5 + lastKey;
-        (*lineData)[i].setX(lastValue);
-        (*lineData)[i].setY(key);
-        ++i;
-        lastValue = valueAxis->coordToPixel(it.value().value);
-        lastKey = keyAxis->coordToPixel(it.key());
-        (*lineData)[i].setX(lastValue);
-        (*lineData)[i].setY(key);
-        ++it;
-        ++i;
-      }
-      (*lineData)[i].setX(lastValue);
-      (*lineData)[i].setY(lastKey);
-    } else // key axis is horizontal
-    {
-      double lastKey = keyAxis->coordToPixel(it.key());
-      double lastValue = valueAxis->coordToPixel(it.value().value);
-      double key;
-      if (pointData)
-      {
-        (*pointData)[ipoint] = it.value();
-        ++ipoint;
-      }
-      (*lineData)[i].setX(lastKey);
-      (*lineData)[i].setY(lastValue);
-      ++it;
-      ++i;
-      while (it != upperEnd)
-      {
-        if (pointData)
-        {
-          (*pointData)[ipoint] = it.value();
-          ++ipoint;
-        }
-        key = (keyAxis->coordToPixel(it.key())-lastKey)*0.5 + lastKey;
-        (*lineData)[i].setX(key);
-        (*lineData)[i].setY(lastValue);
-        ++i;
-        lastValue = valueAxis->coordToPixel(it.value().value);
-        lastKey = keyAxis->coordToPixel(it.key());
-        (*lineData)[i].setX(key);
-        (*lineData)[i].setY(lastValue);
-        ++it;
-        ++i;
-      }
-      (*lineData)[i].setX(lastKey);
-      (*lineData)[i].setY(lastValue);
+      key = (keyAxis->coordToPixel(lineData.at(i).key)+lastKey)*0.5;
+      (*linePixelData)[i*2-1].setX(lastValue);
+      (*linePixelData)[i*2-1].setY(key);
+      lastValue = valueAxis->coordToPixel(lineData.at(i).value);
+      lastKey = keyAxis->coordToPixel(lineData.at(i).key);
+      (*linePixelData)[i*2+0].setX(lastValue);
+      (*linePixelData)[i*2+0].setY(key);
     }
+    (*linePixelData)[lineData.size()*2-1].setX(lastValue);
+    (*linePixelData)[lineData.size()*2-1].setY(lastKey);
+  } else // key axis is horizontal
+  {
+    double lastKey = keyAxis->coordToPixel(lineData.first().key);
+    double lastValue = valueAxis->coordToPixel(lineData.first().value);
+    double key;
+    (*linePixelData)[0].setX(lastKey);
+    (*linePixelData)[0].setY(lastValue);
+    for (int i=1; i<lineData.size(); ++i)
+    {
+      key = (keyAxis->coordToPixel(lineData.at(i).key)+lastKey)*0.5;
+      (*linePixelData)[i*2-1].setX(key);
+      (*linePixelData)[i*2-1].setY(lastValue);
+      lastValue = valueAxis->coordToPixel(lineData.at(i).value);
+      lastKey = keyAxis->coordToPixel(lineData.at(i).key);
+      (*linePixelData)[i*2+0].setX(key);
+      (*linePixelData)[i*2+0].setY(lastValue);
+    }
+    (*linePixelData)[lineData.size()*2-1].setX(lastKey);
+    (*linePixelData)[lineData.size()*2-1].setY(lastValue);
   }
+
 }
 
 /*! 
   \internal
   Places the raw data points needed for an impulse plot in \a lineData.
 
-  As for all plot data retrieval functions, \a pointData just contains all unaltered data (scatter)
+  As for all plot data retrieval functions, \a scatterData just contains all unaltered data (scatter)
   points that are visible for drawing scatter points, if necessary. If drawing scatter points is
   disabled (i.e. the scatter style's shape is \ref QCPScatterStyle::ssNone), pass 0 as \a
-  pointData, and the function will skip filling the vector.
+  scatterData, and the function will skip filling the vector.
   
   \see drawImpulsePlot
 */
-void QCPGraph::getImpulsePlotData(QVector<QPointF> *lineData, QVector<QCPData> *pointData) const
+void QCPGraph::getImpulsePlotData(QVector<QPointF> *linePixelData, QVector<QCPData> *scatterData) const
 {
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
-  if (!lineData) { qDebug() << Q_FUNC_INFO << "null pointer passed as lineData"; return; }
+  if (!linePixelData) { qDebug() << Q_FUNC_INFO << "null pointer passed as linePixelData"; return; }
   
-  // get visible data range:
-  QCPDataMap::const_iterator lower, upper;
-  int dataCount = 0;
-  getVisibleDataBounds(lower, upper, dataCount);
-  if (dataCount > 0)
+  QVector<QCPData> lineData;
+  getPreparedData(&lineData, scatterData);
+  linePixelData->resize(lineData.size()*2); // no need to reserve 2 extra points because impulse plot has no fill
+  
+  // transform lineData points to pixels:
+  if (keyAxis->orientation() == Qt::Vertical)
   {
-    lineData->resize(dataCount*2); // no need to reserve 2 extra points, because there is no fill for impulse plot
-    if (pointData)
-      pointData->resize(dataCount);
-    
-    // position data points:
-    QCPDataMap::const_iterator it = lower;
-    QCPDataMap::const_iterator upperEnd = upper+1;
-    int i = 0;
-    int ipoint = 0;
-    if (keyAxis->orientation() == Qt::Vertical)
+    double zeroPointX = valueAxis->coordToPixel(0);
+    double key;
+    for (int i=0; i<lineData.size(); ++i)
     {
-      double zeroPointX = valueAxis->coordToPixel(0);
-      double key;
-      while (it != upperEnd)
-      {
-        if (pointData)
-        {
-          (*pointData)[ipoint] = it.value();
-          ++ipoint;
-        }
-        key = keyAxis->coordToPixel(it.key());
-        (*lineData)[i].setX(zeroPointX);
-        (*lineData)[i].setY(key);
-        ++i;
-        (*lineData)[i].setX(valueAxis->coordToPixel(it.value().value));
-        (*lineData)[i].setY(key);
-        ++i;
-        ++it;
-      }
-    } else // key axis is horizontal
+      key = keyAxis->coordToPixel(lineData.at(i).key);
+      (*linePixelData)[i*2+0].setX(zeroPointX);
+      (*linePixelData)[i*2+0].setY(key);
+      (*linePixelData)[i*2+1].setX(valueAxis->coordToPixel(lineData.at(i).value));
+      (*linePixelData)[i*2+1].setY(key);
+    }
+  } else // key axis is horizontal
+  {
+    double zeroPointY = valueAxis->coordToPixel(0);
+    double key;
+    for (int i=0; i<lineData.size(); ++i)
     {
-      double zeroPointY = valueAxis->coordToPixel(0);
-      double key;
-      while (it != upperEnd)
-      {
-        if (pointData)
-        {
-          (*pointData)[ipoint] = it.value();
-          ++ipoint;
-        }
-        key = keyAxis->coordToPixel(it.key());
-        (*lineData)[i].setX(key);
-        (*lineData)[i].setY(zeroPointY);
-        ++i;
-        (*lineData)[i].setX(key);
-        (*lineData)[i].setY(valueAxis->coordToPixel(it.value().value));
-        ++i;
-        ++it;
-      }
+      key = keyAxis->coordToPixel(lineData.at(i).key);
+      (*linePixelData)[i*2+0].setX(key);
+      (*linePixelData)[i*2+0].setY(zeroPointY);
+      (*linePixelData)[i*2+1].setX(key);
+      (*linePixelData)[i*2+1].setY(valueAxis->coordToPixel(lineData.at(i).value));
     }
   }
 }
@@ -1246,14 +1118,14 @@ void QCPGraph::drawFill(QCPPainter *painter, QVector<QPointF> *lineData) const
 
 /*! \internal
   
-  Draws scatter symbols at every data point passed in \a pointData. scatter symbols are independent
+  Draws scatter symbols at every data point passed in \a scatterData. scatter symbols are independent
   of the line style and are always drawn if the scatter style's shape is not \ref
-  QCPScatterStyle::ssNone. Hence, the \a pointData vector is outputted by all "get(...)PlotData"
+  QCPScatterStyle::ssNone. Hence, the \a scatterData vector is outputted by all "get(...)PlotData"
   functions, together with the (line style dependent) line data.
   
   \see drawLinePlot, drawImpulsePlot
 */
-void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData) const
+void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatterData) const
 {
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
@@ -1266,12 +1138,12 @@ void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData)
     painter->setPen(mErrorPen);
     if (keyAxis->orientation() == Qt::Vertical)
     {
-      for (int i=0; i<pointData->size(); ++i)
-        drawError(painter, valueAxis->coordToPixel(pointData->at(i).value), keyAxis->coordToPixel(pointData->at(i).key), pointData->at(i));
+      for (int i=0; i<scatterData->size(); ++i)
+        drawError(painter, valueAxis->coordToPixel(scatterData->at(i).value), keyAxis->coordToPixel(scatterData->at(i).key), scatterData->at(i));
     } else
     {
-      for (int i=0; i<pointData->size(); ++i)
-        drawError(painter, keyAxis->coordToPixel(pointData->at(i).key), valueAxis->coordToPixel(pointData->at(i).value), pointData->at(i));
+      for (int i=0; i<scatterData->size(); ++i)
+        drawError(painter, keyAxis->coordToPixel(scatterData->at(i).key), valueAxis->coordToPixel(scatterData->at(i).value), scatterData->at(i));
     }
   }
   
@@ -1280,12 +1152,12 @@ void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *pointData)
   mScatterStyle.applyTo(painter, mPen);
   if (keyAxis->orientation() == Qt::Vertical)
   {
-    for (int i=0; i<pointData->size(); ++i)
-      mScatterStyle.drawShape(painter, valueAxis->coordToPixel(pointData->at(i).value), keyAxis->coordToPixel(pointData->at(i).key));
+    for (int i=0; i<scatterData->size(); ++i)
+      mScatterStyle.drawShape(painter, valueAxis->coordToPixel(scatterData->at(i).value), keyAxis->coordToPixel(scatterData->at(i).key));
   } else
   {
-    for (int i=0; i<pointData->size(); ++i)
-      mScatterStyle.drawShape(painter, keyAxis->coordToPixel(pointData->at(i).key), valueAxis->coordToPixel(pointData->at(i).value));
+    for (int i=0; i<scatterData->size(); ++i)
+      mScatterStyle.drawShape(painter, keyAxis->coordToPixel(scatterData->at(i).key), valueAxis->coordToPixel(scatterData->at(i).value));
   }
 }
 
@@ -1355,6 +1227,199 @@ void QCPGraph::drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) 
     painter->setPen(pen);
     painter->setBrush(Qt::NoBrush);
     painter->drawLines(*lineData);
+  }
+}
+
+/*! \internal
+  
+  Returns the \a lineData and \a scatterData that need to be plotted for this graph taking into
+  consideration the current axis ranges and, if \ref setAdaptiveSampling is enabled, local point
+  densities.
+  
+  0 may be passed as \a lineData or \a scatterData to indicate that the respective dataset isn't
+  needed. For example, if the scatter style (\ref setStyle) is \ref QCPScatterStyle::ssNone, \a
+  scatterData should be 0 to prevent unnecessary calculations.
+  
+  This method is used by the various "get(...)PlotData" methods to get the basic working set of data.
+*/
+void QCPGraph::getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *scatterData) const
+{
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
+  // get visible data range:
+  QCPDataMap::const_iterator lower, upper; // note that upper is the actual upper point, and not 1 step after the upper point
+  getVisibleDataBounds(lower, upper);
+  if (lower == mData->constEnd() || upper == mData->constEnd())
+    return;
+  
+  // count points in visible range, taking into account that we only need to count to the limit maxCount if using adaptive sampling:
+  int maxCount = std::numeric_limits<int>::max();
+  if (mAdaptiveSampling)
+  {
+    int keyPixelSpan = qAbs(keyAxis->coordToPixel(lower.key())-keyAxis->coordToPixel(upper.key()));
+    maxCount = 2*keyPixelSpan+2;
+  }
+  int dataCount = countDataInBounds(lower, upper, maxCount);
+  
+  if (mAdaptiveSampling && dataCount >= maxCount) // use adaptive sampling only if there are at least two points per pixel on average
+  {
+    if (lineData)
+    {
+      QCPDataMap::const_iterator it = lower;
+      QCPDataMap::const_iterator upperEnd = upper+1;
+      double minValue = it.value().value;
+      double maxValue = it.value().value;
+      QCPDataMap::const_iterator currentIntervalFirstPoint = it;
+      int reversedFactor = keyAxis->rangeReversed() ? -1 : 1; // is used to calculate keyEpsilon pixel into the correct direction
+      int reversedRound = keyAxis->rangeReversed() ? 1 : 0; // is used to switch between floor (normal) and ceil (reversed) rounding of currentIntervalStartKey
+      double currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(lower.key())+reversedRound));
+      double lastIntervalEndKey = currentIntervalStartKey;
+      double keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor)); // interval of one pixel on screen when mapped to plot key coordinates
+      bool keyEpsilonVariable = keyAxis->scaleType() == QCPAxis::stLogarithmic; // indicates whether keyEpsilon needs to be updated after every interval (for log axes)
+      int intervalDataCount = 1;
+      ++it; // advance iterator to second data point because adaptive sampling works in 1 point retrospect
+      while (it != upperEnd)
+      {
+        if (it.key() < currentIntervalStartKey+keyEpsilon) // data point is still within same pixel, so skip it and expand value span of this cluster if necessary
+        {
+          if (it.value().value < minValue)
+            minValue = it.value().value;
+          else if (it.value().value > maxValue)
+            maxValue = it.value().value;
+          ++intervalDataCount;
+        } else // new pixel interval started
+        {
+          if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them to a cluster
+          {
+            if (lastIntervalEndKey < currentIntervalStartKey-keyEpsilon) // last point is further away, so first point of this cluster must be at a real data point
+              lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.2, currentIntervalFirstPoint.value().value));
+            lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.25, minValue));
+            lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.75, maxValue));
+            if (it.key() > currentIntervalStartKey+keyEpsilon*2) // new pixel started further away from previous cluster, so make sure the last point of the cluster is at a real data point
+              lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.8, (it-1).value().value));
+          } else
+            lineData->append(QCPData(currentIntervalFirstPoint.key(), currentIntervalFirstPoint.value().value));
+          lastIntervalEndKey = (it-1).value().key;
+          minValue = it.value().value;
+          maxValue = it.value().value;
+          currentIntervalFirstPoint = it;
+          currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(it.key())+reversedRound));
+          if (keyEpsilonVariable)
+            keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor));
+          intervalDataCount = 1;
+        }
+        ++it;
+      }
+      // handle last interval:
+      if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them to a cluster
+      {
+        if (lastIntervalEndKey < currentIntervalStartKey-keyEpsilon) // last point wasn't a cluster, so first point of this cluster must be at a real data point
+          lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.2, currentIntervalFirstPoint.value().value));
+        lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.25, minValue));
+        lineData->append(QCPData(currentIntervalStartKey+keyEpsilon*0.75, maxValue));
+      } else
+        lineData->append(QCPData(currentIntervalFirstPoint.key(), currentIntervalFirstPoint.value().value));
+    }
+    
+    if (scatterData)
+    {
+      double valueMaxRange = valueAxis->range().upper;
+      double valueMinRange = valueAxis->range().lower;
+      QCPDataMap::const_iterator it = lower;
+      QCPDataMap::const_iterator upperEnd = upper+1;
+      double minValue = it.value().value;
+      double maxValue = it.value().value;
+      QCPDataMap::const_iterator minValueIt = it;
+      QCPDataMap::const_iterator maxValueIt = it;
+      QCPDataMap::const_iterator currentIntervalStart = it;
+      int reversedFactor = keyAxis->rangeReversed() ? -1 : 1; // is used to calculate keyEpsilon pixel into the correct direction
+      int reversedRound = keyAxis->rangeReversed() ? 1 : 0; // is used to switch between floor (normal) and ceil (reversed) rounding of currentIntervalStartKey
+      double currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(lower.key())+reversedRound));
+      double keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor)); // interval of one pixel on screen when mapped to plot key coordinates
+      bool keyEpsilonVariable = keyAxis->scaleType() == QCPAxis::stLogarithmic; // indicates whether keyEpsilon needs to be updated after every interval (for log axes)
+      int intervalDataCount = 1;
+      ++it; // advance iterator to second data point because adaptive sampling works in 1 point retrospect
+      while (it != upperEnd)
+      {
+        if (it.key() < currentIntervalStartKey+keyEpsilon) // data point is still within same pixel, so skip it and expand value span of this pixel if necessary
+        {
+          if (it.value().value < minValue && it.value().value > valueMinRange && it.value().value < valueMaxRange)
+          {
+            minValue = it.value().value;
+            minValueIt = it;
+          } else if (it.value().value > maxValue && it.value().value > valueMinRange && it.value().value < valueMaxRange)
+          {
+            maxValue = it.value().value;
+            maxValueIt = it;
+          }
+          ++intervalDataCount;
+        } else // new pixel started
+        {
+          if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them
+          {
+            // determine value pixel span and add as many points in interval to maintain certain vertical data density (this is specific to scatter plot):
+            double valuePixelSpan = qAbs(valueAxis->coordToPixel(minValue)-valueAxis->coordToPixel(maxValue));
+            int dataModulo = qMax(1, qRound(intervalDataCount/(valuePixelSpan/4.0))); // approximately every 4 value pixels one data point on average
+            QCPDataMap::const_iterator intervalIt = currentIntervalStart;
+            int c = 0;
+            while (intervalIt != it)
+            {
+              if ((c % dataModulo == 0 || intervalIt == minValueIt || intervalIt == maxValueIt) && intervalIt.value().value > valueMinRange && intervalIt.value().value < valueMaxRange)
+                scatterData->append(intervalIt.value());
+              ++c;
+              ++intervalIt;
+            }
+          } else if (currentIntervalStart.value().value > valueMinRange && currentIntervalStart.value().value < valueMaxRange)
+            scatterData->append(currentIntervalStart.value());
+          minValue = it.value().value;
+          maxValue = it.value().value;
+          currentIntervalStart = it;
+          currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(it.key())+reversedRound));
+          if (keyEpsilonVariable)
+            keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor));
+          intervalDataCount = 1;
+        }
+        ++it;
+      }
+      // handle last interval:
+      if (intervalDataCount >= 2) // last pixel had multiple data points, consolidate them
+      {
+        // determine value pixel span and add as many points in interval to maintain certain vertical data density (this is specific to scatter plot):
+        double valuePixelSpan = qAbs(valueAxis->coordToPixel(minValue)-valueAxis->coordToPixel(maxValue));
+        int dataModulo = qMax(1, qRound(intervalDataCount/(valuePixelSpan/4.0))); // approximately every 4 value pixels one data point on average
+        QCPDataMap::const_iterator intervalIt = currentIntervalStart;
+        int c = 0;
+        while (intervalIt != it)
+        {
+          if ((c % dataModulo == 0 || intervalIt == minValueIt || intervalIt == maxValueIt) && intervalIt.value().value > valueMinRange && intervalIt.value().value < valueMaxRange)
+            scatterData->append(intervalIt.value());
+          ++c;
+          ++intervalIt;
+        }
+      } else if (currentIntervalStart.value().value > valueMinRange && currentIntervalStart.value().value < valueMaxRange)
+        scatterData->append(currentIntervalStart.value());
+    }
+  } else // don't use adaptive sampling algorithm, transfer points one-to-one from the map into the output parameters
+  {
+    QVector<QCPData> *dataVector = 0;
+    if (lineData)
+      dataVector = lineData;
+    else if (scatterData)
+      dataVector = scatterData;
+    if (dataVector)
+    {
+      QCPDataMap::const_iterator it = lower;
+      QCPDataMap::const_iterator upperEnd = upper+1;
+      dataVector->reserve(dataCount+2); // +2 for possible fill end points
+      while (it != upperEnd)
+      {
+        dataVector->append(it.value());
+        ++it;
+      }
+    }
+    if (lineData && scatterData)
+      *scatterData = *dataVector;
   }
 }
 
@@ -1462,30 +1527,25 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
 
 /*!  \internal
   
-  called by the specific plot data generating functions "get(...)PlotData" to determine which data
-  range is visible, so only that needs to be processed.
+  called by \ref getPreparedData to determine which data (key) range is visible at the current key
+  axis range setting, so only that needs to be processed.
   
   \a lower returns an iterator to the lowest data point that needs to be taken into account when
-  plotting. Note that in order to get a clean plot all the way to the edge of the axes, \a lower
-  may still be outside the visible range.
+  plotting. Note that in order to get a clean plot all the way to the edge of the axis rect, \a
+  lower may still be just outside the visible range.
   
   \a upper returns an iterator to the highest data point. Same as before, \a upper may also lie
-  outside of the visible range.
+  just outside of the visible range.
   
-  \a count number of data points that need plotting, i.e. points between \a lower and \a upper,
-  including them. This is useful for allocating the array of <tt>QPointF</tt>s in the specific
-  drawing functions.
-  
-  if the graph contains no data, \a count is zero and both \a lower and \a upper point to constEnd.
+  if the graph contains no data, both \a lower and \a upper point to constEnd.
 */
-void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper, int &count) const
+void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper) const
 {
   if (!mKeyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
   if (mData->isEmpty())
   {
     lower = mData->constEnd();
     upper = mData->constEnd();
-    count = 0;
     return;
   }
   
@@ -1497,15 +1557,30 @@ void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMa
   
   lower = (lowoutlier ? lbound-1 : lbound); // data point range that will be actually drawn
   upper = (highoutlier ? ubound : ubound-1); // data point range that will be actually drawn
+}
+
+/*!  \internal
   
-  // count number of points in range lower to upper (including them), so we can allocate array for them in draw functions:
+  Counts the number of data points between \a lower and \a upper (including them), up to a maximum
+  of \a maxCount.
+  
+  This function is used by \ref getPreparedData to determine whether adaptive sampling shall be
+  used (if enabled via \ref setAdaptiveSampling) or not. This is also why counting of data points
+  only needs to be done until \a maxCount is reached, which should be set to the number of data
+  points at which adaptive sampling sets in.
+*/
+int QCPGraph::countDataInBounds(const QCPDataMap::const_iterator &lower, const QCPDataMap::const_iterator &upper, int maxCount) const
+{
+  if (upper == mData->constEnd() && lower == mData->constEnd())
+    return 0;
   QCPDataMap::const_iterator it = lower;
-  count = 1;
-  while (it != upper)
+  int count = 1;
+  while (it != upper && count < maxCount)
   {
     ++it;
     ++count;
   }
+  return count;
 }
 
 /*! \internal
@@ -1920,20 +1995,20 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
   if (mLineStyle == lsNone)
   {
     // no line displayed, only calculate distance to scatter points:
-    QVector<QCPData> *pointData = new QVector<QCPData>;
-    getScatterPlotData(pointData);
+    QVector<QCPData> *scatterData = new QVector<QCPData>;
+    getScatterPlotData(scatterData);
     double minDistSqr = std::numeric_limits<double>::max();
     QPointF ptA;
-    QPointF ptB = coordsToPixels(pointData->at(0).key, pointData->at(0).value); // getScatterPlotData returns in plot coordinates, so transform to pixels
-    for (int i=1; i<pointData->size(); ++i)
+    QPointF ptB = coordsToPixels(scatterData->at(0).key, scatterData->at(0).value); // getScatterPlotData returns in plot coordinates, so transform to pixels
+    for (int i=1; i<scatterData->size(); ++i)
     {
       ptA = ptB;
-      ptB = coordsToPixels(pointData->at(i).key, pointData->at(i).value);
+      ptB = coordsToPixels(scatterData->at(i).key, scatterData->at(i).value);
       double currentDistSqr = distSqrToLine(ptA, ptB, pixelPoint);
       if (currentDistSqr < minDistSqr)
         minDistSqr = currentDistSqr;
     }
-    delete pointData;
+    delete scatterData;
     return sqrt(minDistSqr);
   } else
   {
