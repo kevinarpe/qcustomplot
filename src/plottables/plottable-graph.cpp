@@ -451,6 +451,37 @@ void QCPGraph::setChannelFillGraph(QCPGraph *targetGraph)
   mChannelFillGraph = targetGraph;
 }
 
+/*!
+  Sets whether adaptive sampling shall be used when plotting this graph. QCustomPlot's adaptive
+  sampling technique can drastically improve the replot performance for graphs with a larger number
+  of points (e.g. above 10,000), without notably changing the appearance of the graph.
+  
+  By default, adaptive sampling is enabled. Even if enabled, QCustomPlot decides whether adaptive
+  sampling shall actually be used on a per-graph basis. So leaving adaptive sampling enabled has no
+  disadvantage in almost all cases.
+  
+  \image html adaptive-sampling-line.png "A line plot of 500,000 points without and with adaptive sampling"
+  
+  As can be seen, line plots experience no visual degradation from adaptive sampling. Outliers are
+  reproduced reliably, as well as the overall shape of the data set. The replot time reduces
+  dramatically though. This allows QCustomPlot to display large amounts of data in realtime.
+  
+  \image html adaptive-sampling-scatter.png "A scatter plot of 100,000 points without and with adaptive sampling"
+  
+  Care must be taken when using high-density scatter plots in combination with adaptive sampling.
+  The adaptive sampling algorithm treats scatter plots more carefully than line plots which still
+  gives a significant reduction of replot times, but not quite as much as for line plots. This is
+  because scatter plots inherently need more data points to be preserved in order to still resemble
+  the original, non-adaptive-sampling plot. As shown above, the results still aren't quite
+  identical, as banding occurs for the outer data points. This is in fact intentional, such that
+  the boundaries of the data cloud stay visible to the viewer. How strong the banding appears,
+  depends on the point density, i.e. the number of points in the plot.
+  
+  For some situations with scatter plots it might thus be desirable to manually turn adaptive
+  sampling off. For example, when saving the plot to disk. This can be achieved by setting \a
+  enabled to false before issuing a command like \ref QCustomPlot::savePng, and setting \a enabled
+  back to true afterwards.
+*/
 void QCPGraph::setAdaptiveSampling(bool enabled)
 {
   mAdaptiveSampling = enabled;
