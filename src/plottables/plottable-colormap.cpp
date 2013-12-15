@@ -39,58 +39,73 @@
   
 */
 
-QCPColorMapData::QCPColorMapData(const QSize &size, const QCPRange keyRange, const QCPRange valueRange) :
+QCPColorMapData::QCPColorMapData(int keySize, int valueSize, const QCPRange keyRange, const QCPRange valueRange) :
   mData(0),
   mKeyRange(keyRange),
   mValueRange(valueRange),
   mModified(true),
   mIsEmpty(true)
 {
-  setSize(size);
-  reset();
+  setSize(keySize, valueSize);
+  fill();
 }
 
 double QCPColorMapData::value(double key, double value)
 {
   if (key >= mKeyRange.lower && key < mKeyRange.upper && value >= mValueRange.lower && value < mValueRange.upper)
   {
-    int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*mSize.width()+0.5;
-    int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*mSize.height()-0.5; // -0.5 since we inverted the scale
-    return mData[valueCell*mSize.width() + keyCell];
+    int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
+    int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)-0.5; // -0.5 since we inverted the scale
+    return mData[valueCell*mKeySize + keyCell];
   } else
     return 0;
 }
 
 double QCPColorMapData::cell(int key, int value)
 {
-  if (key >= 0 && key < mSize.width() && value >= 0 && value < mSize.height())
-    return mData[value*mSize.width() + key];
+  if (key >= 0 && key < mKeySize && value >= 0 && value < mValueSize)
+    return mData[value*mKeySize + key];
   else
     return 0;
 }
 
-void QCPColorMapData::setSize(const QSize &size)
+void QCPColorMapData::setSize(int keySize, int valueSize)
 {
-  if (size != mSize)
+  if (keySize != mKeySize || valueSize != mValueSize)
   {
-    mSize = size;
+    mKeySize = keySize;
+    mValueSize = valueSize;
     if (mData)
       delete mData;
-    mData = new double[(mSize.width()+1)*(mSize.height()+1)];
-    if (!mData)
-      qDebug() << Q_FUNC_INFO << "out of memory for data dimensions "<< size.width() << "*" << size.height();
+    mIsEmpty = mKeySize == 0 || mValueSize == 0;
+    if (!mIsEmpty)
+    {
+      mData = new double[mKeySize*mValueSize];
+      if (!mData)
+        qDebug() << Q_FUNC_INFO << "out of memory for data dimensions "<< mKeySize << "*" << mValueSize;
+    } else
+      mData = 0;
     mModified = true;
-    mIsEmpty = mSize == QSize(1, 1);
   }
+}
+
+void QCPColorMapData::setKeySize(int keySize)
+{
+  setSize(keySize, mValueSize);
+}
+
+void QCPColorMapData::setValueSize(int valueSize)
+{
+  setSize(mKeySize, valueSize);
 }
 
 void QCPColorMapData::setValue(double key, double value, double z)
 {
-  if (key >= mKeyRange.lower && key < mKeyRange.upper && value >= mValueRange.lower && value < mValueRange.upper)
+  int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
+  int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)-0.5; // -0.5 since we inverted the scale
+  if (keyCell >= 0 && keyCell < mKeySize && valueCell >= 0 && valueCell < mValueSize)
   {
-    int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*mSize.width()+0.5;
-    int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*mSize.height()-0.5; // -0.5 since we inverted the scale
-    mData[valueCell*mSize.width() + keyCell] = z;
+    mData[valueCell*mKeySize + keyCell] = z;
     if (z < mMinMax.lower)
       mMinMax.lower = z;
     if (z > mMinMax.upper)
@@ -101,9 +116,9 @@ void QCPColorMapData::setValue(double key, double value, double z)
 
 void QCPColorMapData::setCell(int key, int value, double z)
 {
-  if (key >= 0 && key < mSize.width() && value >= 0 && value < mSize.height())
+  if (key >= 0 && key < mKeySize && value >= 0 && value < mValueSize)
   {
-    mData[value*mSize.width() + key] = z;
+    mData[value*mKeySize + key] = z;
     if (z < mMinMax.lower)
       mMinMax.lower = z;
     if (z > mMinMax.upper)
@@ -129,21 +144,17 @@ void QCPColorMapData::setMinMax(const QCPRange minMax)
 
 void QCPColorMapData::recalculateMinMax()
 {
-  int maxValue = mSize.height();
-  int maxKey = mSize.width();
-  if (maxValue > 0 && maxKey > 0)
+  if (mKeySize > 0 && mValueSize > 0)
   {
     double minHeight = mData[0];
     double maxHeight = mData[0];
-    for (int value=0; value<maxValue; ++value)
+    const int dataCount = mValueSize*mKeySize-1;
+    for (int i=0; i<dataCount; ++i)
     {
-      for (int key=0; key<maxKey; ++key)
-      {
-        if (mData[value*maxKey + key] > maxHeight)
-          maxHeight = mData[value*maxKey + key];
-        if (mData[value*maxKey + key] < minHeight)
-          minHeight = mData[value*maxKey + key];
-      }
+      if (mData[i] > maxHeight)
+        maxHeight = mData[i];
+      if (mData[i] < minHeight)
+        minHeight = mData[i];
     }
     mMinMax.lower = minHeight;
     mMinMax.upper = maxHeight;
@@ -153,20 +164,14 @@ void QCPColorMapData::recalculateMinMax()
 
 void QCPColorMapData::clear()
 {
-  setSize(QSize(1, 1));
+  setSize(0, 0);
 }
 
-void QCPColorMapData::reset(double z)
+void QCPColorMapData::fill(double z)
 {
-  int maxValue = mSize.height();
-  int maxKey = mSize.width();
-  for (int key=0; key<maxKey; ++key)
-  {
-    for (int value=0; value<maxValue; ++value)
-    {
-      mData[value*maxKey + key] = z;
-    }
-  }
+  const int dataCount = mValueSize*mKeySize-1;
+  for (int i=0; i<dataCount; ++i)
+    mData[i] = z;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,12 +210,12 @@ QCPColorMap::QCPColorMap(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   mColorGradientLevels(0)
 {
   updateGradient(500);
-  mData = new QCPColorMapData(QSize(10, 10), QCPRange(0, 5), QCPRange(0, 5));
+  mMapData = new QCPColorMapData(10, 10, QCPRange(0, 5), QCPRange(0, 5));
 }
 
 QCPColorMap::~QCPColorMap()
 {
-  delete mData;
+  delete mMapData;
 }
 
 /*!
@@ -224,11 +229,11 @@ void QCPColorMap::setData(QCPColorMapData *data, bool copy)
 {
   if (copy)
   {
-    *mData = *data;
+    *mMapData = *data;
   } else
   {
-    delete mData;
-    mData = data;
+    delete mMapData;
+    mMapData = data;
   }
 }
 
@@ -259,20 +264,26 @@ void QCPColorMap::updateGradient(int levels)
 
 void QCPColorMap::updateMapImage()
 {
-  if (mMapImage.size() != mData->size())
-    mMapImage = QImage(mData->size(), QImage::Format_RGB32);
-  int maxValue = mData->size().height();
-  int maxKey = mData->size().width();
-  double *rawData = mData->mData;
-  double dataMin = mData->minMax().lower;
-  double dataMax = mData->minMax().upper;
-  double dataMaxMinNormalization = mColorGradientLevels/(dataMax-dataMin);
-  for (int value=0; value<maxValue; ++value)
+  QCPAxis *keyAxis = mKeyAxis.data();
+  if (!keyAxis) return;
+  
+  if (keyAxis->orientation() == Qt::Horizontal && (mMapImage.size().width() != mMapData->keySize() || mMapImage.size().height() != mMapData->valueSize()))
+    mMapImage = QImage(QSize(mMapData->keySize(), mMapData->valueSize()), QImage::Format_RGB32);
+  else if (keyAxis->orientation() == Qt::Vertical && (mMapImage.size().width() != mMapData->valueSize() || mMapImage.size().height() != mMapData->keySize()))
+    mMapImage = QImage(QSize(mMapData->valueSize(), mMapData->keySize()), QImage::Format_RGB32);
+  
+  const int keySize = mMapData->keySize();
+  const int valueSize = mMapData->valueSize();
+  const double *rawData = mMapData->mData;
+  const double dataMin = mMapData->minMax().lower;
+  const double dataMax = mMapData->minMax().upper;
+  const double dataMaxMinNormalization = mColorGradientLevels/(dataMax-dataMin);
+  for (int value=0; value<valueSize; ++value)
   {
     QRgb* bits = reinterpret_cast<QRgb*>(mMapImage.scanLine(value));
-    for (int key=0; key<maxKey; ++key)
+    for (int key=0; key<keySize; ++key)
     {
-      int v = (rawData[value*maxKey + key]-dataMin)*dataMaxMinNormalization;
+      int v = (rawData[value*valueSize + key]-dataMin)*dataMaxMinNormalization;
       bits[key] = mColorGradient[v];
     }
   }
@@ -281,14 +292,14 @@ void QCPColorMap::updateMapImage()
 /* inherits documentation from base class */
 void QCPColorMap::draw(QCPPainter *painter)
 {
-  if (mData->isEmpty()) return;
+  if (mMapData->isEmpty()) return;
   applyDefaultAntialiasingHint(painter);
   
-  if (mData->mModified)
+  if (mMapData->mModified)
     updateMapImage();
   
   // TODO: fix this for reversed axes
-  QRectF imageRect(coordsToPixels(mData->keyRange().lower, mData->valueRange().upper), coordsToPixels(mData->keyRange().upper, mData->valueRange().lower));
+  QRectF imageRect(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().upper), coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().lower));
   bool smoothBackup = painter->renderHints().testFlag(QPainter::SmoothPixmapTransform);
   painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
   painter->drawImage(imageRect, mMapImage);
@@ -367,17 +378,17 @@ QRgb QCPColorMap::wavelengthToRgb(double nm)
 /* inherits documentation from base class */
 QCPRange QCPColorMap::getKeyRange(bool &validRange, SignDomain inSignDomain) const
 {
-  if (mData->keyRange().size() > 0)
+  if (mMapData->keyRange().size() > 0)
     validRange = true;
-  return mData->keyRange();
+  return mMapData->keyRange();
   // TODO: limit depending on sign domain
 }
 
 /* inherits documentation from base class */
 QCPRange QCPColorMap::getValueRange(bool &validRange, SignDomain inSignDomain) const
 {
-  if (mData->valueRange().size() > 0)
+  if (mMapData->valueRange().size() > 0)
     validRange = true;
-  return mData->valueRange();
+  return mMapData->valueRange();
   // TODO: limit depending on sign domain
 }

@@ -636,7 +636,7 @@ void MainWindow::setupColorMapTest(QCustomPlot *customPlot)
   colorMap->setLayer("maplayer");
   QElapsedTimer t;
   t.start();
-  QCPColorMapData *data = new QCPColorMapData(QSize(250, 250), QCPRange(0, 10), QCPRange(0, 10));
+  QCPColorMapData *data = new QCPColorMapData(250, 250, QCPRange(0, 10), QCPRange(0, 10));
   double tw = QDateTime::currentMSecsSinceEpoch()/1000.0;
   for (int x=-2; x<252; ++x)
   {

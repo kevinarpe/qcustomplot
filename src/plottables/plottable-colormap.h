@@ -37,16 +37,19 @@ class QCPColorMap;
 class QCP_LIB_DECL QCPColorMapData
 {
 public:
-  QCPColorMapData(const QSize &size, const QCPRange keyRange, const QCPRange valueRange);
+  QCPColorMapData(int keySize, int valueSize, const QCPRange keyRange, const QCPRange valueRange);
   
-  QSize size() const { return mSize; }
+  int keySize() const { return mKeySize; }
+  int valueSize() const { return mValueSize; }
   double value(double key, double value);
   double cell(int key, int value);
   QCPRange keyRange() const { return mKeyRange; }
   QCPRange valueRange() const { return mValueRange; }
   QCPRange minMax() const { return mMinMax; }
   
-  void setSize(const QSize &size);
+  void setSize(int keySize, int valueSize);
+  void setKeySize(int keySize);
+  void setValueSize(int valueSize);
   void setValue(double key, double value, double z);
   void setCell(int key, int value, double z);
   void setRange(const QCPRange keyRange, const QCPRange valueRange);
@@ -54,12 +57,12 @@ public:
   void recalculateMinMax();
   
   void clear();
-  void reset(double z=0);
+  void fill(double z=0);
   bool isEmpty() const { return mIsEmpty; }
   
 protected:
   double *mData;
-  QSize mSize;
+  int mKeySize, mValueSize;
   QCPRange mKeyRange, mValueRange;
   QCPRange mMinMax;
   bool mModified;
@@ -76,7 +79,7 @@ public:
   virtual ~QCPColorMap();
   
   // getters:
-  QCPColorMapData *data() const { return mData; }
+  QCPColorMapData *data() const { return mMapData; }
   
   // setters:
   void setData(QCPColorMapData *data, bool copy=false);
@@ -86,7 +89,7 @@ public:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 protected:
-  QCPColorMapData *mData;
+  QCPColorMapData *mMapData;
   QImage mMapImage;
   QRgb *mColorGradient;
   int mColorGradientLevels;
