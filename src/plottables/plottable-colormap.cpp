@@ -82,6 +82,8 @@ void QCPColorMapData::setSize(int keySize, int valueSize)
       mData = new double[mKeySize*mValueSize];
       if (!mData)
         qDebug() << Q_FUNC_INFO << "out of memory for data dimensions "<< mKeySize << "*" << mValueSize;
+      else
+        fill(0);
     } else
       mData = 0;
     mModified = true;
@@ -147,7 +149,7 @@ void QCPColorMapData::recalculateMinMax()
   {
     double minHeight = mData[0];
     double maxHeight = mData[0];
-    const int dataCount = mValueSize*mKeySize-1;
+    const int dataCount = mValueSize*mKeySize;
     for (int i=0; i<dataCount; ++i)
     {
       if (mData[i] > maxHeight)
@@ -168,9 +170,10 @@ void QCPColorMapData::clear()
 
 void QCPColorMapData::fill(double z)
 {
-  const int dataCount = mValueSize*mKeySize-1;
+  const int dataCount = mValueSize*mKeySize;
   for (int i=0; i<dataCount; ++i)
     mData[i] = z;
+  mMinMax = QCPRange(0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -282,7 +285,7 @@ void QCPColorMap::updateMapImage()
     QRgb* bits = reinterpret_cast<QRgb*>(mMapImage.scanLine(value));
     for (int key=0; key<keySize; ++key)
     {
-      int v = (rawData[value*valueSize + key]-dataMin)*dataMaxMinNormalization;
+      int v = (rawData[value*keySize + key]-dataMin)*dataMaxMinNormalization;
       bits[key] = mColorGradient[v];
     }
   }
