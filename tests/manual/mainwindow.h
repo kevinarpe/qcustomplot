@@ -50,7 +50,6 @@ public:
   void labelItemAnchors(QCPAbstractItem *item, double fontSize=8, bool circle=true, bool labelBelow=true);
   void showSelectTestColorMap(QCustomPlot *customPlot);
   
-  
   // special use cases test:
   void setupIntegerTickStepCase(QCustomPlot *customPlot);
   
@@ -67,7 +66,6 @@ public slots:
   void integerTickStepCase_yRangeChanged(QCPRange newRange);
   
   void mouseWheel(QWheelEvent *event);
-  void colorMapAnimation();
   
 private:
   Ui::MainWindow *ui;

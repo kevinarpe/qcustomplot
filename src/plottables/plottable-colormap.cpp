@@ -208,11 +208,13 @@ void QCPColorMapData::fill(double z)
 
 QCPColorMap::QCPColorMap(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   QCPAbstractPlottable(keyAxis, valueAxis),
+  mMapData(new QCPColorMapData(10, 10, QCPRange(0, 5), QCPRange(0, 5))),
   mColorGradient(0),
-  mColorGradientLevels(0)
+  mColorGradientLevels(0),
+  mInterpolate(true),
+  mTightBoundary(false)
 {
   updateGradient(500);
-  mMapData = new QCPColorMapData(10, 10, QCPRange(0, 5), QCPRange(0, 5));
 }
 
 QCPColorMap::~QCPColorMap()
@@ -237,6 +239,16 @@ void QCPColorMap::setData(QCPColorMapData *data, bool copy)
     delete mMapData;
     mMapData = data;
   }
+}
+
+void QCPColorMap::setInterpolate(bool enabled)
+{
+  mInterpolate = enabled;
+}
+
+void QCPColorMap::setTightBoundary(bool enabled)
+{
+  mTightBoundary = enabled;
 }
 
 /*!
@@ -300,11 +312,29 @@ void QCPColorMap::draw(QCPPainter *painter)
   if (mMapData->mModified)
     updateMapImage();
   
-  // TODO: fix this for reversed axes
-  QRectF imageRect(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().upper), coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().lower));
+  // TODO: fix this for reversed axes // is it fixed due to coordsToPixels usage?
+  double halfSampleKey = 0;
+  double halfSampleValue = 0;
+  if (mMapData->keySize() > 1)
+    halfSampleKey = 0.5*mMapData->keyRange().size()/(double)(mMapData->keySize()-1);
+  if (mMapData->valueSize() > 1)
+    halfSampleValue = 0.5*mMapData->valueRange().size()/(double)(mMapData->valueSize()-1);
+  QRectF imageRect(coordsToPixels(mMapData->keyRange().lower-halfSampleKey, mMapData->valueRange().upper+halfSampleValue),
+                   coordsToPixels(mMapData->keyRange().upper+halfSampleKey, mMapData->valueRange().lower-halfSampleValue));
   bool smoothBackup = painter->renderHints().testFlag(QPainter::SmoothPixmapTransform);
-  painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+  painter->setRenderHint(QPainter::SmoothPixmapTransform, mInterpolate);
+  QRectF clipRectBackup;
+  if (mTightBoundary)
+  { 
+    clipRectBackup = painter->clipBoundingRect();
+    painter->setClipRect(QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().upper),
+                                coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().lower)));
+  }
   painter->drawImage(imageRect, mMapImage);
+  if (mTightBoundary)
+  {
+    painter->setClipRect(clipRectBackup);
+  }
   painter->setRenderHint(QPainter::SmoothPixmapTransform, smoothBackup);
 }
 

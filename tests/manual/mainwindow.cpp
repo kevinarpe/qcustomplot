@@ -634,24 +634,24 @@ void MainWindow::setupColorMapTest(QCustomPlot *customPlot)
   customPlot->addPlottable(colorMap);
   customPlot->addLayer("maplayer", customPlot->layer("grid"), QCustomPlot::limBelow);
   colorMap->setLayer("maplayer");
-  QElapsedTimer t;
-  t.start();
-  QCPColorMapData *data = new QCPColorMapData(250, 250, QCPRange(0, 10), QCPRange(0, 10));
-  double tw = QDateTime::currentMSecsSinceEpoch()/1000.0;
-  for (int x=-2; x<252; ++x)
+
+  int nx = 60;
+  int ny = 60;
+  colorMap->data()->setSize(nx, ny);
+  colorMap->data()->setRange(QCPRange(0, 59), QCPRange(0, 59));
+  colorMap->setInterpolate(false);
+  colorMap->setTightBoundary(false);
+  for (int x=0; x<nx; ++x)
   {
-    for (int y=-2; y<252; ++y)
+    for (int y=0; y<ny; ++y)
     {
-      data->setValue(x/250.0*10, y/250.0*10, x+y+y*qSin(x/20.0+tw));
+      colorMap->data()->setValue(x, y, x+y);
+      //colorMap->data()->setCell(x, y, x+y);
     }
   }
-  colorMap->setData(data);
-  qDebug() << t.nsecsElapsed()/1e6;
+
   customPlot->rescaleAxes();
   customPlot->replot();
-  QTimer *timer = new QTimer(this);
-  connect(timer, SIGNAL(timeout()), this, SLOT(colorMapAnimation()));
-  timer->start(0);
 }
 
 void MainWindow::setupAdaptiveSamplingTest(QCustomPlot *customPlot)
@@ -957,21 +957,4 @@ void MainWindow::mouseWheel(QWheelEvent *event)
     mCustomPlot->axisRect()->setRangeZoom(Qt::Horizontal);
   else
     mCustomPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
-}
-
-void MainWindow::colorMapAnimation()
-{
-  static QElapsedTimer timer;
-  qDebug() << 1e9/(double)timer.nsecsElapsed();
-  timer.restart();
-  QCPColorMapData *data = qobject_cast<QCPColorMap*>(mCustomPlot->plottable(0))->data();
-  double tw = QDateTime::currentMSecsSinceEpoch()/100.0;
-  for (int x=-2; x<252; ++x)
-  {
-    for (int y=-2; y<252; ++y)
-    {
-      data->setValue(x/250.0*10, y/250.0*10, x+y+y*qSin(x/20.0+tw));
-    }
-  }
-  mCustomPlot->replot();
 }

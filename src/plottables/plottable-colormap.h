@@ -80,9 +80,13 @@ public:
   
   // getters:
   QCPColorMapData *data() const { return mMapData; }
+  bool interpolate() const { return mInterpolate; }
+  bool tightBoundary() const { return mTightBoundary; }
   
   // setters:
   void setData(QCPColorMapData *data, bool copy=false);
+  void setInterpolate(bool enabled);
+  void setTightBoundary(bool enabled);
   
   // non-property methods:
   virtual void clearData();
@@ -93,6 +97,8 @@ protected:
   QImage mMapImage;
   QRgb *mColorGradient;
   int mColorGradientLevels;
+  bool mInterpolate;
+  bool mTightBoundary;
   
   virtual void updateGradient(int levels);
   virtual void updateMapImage();
