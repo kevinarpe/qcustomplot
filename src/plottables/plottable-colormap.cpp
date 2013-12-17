@@ -60,10 +60,10 @@ double QCPColorMapData::value(double key, double value)
     return 0;
 }
 
-double QCPColorMapData::cell(int key, int value)
+double QCPColorMapData::cell(int keyIndex, int valueIndex)
 {
-  if (key >= 0 && key < mKeySize && value >= 0 && value < mValueSize)
-    return mData[value*mKeySize + key];
+  if (keyIndex >= 0 && keyIndex < mKeySize && valueIndex >= 0 && valueIndex < mValueSize)
+    return mData[valueIndex*mKeySize + keyIndex];
   else
     return 0;
 }
@@ -113,11 +113,11 @@ void QCPColorMapData::setValue(double key, double value, double z)
   }
 }
 
-void QCPColorMapData::setCell(int key, int value, double z)
+void QCPColorMapData::setCell(int keyIndex, int valueIndex, double z)
 {
-  if (key >= 0 && key < mKeySize && value >= 0 && value < mValueSize)
+  if (keyIndex >= 0 && keyIndex < mKeySize && valueIndex >= 0 && valueIndex < mValueSize)
   {
-    mData[value*mKeySize + key] = z;
+    mData[valueIndex*mKeySize + keyIndex] = z;
     if (z < mMinMax.lower)
       mMinMax.lower = z;
     if (z > mMinMax.upper)

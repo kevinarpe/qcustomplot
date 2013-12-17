@@ -42,7 +42,7 @@ public:
   int keySize() const { return mKeySize; }
   int valueSize() const { return mValueSize; }
   double value(double key, double value);
-  double cell(int key, int value);
+  double cell(int keyIndex, int valueIndex);
   QCPRange keyRange() const { return mKeyRange; }
   QCPRange valueRange() const { return mValueRange; }
   QCPRange minMax() const { return mMinMax; }
@@ -51,7 +51,7 @@ public:
   void setKeySize(int keySize);
   void setValueSize(int valueSize);
   void setValue(double key, double value, double z);
-  void setCell(int key, int value, double z);
+  void setCell(int keyIndex, int valueIndex, double z);
   void setRange(const QCPRange keyRange, const QCPRange valueRange);
   void setMinMax(const QCPRange minMax);
   void recalculateMinMax();
