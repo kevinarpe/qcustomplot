@@ -52,12 +52,11 @@ QCPColorMapData::QCPColorMapData(int keySize, int valueSize, const QCPRange keyR
 
 double QCPColorMapData::value(double key, double value)
 {
-  if (key >= mKeyRange.lower && key < mKeyRange.upper && value >= mValueRange.lower && value < mValueRange.upper)
-  {
-    int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
-    int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)-0.5; // -0.5 since we inverted the scale
+  int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
+  int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)+0.5;
+  if (keyCell >= 0 && keyCell < mKeySize && valueCell >= 0 && valueCell < mValueSize)
     return mData[valueCell*mKeySize + keyCell];
-  } else
+  else
     return 0;
 }
 
@@ -102,7 +101,7 @@ void QCPColorMapData::setValueSize(int valueSize)
 void QCPColorMapData::setValue(double key, double value, double z)
 {
   int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
-  int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)-0.5; // -0.5 since we inverted the scale
+  int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)+0.5;
   if (keyCell >= 0 && keyCell < mKeySize && valueCell >= 0 && valueCell < mValueSize)
   {
     mData[valueCell*mKeySize + keyCell] = z;
