@@ -43,6 +43,8 @@ public:
   int valueSize() const { return mValueSize; }
   double data(double key, double value);
   double cell(int keyIndex, int valueIndex);
+  void coordToCell(double key, double value, int *keyIndex, int *valueIndex) const;
+  void cellToCoord(int keyIndex, int valueIndex, double *key, double *value) const;
   QCPRange keyRange() const { return mKeyRange; }
   QCPRange valueRange() const { return mValueRange; }
   QCPRange minMax() const { return mMinMax; }

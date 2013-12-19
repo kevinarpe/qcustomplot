@@ -68,6 +68,22 @@ double QCPColorMapData::cell(int keyIndex, int valueIndex)
     return 0;
 }
 
+void QCPColorMapData::coordToCell(double key, double value, int *keyIndex, int *valueIndex) const
+{
+  if (keyIndex)
+    *keyIndex = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
+  if (valueIndex)
+    *valueIndex = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)+0.5;
+}
+
+void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, double *value) const
+{
+  if (key)
+    *key = keyIndex/(double)(mKeySize-1)*(mKeyRange.upper-mKeyRange.lower)+mKeyRange.lower;
+  if (value)
+    *value = (1.0-valueIndex/(double)(mValueSize-1))*(mValueRange.upper-mValueRange.lower)+mValueRange.lower;
+}
+
 void QCPColorMapData::setSize(int keySize, int valueSize)
 {
   if (keySize != mKeySize || valueSize != mValueSize)
