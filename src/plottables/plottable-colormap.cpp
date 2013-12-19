@@ -50,7 +50,7 @@ QCPColorMapData::QCPColorMapData(int keySize, int valueSize, const QCPRange keyR
   fill();
 }
 
-double QCPColorMapData::value(double key, double value)
+double QCPColorMapData::data(double key, double value)
 {
   int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
   int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)+0.5;
@@ -100,7 +100,7 @@ void QCPColorMapData::setValueSize(int valueSize)
   setSize(mKeySize, valueSize);
 }
 
-void QCPColorMapData::setValue(double key, double value, double z)
+void QCPColorMapData::setData(double key, double value, double z)
 {
   int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
   int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)+0.5;
@@ -408,19 +408,17 @@ QRgb QCPColorMap::wavelengthToRgb(double nm)
 }
 
 /* inherits documentation from base class */
-QCPRange QCPColorMap::getKeyRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPColorMap::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
 {
-  if (mMapData->keyRange().size() > 0)
-    validRange = true;
+  foundRange = true;
   return mMapData->keyRange();
   // TODO: limit depending on sign domain
 }
 
 /* inherits documentation from base class */
-QCPRange QCPColorMap::getValueRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPColorMap::getValueRange(bool &foundRange, SignDomain inSignDomain) const
 {
-  if (mMapData->valueRange().size() > 0)
-    validRange = true;
+  foundRange = true;
   return mMapData->valueRange();
   // TODO: limit depending on sign domain
 }

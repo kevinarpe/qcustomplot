@@ -41,7 +41,7 @@ public:
   
   int keySize() const { return mKeySize; }
   int valueSize() const { return mValueSize; }
-  double value(double key, double value);
+  double data(double key, double value);
   double cell(int keyIndex, int valueIndex);
   QCPRange keyRange() const { return mKeyRange; }
   QCPRange valueRange() const { return mValueRange; }
@@ -50,7 +50,7 @@ public:
   void setSize(int keySize, int valueSize);
   void setKeySize(int keySize);
   void setValueSize(int valueSize);
-  void setValue(double key, double value, double z);
+  void setData(double key, double value, double z);
   void setCell(int keyIndex, int valueIndex, double z);
   void setRange(const QCPRange keyRange, const QCPRange valueRange);
   void setMinMax(const QCPRange minMax);
@@ -107,8 +107,8 @@ protected:
   
   QRgb wavelengthToRgb(double nm);
   
-  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
-  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const;
+  virtual QCPRange getKeyRange(bool &foundRange, SignDomain inSignDomain=sdBoth) const;
+  virtual QCPRange getValueRange(bool &foundRange, SignDomain inSignDomain=sdBoth) const;
   
   friend class QCustomPlot;
   friend class QCPLegend;
