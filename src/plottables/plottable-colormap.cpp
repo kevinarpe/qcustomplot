@@ -306,15 +306,35 @@ void QCPColorMap::updateMapImage()
   const int valueSize = mMapData->valueSize();
   const double *rawData = mMapData->mData;
   const double dataMin = mMapData->minMax().lower;
-  const double dataMax = mMapData->minMax().upper;
-  const double dataMaxMinNormalization = mColorGradientLevels/(dataMax-dataMin);
-  for (int value=0; value<valueSize; ++value)
+  double dataMaxMinNormalization = 1.0;
+  if (mMapData->minMax().size() > 0)
+    dataMaxMinNormalization = mColorGradientLevels/mMapData->minMax().size();
+  
+  if (keyAxis->orientation() == Qt::Horizontal)
   {
-    QRgb* bits = reinterpret_cast<QRgb*>(mMapImage.scanLine(value));
-    for (int key=0; key<keySize; ++key)
+    const int lineCount = valueSize;
+    const int rowCount = keySize;
+    for (int line=0; line<lineCount; ++line)
     {
-      int v = (rawData[value*keySize + key]-dataMin)*dataMaxMinNormalization;
-      bits[key] = mColorGradient[v];
+      QRgb* bits = reinterpret_cast<QRgb*>(mMapImage.scanLine(line));
+      for (int row=0; row<rowCount; ++row)
+      {
+        int v = (rawData[line*keySize + row]-dataMin)*dataMaxMinNormalization;
+        bits[row] = mColorGradient[v];
+      }
+    }
+  } else // keyAxis->orientation() == Qt::Vertical
+  {
+    const int lineCount = keySize;
+    const int rowCount = valueSize;
+    for (int line=0; line<lineCount; ++line)
+    {
+      QRgb* bits = reinterpret_cast<QRgb*>(mMapImage.scanLine(line));
+      for (int row=0; row<rowCount; ++row)
+      {
+        int v = (rawData[row*keySize + line]-dataMin)*dataMaxMinNormalization;
+        bits[row] = mColorGradient[v];
+      }
     }
   }
 }
@@ -328,7 +348,6 @@ void QCPColorMap::draw(QCPPainter *painter)
   if (mMapData->mModified)
     updateMapImage();
   
-  // TODO: fix this for reversed axes // is it fixed due to coordsToPixels usage?
   double halfSampleKey = 0;
   double halfSampleValue = 0;
   if (mMapData->keySize() > 1)
@@ -344,9 +363,9 @@ void QCPColorMap::draw(QCPPainter *painter)
   { 
     clipRectBackup = painter->clipBoundingRect();
     painter->setClipRect(QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().upper),
-                                coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().lower)));
+                                coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().lower)).normalized(), Qt::IntersectClip);
   }
-  painter->drawImage(imageRect, mMapImage);
+  painter->drawImage(imageRect.normalized(), mMapImage.mirrored(imageRect.width() < 0, imageRect.height() < 0));
   if (mTightBoundary)
   {
     painter->setClipRect(clipRectBackup);
