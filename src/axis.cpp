@@ -423,11 +423,13 @@ QCPAxis::~QCPAxis()
   delete mAxisPainter;
 }
 
+/* No documentation as it is a property getter */
 int QCPAxis::tickLabelPadding() const
 {
   return mAxisPainter->tickLabelPadding; 
 }
 
+/* No documentation as it is a property getter */
 double QCPAxis::tickLabelRotation() const
 {
   return mAxisPainter->tickLabelRotation; 
@@ -447,41 +449,49 @@ QString QCPAxis::numberFormat() const
   return result;
 }
 
+/* No documentation as it is a property getter */
 int QCPAxis::tickLengthIn() const
 {
   return mAxisPainter->tickLengthIn;
 }
 
+/* No documentation as it is a property getter */
 int QCPAxis::tickLengthOut() const
 {
   return mAxisPainter->tickLengthOut;
 }
 
+/* No documentation as it is a property getter */
 int QCPAxis::subTickLengthIn() const
 {
   return mAxisPainter->subTickLengthIn; 
 }
 
+/* No documentation as it is a property getter */
 int QCPAxis::subTickLengthOut() const
 {
   return mAxisPainter->subTickLengthOut;
 }
 
+/* No documentation as it is a property getter */
 int QCPAxis::labelPadding() const
 {
   return mAxisPainter->labelPadding;
 }
 
+/* No documentation as it is a property getter */
 int QCPAxis::offset() const
 {
   return mAxisPainter->offset;
 }
 
+/* No documentation as it is a property getter */
 QCPLineEnding QCPAxis::lowerEnding() const
 {
   return mAxisPainter->lowerEnding;
 }
 
+/* No documentation as it is a property getter */
 QCPLineEnding QCPAxis::upperEnding() const
 {
   return mAxisPainter->upperEnding;
