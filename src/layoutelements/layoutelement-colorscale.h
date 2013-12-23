@@ -23,40 +23,59 @@
 **          Version: 1.1.1                                                **
 ****************************************************************************/
 
-#ifndef QCUSTOMPLOT_H
-#define QCUSTOMPLOT_H
+#ifndef QCP_LAYOUTELEMENT_COLORSCALE_H
+#define QCP_LAYOUTELEMENT_COLORSCALE_H
 
-//amalgamation: place header includes
+#include "../global.h"
+#include "../axis.h"
+#include "../layout.h"
 
-//amalgamation: place forward declarations
-//amalgamation: add global.h
-//amalgamation: add painter.h
-//amalgamation: add layer.h
-//amalgamation: add range.h
-//amalgamation: add layout.h
-//amalgamation: add lineending.h
-//amalgamation: add axis.h
-//amalgamation: add plottable.h
-//amalgamation: add item.h
-//amalgamation: add core.h
-//amalgamation: add plottables/plottable-graph.h
-//amalgamation: add plottables/plottable-curve.h
-//amalgamation: add plottables/plottable-bars.h
-//amalgamation: add plottables/plottable-statisticalbox.h
-//amalgamation: add plottables/plottable-colormap.h
-//amalgamation: add items/item-straightline.h
-//amalgamation: add items/item-line.h
-//amalgamation: add items/item-curve.h
-//amalgamation: add items/item-rect.h
-//amalgamation: add items/item-text.h
-//amalgamation: add items/item-ellipse.h
-//amalgamation: add items/item-pixmap.h
-//amalgamation: add items/item-tracer.h
-//amalgamation: add items/item-bracket.h
-//amalgamation: add layoutelements/layoutelement-axisrect.h
-//amalgamation: add layoutelements/layoutelement-legend.h
-//amalgamation: add layoutelements/layoutelement-plottitle.h
-//amalgamation: add layoutelements/layoutelement-colorscale.h
+class QCPPainter;
+class QCustomPlot;
+class QCPColorMap;
 
-#endif // QCUSTOMPLOT_H
+class QCP_LIB_DECL QCPColorScale : public QCPLayoutElement
+{
+  Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+// TODO
+  /// \endcond
+public:
+  explicit QCPColorScale(QCustomPlot *parentPlot);
+  virtual ~QCPColorScale();
+  
+  // getters:
 
+  
+  // setters:
+  
+  
+  // non-property methods:
+  
+  
+  // reimplemented virtual methods:
+  virtual void update();
+
+protected:
+  // property members:
+
+  // non-property members:
+
+  
+  // reimplemented virtual methods:
+  virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
+  virtual void draw(QCPPainter *painter);
+  virtual int calculateAutoMargin(QCP::MarginSide side);
+  // events:
+  virtual void mousePressEvent(QMouseEvent *event);
+  virtual void mouseMoveEvent(QMouseEvent *event);
+  virtual void mouseReleaseEvent(QMouseEvent *event);
+  virtual void wheelEvent(QWheelEvent *event);
+
+  
+private:
+  Q_DISABLE_COPY(QCPColorScale)
+};
+
+
+#endif // QCP_LAYOUTELEMENT_COLORSCALE_H

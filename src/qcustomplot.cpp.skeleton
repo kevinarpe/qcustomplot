@@ -53,4 +53,5 @@
 //amalgamation: add layoutelements/layoutelement-axisrect.cpp
 //amalgamation: add layoutelements/layoutelement-legend.cpp
 //amalgamation: add layoutelements/layoutelement-plottitle.cpp
+//amalgamation: add layoutelements/layoutelement-colorscale.cpp
 
