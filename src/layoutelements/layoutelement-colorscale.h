@@ -29,6 +29,8 @@
 #include "../global.h"
 #include "../axis.h"
 #include "../layout.h"
+#include "../colorgradient.h"
+#include "../layoutelements/layoutelement-axisrect.h"
 
 class QCPPainter;
 class QCustomPlot;
@@ -45,33 +47,66 @@ public:
   virtual ~QCPColorScale();
   
   // getters:
-
+  QCPAxis *axis() const { return mColorAxis.data(); }
+  QCPAxis::AxisType axisType() const { return mAxisType; }
+  QCPRange dataRange() const { return mDataRange; }
+  QCPColorGradient gradient() const { return mGradient; }
+  int barWidth () const { return mBarWidth; }
+  
   
   // setters:
-  
+  void setAxisType(QCPAxis::AxisType axisType);
+  Q_SLOT void setDataRange(const QCPRange &dataRange);
+  Q_SLOT void setGradient(const QCPColorGradient &gradient);
+  void setBarWidth(int width);
   
   // non-property methods:
   
-  
   // reimplemented virtual methods:
-  virtual void update();
+  virtual void update(UpdatePhase phase);
+  
+signals:
+  void dataRangeChanged(QCPRange newRange);
+  void gradientChanged(QCPColorGradient newGradient);
 
 protected:
+  class QCPColorScaleAxisRect : public QCPAxisRect
+  {
+  public:
+    explicit QCPColorScaleAxisRect(QCPColorScale *parentColorScale);
+  protected:
+    QCPColorScale *mParentColorScale;
+    QImage mGradientImage;
+    bool mGradientImageInvalidated;
+    // re-using some methods of QCPAxisRect to make them available to friend class QCPColorScale
+    using QCPAxisRect::calculateAutoMargin;
+    using QCPAxisRect::mousePressEvent;
+    using QCPAxisRect::mouseMoveEvent;
+    using QCPAxisRect::mouseReleaseEvent;
+    using QCPAxisRect::wheelEvent;
+    using QCPAxisRect::update;
+    virtual void draw(QCPPainter *painter);
+    void updateGradientImage();
+    friend class QCPColorScale;
+  };
+
   // property members:
-
+  QCPAxis::AxisType mAxisType;
+  QCPRange mDataRange;
+  QCPColorGradient mGradient;
+  int mBarWidth;
+  
   // non-property members:
-
+  QPointer<QCPColorScaleAxisRect> mAxisRect;
+  QPointer<QCPAxis> mColorAxis;
   
   // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
-  virtual void draw(QCPPainter *painter);
-  virtual int calculateAutoMargin(QCP::MarginSide side);
   // events:
   virtual void mousePressEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
-
   
 private:
   Q_DISABLE_COPY(QCPColorScale)

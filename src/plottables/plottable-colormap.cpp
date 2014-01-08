@@ -47,7 +47,7 @@ QCPColorMapData::QCPColorMapData(int keySize, int valueSize, const QCPRange keyR
   mIsEmpty(true)
 {
   setSize(keySize, valueSize);
-  fill();
+  fill(0);
 }
 
 double QCPColorMapData::data(double key, double value)
@@ -116,6 +116,22 @@ void QCPColorMapData::setValueSize(int valueSize)
   setSize(mKeySize, valueSize);
 }
 
+void QCPColorMapData::setRange(const QCPRange &keyRange, const QCPRange &valueRange)
+{
+  setKeyRange(keyRange);
+  setValueRange(valueRange);
+}
+
+void QCPColorMapData::setValueRange(const QCPRange &keyRange)
+{
+  mKeyRange = keyRange;
+}
+
+void QCPColorMapData::setKeyRange(const QCPRange &valueRange)
+{
+  mValueRange = valueRange;
+}
+
 void QCPColorMapData::setData(double key, double value, double z)
 {
   int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
@@ -123,10 +139,10 @@ void QCPColorMapData::setData(double key, double value, double z)
   if (keyCell >= 0 && keyCell < mKeySize && valueCell >= 0 && valueCell < mValueSize)
   {
     mData[valueCell*mKeySize + keyCell] = z;
-    if (z < mMinMax.lower)
-      mMinMax.lower = z;
-    if (z > mMinMax.upper)
-      mMinMax.upper = z;
+    if (z < mDataBounds.lower)
+      mDataBounds.lower = z;
+    if (z > mDataBounds.upper)
+      mDataBounds.upper = z;
      mModified = true;
   }
 }
@@ -136,30 +152,15 @@ void QCPColorMapData::setCell(int keyIndex, int valueIndex, double z)
   if (keyIndex >= 0 && keyIndex < mKeySize && valueIndex >= 0 && valueIndex < mValueSize)
   {
     mData[valueIndex*mKeySize + keyIndex] = z;
-    if (z < mMinMax.lower)
-      mMinMax.lower = z;
-    if (z > mMinMax.upper)
-      mMinMax.upper = z;
+    if (z < mDataBounds.lower)
+      mDataBounds.lower = z;
+    if (z > mDataBounds.upper)
+      mDataBounds.upper = z;
      mModified = true;
   }
 }
 
-void QCPColorMapData::setRange(const QCPRange keyRange, const QCPRange valueRange)
-{
-  mKeyRange = keyRange;
-  mValueRange = valueRange;
-}
-
-void QCPColorMapData::setMinMax(const QCPRange minMax)
-{
-  if (!qFuzzyCompare(mMinMax.lower, minMax.lower) || !qFuzzyCompare(minMax.upper, minMax.upper))
-  {
-    mMinMax = minMax;
-    mModified = true;
-  }
-}
-
-void QCPColorMapData::recalculateMinMax()
+void QCPColorMapData::recalculateDataBounds()
 {
   if (mKeySize > 0 && mValueSize > 0)
   {
@@ -173,8 +174,8 @@ void QCPColorMapData::recalculateMinMax()
       if (mData[i] < minHeight)
         minHeight = mData[i];
     }
-    mMinMax.lower = minHeight;
-    mMinMax.upper = maxHeight;
+    mDataBounds.lower = minHeight;
+    mDataBounds.upper = maxHeight;
     mModified = true;
   }
 }
@@ -189,7 +190,7 @@ void QCPColorMapData::fill(double z)
   const int dataCount = mValueSize*mKeySize;
   for (int i=0; i<dataCount; ++i)
     mData[i] = z;
-  mMinMax = QCPRange(0, 0);
+  mDataBounds = QCPRange(z, z);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,19 +219,17 @@ void QCPColorMapData::fill(double z)
   customPlot->addPlottable(newMap);\endcode
   and then modify the properties of the newly created plottable, e.g.:
   \code
-  newBars->setName("Temperature Map");
-  newBars->setData();\endcode // DBG
+  newMap->setName("Temperature Map");
+  newMap->setData();\endcode // TODO
 */
 
 QCPColorMap::QCPColorMap(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   QCPAbstractPlottable(keyAxis, valueAxis),
   mMapData(new QCPColorMapData(10, 10, QCPRange(0, 5), QCPRange(0, 5))),
-  mColorGradient(0),
-  mColorGradientLevels(0),
   mInterpolate(true),
-  mTightBoundary(false)
+  mTightBoundary(false),
+  mMapImageInvalidated(true)
 {
-  updateGradient(500);
 }
 
 QCPColorMap::~QCPColorMap()
@@ -255,6 +254,27 @@ void QCPColorMap::setData(QCPColorMapData *data, bool copy)
     delete mMapData;
     mMapData = data;
   }
+  mMapImageInvalidated = true;
+}
+
+void QCPColorMap::setDataRange(const QCPRange &dataRange)
+{
+  if (mDataRange.lower != dataRange.lower || mDataRange.upper != dataRange.upper)
+  {
+    mDataRange = dataRange;
+    mMapImageInvalidated = true;
+    emit dataRangeChanged(mDataRange);
+  }
+}
+
+void QCPColorMap::setGradient(const QCPColorGradient &gradient)
+{
+  if (mGradient != gradient)
+  {
+    mGradient = gradient;
+    mMapImageInvalidated = true;
+    emit gradientChanged(mGradient);
+  }
 }
 
 void QCPColorMap::setInterpolate(bool enabled)
@@ -267,29 +287,44 @@ void QCPColorMap::setTightBoundary(bool enabled)
   mTightBoundary = enabled;
 }
 
+void QCPColorMap::setColorScale(QCPColorScale *colorScale)
+{
+  if (mColorScale) // unconnect signals from old color scale
+  {
+    disconnect(this, SIGNAL(dataRangeChanged(QCPRange)), mColorScale.data(), SLOT(setDataRange(QCPRange)));
+    disconnect(this, SIGNAL(gradientChanged(QCPColorGradient)), mColorScale.data(), SLOT(setGradient(QCPColorGradient)));
+    disconnect(mColorScale.data(), SIGNAL(dataRangeChanged(QCPRange)), this, SLOT(setDataRange(QCPRange)));
+    disconnect(mColorScale.data(), SIGNAL(gradientChanged(QCPColorGradient)), this, SLOT(setGradient(QCPColorGradient)));
+  }
+  mColorScale = colorScale;
+  if (mColorScale) // connect signals to new color scale
+  {
+    connect(this, SIGNAL(dataRangeChanged(QCPRange)), mColorScale.data(), SLOT(setDataRange(QCPRange)));
+    connect(this, SIGNAL(gradientChanged(QCPColorGradient)), mColorScale.data(), SLOT(setGradient(QCPColorGradient)));
+    connect(mColorScale.data(), SIGNAL(dataRangeChanged(QCPRange)), this, SLOT(setDataRange(QCPRange)));
+    connect(mColorScale.data(), SIGNAL(gradientChanged(QCPColorGradient)), this, SLOT(setGradient(QCPColorGradient)));
+  }
+}
+
+void QCPColorMap::rescaleDataRange(bool recalculateDataBounds)
+{
+  if (recalculateDataBounds)
+    mMapData->recalculateDataBounds();
+  setDataRange(mMapData->dataBounds());
+}
+
 /*!
   Removes all data points.
 */
 void QCPColorMap::clearData()
 {
-  //mData->clear(); // DBG
+  //mData->clear(); // TODO
 }
 
 /* inherits documentation from base class */
 double QCPColorMap::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  return -1; // DBG
-}
-
-void QCPColorMap::updateGradient(int levels)
-{
-  if (mColorGradient)
-    delete mColorGradient;
-  mColorGradient = new QRgb[levels+1];
-  mColorGradientLevels = levels;
-  
-  for (int i=0; i<mColorGradientLevels+1; ++i)
-    mColorGradient[i] = wavelengthToRgb(i/double(mColorGradientLevels) * 140 + 370);
+  return -1; // TODO
 }
 
 void QCPColorMap::updateMapImage()
@@ -305,23 +340,14 @@ void QCPColorMap::updateMapImage()
   const int keySize = mMapData->keySize();
   const int valueSize = mMapData->valueSize();
   const double *rawData = mMapData->mData;
-  const double dataMin = mMapData->minMax().lower;
-  double dataMaxMinNormalization = 1.0;
-  if (mMapData->minMax().size() > 0)
-    dataMaxMinNormalization = mColorGradientLevels/mMapData->minMax().size();
-  
   if (keyAxis->orientation() == Qt::Horizontal)
   {
     const int lineCount = valueSize;
     const int rowCount = keySize;
     for (int line=0; line<lineCount; ++line)
     {
-      QRgb* bits = reinterpret_cast<QRgb*>(mMapImage.scanLine(line));
-      for (int row=0; row<rowCount; ++row)
-      {
-        int v = (rawData[line*keySize + row]-dataMin)*dataMaxMinNormalization;
-        bits[row] = mColorGradient[v];
-      }
+      QRgb* pixels = reinterpret_cast<QRgb*>(mMapImage.scanLine(line));
+      mGradient.colorize(rawData+line*rowCount, mDataRange, pixels, rowCount, 1);
     }
   } else // keyAxis->orientation() == Qt::Vertical
   {
@@ -329,14 +355,12 @@ void QCPColorMap::updateMapImage()
     const int rowCount = valueSize;
     for (int line=0; line<lineCount; ++line)
     {
-      QRgb* bits = reinterpret_cast<QRgb*>(mMapImage.scanLine(line));
-      for (int row=0; row<rowCount; ++row)
-      {
-        int v = (rawData[row*keySize + line]-dataMin)*dataMaxMinNormalization;
-        bits[row] = mColorGradient[v];
-      }
+      QRgb* pixels = reinterpret_cast<QRgb*>(mMapImage.scanLine(line));
+      mGradient.colorize(rawData+line, mDataRange, pixels, rowCount, lineCount);
     }
   }
+  mMapData->mModified = false;
+  mMapImageInvalidated = false;
 }
 
 /* inherits documentation from base class */
@@ -345,7 +369,7 @@ void QCPColorMap::draw(QCPPainter *painter)
   if (mMapData->isEmpty()) return;
   applyDefaultAntialiasingHint(painter);
   
-  if (mMapData->mModified)
+  if (mMapData->mModified || mMapImageInvalidated)
     updateMapImage();
   
   double halfSampleKey = 0;
@@ -385,63 +409,6 @@ void QCPColorMap::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
   painter->drawRect(r);
 }
 
-QRgb QCPColorMap::wavelengthToRgb(double nm)
-{
-  double gamma = 0.8;
-  double factor = 0;
-  double r = 0;
-  double g = 0;
-  double b = 0;
-  
-  // Chromaticity:
-  if (nm <= 380)
-  {
-    r = 1.0;
-    b = 1.0;
-  } else if (nm > 380 && nm <= 440)
-  {
-    r = -(nm-440.0)/(440.0-380.0);
-    b = 1.0;
-  } else if (nm > 440 && nm <= 490)
-  {
-    g = (nm-440.0)/(490.0-440.0);
-    b = 1.0;
-  } else if (nm > 490 && nm <= 510)
-  {
-    g = 1.0;
-    b = -(nm-510.0)/(510.0-490.0);
-  } else if (nm > 510 && nm <= 580)
-  {
-    r = (nm-510.0)/(580.0-510.0);
-    g = 1.0;
-  } else if (nm > 580 && nm <= 645)
-  {
-    r = 1.0;
-    g = -(nm-645.0)/(645.0-580.0);
-  } else if (nm > 645 && nm <= 780)
-  {
-    r = 1.0;
-  } else if (nm > 780)
-  {
-    r = 1.0;
-  }
-  // Visibility:
-  if (nm > 360 && nm <= 420)
-    factor = (nm-360)/(420.0-360.0);
-  else if (nm > 420 && nm <= 700)
-    factor = 1.0;
-  else if (nm > 700 && nm <= 790)
-    factor = (790-nm)/(790.0-700.0);
-  if (r > 0)
-    r = 255*qPow(r*factor, gamma);
-  if (g > 0)
-    g = 255*qPow(g*factor, gamma);
-  if (b > 0)
-    b = 255*qPow(b*factor, gamma);
-  
-  return qRgb(qBound(0, (int)r, 255), qBound(0, (int)g, 255), qBound(0, (int)b, 255));
-}
-
 /* inherits documentation from base class */
 QCPRange QCPColorMap::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
 {
@@ -457,3 +424,4 @@ QCPRange QCPColorMap::getValueRange(bool &foundRange, SignDomain inSignDomain) c
   return mMapData->valueRange();
   // TODO: limit depending on sign domain
 }
+

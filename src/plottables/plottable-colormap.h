@@ -29,6 +29,8 @@
 #include "../global.h"
 #include "../range.h"
 #include "../plottable.h"
+#include "../colorgradient.h"
+#include "../layoutelements/layoutelement-colorscale.h"
 
 class QCPPainter;
 class QCPAxis;
@@ -47,31 +49,33 @@ public:
   void cellToCoord(int keyIndex, int valueIndex, double *key, double *value) const;
   QCPRange keyRange() const { return mKeyRange; }
   QCPRange valueRange() const { return mValueRange; }
-  QCPRange minMax() const { return mMinMax; }
+  QCPRange dataBounds() const { return mDataBounds; }
   
   void setSize(int keySize, int valueSize);
   void setKeySize(int keySize);
   void setValueSize(int valueSize);
+  void setRange(const QCPRange &keyRange, const QCPRange &valueRange);
+  void setValueRange(const QCPRange &keyRange);
+  void setKeyRange(const QCPRange &valueRange);
   void setData(double key, double value, double z);
   void setCell(int keyIndex, int valueIndex, double z);
-  void setRange(const QCPRange keyRange, const QCPRange valueRange);
-  void setMinMax(const QCPRange minMax);
-  void recalculateMinMax();
+  void recalculateDataBounds();
   
   void clear();
-  void fill(double z=0);
+  void fill(double z);
   bool isEmpty() const { return mIsEmpty; }
   
 protected:
   double *mData;
   int mKeySize, mValueSize;
   QCPRange mKeyRange, mValueRange;
-  QCPRange mMinMax;
+  QCPRange mDataBounds;
   bool mModified;
   bool mIsEmpty;
   
   friend class QCPColorMap;
 };
+
 
 class QCP_LIB_DECL QCPColorMap : public QCPAbstractPlottable
 {
@@ -82,32 +86,42 @@ public:
   
   // getters:
   QCPColorMapData *data() const { return mMapData; }
+  QCPRange dataRange() const { return mDataRange; }
   bool interpolate() const { return mInterpolate; }
   bool tightBoundary() const { return mTightBoundary; }
+  QCPColorGradient gradient() const { return mGradient; }
+  QCPColorScale *colorScale() const { return mColorScale.data(); }
   
   // setters:
   void setData(QCPColorMapData *data, bool copy=false);
+  Q_SLOT void setDataRange(const QCPRange &dataRange);
+  Q_SLOT void setGradient(const QCPColorGradient &gradient);
   void setInterpolate(bool enabled);
   void setTightBoundary(bool enabled);
+  void setColorScale(QCPColorScale *colorScale);
   
   // non-property methods:
+  void rescaleDataRange(bool recalculateDataBounds=false);
   virtual void clearData();
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
+signals:
+  void dataRangeChanged(QCPRange newRange);
+  void gradientChanged(QCPColorGradient newGradient);
+  
 protected:
+  QCPRange mDataRange;
   QCPColorMapData *mMapData;
+  QCPColorGradient mGradient;
   QImage mMapImage;
-  QRgb *mColorGradient;
-  int mColorGradientLevels;
   bool mInterpolate;
   bool mTightBoundary;
+  bool mMapImageInvalidated;
+  QPointer<QCPColorScale> mColorScale;
   
-  virtual void updateGradient(int levels);
   virtual void updateMapImage();
   virtual void draw(QCPPainter *painter);
   virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
-  
-  QRgb wavelengthToRgb(double nm);
   
   virtual QCPRange getKeyRange(bool &foundRange, SignDomain inSignDomain=sdBoth) const;
   virtual QCPRange getValueRange(bool &foundRange, SignDomain inSignDomain=sdBoth) const;
