@@ -23,37 +23,66 @@
 **          Version: 1.1.1                                                **
 ****************************************************************************/
 
-#ifndef QCP_H
-#define QCP_H
+#ifndef QCP_COLORGRADIENT_H
+#define QCP_COLORGRADIENT_H
 
 #include "global.h"
-#include "painter.h"
-#include "layer.h"
-#include "layout.h"
 #include "range.h"
-#include "axis.h"
-#include "plottable.h"
-#include "item.h"
-#include "lineending.h"
-#include "core.h"
-#include "colorgradient.h"
-#include "plottables/plottable-graph.h"
-#include "plottables/plottable-curve.h"
-#include "plottables/plottable-bars.h"
-#include "plottables/plottable-statisticalbox.h"
-#include "plottables/plottable-colormap.h"
-#include "items/item-straightline.h"
-#include "items/item-line.h"
-#include "items/item-curve.h"
-#include "items/item-rect.h"
-#include "items/item-text.h"
-#include "items/item-ellipse.h"
-#include "items/item-pixmap.h"
-#include "items/item-tracer.h"
-#include "items/item-bracket.h"
-#include "layoutelements/layoutelement-axisrect.h"
-#include "layoutelements/layoutelement-legend.h"
-#include "layoutelements/layoutelement-plottitle.h"
-#include "layoutelements/layoutelement-colorscale.h"
 
-#endif // QCP_H
+class QCP_LIB_DECL QCPColorGradient
+{
+public:
+  enum ColorInterpolation {ciRGB,
+                           ciHSV
+                          };
+  
+  enum GradientPreset {gpGray,
+                       gpHot,
+                       gpCold,
+                       gpIce,
+                       gpSpring,
+                       gpIon,
+                       gpPolar,
+                       gpSpectrum,
+                       gpPressure,
+                       gpHueCycle,
+                      };
+  
+  QCPColorGradient(GradientPreset preset=gpCold);
+  ~QCPColorGradient();
+  bool operator==(const QCPColorGradient &other) const;
+  bool operator!=(const QCPColorGradient &other) const { return !(*this == other); }
+  
+  // getters:
+  int levelCount() const { return mLevelCount; }
+  QMap<double, QColor> colorStops() const { return mColorStops; }
+  ColorInterpolation colorInterpolation() const { return mColorInterpolation; }
+  bool periodic() const { return mPeriodic; }
+  
+  // setters:
+  void setLevelCount(int n);
+  void setColorStops(const QMap<double, QColor> &colorStops);
+  void setColorStopAt(double position, const QColor &color);
+  void setColorInterpolation(ColorInterpolation interpolation);
+  void setPeriodic(bool enabled);
+  
+  // non-property methods:
+  void colorize(const double *data, const QCPRange &range, QRgb *scanLine, int n, int dataIndexFactor=1);
+  QRgb color(double position, const QCPRange &range);
+  void loadPreset(GradientPreset preset);
+  void clearColorStops();
+  QCPColorGradient inverted() const;
+  
+protected:
+  void updateColorBuffer();
+  
+  int mLevelCount;
+  QVector<QRgb> mColorBuffer;
+  QMap<double, QColor> mColorStops;
+  ColorInterpolation mColorInterpolation;
+  bool mPeriodic;
+  
+  bool mColorBufferInvalidated;
+};
+
+#endif // QCP_COLORGRADIENT_H

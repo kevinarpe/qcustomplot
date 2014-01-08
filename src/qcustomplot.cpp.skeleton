@@ -36,6 +36,7 @@
 //amalgamation: add plottable.cpp
 //amalgamation: add item.cpp
 //amalgamation: add core.cpp
+//amalgamation: add colorgradient.cpp
 //amalgamation: add plottables/plottable-graph.cpp
 //amalgamation: add plottables/plottable-curve.cpp
 //amalgamation: add plottables/plottable-bars.cpp

@@ -54,7 +54,8 @@ items/item-bracket.h \
 layoutelements/layoutelement-axisrect.h \
     layoutelements/layoutelement-legend.h \
     layoutelements/layoutelement-plottitle.h \
-    layoutelements/layoutelement-colorscale.h
+    layoutelements/layoutelement-colorscale.h \
+    colorgradient.h
 
 SOURCES += \
 painter.cpp \
@@ -83,7 +84,8 @@ items/item-bracket.cpp \
 layoutelements/layoutelement-axisrect.cpp \
     layoutelements/layoutelement-legend.cpp \
     layoutelements/layoutelement-plottitle.cpp \
-    layoutelements/layoutelement-colorscale.cpp
+    layoutelements/layoutelement-colorscale.cpp \
+    colorgradient.cpp
 
 OTHER_FILES += \
     ../changelog.txt \

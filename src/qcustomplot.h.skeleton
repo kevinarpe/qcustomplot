@@ -39,6 +39,7 @@
 //amalgamation: add plottable.h
 //amalgamation: add item.h
 //amalgamation: add core.h
+//amalgamation: add colorgradient.h
 //amalgamation: add plottables/plottable-graph.h
 //amalgamation: add plottables/plottable-curve.h
 //amalgamation: add plottables/plottable-bars.h
