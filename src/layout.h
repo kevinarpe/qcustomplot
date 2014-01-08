@@ -75,6 +75,11 @@ class QCP_LIB_DECL QCPLayoutElement : public QCPLayerable
   Q_PROPERTY(QSize maximumSize READ maximumSize WRITE setMaximumSize)
   /// \endcond
 public:
+  enum UpdatePhase { upPreparation
+                     ,upMargins
+                     ,upLayout
+                   };
+  
   explicit QCPLayoutElement(QCustomPlot *parentPlot=0);
   virtual ~QCPLayoutElement();
   
@@ -102,7 +107,7 @@ public:
   void setMarginGroup(QCP::MarginSides sides, QCPMarginGroup *group);
   
   // introduced virtual methods:
-  virtual void update();
+  virtual void update(UpdatePhase phase);
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;
   virtual QList<QCPLayoutElement*> elements(bool recursive) const;
@@ -149,7 +154,7 @@ public:
   explicit QCPLayout();
   
   // reimplemented virtual methods:
-  virtual void update();
+  virtual void update(UpdatePhase phase);
   virtual QList<QCPLayoutElement*> elements(bool recursive) const;
   
   // introduced virtual methods:

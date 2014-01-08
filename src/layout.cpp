@@ -557,37 +557,40 @@ void QCPLayoutElement::setMarginGroup(QCP::MarginSides sides, QCPMarginGroup *gr
 }
 
 /*!
-  Updates the layout element and sub-elements. This function is automatically called upon replot by
-  the parent layout element.
+  Updates the layout element and sub-elements. This function is automatically called before every
+  replot by the parent layout element. It is called multiple times, once for every \ref
+  UpdatePhase. The phases are run through in the order of the enum values. For details about what
+  happens at the different phases, see the documentation of \ref UpdatePhase.
   
   Layout elements that have child elements should call the \ref update method of their child
-  elements.
+  elements, and pass the current \a phase unchanged.
   
-  The default implementation executes the automatic margin mechanism, so subclasses should make
-  sure to call the base class implementation.
+  The default implementation executes the automatic margin mechanism in the \ref upMargins phase.
+  Subclasses should make sure to call the base class implementation.
 */
-void QCPLayoutElement::update()
+void QCPLayoutElement::update(UpdatePhase phase)
 {
-  if (mAutoMargins != QCP::msNone)
+  if (phase == upMargins)
   {
-    // set the margins of this layout element according to automatic margin calculation, either directly or via a margin group:
-    QMargins newMargins = mMargins;
-    QVector<QCP::MarginSide> marginSides = QVector<QCP::MarginSide>() << QCP::msLeft << QCP::msRight << QCP::msTop << QCP::msBottom;
-    for (int i=0; i<marginSides.size(); ++i)
+    if (mAutoMargins != QCP::msNone)
     {
-      QCP::MarginSide side = marginSides.at(i);
-      if (mAutoMargins.testFlag(side)) // this side's margin shall be calculated automatically
+      // set the margins of this layout element according to automatic margin calculation, either directly or via a margin group:
+      QMargins newMargins = mMargins;
+      foreach (QCP::MarginSide side, QList<QCP::MarginSide>() << QCP::msLeft << QCP::msRight << QCP::msTop << QCP::msBottom)
       {
-        if (mMarginGroups.contains(side)) 
-          QCP::setMarginValue(newMargins, side, mMarginGroups[side]->commonMargin(side)); // this side is part of a margin group, so get the margin value from that group
-        else 
-          QCP::setMarginValue(newMargins, side, calculateAutoMargin(side)); // this side is not part of a group, so calculate the value directly
-        // apply minimum margin restrictions:
-        if (QCP::getMarginValue(newMargins, side) < QCP::getMarginValue(mMinimumMargins, side))
-          QCP::setMarginValue(newMargins, side, QCP::getMarginValue(mMinimumMargins, side));
+        if (mAutoMargins.testFlag(side)) // this side's margin shall be calculated automatically
+        {
+          if (mMarginGroups.contains(side)) 
+            QCP::setMarginValue(newMargins, side, mMarginGroups[side]->commonMargin(side)); // this side is part of a margin group, so get the margin value from that group
+          else 
+            QCP::setMarginValue(newMargins, side, calculateAutoMargin(side)); // this side is not part of a group, so calculate the value directly
+          // apply minimum margin restrictions:
+          if (QCP::getMarginValue(newMargins, side) < QCP::getMarginValue(mMinimumMargins, side))
+            QCP::setMarginValue(newMargins, side, QCP::getMarginValue(mMinimumMargins, side));
+        }
       }
+      setMargins(newMargins);
     }
-    setMargins(newMargins);
   }
 }
 
@@ -777,18 +780,20 @@ QCPLayout::QCPLayout()
   
   Finally, \ref update is called on all child elements.
 */
-void QCPLayout::update()
+void QCPLayout::update(UpdatePhase phase)
 {
-  QCPLayoutElement::update(); // recalculates (auto-)margins
+  QCPLayoutElement::update(phase);
   
   // set child element rects according to layout:
-  updateLayout();
+  if (phase == upLayout)
+    updateLayout();
   
   // propagate update call to child elements:
-  for (int i=0; i<elementCount(); ++i)
+  const int elCount = elementCount();
+  for (int i=0; i<elCount; ++i)
   {
     if (QCPLayoutElement *el = elementAt(i))
-      el->update();
+      el->update(phase);
   }
 }
 

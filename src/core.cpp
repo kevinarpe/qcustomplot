@@ -2398,17 +2398,10 @@ void QCustomPlot::wheelEvent(QWheelEvent *event)
 */
 void QCustomPlot::draw(QCPPainter *painter)
 {
-  // update all axis tick vectors:
-  QList<QCPAxisRect*> rects = axisRects();
-  for (int i=0; i<rects.size(); ++i)
-  {
-    QList<QCPAxis*> axes = rects.at(i)->axes();
-    for (int k=0; k<axes.size(); ++k)
-      axes.at(k)->setupTickVectors();
-  }
-  
-  // recalculate layout:
-  mPlotLayout->update();
+  // run through layout phases:
+  mPlotLayout->update(QCPLayoutElement::upPreparation);
+  mPlotLayout->update(QCPLayoutElement::upMargins);
+  mPlotLayout->update(QCPLayoutElement::upLayout);
   
   // draw viewport background pixmap:
   drawBackground(painter);

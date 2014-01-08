@@ -104,7 +104,7 @@ public:
   QPoint center() const { return mRect.center(); }
   
   // reimplemented virtual methods:
-  virtual void update();
+  virtual void update(UpdatePhase phase);
   virtual QList<QCPLayoutElement*> elements(bool recursive) const;
 
 protected:
