@@ -622,7 +622,7 @@ QSize QCPLayoutElement::maximumSizeHint() const
   Returns a list of all child elements in this layout element. If \a recursive is true, all
   sub-child elements are included in the list, too.
   
-  Note that there may be entries with value 0 in the returned list. (For example, QCPLayoutGrid may have
+  \warning There may be entries with value 0 in the returned list. (For example, QCPLayoutGrid may have
   empty cells which yield 0 at the respective index.)
 */
 QList<QCPLayoutElement*> QCPLayoutElement::elements(bool recursive) const
@@ -669,11 +669,10 @@ double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVa
 */
 void QCPLayoutElement::parentPlotInitialized(QCustomPlot *parentPlot)
 {
-  QList<QCPLayoutElement*> els = elements(false);
-  for (int i=0; i<els.size(); ++i)
+  foreach (QCPLayoutElement* el, elements(false))
   {
-    if (!els.at(i)->parentPlot())
-      els.at(i)->initializeParentPlot(parentPlot);
+    if (!el->parentPlot())
+      el->initializeParentPlot(parentPlot);
   }
 }
 
@@ -800,7 +799,7 @@ void QCPLayout::update(UpdatePhase phase)
 /* inherits documentation from base class */
 QList<QCPLayoutElement*> QCPLayout::elements(bool recursive) const
 {
-  int c = elementCount();
+  const int c = elementCount();
   QList<QCPLayoutElement*> result;
 #if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
   result.reserve(c);

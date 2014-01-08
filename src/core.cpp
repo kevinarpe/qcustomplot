@@ -2407,12 +2407,10 @@ void QCustomPlot::draw(QCPPainter *painter)
   drawBackground(painter);
 
   // draw all layered objects (grid, axes, plottables, items, legend,...):
-  for (int layerIndex=0; layerIndex < mLayers.size(); ++layerIndex)
+  foreach (QCPLayer *layer, mLayers)
   {
-    QList<QCPLayerable*> layerChildren = mLayers.at(layerIndex)->children();
-    for (int k=0; k < layerChildren.size(); ++k)
+    foreach (QCPLayerable *child, layer->children())
     {
-      QCPLayerable *child = layerChildren.at(k);
       if (child->realVisibility())
       {
         painter->save();
@@ -2423,6 +2421,17 @@ void QCustomPlot::draw(QCPPainter *painter)
       }
     }
   }
+  
+  /* Debug code to draw all layout element rects
+  foreach (QCPLayoutElement* el, findChildren<QCPLayoutElement*>())
+  {
+    painter->setBrush(Qt::NoBrush);
+    painter->setPen(QPen(QColor(0, 0, 0, 100), 0, Qt::DashLine));
+    painter->drawRect(el->rect());
+    painter->setPen(QPen(QColor(255, 0, 0, 100), 0, Qt::DashLine));
+    painter->drawRect(el->outerRect());
+  }
+  */
 }
 
 /*! \internal
