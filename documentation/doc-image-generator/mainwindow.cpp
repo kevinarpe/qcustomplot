@@ -19,7 +19,11 @@ MainWindow::MainWindow(QWidget *parent) :
     // invoke all methods of MainWindow that start with "gen":
     for (int i=this->metaObject()->methodOffset(); i<this->metaObject()->methodCount(); ++i)
     {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
       if (QString::fromLatin1(this->metaObject()->method(i).signature()).startsWith("gen"))
+#else
+      if (this->metaObject()->method(i).methodSignature().startsWith("gen"))
+#endif
       {
         if (!this->metaObject()->method(i).invoke(this))
           qDebug() << "Failed to invoke doc-image-generator method" << i;
@@ -402,6 +406,60 @@ void MainWindow::genAxisNamesOverview()
   addBracket(QPointF(263, 132), QPointF(263, 105), "Tick step", QPointF(8, 0), false, Qt::AlignLeft|Qt::AlignVCenter, QCPItemBracket::bsCurly);
   
   customPlot->savePng(dir.filePath("AxisNamesOverview.png"), 450, 300);
+}
+
+void MainWindow::genColorGradientPresets()
+{
+  QMetaEnum presetEnum = QCPColorGradient::staticMetaObject.enumerator(QCPColorGradient::staticMetaObject.indexOfEnumerator("GradientPreset"));
+  for (int i=0; i<presetEnum.keyCount(); ++i)
+  {
+    resetPlot(false);
+    customPlot->xAxis->setAutoTickCount(3);
+    customPlot->yAxis->setAutoTickCount(3);
+    customPlot->axisRect()->setupFullAxesBox(true);
+    QMargins m = customPlot->axisRect()->minimumMargins();
+    customPlot->axisRect()->setMinimumMargins(m + QMargins(0, 10, 0, 0)); // make some space for label
+    QString gradientName(presetEnum.key(i)); 
+    
+    QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
+    customPlot->addPlottable(colorMap);
+    int nx = 400;
+    int ny = 400;
+    colorMap->data()->setSize(nx, ny);
+    colorMap->data()->setRange(QCPRange(0, 10), QCPRange(0, 10));
+    colorMap->setInterpolate(true);
+    colorMap->setTightBoundary(false);
+    for (int x=0; x<nx; ++x)
+      for (int y=0; y<ny; ++y)
+        colorMap->data()->setCell(x, y, (qExp(-qSqrt((x-310)*(x-310)+(y-260)*(y-260))/200.0)+
+                                         qExp(-qSqrt((x-200)*(x-200)+(y-290)*(y-290))/80.0)-
+                                         qExp(-qSqrt((x-180)*(x-180)+(y-140)*(y-140))/200.0)+0.436285)/1.53251*2-1);
+    QCPColorScale *colorScale = new QCPColorScale(customPlot);
+    customPlot->plotLayout()->addElement(0, 1, colorScale);
+    colorMap->setColorScale(colorScale);
+    colorScale->axis()->setAutoTickStep(false);
+    colorScale->axis()->setTickStep(0.5);
+    colorScale->axis()->setNumberFormat("f");
+    colorScale->axis()->setNumberPrecision(1);
+    QCPMarginGroup *group = new QCPMarginGroup(customPlot);
+    colorScale->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+    customPlot->axisRect()->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+    QCPColorGradient gradient = colorMap->gradient();
+    gradient.loadPreset(static_cast<QCPColorGradient::GradientPreset>(presetEnum.value(i)));
+    gradient.setPeriodic(false);
+    colorMap->setGradient(gradient);
+    colorMap->rescaleDataRange(true);
+    customPlot->rescaleAxes();
+    
+    QCPItemText *text = new QCPItemText(customPlot);
+    customPlot->addItem(text);
+    text->setClipToAxisRect(false);
+    text->position->setType(QCPItemPosition::ptAxisRectRatio);
+    text->position->setCoords(0.5, -0.09);
+    text->setFont(QFont(font().family(), 10));
+    text->setText(gradientName);
+    customPlot->savePng(dir.filePath(QString("%1.png").arg(gradientName)), 280, 200);
+  }
 }
 
 void MainWindow::genLayoutsystem_AddingPlotTitle()
