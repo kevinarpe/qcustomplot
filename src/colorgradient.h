@@ -31,22 +31,26 @@
 
 class QCP_LIB_DECL QCPColorGradient
 {
+  Q_GADGET
 public:
   enum ColorInterpolation {ciRGB,
                            ciHSV
                           };
+  Q_ENUMS(ColorInterpolation)
   
-  enum GradientPreset {gpGray,
+  enum GradientPreset {gpGrayscale,
                        gpHot,
                        gpCold,
-                       gpIce,
-                       gpSpring,
+                       gpNight,
+                       gpCandy,
+                       gpGeography,
                        gpIon,
                        gpPolar,
                        gpSpectrum,
-                       gpPressure,
-                       gpHueCycle,
+                       gpJet,
+                       gpHues,
                       };
+  Q_ENUMS(GradientPreset)
   
   QCPColorGradient(GradientPreset preset=gpCold);
   ~QCPColorGradient();
