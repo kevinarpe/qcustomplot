@@ -77,13 +77,16 @@ public:
   QCPRange dataRange() const { return mDataRange; }
   QCPColorGradient gradient() const { return mGradient; }
   int barWidth () const { return mBarWidth; }
-  
+  bool rangeDrag() const;
+  bool rangeZoom() const;
   
   // setters:
   void setAxisType(QCPAxis::AxisType axisType);
   Q_SLOT void setDataRange(const QCPRange &dataRange);
   Q_SLOT void setGradient(const QCPColorGradient &gradient);
   void setBarWidth(int width);
+  void setRangeDrag(bool enabled);
+  void setRangeZoom(bool enabled);
   
   // non-property methods:
   

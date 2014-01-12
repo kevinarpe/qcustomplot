@@ -55,6 +55,42 @@ QCPColorScale::~QCPColorScale()
   
 }
 
+bool QCPColorScale::rangeDrag() const
+{
+  if (!mAxisRect)
+  {
+    qDebug() << Q_FUNC_INFO << "internal axis rect was deleted";
+    return false;
+  }
+  if (!mColorAxis)
+  {
+    qDebug() << Q_FUNC_INFO << "internal color axis undefined";
+    return false;
+  }
+  
+  return mAxisRect.data()->rangeDrag().testFlag(QCPAxis::orientation(mAxisType)) &&
+      mAxisRect.data()->rangeDragAxis(QCPAxis::orientation(mAxisType)) &&
+      mAxisRect.data()->rangeDragAxis(QCPAxis::orientation(mAxisType))->orientation() == QCPAxis::orientation(mAxisType);
+}
+
+bool QCPColorScale::rangeZoom() const
+{
+  if (!mAxisRect)
+  {
+    qDebug() << Q_FUNC_INFO << "internal axis rect was deleted";
+    return false;
+  }
+  if (!mColorAxis)
+  {
+    qDebug() << Q_FUNC_INFO << "internal color axis undefined";
+    return false;
+  }
+  
+  return mAxisRect.data()->rangeZoom().testFlag(QCPAxis::orientation(mAxisType)) &&
+      mAxisRect.data()->rangeZoomAxis(QCPAxis::orientation(mAxisType)) &&
+      mAxisRect.data()->rangeZoomAxis(QCPAxis::orientation(mAxisType))->orientation() == QCPAxis::orientation(mAxisType);
+}
+
 void QCPColorScale::setAxisType(QCPAxis::AxisType axisType)
 {
   if (!mAxisRect)
@@ -116,6 +152,34 @@ void QCPColorScale::setGradient(const QCPColorGradient &gradient)
 void QCPColorScale::setBarWidth(int width)
 {
   mBarWidth = width;
+}
+
+void QCPColorScale::setRangeDrag(bool enabled)
+{
+  if (!mAxisRect)
+  {
+    qDebug() << Q_FUNC_INFO << "internal axis rect was deleted";
+    return;
+  }
+  
+  if (enabled)
+    mAxisRect.data()->setRangeDrag(QCPAxis::orientation(mAxisType));
+  else
+    mAxisRect.data()->setRangeDrag(0);
+}
+
+void QCPColorScale::setRangeZoom(bool enabled)
+{
+  if (!mAxisRect)
+  {
+    qDebug() << Q_FUNC_INFO << "internal axis rect was deleted";
+    return;
+  }
+  
+  if (enabled)
+    mAxisRect.data()->setRangeZoom(QCPAxis::orientation(mAxisType));
+  else
+    mAxisRect.data()->setRangeZoom(0);
 }
 
 void QCPColorScale::update(UpdatePhase phase)
