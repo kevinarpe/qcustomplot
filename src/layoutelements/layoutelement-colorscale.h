@@ -35,6 +35,31 @@
 class QCPPainter;
 class QCustomPlot;
 class QCPColorMap;
+class QCPColorScale;
+
+
+class QCPColorScaleAxisRectPrivate : public QCPAxisRect
+{
+  Q_OBJECT
+public:
+  explicit QCPColorScaleAxisRectPrivate(QCPColorScale *parentColorScale);
+protected:
+  QCPColorScale *mParentColorScale;
+  QImage mGradientImage;
+  bool mGradientImageInvalidated;
+  // re-using some methods of QCPAxisRect to make them available to friend class QCPColorScale
+  using QCPAxisRect::calculateAutoMargin;
+  using QCPAxisRect::mousePressEvent;
+  using QCPAxisRect::mouseMoveEvent;
+  using QCPAxisRect::mouseReleaseEvent;
+  using QCPAxisRect::wheelEvent;
+  using QCPAxisRect::update;
+  virtual void draw(QCPPainter *painter);
+  void updateGradientImage();
+  Q_SLOT void axisSelectionChanged(QCPAxis::SelectableParts selectedParts);
+  friend class QCPColorScale;
+};
+
 
 class QCP_LIB_DECL QCPColorScale : public QCPLayoutElement
 {
@@ -70,26 +95,6 @@ signals:
   void gradientChanged(QCPColorGradient newGradient);
 
 protected:
-  class QCPColorScaleAxisRect : public QCPAxisRect
-  {
-  public:
-    explicit QCPColorScaleAxisRect(QCPColorScale *parentColorScale);
-  protected:
-    QCPColorScale *mParentColorScale;
-    QImage mGradientImage;
-    bool mGradientImageInvalidated;
-    // re-using some methods of QCPAxisRect to make them available to friend class QCPColorScale
-    using QCPAxisRect::calculateAutoMargin;
-    using QCPAxisRect::mousePressEvent;
-    using QCPAxisRect::mouseMoveEvent;
-    using QCPAxisRect::mouseReleaseEvent;
-    using QCPAxisRect::wheelEvent;
-    using QCPAxisRect::update;
-    virtual void draw(QCPPainter *painter);
-    void updateGradientImage();
-    friend class QCPColorScale;
-  };
-
   // property members:
   QCPAxis::AxisType mAxisType;
   QCPRange mDataRange;
@@ -97,7 +102,7 @@ protected:
   int mBarWidth;
   
   // non-property members:
-  QPointer<QCPColorScaleAxisRect> mAxisRect;
+  QPointer<QCPColorScaleAxisRectPrivate> mAxisRect;
   QPointer<QCPAxis> mColorAxis;
   
   // reimplemented virtual methods:
@@ -110,6 +115,8 @@ protected:
   
 private:
   Q_DISABLE_COPY(QCPColorScale)
+  
+  friend class QCPColorScaleAxisRectPrivate;
 };
 
 

@@ -43,7 +43,7 @@
 QCPColorScale::QCPColorScale(QCustomPlot *parentPlot) :
   QCPLayoutElement(parentPlot),
   mBarWidth(20),
-  mAxisRect(new QCPColorScaleAxisRect(this))
+  mAxisRect(new QCPColorScaleAxisRectPrivate(this))
 {
   setMinimumMargins(QMargins(0, 6, 0, 6));
   setAxisType(QCPAxis::atRight);
@@ -200,26 +200,28 @@ void QCPColorScale::wheelEvent(QWheelEvent *event)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////// QCPColorScale::QCPColorScaleAxisRect
+//////////////////// QCPColorScaleAxisRectPrivate
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*! \class QCPColorScale::QCPColorScaleAxisRect
-  \brief 
+/*! \class QCPColorScaleAxisRectPrivate \internal
+  \brief (Private)
+  
+  This is a private class and not part of the public QCustomPlot interface.
   
 */
 
-QCPColorScale::QCPColorScaleAxisRect::QCPColorScaleAxisRect(QCPColorScale *parentColorScale) :
+QCPColorScaleAxisRectPrivate::QCPColorScaleAxisRectPrivate(QCPColorScale *parentColorScale) :
   QCPAxisRect(parentColorScale->parentPlot(), true),
   mParentColorScale(parentColorScale),
   mGradientImageInvalidated(true)
 {
   setMinimumMargins(QMargins(0, 0, 0, 0));
-  QList<QCPAxis::AxisType> types = QList<QCPAxis::AxisType>() << QCPAxis::atBottom << QCPAxis::atTop << QCPAxis::atLeft << QCPAxis::atRight;
-  foreach(QCPAxis::AxisType type, types)
+  foreach(QCPAxis::AxisType type, QList<QCPAxis::AxisType>() << QCPAxis::atBottom << QCPAxis::atTop << QCPAxis::atLeft << QCPAxis::atRight)
   {
     axis(type)->setVisible(true);
     axis(type)->grid()->setVisible(false);
     axis(type)->setPadding(0);
+    connect(axis(type), SIGNAL(selectionChanged(QCPAxis::SelectableParts)), this, SLOT(axisSelectionChanged(QCPAxis::SelectableParts)));
   }
 
   connect(axis(QCPAxis::atLeft), SIGNAL(rangeChanged(QCPRange)), axis(QCPAxis::atRight), SLOT(setRange(QCPRange)));
@@ -228,7 +230,7 @@ QCPColorScale::QCPColorScaleAxisRect::QCPColorScaleAxisRect(QCPColorScale *paren
   connect(axis(QCPAxis::atTop), SIGNAL(rangeChanged(QCPRange)), axis(QCPAxis::atBottom), SLOT(setRange(QCPRange)));
 }
 
-void QCPColorScale::QCPColorScaleAxisRect::draw(QCPPainter *painter)
+void QCPColorScaleAxisRectPrivate::draw(QCPPainter *painter)
 {
   if (mGradientImageInvalidated)
     updateGradientImage();
@@ -245,7 +247,7 @@ void QCPColorScale::QCPColorScaleAxisRect::draw(QCPPainter *painter)
   QCPAxisRect::draw(painter);
 }
 
-void QCPColorScale::QCPColorScaleAxisRect::updateGradientImage()
+void QCPColorScaleAxisRectPrivate::updateGradientImage()
 {
   if (!mParentColorScale->mAxisRect)
   {
@@ -286,4 +288,23 @@ void QCPColorScale::QCPColorScaleAxisRect::updateGradientImage()
     }
   }
   mGradientImageInvalidated = false;
+}
+
+void QCPColorScaleAxisRectPrivate::axisSelectionChanged(QCPAxis::SelectableParts selectedParts)
+{
+  // axis bases of four axes shall always (de-)selected synchronously:
+  foreach (QCPAxis::AxisType type, QList<QCPAxis::AxisType>() << QCPAxis::atBottom << QCPAxis::atTop << QCPAxis::atLeft << QCPAxis::atRight)
+  {
+    if (QCPAxis *senderAxis = qobject_cast<QCPAxis*>(sender()))
+      if (senderAxis->axisType() == type)
+        continue;
+    
+    if (axis(type)->selectableParts().testFlag(QCPAxis::spAxis))
+    {
+      if (selectedParts.testFlag(QCPAxis::spAxis))
+        axis(type)->setSelectedParts(axis(type)->selectedParts() | QCPAxis::spAxis);
+      else
+        axis(type)->setSelectedParts(axis(type)->selectedParts() & ~QCPAxis::spAxis);
+    }
+  }
 }
