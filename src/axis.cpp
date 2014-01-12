@@ -389,7 +389,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mScaleLogBaseLogInv(1.0/qLn(mScaleLogBase)),
   // internal members:
   mGrid(new QCPGrid(this)),
-  mAxisPainter(new QCPAxisPainter(parent->parentPlot())),
+  mAxisPainter(new QCPAxisPainterPrivate(parent->parentPlot())),
   mLowestVisibleTick(0),
   mHighestVisibleTick(-1),
   mCachedMarginValid(false),
@@ -2089,7 +2089,7 @@ void QCPAxis::applyDefaultAntialiasingHint(QCPPainter *painter) const
 
 /*! \internal
   
-  Draws the axis with the specified \a painter., using the internal \ref QCPAxisPainter instance.
+  Draws the axis with the specified \a painter, using the internal \ref QCPAxisPainterPrivate instance.
 
 */
 void QCPAxis::draw(QCPPainter *painter)
@@ -2119,7 +2119,7 @@ void QCPAxis::draw(QCPPainter *painter)
         subTickPositions.append(coordToPixel(mSubTickVector.at(i)));
     }
   }
-  // transfer all properties of this axis to QCPAxisPainter which it needs to draw the axis.
+  // transfer all properties of this axis to QCPAxisPainterPrivate which it needs to draw the axis.
   // Note that some axis painter properties are already set by direct feed-through with QCPAxis setters
   mAxisPainter->type = mAxisType;
   mAxisPainter->basePen = getBasePen();
@@ -2323,7 +2323,7 @@ int QCPAxis::calculateMargin()
           tickLabels.append(mTickVectorLabels.at(i));
       }
     }
-    // transfer all properties of this axis to QCPAxisPainter which it needs to calculate the size.
+    // transfer all properties of this axis to QCPAxisPainterPrivate which it needs to calculate the size.
     // Note that some axis painter properties are already set by direct feed-through with QCPAxis setters
     mAxisPainter->type = mAxisType;
     mAxisPainter->labelFont = getLabelFont();
@@ -2350,16 +2350,17 @@ QCP::Interaction QCPAxis::selectionCategory() const
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////// QCPAxisPainter
+//////////////////// QCPAxisPainterPrivate
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*! \class QCPAxisPainter
-  \brief An internal class used to draw axes.
+/*! \class QCPAxisPainterPrivate \internal
+  \brief (Private)
   
+  This is a private class and not part of the public QCustomPlot interface.
   
 */
 
-QCPAxisPainter::QCPAxisPainter(QCustomPlot *parentPlot) :
+QCPAxisPainterPrivate::QCPAxisPainterPrivate(QCustomPlot *parentPlot) :
   basePen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
   lowerEnding(QCPLineEnding::esNone),
   upperEnding(QCPLineEnding::esNone),
@@ -2382,7 +2383,7 @@ QCPAxisPainter::QCPAxisPainter(QCustomPlot *parentPlot) :
 {
 }
 
-QCPAxisPainter::~QCPAxisPainter()
+QCPAxisPainterPrivate::~QCPAxisPainterPrivate()
 {
 }
 
@@ -2393,7 +2394,7 @@ QCPAxisPainter::~QCPAxisPainter()
   The selection boxes (mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox) are set
   here, too.
 */
-void QCPAxisPainter::draw(QCPPainter *painter)
+void QCPAxisPainterPrivate::draw(QCPPainter *painter)
 {
   QByteArray newHash = generateLabelParameterHash();
   if (newHash != mLabelParameterHash)
@@ -2560,7 +2561,7 @@ void QCPAxisPainter::draw(QCPPainter *painter)
   //painter->drawRects(QVector<QRect>() << mAxisSelectionBox << mTickLabelsSelectionBox << mLabelSelectionBox);
 }
 
-int QCPAxisPainter::size() const
+int QCPAxisPainterPrivate::size() const
 {
   int result = 0;
   
@@ -2590,12 +2591,12 @@ int QCPAxisPainter::size() const
   return result;
 }
 
-void QCPAxisPainter::clearCache()
+void QCPAxisPainterPrivate::clearCache()
 {
   mLabelCache.clear();
 }
 
-QByteArray QCPAxisPainter::generateLabelParameterHash() const
+QByteArray QCPAxisPainterPrivate::generateLabelParameterHash() const
 {
   QByteArray result;
   result.append(QByteArray::number(tickLabelRotation));
@@ -2625,7 +2626,7 @@ QByteArray QCPAxisPainter::generateLabelParameterHash() const
   superscripted powers, the font is temporarily made smaller by a fixed factor (see \ref
   getTickLabelData).
 */
-void QCPAxisPainter::placeTickLabel(QCPPainter *painter, double position, int distanceToAxis, const QString &text, QSize *tickLabelsSize)
+void QCPAxisPainterPrivate::placeTickLabel(QCPPainter *painter, double position, int distanceToAxis, const QString &text, QSize *tickLabelsSize)
 {
   // warning: if you change anything here, also adapt getMaxTickLabelSize() accordingly!
   if (text.isEmpty()) return;
@@ -2705,7 +2706,7 @@ void QCPAxisPainter::placeTickLabel(QCPPainter *painter, double position, int di
   directly draw the labels on the QCustomPlot surface when label caching is disabled, i.e. when
   QCP::phCacheLabels plotting hint is not set.
 */
-void QCPAxisPainter::drawTickLabel(QCPPainter *painter, double x, double y, const TickLabelData &labelData) const
+void QCPAxisPainterPrivate::drawTickLabel(QCPPainter *painter, double x, double y, const TickLabelData &labelData) const
 {
   // backup painter settings that we're about to change:
   QTransform oldTransform = painter->transform();
@@ -2742,7 +2743,7 @@ void QCPAxisPainter::drawTickLabel(QCPPainter *painter, double x, double y, cons
   processed by \ref getTickLabelDrawOffset and \ref drawTickLabel. It splits the text into base and
   exponent if necessary (see \ref setNumberFormat) and calculates appropriate bounding boxes.
 */
-QCPAxisPainter::TickLabelData QCPAxisPainter::getTickLabelData(const QFont &font, const QString &text) const
+QCPAxisPainterPrivate::TickLabelData QCPAxisPainterPrivate::getTickLabelData(const QFont &font, const QString &text) const
 {
   TickLabelData result;
   
@@ -2810,7 +2811,7 @@ QCPAxisPainter::TickLabelData QCPAxisPainter::getTickLabelData(const QFont &font
   This function is thus responsible for e.g. centering tick labels under ticks and positioning them
   appropriately when they are rotated.
 */
-QPointF QCPAxisPainter::getTickLabelDrawOffset(const TickLabelData &labelData) const
+QPointF QCPAxisPainterPrivate::getTickLabelDrawOffset(const TickLabelData &labelData) const
 {
   /*
     calculate label offset from base point at tick (non-trivial, for best visual appearance): short
@@ -2910,7 +2911,7 @@ QPointF QCPAxisPainter::getTickLabelDrawOffset(const TickLabelData &labelData) c
   margin calculation, the passed \a tickLabelsSize is only expanded, if it's currently set to a
   smaller width/height.
 */
-void QCPAxisPainter::getMaxTickLabelSize(const QFont &font, const QString &text,  QSize *tickLabelsSize) const
+void QCPAxisPainterPrivate::getMaxTickLabelSize(const QFont &font, const QString &text,  QSize *tickLabelsSize) const
 {
   // note: this function must return the same tick label sizes as the placeTickLabel function.
   QSize finalSize;

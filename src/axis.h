@@ -36,7 +36,7 @@ class QCPPainter;
 class QCustomPlot;
 class QCPAxis;
 class QCPAxisRect;
-class QCPAxisPainter;
+class QCPAxisPainterPrivate;
 class QCPAbstractPlottable;
 class QCPGraph;
 class QCPAbstractItem;
@@ -370,7 +370,7 @@ protected:
   
   // non-property members:
   QCPGrid *mGrid;
-  QCPAxisPainter *mAxisPainter;
+  QCPAxisPainterPrivate *mAxisPainter;
   int mLowestVisibleTick, mHighestVisibleTick;
   QVector<double> mTickVector;
   QVector<QString> mTickVectorLabels;
@@ -416,11 +416,11 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::AxisTypes)
 Q_DECLARE_METATYPE(QCPAxis::SelectablePart)
 
 
-class QCPAxisPainter
+class QCPAxisPainterPrivate
 {
 public:
-  explicit QCPAxisPainter(QCustomPlot *parentPlot);
-  virtual ~QCPAxisPainter();
+  explicit QCPAxisPainterPrivate(QCustomPlot *parentPlot);
+  virtual ~QCPAxisPainterPrivate();
   
   virtual void draw(QCPPainter *painter);
   virtual int size() const;
