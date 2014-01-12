@@ -632,24 +632,43 @@ void MainWindow::setupColorMapTest(QCustomPlot *customPlot)
   presetInteractive(customPlot);
   QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
   customPlot->addPlottable(colorMap);
-  customPlot->addLayer("maplayer", customPlot->layer("grid"), QCustomPlot::limBelow);
-  colorMap->setLayer("maplayer");
-
-  int nx = 60;
-  int ny = 60;
+  //customPlot->addLayer("maplayer", customPlot->layer("grid"), QCustomPlot::limBelow);
+  //colorMap->setLayer("maplayer");
+  
+  int nx = 400;
+  int ny = 400;
   colorMap->data()->setSize(nx, ny);
-  colorMap->data()->setRange(QCPRange(0, 59), QCPRange(0, 59));
-  colorMap->setInterpolate(false);
+  colorMap->data()->setRange(QCPRange(0, 10), QCPRange(0, 10));
+  colorMap->setInterpolate(true);
   colorMap->setTightBoundary(false);
   for (int x=0; x<nx; ++x)
   {
     for (int y=0; y<ny; ++y)
     {
-      colorMap->data()->setValue(x, y, x+y);
-      //colorMap->data()->setCell(x, y, x+y);
+      colorMap->data()->setCell(x, y, qExp(-qSqrt((x-310)*(x-310)+(y-260)*(y-260))/200.0)+
+                                      qExp(-qSqrt((x-200)*(x-200)+(y-290)*(y-290))/80.0)-qExp(-qSqrt((x-180)*(x-180)+(y-140)*(y-140))/200.0));
     }
   }
-
+  
+  QCPColorScale *colorScale = new QCPColorScale(customPlot);
+  customPlot->plotLayout()->addElement(0, 1, colorScale);
+  colorMap->setColorScale(colorScale);
+  colorScale->axis()->setLabel("test");
+  
+  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
+  colorScale->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  customPlot->axisRect()->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  
+  QCPColorGradient gradient = colorMap->gradient();
+  gradient.loadPreset(QCPColorGradient::gpJet);
+  gradient.setPeriodic(false);
+  gradient.setLevelCount(350);
+  colorMap->setGradient(gradient);
+  colorMap->rescaleDataRange(true);
+  
+  // TODO:
+  //       - provide QCPColorScale interface to range dragging and zooming
+  
   customPlot->rescaleAxes();
   customPlot->replot();
 }
