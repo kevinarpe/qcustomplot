@@ -32,7 +32,7 @@
 /*! \class QCPPainter
   \brief QPainter subclass used internally
   
-  This internal class is used to provide some extended functionality e.g. for tweaking position
+  This QPainter subclass is used to provide some extended functionality e.g. for tweaking position
   consistency between antialiased and non-antialiased painting. Further it provides workarounds
   for QPainter quirks.
   
