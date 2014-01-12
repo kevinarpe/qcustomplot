@@ -161,7 +161,11 @@ void QCPPlotTitle::setSelectedTextColor(const QColor &color)
 */
 void QCPPlotTitle::setSelectable(bool selectable)
 {
-  mSelectable = selectable;
+  if (mSelectable != selectable)
+  {
+    mSelectable = selectable;
+    emit selectableChanged(mSelectable);
+  }
 }
 
 /*!

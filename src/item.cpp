@@ -828,7 +828,11 @@ void QCPAbstractItem::setClipAxisRect(QCPAxisRect *rect)
 */
 void QCPAbstractItem::setSelectable(bool selectable)
 {
-  mSelectable = selectable;
+  if (mSelectable != selectable)
+  {
+    mSelectable = selectable;
+    emit selectableChanged(mSelectable);
+  }
 }
 
 /*!

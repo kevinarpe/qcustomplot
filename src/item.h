@@ -132,8 +132,8 @@ class QCP_LIB_DECL QCPAbstractItem : public QCPLayerable
   /// \cond INCLUDE_QPROPERTIES
   Q_PROPERTY(bool clipToAxisRect READ clipToAxisRect WRITE setClipToAxisRect)
   Q_PROPERTY(QCPAxisRect* clipAxisRect READ clipAxisRect WRITE setClipAxisRect)
-  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable)
-  Q_PROPERTY(bool selected READ selected WRITE setSelected)
+  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable NOTIFY selectableChanged)
+  Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectionChanged)
   /// \endcond
 public:
   QCPAbstractItem(QCustomPlot *parentPlot);
@@ -148,8 +148,8 @@ public:
   // setters:
   void setClipToAxisRect(bool clip);
   void setClipAxisRect(QCPAxisRect *rect);
-  void setSelectable(bool selectable);
-  void setSelected(bool selected);
+  Q_SLOT void setSelectable(bool selectable);
+  Q_SLOT void setSelected(bool selected);
   
   // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const = 0;
@@ -163,6 +163,7 @@ public:
   
 signals:
   void selectionChanged(bool selected);
+  void selectableChanged(bool selectable);
   
 protected:
   // property members:

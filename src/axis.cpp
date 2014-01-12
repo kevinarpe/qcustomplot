@@ -578,7 +578,11 @@ void QCPAxis::setRange(const QCPRange &range)
 */
 void QCPAxis::setSelectableParts(const SelectableParts &selectable)
 {
-  mSelectableParts = selectable;
+  if (mSelectableParts != selectable)
+  {
+    mSelectableParts = selectable;
+    emit selectableChanged(mSelectableParts);
+  }
 }
 
 /*!

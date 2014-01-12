@@ -99,7 +99,7 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(QCPAxisRect* axisRect READ axisRect)
   Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType)
   Q_PROPERTY(double scaleLogBase READ scaleLogBase WRITE setScaleLogBase)
-  Q_PROPERTY(QCPRange range READ range WRITE setRange)
+  Q_PROPERTY(QCPRange range READ range WRITE setRange NOTIFY rangeChanged)
   Q_PROPERTY(bool rangeReversed READ rangeReversed WRITE setRangeReversed)
   Q_PROPERTY(bool autoTicks READ autoTicks WRITE setAutoTicks)
   Q_PROPERTY(int autoTickCount READ autoTickCount WRITE setAutoTickCount)
@@ -134,8 +134,8 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(int labelPadding READ labelPadding WRITE setLabelPadding)
   Q_PROPERTY(int padding READ padding WRITE setPadding)
   Q_PROPERTY(int offset READ offset WRITE setOffset)
-  Q_PROPERTY(SelectableParts selectedParts READ selectedParts WRITE setSelectedParts)
-  Q_PROPERTY(SelectableParts selectableParts READ selectableParts WRITE setSelectableParts)
+  Q_PROPERTY(SelectableParts selectedParts READ selectedParts WRITE setSelectedParts NOTIFY selectionChanged)
+  Q_PROPERTY(SelectableParts selectableParts READ selectableParts WRITE setSelectableParts NOTIFY selectableChanged)
   Q_PROPERTY(QFont selectedTickLabelFont READ selectedTickLabelFont WRITE setSelectedTickLabelFont)
   Q_PROPERTY(QFont selectedLabelFont READ selectedLabelFont WRITE setSelectedLabelFont)
   Q_PROPERTY(QColor selectedTickLabelColor READ selectedTickLabelColor WRITE setSelectedTickLabelColor)
@@ -326,6 +326,7 @@ signals:
   void rangeChanged(const QCPRange &newRange);
   void rangeChanged(const QCPRange &newRange, const QCPRange &oldRange);
   void selectionChanged(const QCPAxis::SelectableParts &parts);
+  void selectableChanged(const QCPAxis::SelectableParts &parts);
 
 protected:
   // property members:
