@@ -365,7 +365,7 @@ void QCPLayerable::setAntialiased(bool enabled)
 */
 bool QCPLayerable::realVisibility() const
 {
-  return mVisible && mLayer && mLayer->visible() && (!mParentLayerable || mParentLayerable.data()->realVisibility());
+  return mVisible && (!mLayer || mLayer->visible()) && (!mParentLayerable || mParentLayerable.data()->realVisibility());
 }
 
 /*!
