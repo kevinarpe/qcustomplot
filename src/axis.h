@@ -318,6 +318,8 @@ public:
   QList<QCPAbstractItem*> items() const;
   
   static AxisType marginSideToAxisType(QCP::MarginSide side);
+  static Qt::Orientation orientation(AxisType type) { return type==atBottom||type==atTop ? Qt::Horizontal : Qt::Vertical; }
+  static AxisType opposite(AxisType type);
   
 signals:
   void ticksRequest();

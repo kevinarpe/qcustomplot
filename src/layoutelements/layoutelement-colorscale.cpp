@@ -86,8 +86,8 @@ void QCPColorScale::setAxisType(QCPAxis::AxisType axisType)
     mColorAxis.data()->setRange(rangeTransfer); // transfer range of old axis to new one (necessary if axis changes from vertical to horizontal or vice versa)
     mColorAxis.data()->setLabel(labelTransfer);
     connect(mColorAxis.data(), SIGNAL(rangeChanged(QCPRange)), this, SLOT(setDataRange(QCPRange)));
-    mAxisRect.data()->setRangeDragAxes(mAxisType == QCPAxis::atBottom || mAxisType == QCPAxis::atTop ? mColorAxis.data() : 0,
-                                       mAxisType == QCPAxis::atBottom || mAxisType == QCPAxis::atTop ? 0 : mColorAxis.data());
+    mAxisRect.data()->setRangeDragAxes(QCPAxis::orientation(mAxisType) == Qt::Horizontal ? mColorAxis.data() : 0,
+                                       QCPAxis::orientation(mAxisType) == Qt::Vertical ? mColorAxis.data() : 0);
   }
 }
 
