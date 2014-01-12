@@ -2303,13 +2303,6 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
       QCPLayerable *clickedLayerable = layerableAt(event->pos(), true, &details);
       bool selectionStateChanged = false;
       bool additive = mInteractions.testFlag(QCP::iMultiSelect) && event->modifiers().testFlag(mMultiSelectModifier);
-      if (clickedLayerable && mInteractions.testFlag(clickedLayerable->selectionCategory()))
-      {
-        // a layerable was actually clicked, call its selectEvent:
-        bool selChanged = false;
-        clickedLayerable->selectEvent(event, additive, details, &selChanged);
-        selectionStateChanged |= selChanged;
-      }
       // deselect all other layerables if not additive selection:
       if (!additive)
       {
@@ -2325,6 +2318,13 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
             }
           }
         }
+      }
+      if (clickedLayerable && mInteractions.testFlag(clickedLayerable->selectionCategory()))
+      {
+        // a layerable was actually clicked, call its selectEvent:
+        bool selChanged = false;
+        clickedLayerable->selectEvent(event, additive, details, &selChanged);
+        selectionStateChanged |= selChanged;
       }
       doReplot = true;
       if (selectionStateChanged)
