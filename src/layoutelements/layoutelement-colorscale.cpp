@@ -286,6 +286,7 @@ QCPColorScaleAxisRectPrivate::QCPColorScaleAxisRectPrivate(QCPColorScale *parent
     axis(type)->grid()->setVisible(false);
     axis(type)->setPadding(0);
     connect(axis(type), SIGNAL(selectionChanged(QCPAxis::SelectableParts)), this, SLOT(axisSelectionChanged(QCPAxis::SelectableParts)));
+    connect(axis(type), SIGNAL(selectableChanged(QCPAxis::SelectableParts)), this, SLOT(axisSelectableChanged(QCPAxis::SelectableParts)));
   }
 
   connect(axis(QCPAxis::atLeft), SIGNAL(rangeChanged(QCPRange)), axis(QCPAxis::atRight), SLOT(setRange(QCPRange)));
@@ -369,6 +370,25 @@ void QCPColorScaleAxisRectPrivate::axisSelectionChanged(QCPAxis::SelectableParts
         axis(type)->setSelectedParts(axis(type)->selectedParts() | QCPAxis::spAxis);
       else
         axis(type)->setSelectedParts(axis(type)->selectedParts() & ~QCPAxis::spAxis);
+    }
+  }
+}
+
+void QCPColorScaleAxisRectPrivate::axisSelectableChanged(QCPAxis::SelectableParts selectableParts)
+{
+  // synchronize axis base selectability:
+  foreach (QCPAxis::AxisType type, QList<QCPAxis::AxisType>() << QCPAxis::atBottom << QCPAxis::atTop << QCPAxis::atLeft << QCPAxis::atRight)
+  {
+    if (QCPAxis *senderAxis = qobject_cast<QCPAxis*>(sender()))
+      if (senderAxis->axisType() == type)
+        continue;
+    
+    if (axis(type)->selectableParts().testFlag(QCPAxis::spAxis))
+    {
+      if (selectableParts.testFlag(QCPAxis::spAxis))
+        axis(type)->setSelectableParts(axis(type)->selectableParts() | QCPAxis::spAxis);
+      else
+        axis(type)->setSelectableParts(axis(type)->selectableParts() & ~QCPAxis::spAxis);
     }
   }
 }

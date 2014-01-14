@@ -57,6 +57,7 @@ protected:
   virtual void draw(QCPPainter *painter);
   void updateGradientImage();
   Q_SLOT void axisSelectionChanged(QCPAxis::SelectableParts selectedParts);
+  Q_SLOT void axisSelectableChanged(QCPAxis::SelectableParts selectableParts);
   friend class QCPColorScale;
 };
 
