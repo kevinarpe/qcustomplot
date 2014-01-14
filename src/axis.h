@@ -97,7 +97,7 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   /// \cond INCLUDE_QPROPERTIES
   Q_PROPERTY(AxisType axisType READ axisType)
   Q_PROPERTY(QCPAxisRect* axisRect READ axisRect)
-  Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType)
+  Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType NOTIFY scaleTypeChanged)
   Q_PROPERTY(double scaleLogBase READ scaleLogBase WRITE setScaleLogBase)
   Q_PROPERTY(QCPRange range READ range WRITE setRange NOTIFY rangeChanged)
   Q_PROPERTY(bool rangeReversed READ rangeReversed WRITE setRangeReversed)
@@ -246,7 +246,7 @@ public:
   QCPGrid *grid() const { return mGrid; }
   
   // setters:
-  void setScaleType(ScaleType type);
+  Q_SLOT void setScaleType(QCPAxis::ScaleType type);
   void setScaleLogBase(double base);
   Q_SLOT void setRange(const QCPRange &range);
   void setRange(double lower, double upper);
@@ -325,6 +325,7 @@ signals:
   void ticksRequest();
   void rangeChanged(const QCPRange &newRange);
   void rangeChanged(const QCPRange &newRange, const QCPRange &oldRange);
+  void scaleTypeChanged(QCPAxis::ScaleType scaleType);
   void selectionChanged(const QCPAxis::SelectableParts &parts);
   void selectableChanged(const QCPAxis::SelectableParts &parts);
 

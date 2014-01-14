@@ -510,7 +510,7 @@ QCPLineEnding QCPAxis::upperEnding() const
   part). To only display the decimal power, set the number precision to zero with
   \ref setNumberPrecision.
 */
-void QCPAxis::setScaleType(ScaleType type)
+void QCPAxis::setScaleType(QCPAxis::ScaleType type)
 {
   if (mScaleType != type)
   {
@@ -518,6 +518,7 @@ void QCPAxis::setScaleType(ScaleType type)
     if (mScaleType == stLogarithmic)
       setRange(mRange.sanitizedForLogScale());
     mCachedMarginValid = false;
+    emit scaleTypeChanged(mScaleType);
   }
 }
 
