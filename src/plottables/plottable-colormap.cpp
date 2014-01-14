@@ -259,11 +259,27 @@ void QCPColorMap::setData(QCPColorMapData *data, bool copy)
 
 void QCPColorMap::setDataRange(const QCPRange &dataRange)
 {
+  if (!QCPRange::validRange(dataRange)) return;
   if (mDataRange.lower != dataRange.lower || mDataRange.upper != dataRange.upper)
   {
-    mDataRange = dataRange;
+    if (mDataScaleType == QCPAxis::stLogarithmic)
+      mDataRange = dataRange.sanitizedForLogScale();
+    else
+      mDataRange = dataRange.sanitizedForLinScale();
     mMapImageInvalidated = true;
     emit dataRangeChanged(mDataRange);
+  }
+}
+
+void QCPColorMap::setDataScaleType(QCPAxis::ScaleType scaleType)
+{
+  if (mDataScaleType != scaleType)
+  {
+    mDataScaleType = scaleType;
+    mMapImageInvalidated = true;
+    emit dataScaleTypeChanged(mDataScaleType);
+    if (mDataScaleType == QCPAxis::stLogarithmic)
+      setDataRange(mDataRange.sanitizedForLogScale());
   }
 }
 
@@ -292,17 +308,21 @@ void QCPColorMap::setColorScale(QCPColorScale *colorScale)
   if (mColorScale) // unconnect signals from old color scale
   {
     disconnect(this, SIGNAL(dataRangeChanged(QCPRange)), mColorScale.data(), SLOT(setDataRange(QCPRange)));
+    disconnect(this, SIGNAL(dataScaleTypeChanged(QCPAxis::ScaleType)), mColorScale.data(), SLOT(setDataScaleType(QCPAxis::ScaleType)));
     disconnect(this, SIGNAL(gradientChanged(QCPColorGradient)), mColorScale.data(), SLOT(setGradient(QCPColorGradient)));
     disconnect(mColorScale.data(), SIGNAL(dataRangeChanged(QCPRange)), this, SLOT(setDataRange(QCPRange)));
     disconnect(mColorScale.data(), SIGNAL(gradientChanged(QCPColorGradient)), this, SLOT(setGradient(QCPColorGradient)));
+    disconnect(mColorScale.data(), SIGNAL(dataScaleTypeChanged(QCPAxis::ScaleType)), this, SLOT(setDataScaleType(QCPAxis::ScaleType)));
   }
   mColorScale = colorScale;
   if (mColorScale) // connect signals to new color scale
   {
     connect(this, SIGNAL(dataRangeChanged(QCPRange)), mColorScale.data(), SLOT(setDataRange(QCPRange)));
+    connect(this, SIGNAL(dataScaleTypeChanged(QCPAxis::ScaleType)), mColorScale.data(), SLOT(setDataScaleType(QCPAxis::ScaleType)));
     connect(this, SIGNAL(gradientChanged(QCPColorGradient)), mColorScale.data(), SLOT(setGradient(QCPColorGradient)));
     connect(mColorScale.data(), SIGNAL(dataRangeChanged(QCPRange)), this, SLOT(setDataRange(QCPRange)));
     connect(mColorScale.data(), SIGNAL(gradientChanged(QCPColorGradient)), this, SLOT(setGradient(QCPColorGradient)));
+    connect(mColorScale.data(), SIGNAL(dataScaleTypeChanged(QCPAxis::ScaleType)), this, SLOT(setDataScaleType(QCPAxis::ScaleType)));
   }
 }
 
@@ -332,6 +352,7 @@ void QCPColorMap::updateMapImage()
   QCPAxis *keyAxis = mKeyAxis.data();
   if (!keyAxis) return;
   
+  // resize mMapImage to correct dimensions, according to key/value axes orientation:
   if (keyAxis->orientation() == Qt::Horizontal && (mMapImage.size().width() != mMapData->keySize() || mMapImage.size().height() != mMapData->valueSize()))
     mMapImage = QImage(QSize(mMapData->keySize(), mMapData->valueSize()), QImage::Format_RGB32);
   else if (keyAxis->orientation() == Qt::Vertical && (mMapImage.size().width() != mMapData->valueSize() || mMapImage.size().height() != mMapData->keySize()))
@@ -340,6 +361,7 @@ void QCPColorMap::updateMapImage()
   const int keySize = mMapData->keySize();
   const int valueSize = mMapData->valueSize();
   const double *rawData = mMapData->mData;
+  
   if (keyAxis->orientation() == Qt::Horizontal)
   {
     const int lineCount = valueSize;
@@ -347,7 +369,7 @@ void QCPColorMap::updateMapImage()
     for (int line=0; line<lineCount; ++line)
     {
       QRgb* pixels = reinterpret_cast<QRgb*>(mMapImage.scanLine(line));
-      mGradient.colorize(rawData+line*rowCount, mDataRange, pixels, rowCount, 1);
+      mGradient.colorize(rawData+line*rowCount, mDataRange, pixels, rowCount, 1, mDataScaleType==QCPAxis::stLogarithmic);
     }
   } else // keyAxis->orientation() == Qt::Vertical
   {
@@ -356,9 +378,10 @@ void QCPColorMap::updateMapImage()
     for (int line=0; line<lineCount; ++line)
     {
       QRgb* pixels = reinterpret_cast<QRgb*>(mMapImage.scanLine(line));
-      mGradient.colorize(rawData+line, mDataRange, pixels, rowCount, lineCount);
+      mGradient.colorize(rawData+line, mDataRange, pixels, rowCount, lineCount, mDataScaleType==QCPAxis::stLogarithmic);
     }
   }
+  
   mMapData->mModified = false;
   mMapImageInvalidated = false;
 }
@@ -367,6 +390,7 @@ void QCPColorMap::updateMapImage()
 void QCPColorMap::draw(QCPPainter *painter)
 {
   if (mMapData->isEmpty()) return;
+  if (!mKeyAxis || !mValueAxis) return;
   applyDefaultAntialiasingHint(painter);
   
   if (mMapData->mModified || mMapImageInvalidated)

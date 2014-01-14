@@ -42,6 +42,7 @@
 
 QCPColorScale::QCPColorScale(QCustomPlot *parentPlot) :
   QCPLayoutElement(parentPlot),
+  mDataScaleType(QCPAxis::stLinear),
   mBarWidth(20),
   mAxisRect(new QCPColorScaleAxisRectPrivate(this))
 {
@@ -102,14 +103,17 @@ void QCPColorScale::setAxisType(QCPAxis::AxisType axisType)
   {
     mAxisType = axisType;
     QCPRange rangeTransfer(0, 6);
+    double logBaseTransfer = 10;
     QString labelTransfer;
     // revert some settings on old axis:
     if (mColorAxis)
     {
       rangeTransfer = mColorAxis.data()->range();
       labelTransfer = mColorAxis.data()->label();
+      logBaseTransfer = mColorAxis.data()->scaleLogBase();
       mColorAxis.data()->setLabel("");
       disconnect(mColorAxis.data(), SIGNAL(rangeChanged(QCPRange)), this, SLOT(setDataRange(QCPRange)));
+      disconnect(mColorAxis.data(), SIGNAL(scaleTypeChanged(QCPAxis::ScaleType)), this, SLOT(setDataScaleType(QCPAxis::ScaleType)));
     }
     foreach (QCPAxis::AxisType type, QList<QCPAxis::AxisType>() << QCPAxis::atLeft << QCPAxis::atRight << QCPAxis::atBottom << QCPAxis::atTop)
     {
@@ -121,7 +125,9 @@ void QCPColorScale::setAxisType(QCPAxis::AxisType axisType)
     // transfer settings to new axis:
     mColorAxis.data()->setRange(rangeTransfer); // transfer range of old axis to new one (necessary if axis changes from vertical to horizontal or vice versa)
     mColorAxis.data()->setLabel(labelTransfer);
+    mColorAxis.data()->setScaleLogBase(logBaseTransfer); // scaleType is synchronized among axes in realtime via signals (connected in QCPColorScale ctor), so we only need to take care of log base here
     connect(mColorAxis.data(), SIGNAL(rangeChanged(QCPRange)), this, SLOT(setDataRange(QCPRange)));
+    connect(mColorAxis.data(), SIGNAL(scaleTypeChanged(QCPAxis::ScaleType)), this, SLOT(setDataScaleType(QCPAxis::ScaleType)));
     mAxisRect.data()->setRangeDragAxes(QCPAxis::orientation(mAxisType) == Qt::Horizontal ? mColorAxis.data() : 0,
                                        QCPAxis::orientation(mAxisType) == Qt::Vertical ? mColorAxis.data() : 0);
   }
@@ -135,6 +141,19 @@ void QCPColorScale::setDataRange(const QCPRange &dataRange)
     if (mColorAxis)
       mColorAxis.data()->setRange(mDataRange);
     emit dataRangeChanged(mDataRange);
+  }
+}
+
+void QCPColorScale::setDataScaleType(QCPAxis::ScaleType scaleType)
+{
+  if (mDataScaleType != scaleType)
+  {
+    mDataScaleType = scaleType;
+    if (mColorAxis)
+      mColorAxis.data()->setScaleType(mDataScaleType);
+    if (mDataScaleType == QCPAxis::stLogarithmic)
+      setDataRange(mDataRange.sanitizedForLogScale());
+    emit dataScaleTypeChanged(mDataScaleType);
   }
 }
 
@@ -293,6 +312,10 @@ QCPColorScaleAxisRectPrivate::QCPColorScaleAxisRectPrivate(QCPColorScale *parent
   connect(axis(QCPAxis::atRight), SIGNAL(rangeChanged(QCPRange)), axis(QCPAxis::atLeft), SLOT(setRange(QCPRange)));
   connect(axis(QCPAxis::atBottom), SIGNAL(rangeChanged(QCPRange)), axis(QCPAxis::atTop), SLOT(setRange(QCPRange)));
   connect(axis(QCPAxis::atTop), SIGNAL(rangeChanged(QCPRange)), axis(QCPAxis::atBottom), SLOT(setRange(QCPRange)));
+  connect(axis(QCPAxis::atLeft), SIGNAL(scaleTypeChanged(QCPAxis::ScaleType)), axis(QCPAxis::atRight), SLOT(setScaleType(QCPAxis::ScaleType)));
+  connect(axis(QCPAxis::atRight), SIGNAL(scaleTypeChanged(QCPAxis::ScaleType)), axis(QCPAxis::atLeft), SLOT(setScaleType(QCPAxis::ScaleType)));
+  connect(axis(QCPAxis::atBottom), SIGNAL(scaleTypeChanged(QCPAxis::ScaleType)), axis(QCPAxis::atTop), SLOT(setScaleType(QCPAxis::ScaleType)));
+  connect(axis(QCPAxis::atTop), SIGNAL(scaleTypeChanged(QCPAxis::ScaleType)), axis(QCPAxis::atBottom), SLOT(setScaleType(QCPAxis::ScaleType)));
 }
 
 void QCPColorScaleAxisRectPrivate::draw(QCPPainter *painter)

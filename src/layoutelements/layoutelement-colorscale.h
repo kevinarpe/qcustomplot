@@ -84,6 +84,7 @@ public:
   // setters:
   void setAxisType(QCPAxis::AxisType axisType);
   Q_SLOT void setDataRange(const QCPRange &dataRange);
+  Q_SLOT void setDataScaleType(QCPAxis::ScaleType scaleType);
   Q_SLOT void setGradient(const QCPColorGradient &gradient);
   void setBarWidth(int width);
   void setRangeDrag(bool enabled);
@@ -96,12 +97,14 @@ public:
   
 signals:
   void dataRangeChanged(QCPRange newRange);
+  void dataScaleTypeChanged(QCPAxis::ScaleType scaleType);
   void gradientChanged(QCPColorGradient newGradient);
 
 protected:
   // property members:
   QCPAxis::AxisType mAxisType;
   QCPRange mDataRange;
+  QCPAxis::ScaleType mDataScaleType;
   QCPColorGradient mGradient;
   int mBarWidth;
   

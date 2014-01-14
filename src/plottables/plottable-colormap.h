@@ -87,6 +87,7 @@ public:
   // getters:
   QCPColorMapData *data() const { return mMapData; }
   QCPRange dataRange() const { return mDataRange; }
+  QCPAxis::ScaleType dataScaleType() const { return mDataScaleType; }
   bool interpolate() const { return mInterpolate; }
   bool tightBoundary() const { return mTightBoundary; }
   QCPColorGradient gradient() const { return mGradient; }
@@ -95,6 +96,7 @@ public:
   // setters:
   void setData(QCPColorMapData *data, bool copy=false);
   Q_SLOT void setDataRange(const QCPRange &dataRange);
+  Q_SLOT void setDataScaleType(QCPAxis::ScaleType scaleType);
   Q_SLOT void setGradient(const QCPColorGradient &gradient);
   void setInterpolate(bool enabled);
   void setTightBoundary(bool enabled);
@@ -107,10 +109,12 @@ public:
   
 signals:
   void dataRangeChanged(QCPRange newRange);
+  void dataScaleTypeChanged(QCPAxis::ScaleType scaleType);
   void gradientChanged(QCPColorGradient newGradient);
   
 protected:
   QCPRange mDataRange;
+  QCPAxis::ScaleType mDataScaleType;
   QCPColorMapData *mMapData;
   QCPColorGradient mGradient;
   QImage mMapImage;
