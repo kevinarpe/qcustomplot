@@ -71,8 +71,8 @@ public:
   void setPeriodic(bool enabled);
   
   // non-property methods:
-  void colorize(const double *data, const QCPRange &range, QRgb *scanLine, int n, int dataIndexFactor=1);
-  QRgb color(double position, const QCPRange &range);
+  void colorize(const double *data, const QCPRange &range, QRgb *scanLine, int n, int dataIndexFactor=1, bool logarithmic=false);
+  QRgb color(double position, const QCPRange &range, bool logarithmic=false);
   void loadPreset(GradientPreset preset);
   void clearColorStops();
   QCPColorGradient inverted() const;

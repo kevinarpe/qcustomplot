@@ -96,8 +96,9 @@ void QCPColorGradient::setPeriodic(bool enabled)
   mPeriodic = enabled;
 }
 
-void QCPColorGradient::colorize(const double *data, const QCPRange &range, QRgb *scanLine, int n, int dataIndexFactor)
+void QCPColorGradient::colorize(const double *data, const QCPRange &range, QRgb *scanLine, int n, int dataIndexFactor, bool logarithmic)
 {
+  // If you change something here, make sure to also adapt ::color()
   if (!data)
   {
     qDebug() << Q_FUNC_INFO << "null pointer given as data";
@@ -111,36 +112,66 @@ void QCPColorGradient::colorize(const double *data, const QCPRange &range, QRgb 
   if (mColorBufferInvalidated)
     updateColorBuffer();
   
-  const double posToIndexFactor = mLevelCount/range.size();
-  if (mPeriodic)
+  if (!logarithmic)
   {
-    for (int i=0; i<n; ++i)
+    const double posToIndexFactor = mLevelCount/range.size();
+    if (mPeriodic)
     {
-      int index = (int)((data[dataIndexFactor*i]-range.lower)*posToIndexFactor) % mLevelCount;
-      if (index < 0)
-        index += mLevelCount;
-      scanLine[i] = mColorBuffer.at(index);
+      for (int i=0; i<n; ++i)
+      {
+        int index = (int)((data[dataIndexFactor*i]-range.lower)*posToIndexFactor) % mLevelCount;
+        if (index < 0)
+          index += mLevelCount;
+        scanLine[i] = mColorBuffer.at(index);
+      }
+    } else
+    {
+      for (int i=0; i<n; ++i)
+      {
+        int index = (data[dataIndexFactor*i]-range.lower)*posToIndexFactor;
+        if (index < 0)
+          index = 0;
+        else if (index >= mLevelCount)
+          index = mLevelCount-1;
+        scanLine[i] = mColorBuffer.at(index);
+      }
     }
-  } else
+  } else // logarithmic == true
   {
-    for (int i=0; i<n; ++i)
+    if (mPeriodic)
     {
-      int index = (data[dataIndexFactor*i]-range.lower)*posToIndexFactor;
-      if (index < 0)
-        index = 0;
-      else if (index >= mLevelCount)
-        index = mLevelCount-1;
-      scanLine[i] = mColorBuffer.at(index);
+      for (int i=0; i<n; ++i)
+      {
+        int index = (int)(qLn(data[dataIndexFactor*i]/range.lower)/qLn(range.upper/range.lower)*mLevelCount) % mLevelCount;
+        if (index < 0)
+          index += mLevelCount;
+        scanLine[i] = mColorBuffer.at(index);
+      }
+    } else
+    {
+      for (int i=0; i<n; ++i)
+      {
+        int index = qLn(data[dataIndexFactor*i]/range.lower)/qLn(range.upper/range.lower)*mLevelCount;
+        if (index < 0)
+          index = 0;
+        else if (index >= mLevelCount)
+          index = mLevelCount-1;
+        scanLine[i] = mColorBuffer.at(index);
+      }
     }
   }
 }
 
-QRgb QCPColorGradient::color(double position, const QCPRange &range)
+QRgb QCPColorGradient::color(double position, const QCPRange &range, bool logarithmic)
 {
+  // If you change something here, make sure to also adapt ::colorize()
   if (mColorBufferInvalidated)
     updateColorBuffer();
-  const double posToIndexFactor = mLevelCount/range.size();
-  int index = (position-range.lower)*posToIndexFactor;
+  int index = 0;
+  if (!logarithmic)
+    index = (position-range.lower)*mLevelCount/range.size();
+  else
+    index = qLn(position/range.lower)/qLn(range.upper/range.lower)*mLevelCount;
   if (mPeriodic)
   {
     index = index % mLevelCount;
