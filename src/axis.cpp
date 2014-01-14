@@ -516,7 +516,7 @@ void QCPAxis::setScaleType(ScaleType type)
   {
     mScaleType = type;
     if (mScaleType == stLogarithmic)
-      mRange = mRange.sanitizedForLogScale();
+      setRange(mRange.sanitizedForLogScale());
     mCachedMarginValid = false;
   }
 }
