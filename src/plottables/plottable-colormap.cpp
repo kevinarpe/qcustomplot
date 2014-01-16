@@ -333,6 +333,16 @@ void QCPColorMap::rescaleDataRange(bool recalculateDataBounds)
   setDataRange(mMapData->dataBounds());
 }
 
+void QCPColorMap::updateLegendIcon(Qt::TransformationMode transformMode, const QSize &thumbSize)
+{
+  if (!mMapImage.isNull())
+  {
+    QRectF imageRect(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().upper),
+                     coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().lower));
+    mLegendIcon = QPixmap::fromImage(mMapImage.mirrored(imageRect.width() < 0, imageRect.height() < 0)).scaled(thumbSize, Qt::KeepAspectRatio, transformMode);
+  }
+}
+
 /*!
   Clears the colormap data by calling \ref QCPColorMapData::clear() on the internal data. This also
   resizes the map to 0x0 cells.
@@ -432,13 +442,21 @@ void QCPColorMap::draw(QCPPainter *painter)
 /* inherits documentation from base class */
 void QCPColorMap::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
-  // draw filled rect:
   applyDefaultAntialiasingHint(painter);
-  painter->setBrush(mBrush);
-  painter->setPen(mPen);
-  QRectF r = QRectF(0, 0, rect.width()*0.67, rect.height()*0.67);
-  r.moveCenter(rect.center());
-  painter->drawRect(r);
+  // draw map thumbnail:
+  if (!mLegendIcon.isNull())
+  {
+    QPixmap scaledIcon = mLegendIcon.scaled(rect.size().toSize(), Qt::KeepAspectRatio, Qt::FastTransformation);
+    QRectF iconRect = QRectF(0, 0, scaledIcon.width(), scaledIcon.height());
+    iconRect.moveCenter(rect.center());
+    painter->drawPixmap(iconRect.topLeft(), scaledIcon);
+  }
+  /*
+  // draw frame:
+  painter->setBrush(Qt::NoBrush);
+  painter->setPen(Qt::black);
+  painter->drawRect(rect.adjusted(1, 1, 0, 0));
+  */
 }
 
 /* inherits documentation from base class */
