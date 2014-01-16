@@ -2175,7 +2175,10 @@ void QCustomPlot::resizeEvent(QResizeEvent *event)
   // resize and repaint the buffer:
   mPaintBuffer = QPixmap(event->size());
   setViewport(rect());
+  bool forceRepaintBackup = plottingHints().testFlag(QCP::phForceRepaint);
+  setPlottingHint(QCP::phForceRepaint, false); // temporarily disable forced repaint because calling repaint() in resizeEvent causes painting glitches in QMdiArea and some Qt layouts.
   replot();
+  setPlottingHint(QCP::phForceRepaint, forceRepaintBackup);
 }
 
 /*! \internal
