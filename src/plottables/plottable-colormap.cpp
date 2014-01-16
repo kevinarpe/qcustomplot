@@ -406,18 +406,16 @@ void QCPColorMap::draw(QCPPainter *painter)
                    coordsToPixels(mMapData->keyRange().upper+halfSampleKey, mMapData->valueRange().lower-halfSampleValue));
   bool smoothBackup = painter->renderHints().testFlag(QPainter::SmoothPixmapTransform);
   painter->setRenderHint(QPainter::SmoothPixmapTransform, mInterpolate);
-  QRectF clipRectBackup;
+  QRegion clipBackup;
   if (mTightBoundary)
   { 
-    clipRectBackup = painter->clipBoundingRect();
+    clipBackup = painter->clipRegion();
     painter->setClipRect(QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().upper),
                                 coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().lower)).normalized(), Qt::IntersectClip);
   }
   painter->drawImage(imageRect.normalized(), mMapImage.mirrored(imageRect.width() < 0, imageRect.height() < 0));
   if (mTightBoundary)
-  {
-    painter->setClipRect(clipRectBackup);
-  }
+    painter->setClipRegion(clipBackup);
   painter->setRenderHint(QPainter::SmoothPixmapTransform, smoothBackup);
 }
 

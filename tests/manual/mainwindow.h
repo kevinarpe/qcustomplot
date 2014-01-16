@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QTimer>
-#include <QElapsedTimer>
 #include <QHBoxLayout>
 #include <QDir>
 
