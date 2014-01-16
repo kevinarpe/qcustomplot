@@ -1,3 +1,8 @@
+#### Version 1.1.2 released on 16.01.13 ####
+
+  Bugfixes:
+    - Fixed bug that caused painting glitches on resize inside QMdiArea (and possibly inside some Qt layouts)
+    
 #### Version 1.1.1 released on 09.12.13 ####
 
   Bugfixes:
