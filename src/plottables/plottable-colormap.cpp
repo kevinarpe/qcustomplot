@@ -334,17 +334,27 @@ void QCPColorMap::rescaleDataRange(bool recalculateDataBounds)
 }
 
 /*!
-  Removes all data points.
+  Clears the colormap data by calling \ref QCPColorMapData::clear() on the internal data. This also
+  resizes the map to 0x0 cells.
 */
 void QCPColorMap::clearData()
 {
-  //mData->clear(); // TODO
+  mMapData->clear();
 }
 
 /* inherits documentation from base class */
 double QCPColorMap::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
-  return -1; // TODO
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
+    return -1;
+  
+  double posKey, posValue;
+  pixelsToCoords(pos, posKey, posValue);
+  if (mMapData->keyRange().contains(posKey) && mMapData->valueRange().contains(posValue))
+    return mParentPlot->selectionTolerance()*0.99;
+  else
+    return -1;
 }
 
 void QCPColorMap::updateMapImage()
@@ -435,15 +445,43 @@ void QCPColorMap::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 QCPRange QCPColorMap::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
 {
   foundRange = true;
-  return mMapData->keyRange();
-  // TODO: limit depending on sign domain
+  QCPRange result = mMapData->keyRange();
+  result.normalize();
+  if (inSignDomain == QCPAbstractPlottable::sdPositive)
+  {
+    if (result.lower <= 0 && result.upper > 0)
+      result.lower = result.upper*1e-3;
+    else if (result.lower <= 0 && result.upper <= 0)
+      foundRange = false;
+  } else if (inSignDomain == QCPAbstractPlottable::sdNegative)
+  {
+    if (result.upper >= 0 && result.lower < 0)
+      result.upper = result.lower*1e-3;
+    else if (result.upper >= 0 && result.lower >= 0)
+      foundRange = false;
+  }
+  return result;
 }
 
 /* inherits documentation from base class */
 QCPRange QCPColorMap::getValueRange(bool &foundRange, SignDomain inSignDomain) const
 {
   foundRange = true;
-  return mMapData->valueRange();
-  // TODO: limit depending on sign domain
+  QCPRange result = mMapData->valueRange();
+  result.normalize();
+  if (inSignDomain == QCPAbstractPlottable::sdPositive)
+  {
+    if (result.lower <= 0 && result.upper > 0)
+      result.lower = result.upper*1e-3;
+    else if (result.lower <= 0 && result.upper <= 0)
+      foundRange = false;
+  } else if (inSignDomain == QCPAbstractPlottable::sdNegative)
+  {
+    if (result.upper >= 0 && result.lower < 0)
+      result.upper = result.lower*1e-3;
+    else if (result.upper >= 0 && result.lower >= 0)
+      foundRange = false;
+  }
+  return result;
 }
 
