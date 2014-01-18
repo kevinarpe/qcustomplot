@@ -479,11 +479,14 @@ bool QCPLayerable::moveToLayer(QCPLayer *layer, bool prepend)
     return false;
   }
   
+  QCPLayer *oldLayer = mLayer;
   if (mLayer)
     mLayer->removeChild(this);
   mLayer = layer;
   if (mLayer)
     mLayer->addChild(this, prepend);
+  if (mLayer != oldLayer)
+    emit layerChanged(mLayer);
   return true;
 }
 
