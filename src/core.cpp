@@ -1875,7 +1875,7 @@ void QCustomPlot::deselectAll()
   signals on two QCustomPlots to make them replot synchronously, it won't cause an infinite
   recursion.
 */
-void QCustomPlot::replot()
+void QCustomPlot::replot(QCustomPlot::RefreshPriority refreshPriority)
 {
   if (mReplotting) // incase signals loop back to replot slot
     return;
@@ -1898,7 +1898,7 @@ void QCustomPlot::replot()
       painter.fillRect(mViewport, mBackgroundBrush);
     draw(&painter);
     painter.end();
-    if (mPlottingHints.testFlag(QCP::phForceRepaint))
+    if ((refreshPriority == rpHint && mPlottingHints.testFlag(QCP::phForceRepaint)) || refreshPriority==rpImmediate)
       repaint();
     else
       update();
@@ -2188,7 +2188,7 @@ void QCustomPlot::resizeEvent(QResizeEvent *event)
   // resize and repaint the buffer:
   mPaintBuffer = QPixmap(event->size());
   setViewport(rect());
-  replot();
+  replot(rpQueued); // queued update is important here, to prevent painting issues in some contexts
 }
 
 /*! \internal
