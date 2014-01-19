@@ -483,15 +483,28 @@ void MainWindow::genLayoutsystem_MultipleAxisRects()
   
   customPlot->plotLayout()->clear(); // let's start from scratch and remove the default axis rect
   // add the first axis rect in second row (row index 1):
-  customPlot->plotLayout()->addElement(1, 0, new QCPAxisRect(customPlot));
+  QCPAxisRect *topAxisRect = new QCPAxisRect(customPlot);
+  customPlot->plotLayout()->addElement(1, 0, topAxisRect);
   // create a sub layout that we'll place in first row:
   QCPLayoutGrid *subLayout = new QCPLayoutGrid;
   customPlot->plotLayout()->addElement(0, 0, subLayout);
   // add two axis rects in the sub layout next to eachother:
-  subLayout->addElement(0, 0, new QCPAxisRect(customPlot));
-  subLayout->addElement(0, 1, new QCPAxisRect(customPlot));
+  QCPAxisRect *leftAxisRect = new QCPAxisRect(customPlot);
+  QCPAxisRect *rightAxisRect = new QCPAxisRect(customPlot);
+  subLayout->addElement(0, 0, leftAxisRect);
+  subLayout->addElement(0, 1, rightAxisRect);
   subLayout->setColumnStretchFactor(0, 3); // left axis rect shall have 60% of width
   subLayout->setColumnStretchFactor(1, 2); // right one only 40% (3:2 = 60:40)
+  // since we've created the axis rects and axes from scratch, we need to place them on
+  // according layers, if we don't want the grid to be drawn above the axes etc.
+  // place the axis on "axes" layer and grids on the "grid" layer, which is below "axes":
+  QList<QCPAxis*> allAxes;
+  allAxes << topAxisRect->axes() << leftAxisRect->axes() << rightAxisRect->axes();
+  foreach (QCPAxis *axis, allAxes)
+  {
+    axis->setLayer("axes");
+    axis->grid()->setLayer("grid");
+  }
   
   customPlot->savePng(dir.filePath("layoutsystem-multipleaxisrects.png"), 400, 300);
 }
