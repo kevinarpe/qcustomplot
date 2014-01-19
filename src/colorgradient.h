@@ -45,6 +45,7 @@ public:
                        gpCandy,
                        gpGeography,
                        gpIon,
+                       gpThermal,
                        gpPolar,
                        gpSpectrum,
                        gpJet,
@@ -80,12 +81,14 @@ public:
 protected:
   void updateColorBuffer();
   
+  // property members:
   int mLevelCount;
-  QVector<QRgb> mColorBuffer;
   QMap<double, QColor> mColorStops;
   ColorInterpolation mColorInterpolation;
   bool mPeriodic;
   
+  // non-property members:
+  QVector<QRgb> mColorBuffer;
   bool mColorBufferInvalidated;
 };
 
