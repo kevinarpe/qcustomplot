@@ -41,8 +41,13 @@ table.memberdecls {
   border-radius: 7px 7px 7px 7px;
   font-size: 12px;
   max-width: 1400px;
-  padding: 0 10px 0 0;
+  padding: 1em 1em 1em 1em;
   margin-bottom: 15px;
+}
+table.memberdecls h2 {
+  font-size: 140%;
+  margin: 0 0 0.3em;
+  padding: 0 0 0 0;
 }
 table.memberdecls td {
   padding: 2px 0;
@@ -149,6 +154,14 @@ div.contents > p > code {
   color: #000000;
   display: block;
   padding: 0.2em;
+}
+tr.inherit_header > td{
+  font-size: 110%;
+  font-weight: 700;
+  padding: 2em 0 0.3em 0;
+}
+tr.inherit_header > td > img{
+  display: none;
 }
 td.memItemLeft, td.memItemRight, td.memTemplItemLeft, td.memTemplItemRight, td.memTemplParams {
   border: medium none;
