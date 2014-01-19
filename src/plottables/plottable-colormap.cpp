@@ -50,6 +50,36 @@ QCPColorMapData::QCPColorMapData(int keySize, int valueSize, const QCPRange keyR
   fill(0);
 }
 
+QCPColorMapData::~QCPColorMapData()
+{
+  if (mData)
+    delete mData;
+}
+
+QCPColorMapData::QCPColorMapData(const QCPColorMapData &other) :
+  mData(0),
+  mModified(true),
+  mIsEmpty(true)
+{
+  *this = other;
+}
+
+QCPColorMapData &QCPColorMapData::operator=(const QCPColorMapData &other)
+{
+  if (&other != this)
+  {
+    const int keySize = other.keySize();
+    const int valueSize = other.valueSize();
+    setSize(keySize, valueSize);
+    setRange(other.keyRange(), other.valueRange());
+    if (!mIsEmpty)
+      memcpy(mData, other.mData, sizeof(mData[0])*keySize*valueSize);
+    mDataBounds = other.mDataBounds;
+    mModified = true;
+  }
+  return *this;
+}
+
 double QCPColorMapData::data(double key, double value)
 {
   int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;

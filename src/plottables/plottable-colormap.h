@@ -40,6 +40,9 @@ class QCP_LIB_DECL QCPColorMapData
 {
 public:
   QCPColorMapData(int keySize, int valueSize, const QCPRange keyRange, const QCPRange valueRange);
+  ~QCPColorMapData();
+  QCPColorMapData(const QCPColorMapData &other);
+  QCPColorMapData &operator=(const QCPColorMapData &other);
   
   int keySize() const { return mKeySize; }
   int valueSize() const { return mValueSize; }
