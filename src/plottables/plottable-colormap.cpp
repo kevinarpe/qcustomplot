@@ -270,7 +270,7 @@ QCPColorMap::~QCPColorMap()
 /*!
   Replaces the current data with the provided \a data.
   
-  If \a copy is set to true, data points in \a data will only be copied. if false, the plottable
+  If \a copy is set to true, the \a data object will only be copied. if false, the color map
   takes ownership of the passed data and replaces the internal data pointer with it. This is
   significantly faster than copying for large datasets.
 */
@@ -287,6 +287,14 @@ void QCPColorMap::setData(QCPColorMapData *data, bool copy)
   mMapImageInvalidated = true;
 }
 
+/*!
+  Sets the data range of this color map to \a dataRange. The data range defines which data values
+  are mapped to the color gradient.
+  
+  To make the data range span the full range of the data set, use \ref rescaleDataRange.
+  
+  \see QCPColorScale::setDataRange
+*/
 void QCPColorMap::setDataRange(const QCPRange &dataRange)
 {
   if (!QCPRange::validRange(dataRange)) return;
@@ -301,6 +309,11 @@ void QCPColorMap::setDataRange(const QCPRange &dataRange)
   }
 }
 
+/*!
+  Sets whether the data is correlated with the color gradient linearly or logarithmically.
+  
+  \see QCPColorScale::setDataScaleType
+*/
 void QCPColorMap::setDataScaleType(QCPAxis::ScaleType scaleType)
 {
   if (mDataScaleType != scaleType)
@@ -313,6 +326,17 @@ void QCPColorMap::setDataScaleType(QCPAxis::ScaleType scaleType)
   }
 }
 
+/*!
+  Sets the color gradient that is used to represent the data. For more details on how to create an
+  own gradient or use one of the preset gradients, see \ref QCPColorGradient.
+  
+  The colors defined by the gradient will be used to represent data values in the currently set
+  data range, see \ref setDataRange. Data points that are outside this data range will either be
+  colored uniformly with the respective gradient boundary color, or the gradient will repeat,
+  depending on QCPColorGradient::setPeriodic.
+  
+  \see QCPColorScale::setGradient
+*/
 void QCPColorMap::setGradient(const QCPColorGradient &gradient)
 {
   if (mGradient != gradient)
@@ -323,11 +347,28 @@ void QCPColorMap::setGradient(const QCPColorGradient &gradient)
   }
 }
 
+/*!
+  Sets whether the color map image shall use bicubic interpolation when displaying the color map
+  shrinked or expanded, and not at a 1:1 pixel-to-data scale.
+  
+  \image html QCPColorMap-interpolate.png "A 10*10 color map, with interpolation and without interpolation enabled"
+*/
 void QCPColorMap::setInterpolate(bool enabled)
 {
   mInterpolate = enabled;
 }
 
+/*!
+  Sets whether the outer most data rows and columns are clipped to the specified key and value
+  range (see \ref setKeyRange, \ref setValueRange).
+  
+  if \a enabled is set to false, the data points at the border of the color map are drawn with the
+  same width and height as all other data points. Since the data points are represented by
+  rectangles of one color centered on the data coordinate, this means that the shown color map
+  extends by half a data point over the specified key/value range in each direction.
+  
+  \image html QCPColorMap-tightboundary.png "A color map, with tight boundary enabled and disabled"
+*/
 void QCPColorMap::setTightBoundary(bool enabled)
 {
   mTightBoundary = enabled;
