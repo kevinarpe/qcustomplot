@@ -512,6 +512,7 @@ void MainWindow::genLayoutsystem_MultipleAxisRects()
 
 void MainWindow::genQCPGraph()
 {
+  // generate main doc image of plottable:
   resetPlot(true);
   customPlot->xAxis->setVisible(true);
   customPlot->yAxis->setVisible(true);
@@ -555,6 +556,7 @@ void MainWindow::genQCPGraph()
 
 void MainWindow::genQCPCurve()
 {
+  // generate main doc image of plottable:
   resetPlot(true);
   customPlot->xAxis->setVisible(true);
   customPlot->yAxis->setVisible(true);
@@ -586,6 +588,7 @@ void MainWindow::genQCPCurve()
 
 void MainWindow::genQCPBars()
 {
+  // generate main doc image of plottable:
   resetPlot(true);
   customPlot->xAxis->setVisible(true);
   customPlot->yAxis->setVisible(true);
@@ -624,6 +627,7 @@ void MainWindow::genQCPBars()
 
 void MainWindow::genQCPStatisticalBox()
 {
+  // generate main doc image of plottable:
   resetPlot(true);
   customPlot->xAxis->setVisible(true);
   customPlot->yAxis->setVisible(true);
@@ -656,6 +660,148 @@ void MainWindow::genQCPStatisticalBox()
   customPlot->yAxis->setRange(-1.5, 1.5);
   
   customPlot->savePng(dir.filePath("QCPStatisticalBox.png"), 450, 200);
+}
+
+void MainWindow::genQCPColorMap()
+{
+  // generate main doc image of plottable:
+  resetPlot(true);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->xAxis->setBasePen(Qt::NoPen);
+  customPlot->yAxis->setBasePen(Qt::NoPen);
+  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->xAxis->setTicks(false);
+  customPlot->yAxis->setTicks(false);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->yAxis->setTickLabels(false);
+  customPlot->xAxis->setAutoTickCount(3);
+  customPlot->yAxis->setAutoTickCount(3);
+  
+  QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(colorMap);
+  int nx = 200;
+  int ny = 100;
+  colorMap->data()->setSize(nx, ny);
+  colorMap->data()->setRange(QCPRange(0, 10), QCPRange(0, 10));
+  colorMap->setInterpolate(true);
+  colorMap->setTightBoundary(true);
+  for (int x=0; x<nx; ++x)
+    for (int y=0; y<ny; ++y)
+      colorMap->data()->setCell(x, y, (qExp(-qSqrt((x-nx*0.2)*(x-nx*0.2)+(y-ny*0.2)*(y-ny*0.2))/200.0)+
+                                       qExp(-qSqrt((x-nx*0.75)*(x-nx*0.75)+(y-ny*0.75)*(y-ny*0.75))/80.0)-
+                                       qExp(-qSqrt((x-nx*0.33)*(x-nx*0.33)+(y-ny*0.6)*(y-ny*0.6))/100.0)+0.436285)/1.53251*2-1);
+  QCPColorGradient gradient = colorMap->gradient();
+  gradient.loadPreset(QCPColorGradient::gpJet);
+  colorMap->setGradient(gradient);
+  colorMap->rescaleDataRange(true);
+  customPlot->rescaleAxes();
+  customPlot->xAxis->scaleRange(1.1, customPlot->xAxis->range().center());
+  customPlot->yAxis->scaleRange(1.1, customPlot->xAxis->range().center());
+  
+  customPlot->savePng(dir.filePath("QCPColorMap.png"), 450, 200);
+}
+
+void MainWindow::genQCPColorMap_Interpolate()
+{
+  resetPlot(false);
+  QCPAxisRect *ar1 = customPlot->axisRect();
+  QCPAxisRect *ar2 = new QCPAxisRect(customPlot);
+  ar1->axis(QCPAxis::atLeft)->setTickLabels(false);
+  ar1->axis(QCPAxis::atBottom)->setTickLabels(false);
+  ar2->axis(QCPAxis::atLeft)->setTickLabels(false);
+  ar2->axis(QCPAxis::atBottom)->setTickLabels(false);
+  ar2->axis(QCPAxis::atLeft)->setLayer("axes");
+  ar2->axis(QCPAxis::atBottom)->setLayer("axes");
+  customPlot->plotLayout()->addElement(0, 1, ar2);
+  QCPColorMap *cm1 = new QCPColorMap(ar1->axis(QCPAxis::atBottom), ar1->axis(QCPAxis::atLeft));
+  QCPColorMap *cm2 = new QCPColorMap(ar2->axis(QCPAxis::atBottom), ar2->axis(QCPAxis::atLeft));
+  cm1->data()->setSize(10, 10);
+  cm1->data()->setRange(cm1->keyAxis()->range(), cm1->valueAxis()->range());
+  for (int x=0; x<10; ++x)
+    for (int y=0; y<10; ++y)
+      cm1->data()->setCell(x, y, qCos(x/9.0*3.14)+qSin(y/9.0*3.14));
+  cm2->setData(cm1->data(), true);
+  cm1->setInterpolate(true);
+  cm2->setInterpolate(false);
+  cm1->rescaleDataRange();
+  cm2->rescaleDataRange();
+  customPlot->plotLayout()->setMargins(QMargins(0, 5, 0, 0));
+  
+  QCPItemText *t1 = new QCPItemText(customPlot);
+  customPlot->addItem(t1);
+  t1->setText("Interpolate true");
+  t1->position->setType(QCPItemPosition::ptAxisRectRatio);
+  t1->position->setAxisRect(ar1);
+  t1->position->setCoords(0.5, -0.02);
+  t1->setPositionAlignment(Qt::AlignHCenter|Qt::AlignBottom);
+  t1->setClipToAxisRect(false);
+  QCPItemText *t2 = new QCPItemText(customPlot);
+  customPlot->addItem(t2);
+  t2->setText("Interpolate false");
+  t2->position->setType(QCPItemPosition::ptAxisRectRatio);
+  t2->position->setAxisRect(ar2);
+  t2->position->setCoords(0.5, -0.02);
+  t2->setPositionAlignment(Qt::AlignHCenter|Qt::AlignBottom);
+  t2->setClipToAxisRect(false);
+  
+  customPlot->savePng(dir.filePath("QCPColorMap-interpolate.png"), 450, 200);
+}
+
+void MainWindow::genQCPColorMap_TightBoundary()
+{
+  resetPlot(false);
+  QCPAxisRect *ar1 = customPlot->axisRect();
+  QCPAxisRect *ar2 = new QCPAxisRect(customPlot);
+  foreach (QCPAxis *axis, QList<QCPAxis*>() << ar1->axes() << ar2->axes())
+  {
+    axis->setTickLabels(false);
+    axis->grid()->setLayer("axes");
+    axis->grid()->setZeroLinePen(Qt::NoPen);
+    axis->setLayer("axes");
+    axis->setAutoTickStep(false);
+    axis->setTickStep(2);
+  }
+  customPlot->plotLayout()->setMargins(QMargins(0, 5, 0, 0));
+  customPlot->plotLayout()->addElement(0, 1, ar2);
+  QCPColorMap *cm1 = new QCPColorMap(ar1->axis(QCPAxis::atBottom), ar1->axis(QCPAxis::atLeft));
+  QCPColorMap *cm2 = new QCPColorMap(ar2->axis(QCPAxis::atBottom), ar2->axis(QCPAxis::atLeft));
+  cm1->data()->setSize(7, 7);
+  cm1->data()->setRange(QCPRange(-2, 2), QCPRange(-2, 2));
+  for (int x=0; x<7; ++x)
+    for (int y=0; y<7; ++y)
+      cm1->data()->setCell(x, y, qCos(x/6.0*3.14)+qSin(y/6.0*3.14));
+  cm2->setData(cm1->data(), true);
+  cm1->setInterpolate(false);
+  cm2->setInterpolate(false);
+  cm1->setTightBoundary(true);
+  cm2->setTightBoundary(false);
+  cm1->rescaleDataRange();
+  cm2->rescaleDataRange();
+  cm1->rescaleAxes();
+  cm2->rescaleAxes();
+  foreach (QCPAxis *axis, QList<QCPAxis*>() << ar1->axes() << ar2->axes())
+    axis->setRange(-3, 3);
+  
+  QCPItemText *t1 = new QCPItemText(customPlot);
+  customPlot->addItem(t1);
+  t1->setText("TightBoundary true");
+  t1->position->setType(QCPItemPosition::ptAxisRectRatio);
+  t1->position->setAxisRect(ar1);
+  t1->position->setCoords(0.5, -0.02);
+  t1->setPositionAlignment(Qt::AlignHCenter|Qt::AlignBottom);
+  t1->setClipToAxisRect(false);
+  QCPItemText *t2 = new QCPItemText(customPlot);
+  customPlot->addItem(t2);
+  t2->setText("TightBoundary false");
+  t2->position->setType(QCPItemPosition::ptAxisRectRatio);
+  t2->position->setAxisRect(ar2);
+  t2->position->setCoords(0.5, -0.02);
+  t2->setPositionAlignment(Qt::AlignHCenter|Qt::AlignBottom);
+  t2->setClipToAxisRect(false);
+  
+  customPlot->savePng(dir.filePath("QCPColorMap-tightboundary.png"), 450, 200);
 }
 
 void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool circle, bool labelBelow)

@@ -45,6 +45,10 @@ public slots:
   void genQCPCurve();
   void genQCPBars();
   void genQCPStatisticalBox();
+  void genQCPColorMap();
+  
+  void genQCPColorMap_Interpolate();
+  void genQCPColorMap_TightBoundary();
   
 private:
   // helpers:
