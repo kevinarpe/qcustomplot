@@ -418,7 +418,8 @@ void MainWindow::genColorGradientPresets()
     customPlot->yAxis->setAutoTickCount(3);
     customPlot->axisRect()->setupFullAxesBox(true);
     QMargins m = customPlot->axisRect()->minimumMargins();
-    customPlot->axisRect()->setMinimumMargins(m + QMargins(0, 10, 0, 0)); // make some space for label
+    m.setTop(m.top() + 10);
+    customPlot->axisRect()->setMinimumMargins(m); // make some space for label
     QString gradientName(presetEnum.key(i)); 
     
     QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
