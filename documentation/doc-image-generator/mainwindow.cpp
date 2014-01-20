@@ -676,8 +676,8 @@ void MainWindow::genQCPColorMap()
   customPlot->yAxis->setTicks(false);
   customPlot->xAxis->setTickLabels(false);
   customPlot->yAxis->setTickLabels(false);
-  customPlot->xAxis->setAutoTickCount(3);
-  customPlot->yAxis->setAutoTickCount(3);
+  customPlot->xAxis->setAutoTickCount(6);
+  customPlot->yAxis->setAutoTickCount(6);
   
   QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
   customPlot->addPlottable(colorMap);
@@ -697,8 +697,8 @@ void MainWindow::genQCPColorMap()
   colorMap->setGradient(gradient);
   colorMap->rescaleDataRange(true);
   customPlot->rescaleAxes();
-  customPlot->xAxis->scaleRange(1.1, customPlot->xAxis->range().center());
-  customPlot->yAxis->scaleRange(1.1, customPlot->xAxis->range().center());
+  customPlot->xAxis->scaleRange(1.25, customPlot->xAxis->range().center());
+  customPlot->yAxis->scaleRange(1.25, customPlot->xAxis->range().center());
   
   customPlot->savePng(dir.filePath("QCPColorMap.png"), 450, 200);
 }

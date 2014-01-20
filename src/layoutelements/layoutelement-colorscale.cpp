@@ -46,7 +46,7 @@ QCPColorScale::QCPColorScale(QCustomPlot *parentPlot) :
   mBarWidth(20),
   mAxisRect(new QCPColorScaleAxisRectPrivate(this))
 {
-  setMinimumMargins(QMargins(0, 6, 0, 6));
+  setMinimumMargins(QMargins(0, 6, 0, 6)); // for default right axis types, keep some room at bottom and top (important if no margin group is used)
   setAxisType(QCPAxis::atRight);
   setDataRange(QCPRange(0, 6));
 }

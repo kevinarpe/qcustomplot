@@ -229,10 +229,42 @@ void QCPColorMapData::fill(double z)
 /*! \class QCPColorMap
   \brief A plottable representing a two-dimensional color map in a plot.
 
-  To plot data, assign it with the \ref setData function.
+  \image html QCPColorMap.png
+  
+  The data is stored in the class \ref QCPColorMapData, which can be accessed via the \ref data
+  method.
+  
+  A color map has three dimensions to represent a data point: The \a key dimension, the \a value
+  dimension and the \a data dimension. As with other plottables such as graphs, \a key and \a value
+  correspond to two orthogonal axes on the QCustomPlot surface that you specify in the QColorMap
+  constructor. The \a data dimension however is encoded as the color of the point at (\a key, \a
+  value).
+
+  Set the number of points (or \a cells) in the key/value dimension via \ref
+  QCPColorMapData::setSize. The plot coordinate range over which these points will be displayed is
+  specified via \ref QCPColorMapData::setRange. The first cell will be centered on the lower range
+  boundary and the last cell will be centered on the upper range boundary. The data can be set by
+  either accessing the cells directly with QCPColorMapData::setCell or by addressing the cells via
+  their plot coordinates with \ref QCPColorMapData::setData. If possible, you should prefer
+  setCell, since it doesn't need to do any coordinate transformation and thus performs a bit
+  better.
+  
+  The cell with index (0, 0) is at the top left, if the color map uses normal (i.e. not reversed)
+  key and value axes.
+  
+  To show the user which colors correspond to which \a data values, a \ref QCPColorScale is
+  typically placed to the right of the axis rect. See the documentation there for details on how to
+  add and use a color scale.
   
   \section appearance Changing the appearance
   
+  The central part of the appearance is the color gradient, which can be specified via \ref
+  setGradient. See the documentation of \ref QCPColorGradient for details on configuring a color
+  gradient.
+  
+  The \a data range that is mapped to the colors of the gradient can be specified with \ref
+  setDataRange. To make the data range encompass the whole data set minimum to maximum, call \ref
+  rescaleDataRange.
   
   \section usage Usage
   
@@ -242,16 +274,30 @@ void QCPColorMapData::fill(double z)
   
   Usually, you first create an instance:
   \code
-  QCPColorMap *newMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);\endcode
+  QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);\endcode
   add it to the customPlot with QCustomPlot::addPlottable:
   \code
-  customPlot->addPlottable(newMap);\endcode
-  and then modify the properties of the newly created plottable, e.g.:
+  customPlot->addPlottable(colorMap);\endcode
+  and then modify the properties of the newly created color map, e.g.:
   \code
-  newMap->setName("Temperature Map");
-  newMap->setData();\endcode // TODO
+  colorMap->data()->setSize(50, 50);
+  colorMap->data()->setRange(QCPRange(0, 2), QCPRange(0, 2));
+  for (int x=0; x<50; ++x)
+    for (int y=0; y<50; ++y)
+      colorMap->data()->setCell(x, y, qCos(x/10.0)+qSin(y/10.0));
+  colorMap->setGradient(QCPColorGradient::gpPolar);
+  colorMap->rescaleDataRange(true);
+  customPlot->rescaleAxes();
+  customPlot->replot();
+  \endcode
 */
 
+/*!
+  Constructs a color map with the specified \a keyAxis and \a valueAxis.
+  
+  The constructed QCPColorMap can be added to the plot with QCustomPlot::addPlottable, QCustomPlot
+  then takes ownership of the graph.
+*/
 QCPColorMap::QCPColorMap(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   QCPAbstractPlottable(keyAxis, valueAxis),
   mMapData(new QCPColorMapData(10, 10, QCPRange(0, 5), QCPRange(0, 5))),
@@ -373,6 +419,16 @@ void QCPColorMap::setTightBoundary(bool enabled)
   mTightBoundary = enabled;
 }
 
+/*!
+  Associates the color scale \a colorScale with this color map.
+  
+  This means that both the color scale and the color map synchronize their gradient, data range and
+  data scale type (\ref setGradient, \ref setDataRange, \ref setDataScaleType), if these properties
+  change. Multiple color maps can be associated with one single color scale. This causes the color
+  maps to also synchronize those properties, via the mutual color scale.
+  
+  Pass 0 as \ref colorScale to disconnect the color scale from this color map again.
+*/
 void QCPColorMap::setColorScale(QCPColorScale *colorScale)
 {
   if (mColorScale) // unconnect signals from old color scale
@@ -396,6 +452,26 @@ void QCPColorMap::setColorScale(QCPColorScale *colorScale)
   }
 }
 
+/*!
+  Sets the data range (\ref setDataRange) to span the minimum and maximum values that occur in the
+  current data set. This corresponds to the \ref rescaleKeyAxis or \ref rescaleValueAxis methods,
+  only for the third data dimension of the color map.
+  
+  The minimum and maximum values of the data set are buffered in the internal QCPColorMapData
+  instance (\ref data). As data is updated via its \ref QCPColorMapData::setCell or \ref
+  QCPColorMapData::setData, the buffered minimum and maximum values are updated, too. For
+  performance reasons, however, they are only updated in an expanding fashion. So the buffered
+  maximum can only increase and the buffered minimum can only decrease. In consequence, changes to
+  the data that actually lower the maximum of the data set (by overwriting the cell holding the
+  current maximum with a smaller value), aren't recognized and the buffered maximum overestimates
+  the true maximum of the data set. The same happens for the buffered minimum. To recalculate the
+  true minimum and maximum by explicitly looking at each cell, the method
+  QCPColorMapData::recalculateDataBounds can be used. For convenience, setting the parameter \a
+  recalculateDataBounds calls this method before setting the data range to the buffered minimum and
+  maximum.
+  
+  \see setDataRange
+*/
 void QCPColorMap::rescaleDataRange(bool recalculateDataBounds)
 {
   if (recalculateDataBounds)
@@ -403,6 +479,20 @@ void QCPColorMap::rescaleDataRange(bool recalculateDataBounds)
   setDataRange(mMapData->dataBounds());
 }
 
+/*!
+  Takes the current appearance of the color map and updates the legend icon that is used to
+  represent this color map in the legend.
+  
+  The \a transformMode specifies whether the rescaling is done by a faster, low quality image
+  scaling algorithm (Qt::FastTransformation) or by a slower, higher quality algorithm
+  (Qt::SmoothTransformation).
+  
+  The current color map appearance is scaled down to \a thumbSize. Ideally, this should be equal to
+  the size of the legend icon (see \ref QCPLegend::setIconSize). If it isn't exactly the configured
+  legend icon size, it will be rescaled during drawing of the legend item.
+  
+  \see setDataRange
+*/
 void QCPColorMap::updateLegendIcon(Qt::TransformationMode transformMode, const QSize &thumbSize)
 {
   if (!mMapImage.isNull())
@@ -437,6 +527,15 @@ double QCPColorMap::selectTest(const QPointF &pos, bool onlySelectable, QVariant
     return -1;
 }
 
+/*! \internal
+  
+  Updates the internal map image buffer by going through the internal \ref QCPColorMapData and
+  turning the data values into color pixels with \ref QCPColorGradient::colorize.
+  
+  This method is called by \ref QCPColorMap::draw if either the data has been modified or the map image
+  has been invalidated for a different reason (e.g. a change of the data range with \ref
+  setDataRange).
+*/
 void QCPColorMap::updateMapImage()
 {
   QCPAxis *keyAxis = mKeyAxis.data();
