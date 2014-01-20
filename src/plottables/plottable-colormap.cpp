@@ -43,7 +43,7 @@ QCPColorMapData::QCPColorMapData(int keySize, int valueSize, const QCPRange keyR
   mData(0),
   mKeyRange(keyRange),
   mValueRange(valueRange),
-  mModified(true),
+  mDataModified(true),
   mIsEmpty(true)
 {
   setSize(keySize, valueSize);
@@ -58,7 +58,7 @@ QCPColorMapData::~QCPColorMapData()
 
 QCPColorMapData::QCPColorMapData(const QCPColorMapData &other) :
   mData(0),
-  mModified(true),
+  mDataModified(true),
   mIsEmpty(true)
 {
   *this = other;
@@ -75,7 +75,7 @@ QCPColorMapData &QCPColorMapData::operator=(const QCPColorMapData &other)
     if (!mIsEmpty)
       memcpy(mData, other.mData, sizeof(mData[0])*keySize*valueSize);
     mDataBounds = other.mDataBounds;
-    mModified = true;
+    mDataModified = true;
   }
   return *this;
 }
@@ -132,7 +132,7 @@ void QCPColorMapData::setSize(int keySize, int valueSize)
         fill(0);
     } else
       mData = 0;
-    mModified = true;
+    mDataModified = true;
   }
 }
 
@@ -173,7 +173,7 @@ void QCPColorMapData::setData(double key, double value, double z)
       mDataBounds.lower = z;
     if (z > mDataBounds.upper)
       mDataBounds.upper = z;
-     mModified = true;
+     mDataModified = true;
   }
 }
 
@@ -186,7 +186,7 @@ void QCPColorMapData::setCell(int keyIndex, int valueIndex, double z)
       mDataBounds.lower = z;
     if (z > mDataBounds.upper)
       mDataBounds.upper = z;
-     mModified = true;
+     mDataModified = true;
   }
 }
 
@@ -206,7 +206,6 @@ void QCPColorMapData::recalculateDataBounds()
     }
     mDataBounds.lower = minHeight;
     mDataBounds.upper = maxHeight;
-    mModified = true;
   }
 }
 
@@ -473,7 +472,7 @@ void QCPColorMap::updateMapImage()
     }
   }
   
-  mMapData->mModified = false;
+  mMapData->mDataModified = false;
   mMapImageInvalidated = false;
 }
 
@@ -484,7 +483,7 @@ void QCPColorMap::draw(QCPPainter *painter)
   if (!mKeyAxis || !mValueAxis) return;
   applyDefaultAntialiasingHint(painter);
   
-  if (mMapData->mModified || mMapImageInvalidated)
+  if (mMapData->mDataModified || mMapImageInvalidated)
     updateMapImage();
   
   double halfSampleKey = 0;

@@ -73,7 +73,7 @@ protected:
   int mKeySize, mValueSize;
   QCPRange mKeyRange, mValueRange;
   QCPRange mDataBounds;
-  bool mModified;
+  bool mDataModified;
   bool mIsEmpty;
   
   friend class QCPColorMap;
