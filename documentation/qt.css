@@ -418,6 +418,9 @@ pre.fragment {
   padding: 4px 6px;
   word-wrap: break-word;
 }
+div.fragment div.line {
+  white-space: pre;
+}
 div.ah {
   background-color: #000000;
   color: #FFFFFF;
