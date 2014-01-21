@@ -629,11 +629,13 @@ void MainWindow::setupMultiAxisRectInteractions(QCustomPlot *customPlot)
 
 void MainWindow::setupColorMapTest(QCustomPlot *customPlot)
 {
+  customPlot->legend->setVisible(true);
   presetInteractive(customPlot);
   QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
   customPlot->addPlottable(colorMap);
-  //customPlot->addLayer("maplayer", customPlot->layer("grid"), QCustomPlot::limBelow);
-  //colorMap->setLayer("maplayer");
+  colorMap->setName("Color Map");
+  customPlot->addLayer("maplayer", customPlot->layer("grid"), QCustomPlot::limBelow);
+  colorMap->setLayer("maplayer");
   
   int nx = 400;
   int ny = 400;
@@ -649,7 +651,7 @@ void MainWindow::setupColorMapTest(QCustomPlot *customPlot)
                                       qExp(-qSqrt((x-200)*(x-200)+(y-290)*(y-290))/80.0)-qExp(-qSqrt((x-180)*(x-180)+(y-140)*(y-140))/200.0));
     }
   }
-  
+
   QCPColorScale *colorScale = new QCPColorScale(customPlot);
   customPlot->plotLayout()->addElement(0, 1, colorScale);
   colorMap->setColorScale(colorScale);
@@ -666,11 +668,9 @@ void MainWindow::setupColorMapTest(QCustomPlot *customPlot)
   colorMap->setGradient(gradient);
   colorMap->rescaleDataRange(true);
   
-  // TODO:
-  //       - provide QCPColorScale interface to range dragging and zooming
-  
   customPlot->rescaleAxes();
   customPlot->replot();
+  connect(customPlot, SIGNAL(beforeReplot()), colorMap, SLOT(updateLegendIcon()));
 }
 
 void MainWindow::setupAdaptiveSamplingTest(QCustomPlot *customPlot)
