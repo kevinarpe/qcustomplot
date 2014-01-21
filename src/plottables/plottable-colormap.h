@@ -58,8 +58,8 @@ public:
   void setKeySize(int keySize);
   void setValueSize(int valueSize);
   void setRange(const QCPRange &keyRange, const QCPRange &valueRange);
-  void setValueRange(const QCPRange &keyRange);
-  void setKeyRange(const QCPRange &valueRange);
+  void setKeyRange(const QCPRange &keyRange);
+  void setValueRange(const QCPRange &valueRange);
   void setData(double key, double value, double z);
   void setCell(int keyIndex, int valueIndex, double z);
   void recalculateDataBounds();

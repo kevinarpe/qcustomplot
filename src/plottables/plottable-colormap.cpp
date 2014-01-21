@@ -156,12 +156,12 @@ void QCPColorMapData::setRange(const QCPRange &keyRange, const QCPRange &valueRa
   setValueRange(valueRange);
 }
 
-void QCPColorMapData::setValueRange(const QCPRange &keyRange)
+void QCPColorMapData::setKeyRange(const QCPRange &keyRange)
 {
   mKeyRange = keyRange;
 }
 
-void QCPColorMapData::setKeyRange(const QCPRange &valueRange)
+void QCPColorMapData::setValueRange(const QCPRange &valueRange)
 {
   mValueRange = valueRange;
 }
