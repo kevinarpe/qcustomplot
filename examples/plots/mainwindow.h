@@ -77,6 +77,7 @@ public:
   void setupItemDemo(QCustomPlot *customPlot);
   void setupStyledDemo(QCustomPlot *customPlot);
   void setupAdvancedAxesDemo(QCustomPlot *customPlot);
+  void setupColorMapDemo(QCustomPlot *customPlot);
   
   void setupPlayground(QCustomPlot *customPlot);
   
