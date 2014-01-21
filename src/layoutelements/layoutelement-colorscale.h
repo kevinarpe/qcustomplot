@@ -76,6 +76,7 @@ public:
   QCPAxis *axis() const { return mColorAxis.data(); }
   QCPAxis::AxisType axisType() const { return mAxisType; }
   QCPRange dataRange() const { return mDataRange; }
+  QCPAxis::ScaleType dataScaleType() const { return mDataScaleType; }
   QCPColorGradient gradient() const { return mGradient; }
   int barWidth () const { return mBarWidth; }
   bool rangeDrag() const;
