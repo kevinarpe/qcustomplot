@@ -39,8 +39,10 @@
   
 */
 
-QCPColorMapData::QCPColorMapData(int keySize, int valueSize, const QCPRange keyRange, const QCPRange valueRange) :
+QCPColorMapData::QCPColorMapData(int keySize, int valueSize, const QCPRange &keyRange, const QCPRange &valueRange) :
   mData(0),
+  mKeySize(0),
+  mValueSize(0),
   mKeyRange(keyRange),
   mValueRange(valueRange),
   mDataModified(true),
@@ -53,11 +55,13 @@ QCPColorMapData::QCPColorMapData(int keySize, int valueSize, const QCPRange keyR
 QCPColorMapData::~QCPColorMapData()
 {
   if (mData)
-    delete mData;
+    delete[] mData;
 }
 
 QCPColorMapData::QCPColorMapData(const QCPColorMapData &other) :
   mData(0),
+  mKeySize(0),
+  mValueSize(0),
   mDataModified(true),
   mIsEmpty(true)
 {
@@ -121,7 +125,7 @@ void QCPColorMapData::setSize(int keySize, int valueSize)
     mKeySize = keySize;
     mValueSize = valueSize;
     if (mData)
-      delete mData;
+      delete[] mData;
     mIsEmpty = mKeySize == 0 || mValueSize == 0;
     if (!mIsEmpty)
     {
@@ -300,6 +304,7 @@ void QCPColorMapData::fill(double z)
 */
 QCPColorMap::QCPColorMap(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   QCPAbstractPlottable(keyAxis, valueAxis),
+  mDataScaleType(QCPAxis::stLinear),
   mMapData(new QCPColorMapData(10, 10, QCPRange(0, 5), QCPRange(0, 5))),
   mInterpolate(true),
   mTightBoundary(false),

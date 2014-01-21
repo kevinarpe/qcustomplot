@@ -369,6 +369,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mDateTimeSpec(Qt::LocalTime),
   mNumberPrecision(6),
   mNumberFormatChar('g'),
+  mNumberBeautifulPowers(true),
   // ticks and subticks:
   mTicks(true),
   mTickStep(1),
@@ -2378,6 +2379,7 @@ QCP::Interaction QCPAxis::selectionCategory() const
 */
 
 QCPAxisPainterPrivate::QCPAxisPainterPrivate(QCustomPlot *parentPlot) :
+  type(QCPAxis::atLeft),
   basePen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
   lowerEnding(QCPLineEnding::esNone),
   upperEnding(QCPLineEnding::esNone),

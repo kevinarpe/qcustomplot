@@ -42,6 +42,7 @@
 
 QCPColorScale::QCPColorScale(QCustomPlot *parentPlot) :
   QCPLayoutElement(parentPlot),
+  mAxisType(QCPAxis::atTop), // set to atTop such that setAxisType(QCPAxis::atRight) below doesn't skip work because it thinks it's already atRight
   mDataScaleType(QCPAxis::stLinear),
   mBarWidth(20),
   mAxisRect(new QCPColorScaleAxisRectPrivate(this))
@@ -53,7 +54,7 @@ QCPColorScale::QCPColorScale(QCustomPlot *parentPlot) :
 
 QCPColorScale::~QCPColorScale()
 {
-  
+  delete mAxisRect;
 }
 
 bool QCPColorScale::rangeDrag() const
@@ -355,7 +356,7 @@ void QCPColorScaleAxisRectPrivate::updateGradientImage()
   QImage *gradientImage = &(mParentColorScale->mAxisRect.data()->mGradientImage);
   int n = mParentColorScale->mGradient.levelCount();
   int w, h;
-  double *data = new double[n];
+  QVector<double> data(n);
   for (int i=0; i<n; ++i)
     data[i] = i;
   if (mParentColorScale->mAxisType == QCPAxis::atBottom || mParentColorScale->mAxisType == QCPAxis::atTop)
@@ -366,7 +367,7 @@ void QCPColorScaleAxisRectPrivate::updateGradientImage()
     QVector<QRgb*> pixels;
     for (int y=0; y<h; ++y)
       pixels.append(reinterpret_cast<QRgb*>(gradientImage->scanLine(y)));
-    mParentColorScale->mGradient.colorize(data, QCPRange(0, n-1), pixels.first(), n);
+    mParentColorScale->mGradient.colorize(data.constData(), QCPRange(0, n-1), pixels.first(), n);
     for (int y=1; y<h; ++y)
       memcpy(pixels.at(y), pixels.first(), n*sizeof(QRgb));
   } else
