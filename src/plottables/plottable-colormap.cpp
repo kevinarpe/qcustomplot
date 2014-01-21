@@ -427,6 +427,10 @@ void QCPColorMap::setTightBoundary(bool enabled)
   change. Multiple color maps can be associated with one single color scale. This causes the color
   maps to also synchronize those properties, via the mutual color scale.
   
+  This function causes the color map to adopt the current color gradient, data range and data scale
+  type of \a colorScale. After this call, you may change these properties at either the color map
+  or the color scale, and the setting will be applied to both.
+  
   Pass 0 as \ref colorScale to disconnect the color scale from this color map again.
 */
 void QCPColorMap::setColorScale(QCPColorScale *colorScale)
@@ -443,6 +447,9 @@ void QCPColorMap::setColorScale(QCPColorScale *colorScale)
   mColorScale = colorScale;
   if (mColorScale) // connect signals to new color scale
   {
+    setGradient(mColorScale.data()->gradient());
+    setDataRange(mColorScale.data()->dataRange());
+    setDataScaleType(mColorScale.data()->dataScaleType());
     connect(this, SIGNAL(dataRangeChanged(QCPRange)), mColorScale.data(), SLOT(setDataRange(QCPRange)));
     connect(this, SIGNAL(dataScaleTypeChanged(QCPAxis::ScaleType)), mColorScale.data(), SLOT(setDataScaleType(QCPAxis::ScaleType)));
     connect(this, SIGNAL(gradientChanged(QCPColorGradient)), mColorScale.data(), SLOT(setGradient(QCPColorGradient)));
