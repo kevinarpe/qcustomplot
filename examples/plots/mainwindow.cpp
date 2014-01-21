@@ -1312,13 +1312,13 @@ void MainWindow::setupColorMapDemo(QCustomPlot *customPlot)
   customPlot->addPlottable(colorMap);
   int nx = 200;
   int ny = 200;
-  colorMap->data()->setSize(nx, ny); // we want the color map to have 100x100 data points
-  colorMap->data()->setRange(QCPRange(-4, 4), QCPRange(-4, 4)); // and span the coordinate range -3..3 in both key (x) and value (y) dimensions
+  colorMap->data()->setSize(nx, ny); // we want the color map to have nx * ny data points
+  colorMap->data()->setRange(QCPRange(-4, 4), QCPRange(-4, 4)); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions
   // now we assign some data, by accessing the QCPColorMapData instance of the color map:
   double x, y, z;
   for (int xIndex=0; xIndex<nx; ++xIndex)
   {
-    for (int yIndex=0; yIndex<nx; ++yIndex)
+    for (int yIndex=0; yIndex<ny; ++yIndex)
     {
       colorMap->data()->cellToCoord(xIndex, yIndex, &x, &y);
       double r = 3*qSqrt(x*x+y*y)+1e-2;
