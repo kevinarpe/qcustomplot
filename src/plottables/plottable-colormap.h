@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 01.08.13                                             **
-**          Version: 1.0.0                                                **
+**             Date: 09.12.13                                             **
+**          Version: 1.1.1                                                **
 ****************************************************************************/
 
 #ifndef QCP_PLOTTABLE_COLORMAP_H
