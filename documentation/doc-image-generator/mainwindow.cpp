@@ -703,6 +703,40 @@ void MainWindow::genQCPColorMap()
   customPlot->savePng(dir.filePath("QCPColorMap.png"), 450, 200);
 }
 
+void MainWindow::genQCPColorScale()
+{
+  // generate main doc image of plottable:
+  resetPlot(false);
+  customPlot->axisRect()->setupFullAxesBox(true);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->yAxis->setTickLabels(false);
+  
+  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
+  customPlot->axisRect()->setMarginGroup(QCP::msAll, group);
+  
+  QCPColorScale *colorScaleV = new QCPColorScale(customPlot);
+  customPlot->plotLayout()->addElement(0, 1, colorScaleV);
+  colorScaleV->setGradient(QCPColorGradient::gpThermal);
+  colorScaleV->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  colorScaleV->setDataScaleType(QCPAxis::stLogarithmic);
+  colorScaleV->setDataRange(QCPRange(1, 1000));
+  colorScaleV->axis()->setSubTickCount(9);
+  colorScaleV->axis()->setNumberFormat("eb");
+  colorScaleV->axis()->setNumberPrecision(0);
+  
+  QCPColorScale *colorScaleH = new QCPColorScale(customPlot);
+  customPlot->plotLayout()->addElement(1, 0, colorScaleH);
+  QCPColorGradient gradient(QCPColorGradient::gpGrayscale);
+  gradient.setLevelCount(20);
+  colorScaleH->setGradient(gradient);
+  colorScaleH->setMarginGroup(QCP::msLeft|QCP::msRight, group);
+  colorScaleH->setAxisType(QCPAxis::atBottom);
+  colorScaleH->setMinimumMargins(QMargins());
+  colorScaleH->setDataRange(QCPRange(-5, 5));
+  
+  customPlot->savePng(dir.filePath("QCPColorScale.png"), 450, 200);
+}
+
 void MainWindow::genQCPColorMap_Interpolate()
 {
   resetPlot(false);

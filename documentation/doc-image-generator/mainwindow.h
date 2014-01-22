@@ -46,6 +46,7 @@ public slots:
   void genQCPBars();
   void genQCPStatisticalBox();
   void genQCPColorMap();
+  void genQCPColorScale();
   
   void genQCPColorMap_Interpolate();
   void genQCPColorMap_TightBoundary();
