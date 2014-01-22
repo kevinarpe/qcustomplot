@@ -44,16 +44,16 @@ public:
   QCPColorMapData(const QCPColorMapData &other);
   QCPColorMapData &operator=(const QCPColorMapData &other);
   
+  // getters:
   int keySize() const { return mKeySize; }
   int valueSize() const { return mValueSize; }
-  double data(double key, double value);
-  double cell(int keyIndex, int valueIndex);
-  void coordToCell(double key, double value, int *keyIndex, int *valueIndex) const;
-  void cellToCoord(int keyIndex, int valueIndex, double *key, double *value) const;
   QCPRange keyRange() const { return mKeyRange; }
   QCPRange valueRange() const { return mValueRange; }
   QCPRange dataBounds() const { return mDataBounds; }
+  double data(double key, double value);
+  double cell(int keyIndex, int valueIndex);
   
+  // setters:
   void setSize(int keySize, int valueSize);
   void setKeySize(int keySize);
   void setValueSize(int valueSize);
@@ -62,19 +62,24 @@ public:
   void setValueRange(const QCPRange &valueRange);
   void setData(double key, double value, double z);
   void setCell(int keyIndex, int valueIndex, double z);
-  void recalculateDataBounds();
   
+  // non-property methods:
+  void recalculateDataBounds();
   void clear();
   void fill(double z);
   bool isEmpty() const { return mIsEmpty; }
+  void coordToCell(double key, double value, int *keyIndex, int *valueIndex) const;
+  void cellToCoord(int keyIndex, int valueIndex, double *key, double *value) const;
   
 protected:
-  double *mData;
+  // property members:
   int mKeySize, mValueSize;
   QCPRange mKeyRange, mValueRange;
+  bool mIsEmpty;
+  // non-property members:
   QCPRange mDataBounds;
   bool mDataModified;
-  bool mIsEmpty;
+  double *mData;
   
   friend class QCPColorMap;
 };

@@ -37,16 +37,56 @@
 /*! \class QCPColorMapData
   \brief Holds the two-dimensional data of a QCPColorMap plottable.
   
+  This class is a data storage for \ref QCPColorMap. It holds a two-dimensional array, which \ref
+  QCPColorMap then displays as a 2D image in the plot, where the array values are represented by a
+  color, depending on the value.
+  
+  The size of the array can be controlled via \ref setSize (or \ref setKeySize, \ref setValueSize).
+  Which plot coordinates these cells correspond to can be configured with \ref setRange (or \ref
+  setKeyRange, \ref setValueRange).
+  
+  The data cells can be accessed in two ways: They can be directly addressed by an integer index
+  with \ref setCell. This is the fastest method. Alternatively, they can be addressed by their plot
+  coordinate with \ref setData. plot coordinate to cell index transformations and vice versa are
+  provided by the functions \ref coordToCell and \ref cellToCoord.
+  
+  This class also buffers the minimum and maximum values that are in the data set, to provide
+  QCPColorMap::rescaleDataRange with the necessary information quickly. Setting a cell to a value
+  that is greater than the current maximum increases this maximum to the new value. However,
+  setting the cell that currently holds the maximum value to a smaller value doesn't decrease the
+  maximum again, because finding the true new maximum would require going through the entire data
+  array, which might be time consuming. The same holds for the data minimum. This functionality is
+  given by \ref recalculateDataBounds, such that you can decide when it is sensible to find the
+  true current minimum and maximum. The method QCPColorMap::rescaleDataRange offers a convenience
+  parameter \a recalculateDataBounds which may be set to true to automatically call \ref
+  recalculateDataBounds internally.
 */
 
+/* start of documentation of inline functions */
+
+/*! \fn bool QCPColorMapData::isEmpty() const
+  
+  Returns whether this instance carries no data. This is equivalent to having a size where at least
+  one of the dimensions is 0 (see \ref setSize).
+*/
+
+/* end of documentation of inline functions */
+
+/*!
+  Constructs a new QCPColorMapData instance. The instance has \a keySize cells in the key direction
+  and \a valueSize cells in the value direction. These cells will be displayed by the \ref QCPColorMap
+  at the coordinates \a keyRange and \a valueRange.
+  
+  \see setSize, setKeySize, setValueSize, setRange, setKeyRange, setValueRange
+*/
 QCPColorMapData::QCPColorMapData(int keySize, int valueSize, const QCPRange &keyRange, const QCPRange &valueRange) :
-  mData(0),
   mKeySize(0),
   mValueSize(0),
   mKeyRange(keyRange),
   mValueRange(valueRange),
+  mIsEmpty(true),
   mDataModified(true),
-  mIsEmpty(true)
+  mData(0)
 {
   setSize(keySize, valueSize);
   fill(0);
@@ -58,6 +98,9 @@ QCPColorMapData::~QCPColorMapData()
     delete[] mData;
 }
 
+/*!
+  Constructs a new QCPColorMapData instance copying the data and range of \a other.
+*/
 QCPColorMapData::QCPColorMapData(const QCPColorMapData &other) :
   mData(0),
   mKeySize(0),
@@ -68,6 +111,9 @@ QCPColorMapData::QCPColorMapData(const QCPColorMapData &other) :
   *this = other;
 }
 
+/*!
+  Overwrites this color map data instance with the data stored in \a other.
+*/
 QCPColorMapData &QCPColorMapData::operator=(const QCPColorMapData &other)
 {
   if (&other != this)
@@ -84,6 +130,7 @@ QCPColorMapData &QCPColorMapData::operator=(const QCPColorMapData &other)
   return *this;
 }
 
+/* undocumented getter */
 double QCPColorMapData::data(double key, double value)
 {
   int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
@@ -94,6 +141,7 @@ double QCPColorMapData::data(double key, double value)
     return 0;
 }
 
+/* undocumented getter */
 double QCPColorMapData::cell(int keyIndex, int valueIndex)
 {
   if (keyIndex >= 0 && keyIndex < mKeySize && valueIndex >= 0 && valueIndex < mValueSize)
@@ -102,22 +150,18 @@ double QCPColorMapData::cell(int keyIndex, int valueIndex)
     return 0;
 }
 
-void QCPColorMapData::coordToCell(double key, double value, int *keyIndex, int *valueIndex) const
-{
-  if (keyIndex)
-    *keyIndex = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
-  if (valueIndex)
-    *valueIndex = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)+0.5;
-}
+/*!
+  Resizes the data array to have \a keySize cells in the key dimension and \a valueSize cells in
+  the value dimension.
 
-void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, double *value) const
-{
-  if (key)
-    *key = keyIndex/(double)(mKeySize-1)*(mKeyRange.upper-mKeyRange.lower)+mKeyRange.lower;
-  if (value)
-    *value = (1.0-valueIndex/(double)(mValueSize-1))*(mValueRange.upper-mValueRange.lower)+mValueRange.lower;
-}
+  The current data is discarded and the map cells are set to 0, unless the map had already the
+  requested size.
+  
+  Setting at least one of \a keySize or \a valueSize to zero frees the internal data array and \ref
+  isEmpty returns true.
 
+  \see setRange, setKeySize, setValueSize
+*/
 void QCPColorMapData::setSize(int keySize, int valueSize)
 {
   if (keySize != mKeySize || valueSize != mValueSize)
@@ -140,32 +184,88 @@ void QCPColorMapData::setSize(int keySize, int valueSize)
   }
 }
 
+/*!
+  Resizes the data array to have \a keySize cells in the key dimension.
+
+  The current data is discarded and the map cells are set to 0, unless the map had already the
+  requested size.
+  
+  Setting \a keySize to zero frees the internal data array and \ref isEmpty returns true.
+
+  \see setKeyRange, setSize, setValueSize
+*/
 void QCPColorMapData::setKeySize(int keySize)
 {
   setSize(keySize, mValueSize);
 }
 
+/*!
+  Resizes the data array to have \a valueSize cells in the value dimension.
+
+  The current data is discarded and the map cells are set to 0, unless the map had already the
+  requested size.
+  
+  Setting \a valueSize to zero frees the internal data array and \ref isEmpty returns true.
+
+  \see setValueRange, setSize, setKeySize
+*/
 void QCPColorMapData::setValueSize(int valueSize)
 {
   setSize(mKeySize, valueSize);
 }
 
+/*!
+  Sets the coordinate ranges the data shall be distributed over. This defines the rectangular area
+  covered by the color map in plot coordinates.
+  
+  The outer cells will be centered on the range boundaries given to this function. For example, if
+  the key size (\ref setKeySize) is 3 and \a keyRange is set to <tt>QCPRange(2, 3)</tt> there will
+  be cells centered on the key coordinates 2, 2.5 and 3.
+ 
+  \see setSize
+*/
 void QCPColorMapData::setRange(const QCPRange &keyRange, const QCPRange &valueRange)
 {
   setKeyRange(keyRange);
   setValueRange(valueRange);
 }
 
+/*!
+  Sets the coordinate range the data shall be distributed over in the key dimension. Together with
+  the value range, This defines the rectangular area covered by the color map in plot coordinates.
+  
+  The outer cells will be centered on the range boundaries given to this function. For example, if
+  the key size (\ref setKeySize) is 3 and \a keyRange is set to <tt>QCPRange(2, 3)</tt> there will
+  be cells centered on the key coordinates 2, 2.5 and 3.
+ 
+  \see setRange, setValueRange, setSize
+*/
 void QCPColorMapData::setKeyRange(const QCPRange &keyRange)
 {
   mKeyRange = keyRange;
 }
 
+/*!
+  Sets the coordinate range the data shall be distributed over in the value dimension. Together with
+  the key range, This defines the rectangular area covered by the color map in plot coordinates.
+  
+  The outer cells will be centered on the range boundaries given to this function. For example, if
+  the value size (\ref setValueSize) is 3 and \a valueRange is set to <tt>QCPRange(2, 3)</tt> there
+  will be cells centered on the value coordinates 2, 2.5 and 3.
+ 
+  \see setRange, setKeyRange, setSize
+*/
 void QCPColorMapData::setValueRange(const QCPRange &valueRange)
 {
   mValueRange = valueRange;
 }
 
+/*!
+  Sets the data of the cell, which lies at the plot coordinates given by \a key and \a value, to \a
+  z.
+ 
+  \see setCell, setRange
+*/
 void QCPColorMapData::setData(double key, double value, double z)
 {
   int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
@@ -181,6 +281,17 @@ void QCPColorMapData::setData(double key, double value, double z)
   }
 }
 
+/*!
+  Sets the data of the cell with indices \a keyIndex and \a valueIndex to \a z. The indices
+  enumerate the cells starting from zero, up to the map's size-1 in the respective dimension (see
+  \ref setSize).
+  
+  In the standard plot configuration (horizontal key axis and vertical value axis, both not
+  range-reversed), the cell with indices (0, 0) is in the top left corner and the cell with indices
+  (keySize-1, valueSize-1) is in the bottom right corner of the color map.
+  
+  \see setData, setSize
+*/
 void QCPColorMapData::setCell(int keyIndex, int valueIndex, double z)
 {
   if (keyIndex >= 0 && keyIndex < mKeySize && valueIndex >= 0 && valueIndex < mValueSize)
@@ -194,6 +305,19 @@ void QCPColorMapData::setCell(int keyIndex, int valueIndex, double z)
   }
 }
 
+/*!
+  Goes through the data and updates the buffered minimum and maximum data values.
+  
+  Calling this method is only advised if you are about to call \ref QCPColorMap::rescaleDataRange
+  and can not guarantee that the cells holding the maximum or minimum data haven't been overwritten
+  with a smaller or larger value respectively, since the buffered maximum/minimum values have been
+  updated the last time. Why this is the case is explained in the class description (\ref
+  QCPColorMapData).
+  
+  Note that the method \ref QCPColorMap::rescaleDataRange provides a parameter \a
+  recalculateDataBounds for convenience. Setting this to true will call this method for you, before
+  doing the rescale.
+*/
 void QCPColorMapData::recalculateDataBounds()
 {
   if (mKeySize > 0 && mValueSize > 0)
@@ -213,11 +337,19 @@ void QCPColorMapData::recalculateDataBounds()
   }
 }
 
+/*!
+  Frees the internal data memory.
+  
+  This is equivalent to calling \ref setSize(0, 0).
+*/
 void QCPColorMapData::clear()
 {
   setSize(0, 0);
 }
 
+/*!
+  Sets all cells to the value \a z.
+*/
 void QCPColorMapData::fill(double z)
 {
   const int dataCount = mValueSize*mKeySize;
@@ -225,6 +357,45 @@ void QCPColorMapData::fill(double z)
     mData[i] = z;
   mDataBounds = QCPRange(z, z);
 }
+
+/*!
+  Transforms plot coordinates given by \a key and \a value to cell indices of this QCPColorMapData
+  instance. The resulting cell indices are returned via the output parameters \a keyIndex and \a
+  valueIndex.
+  
+  The retrieved key/value cell indices can then be used for example with \ref setCell.
+  
+  If you are only interested in a key or value index, you may pass 0 as \a valueIndex or \a
+  keyIndex.
+  
+  \see cellToCoord, QCPAxis::coordToPixel
+*/
+void QCPColorMapData::coordToCell(double key, double value, int *keyIndex, int *valueIndex) const
+{
+  if (keyIndex)
+    *keyIndex = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
+  if (valueIndex)
+    *valueIndex = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)+0.5;
+}
+
+/*!
+  Transforms cell indices given by \a keyIndex and \a valueIndex to cell indices of this QCPColorMapData
+  instance. The resulting coordinates are returned via the output parameters \a key and \a
+  value.
+  
+  If you are only interested in a key or value coordinate, you may pass 0 as \a key or \a
+  value.
+  
+  \see coordToCell, QCPAxis::pixelToCoord
+*/
+void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, double *value) const
+{
+  if (key)
+    *key = keyIndex/(double)(mKeySize-1)*(mKeyRange.upper-mKeyRange.lower)+mKeyRange.lower;
+  if (value)
+    *value = (1.0-valueIndex/(double)(mValueSize-1))*(mValueRange.upper-mValueRange.lower)+mValueRange.lower;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPColorMap
@@ -235,7 +406,7 @@ void QCPColorMapData::fill(double z)
 
   \image html QCPColorMap.png
   
-  The data is stored in the class \ref QCPColorMapData, which can be accessed via the \ref data
+  The data is stored in the class \ref QCPColorMapData, which can be accessed via the data()
   method.
   
   A color map has three dimensions to represent a data point: The \a key dimension, the \a value
@@ -300,7 +471,7 @@ void QCPColorMapData::fill(double z)
   Constructs a color map with the specified \a keyAxis and \a valueAxis.
   
   The constructed QCPColorMap can be added to the plot with QCustomPlot::addPlottable, QCustomPlot
-  then takes ownership of the graph.
+  then takes ownership of the color map.
 */
 QCPColorMap::QCPColorMap(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   QCPAbstractPlottable(keyAxis, valueAxis),
@@ -410,7 +581,7 @@ void QCPColorMap::setInterpolate(bool enabled)
 
 /*!
   Sets whether the outer most data rows and columns are clipped to the specified key and value
-  range (see \ref setKeyRange, \ref setValueRange).
+  range (see \ref QCPColorMapData::setKeyRange, \ref QCPColorMapData::setValueRange).
   
   if \a enabled is set to false, the data points at the border of the color map are drawn with the
   same width and height as all other data points. Since the data points are represented by
@@ -436,7 +607,7 @@ void QCPColorMap::setTightBoundary(bool enabled)
   type of \a colorScale. After this call, you may change these properties at either the color map
   or the color scale, and the setting will be applied to both.
   
-  Pass 0 as \ref colorScale to disconnect the color scale from this color map again.
+  Pass 0 as \a colorScale to disconnect the color scale from this color map again.
 */
 void QCPColorMap::setColorScale(QCPColorScale *colorScale)
 {
@@ -492,8 +663,8 @@ void QCPColorMap::rescaleDataRange(bool recalculateDataBounds)
 }
 
 /*!
-  Takes the current appearance of the color map and updates the legend icon that is used to
-  represent this color map in the legend.
+  Takes the current appearance of the color map and updates the legend icon, which is used to
+  represent this color map in the legend (see \ref QCPLegend).
   
   The \a transformMode specifies whether the rescaling is done by a faster, low quality image
   scaling algorithm (Qt::FastTransformation) or by a slower, higher quality algorithm
@@ -501,7 +672,7 @@ void QCPColorMap::rescaleDataRange(bool recalculateDataBounds)
   
   The current color map appearance is scaled down to \a thumbSize. Ideally, this should be equal to
   the size of the legend icon (see \ref QCPLegend::setIconSize). If it isn't exactly the configured
-  legend icon size, it will be rescaled during drawing of the legend item.
+  legend icon size, the thumb will be rescaled during drawing of the legend item.
   
   \see setDataRange
 */
