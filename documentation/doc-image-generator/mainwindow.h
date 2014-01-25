@@ -36,7 +36,6 @@ public slots:
   void genMarginGroup();
   void genAxisRectSpacingOverview();
   void genAxisNamesOverview();
-  void genColorGradientPresets();
   
   void genLayoutsystem_AddingPlotTitle();
   void genLayoutsystem_MultipleAxisRects();
@@ -47,6 +46,7 @@ public slots:
   void genQCPStatisticalBox();
   void genQCPColorMap();
   void genQCPColorScale();
+  void genQCPColorGradient();
   
   void genQCPColorMap_Interpolate();
   void genQCPColorMap_TightBoundary();
