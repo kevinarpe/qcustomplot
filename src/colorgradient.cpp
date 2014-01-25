@@ -31,7 +31,29 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*! \class QCPColorGradient
+  \brief Defines a color gradient for use with e.g. \ref QCPColorMap
+  
+  This class describes a color gradient which can be used to encode data with color. For example,
+  QCPColorMap and QCPColorScale have a \ref QCPColorMap::setGradient "setGradient" method which
+  takes an instance of this class. You set colors with \ref setColorStopAt(double position, const
+  QColor &color) with a \a position from 0 to 1. In between these defined color positions, the
+  color will be interpolated linearly either in RGB or HSV space, see \ref setColorInterpolation.
 
+  Alternatively, load one of the preset color gradients shown in the image below, with \ref
+  loadPreset, or by directly specifying the preset in the constructor.
+  
+  \image html QCPColorGradient.png
+  
+  The fact that the \ref QCPColorGradient(GradientPreset preset) constructor allows directly
+  converting a \ref GradientPreset to a QCPColorGradient, you can also directly pass \ref
+  GradientPreset to all the \a setGradient methods, e.g.:
+  \code
+  colorMap->setGradient(QCPColorGradient::gpHot);
+  \endcode
+  
+  The total number of levels used in the gradient can be set with \ref setLevelCount. Whether the
+  color gradient shall be applied periodically (wrapping around) to data values that lie outside
+  the data range specified on the plottable instance can be controlled with \ref setPeriodic.
 */
 
 QCPColorGradient::QCPColorGradient(GradientPreset preset) :

@@ -36,10 +36,55 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*! \class QCPColorScale
-  \brief 
+  \brief A color scale for use with color coding data such as QCPColorMap
   
+  This layout element can be placed on the plot to correlate a color gradient with data values. It
+  is usually used in combination with one or multiple \ref QCPColorMap "QCPColorMaps".
+
+  \image html QCPColorScale.png
+  
+  The color scale can be either horizontal or vertical, as shown in the image above. The
+  orientation and the side where the numbers appear is controlled with \ref setType.
+  
+  Use \ref QCPColorMap::setColorScale to connect a color map with a color scale. Once they are
+  connected, they share their gradient, data range and data scale type (\ref setGradient, \ref
+  setDataRange, \ref setDataScaleType). Multiple color maps may be associated with a single color
+  scale, to make them all synchronize these properties.
+  
+  To have finer control over the number display and axis behaviour, you can directly access the
+  \ref axis. See the documentation of QCPAxis for details about configuring axes. For example, if you want to
+  set the label of the axis, call
+  \code
+  colorScale->axis()->setLabel("some label text");
+  \endcode
+  
+  Placing a color scale next to the main axis rect works like with any other layout element:
+  \code
+  QCPColorScale *colorScale = new QCPColorScale(customPlot);
+  customPlot->plotLayout()->addElement(0, 1, colorScale);
+  \endcode
+  In this case we have placed it to the right of the default axis rect, so it wasn't necessary to
+  call \ref setType, since \ref QCP::atRight is already the default.
+  
+  For optimum appearance (like in the image above), it may be desirable to line up the axis rect and
+  the borders of the color scale. Use a \ref QCPMarginGroup to achieve this:
+  \code
+  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
+  colorScale->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  customPlot->axisRect()->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  \endcode
+  
+  Color scales are initialized with a non-zero minimum top and bottom margin (\ref
+  setMinimumMargins), because vertical color scales are most common and the minimum top/bottom
+  margin makes sure it keeps some distance to the top/bottom widget border. So if you change to a
+  horizontal color scale by setting \ref setType to \ref QCP::atBottom or \ref QCP::atTop, you
+  might want to also change the minimum margins accordingly, e.g. \ref
+  setMinimumMargins(QMargins(6, 0, 6, 0)).
 */
 
+/*!
+  Constructs a new QCPColorScale. 
+*/
 QCPColorScale::QCPColorScale(QCustomPlot *parentPlot) :
   QCPLayoutElement(parentPlot),
   mAxisType(QCPAxis::atTop), // set to atTop such that setType(QCPAxis::atRight) below doesn't skip work because it thinks it's already atRight
@@ -57,6 +102,7 @@ QCPColorScale::~QCPColorScale()
   delete mAxisRect;
 }
 
+/* undocumented getter */
 bool QCPColorScale::rangeDrag() const
 {
   if (!mAxisRect)
@@ -75,6 +121,7 @@ bool QCPColorScale::rangeDrag() const
       mAxisRect.data()->rangeDragAxis(QCPAxis::orientation(mAxisType))->orientation() == QCPAxis::orientation(mAxisType);
 }
 
+/* undocumented getter */
 bool QCPColorScale::rangeZoom() const
 {
   if (!mAxisRect)
@@ -93,6 +140,13 @@ bool QCPColorScale::rangeZoom() const
       mAxisRect.data()->rangeZoomAxis(QCPAxis::orientation(mAxisType))->orientation() == QCPAxis::orientation(mAxisType);
 }
 
+/*!
+  Sets at which side of the color scale the axis is placed, and thus also its orientation.
+  
+  Note that after setting \a axisType to a different value, the axis returned by \ref axis() will
+  be a different one. The new axis will adopt the following properties from the previous axis: The
+  range, scale type, log base and label.
+*/
 void QCPColorScale::setType(QCPAxis::AxisType axisType)
 {
   if (!mAxisRect)
@@ -134,6 +188,15 @@ void QCPColorScale::setType(QCPAxis::AxisType axisType)
   }
 }
 
+/*!
+  Sets the range spanned by the color gradient and that is shown by the axis in the color scale.
+  
+  It is equivalent to calling QCPColorMap::setDataRange on any of the connected color maps. It is
+  also equivalent to directly accessing the \ref axis and setting its range with \ref
+  QCPAxis::setRange.
+  
+  \see setDataScaleType, setGradient
+*/
 void QCPColorScale::setDataRange(const QCPRange &dataRange)
 {
   if (mDataRange.lower != dataRange.lower || mDataRange.upper != dataRange.upper)
@@ -145,6 +208,16 @@ void QCPColorScale::setDataRange(const QCPRange &dataRange)
   }
 }
 
+/*!
+  Sets the scale type of the color scale, i.e. whether values are linearly associated with colors
+  or logarithmically.
+  
+  It is equivalent to calling QCPColorMap::setDataScaleType on any of the connected color maps. It is
+  also equivalent to directly accessing the \ref axis and setting its scale type with \ref
+  QCPAxis::setScaleType.
+  
+  \see setDataRange, setGradient
+*/
 void QCPColorScale::setDataScaleType(QCPAxis::ScaleType scaleType)
 {
   if (mDataScaleType != scaleType)
@@ -158,6 +231,13 @@ void QCPColorScale::setDataScaleType(QCPAxis::ScaleType scaleType)
   }
 }
 
+/*!
+  Sets the color gradient that will be used to represent data values.
+  
+  It is equivalent to calling QCPColorMap::setGradient on any of the connected color maps.
+  
+  \see setDataRange, setDataScaleType
+*/
 void QCPColorScale::setGradient(const QCPColorGradient &gradient)
 {
   if (mGradient != gradient)
@@ -169,11 +249,21 @@ void QCPColorScale::setGradient(const QCPColorGradient &gradient)
   }
 }
 
+/*!
+  Sets the width (or height, for horizontal color scales) the bar where the gradient is displayed
+  will have.
+*/
 void QCPColorScale::setBarWidth(int width)
 {
   mBarWidth = width;
 }
 
+/*!
+  Sets whether the user can drag the data range (\ref setDataRange).
+  
+  Note that \ref QCP::iRangeDrag must be in the QCustomPlot's interactions (\ref
+  QCustomPlot::setInteractions) to allow range dragging.
+*/
 void QCPColorScale::setRangeDrag(bool enabled)
 {
   if (!mAxisRect)
@@ -188,6 +278,12 @@ void QCPColorScale::setRangeDrag(bool enabled)
     mAxisRect.data()->setRangeDrag(0);
 }
 
+/*!
+  Sets whether the user can zoom the data range (\ref setDataRange) by scrolling the mouse wheel.
+  
+  Note that \ref QCP::iRangeZoom must be in the QCustomPlot's interactions (\ref
+  QCustomPlot::setInteractions) to allow range dragging.
+*/
 void QCPColorScale::setRangeZoom(bool enabled)
 {
   if (!mAxisRect)
@@ -202,6 +298,7 @@ void QCPColorScale::setRangeZoom(bool enabled)
     mAxisRect.data()->setRangeZoom(0);
 }
 
+/* inherits documentation from base class */
 void QCPColorScale::update(UpdatePhase phase)
 {
   QCPLayoutElement::update(phase);
@@ -243,6 +340,7 @@ void QCPColorScale::applyDefaultAntialiasingHint(QCPPainter *painter) const
   painter->setAntialiasing(false);
 }
 
+/* inherits documentation from base class */
 void QCPColorScale::mousePressEvent(QMouseEvent *event)
 {
   if (!mAxisRect)
@@ -253,6 +351,7 @@ void QCPColorScale::mousePressEvent(QMouseEvent *event)
   mAxisRect.data()->mousePressEvent(event);
 }
 
+/* inherits documentation from base class */
 void QCPColorScale::mouseMoveEvent(QMouseEvent *event)
 {
   if (!mAxisRect)
@@ -263,6 +362,7 @@ void QCPColorScale::mouseMoveEvent(QMouseEvent *event)
   mAxisRect.data()->mouseMoveEvent(event);
 }
 
+/* inherits documentation from base class */
 void QCPColorScale::mouseReleaseEvent(QMouseEvent *event)
 {
   if (!mAxisRect)
@@ -273,6 +373,7 @@ void QCPColorScale::mouseReleaseEvent(QMouseEvent *event)
   mAxisRect.data()->mouseReleaseEvent(event);
 }
 
+/* inherits documentation from base class */
 void QCPColorScale::wheelEvent(QWheelEvent *event)
 {
   if (!mAxisRect)
@@ -288,12 +389,17 @@ void QCPColorScale::wheelEvent(QWheelEvent *event)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*! \class QCPColorScaleAxisRectPrivate \internal
-  \brief (Private)
+  \brief An axis rect subclass for use in a QCPColorScale
   
   This is a private class and not part of the public QCustomPlot interface.
   
+  It provides the axis rect functionality for the QCPColorScale class.
 */
 
+
+/*!
+  Creates a new instance, as a child of \a parentColorScale.
+*/
 QCPColorScaleAxisRectPrivate::QCPColorScaleAxisRectPrivate(QCPColorScale *parentColorScale) :
   QCPAxisRect(parentColorScale->parentPlot(), true),
   mParentColorScale(parentColorScale),
@@ -326,6 +432,10 @@ QCPColorScaleAxisRectPrivate::QCPColorScaleAxisRectPrivate(QCPColorScale *parent
     connect(parentColorScale, SIGNAL(layerChanged(QCPLayer*)), axis(type), SLOT(setLayer(QCPLayer*)));
 }
 
+/*! \internal
+  Updates the color gradient image if necessary, by calling \ref updateGradientImage, then draws
+  it. Then the axes are drawn by calling the \ref QCPAxisRect::draw base class implementation.
+*/
 void QCPColorScaleAxisRectPrivate::draw(QCPPainter *painter)
 {
   if (mGradientImageInvalidated)
@@ -343,6 +453,11 @@ void QCPColorScaleAxisRectPrivate::draw(QCPPainter *painter)
   QCPAxisRect::draw(painter);
 }
 
+/*! \internal
+
+  Uses the current gradient of the parent \ref QCPColorScale (specified in the constructor) to
+  generate a gradient image. This gradient image will be used in the \ref draw method.
+*/
 void QCPColorScaleAxisRectPrivate::updateGradientImage()
 {
   if (rect().isEmpty())
@@ -380,6 +495,11 @@ void QCPColorScaleAxisRectPrivate::updateGradientImage()
   mGradientImageInvalidated = false;
 }
 
+/*! \internal
+
+  This slot is connected to the selectionChanged signals of the four axes in the constructor. It
+  synchronizes the selection state of the axes.
+*/
 void QCPColorScaleAxisRectPrivate::axisSelectionChanged(QCPAxis::SelectableParts selectedParts)
 {
   // axis bases of four axes shall always (de-)selected synchronously:
@@ -399,6 +519,11 @@ void QCPColorScaleAxisRectPrivate::axisSelectionChanged(QCPAxis::SelectableParts
   }
 }
 
+/*! \internal
+
+  This slot is connected to the selectableChanged signals of the four axes in the constructor. It
+  synchronizes the selectability of the axes.
+*/
 void QCPColorScaleAxisRectPrivate::axisSelectableChanged(QCPAxis::SelectableParts selectableParts)
 {
   // synchronize axis base selectability:

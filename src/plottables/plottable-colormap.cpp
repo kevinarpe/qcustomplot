@@ -599,9 +599,9 @@ void QCPColorMap::setTightBoundary(bool enabled)
   Associates the color scale \a colorScale with this color map.
   
   This means that both the color scale and the color map synchronize their gradient, data range and
-  data scale type (\ref setGradient, \ref setDataRange, \ref setDataScaleType), if these properties
-  change. Multiple color maps can be associated with one single color scale. This causes the color
-  maps to also synchronize those properties, via the mutual color scale.
+  data scale type (\ref setGradient, \ref setDataRange, \ref setDataScaleType). Multiple color maps
+  can be associated with one single color scale. This causes the color maps to also synchronize
+  those properties, via the mutual color scale.
   
   This function causes the color map to adopt the current color gradient, data range and data scale
   type of \a colorScale. After this call, you may change these properties at either the color map
