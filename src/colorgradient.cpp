@@ -284,8 +284,8 @@ void QCPColorGradient::loadPreset(GradientPreset preset)
     case gpHues:
       setColorInterpolation(ciHSV);
       setColorStopAt(0, QColor(255, 0, 0));
-      setColorStopAt(1.0/3.0, QColor(0, 255, 0));
-      setColorStopAt(2.0/3.0, QColor(0, 0, 255));
+      setColorStopAt(1.0/3.0, QColor(0, 0, 255));
+      setColorStopAt(2.0/3.0, QColor(0, 255, 0));
       setColorStopAt(1, QColor(255, 0, 0));
       break;
   }
