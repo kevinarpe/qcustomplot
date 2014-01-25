@@ -85,8 +85,8 @@ QCPColorMapData::QCPColorMapData(int keySize, int valueSize, const QCPRange &key
   mKeyRange(keyRange),
   mValueRange(valueRange),
   mIsEmpty(true),
-  mDataModified(true),
-  mData(0)
+  mData(0),
+  mDataModified(true)
 {
   setSize(keySize, valueSize);
   fill(0);
@@ -102,11 +102,11 @@ QCPColorMapData::~QCPColorMapData()
   Constructs a new QCPColorMapData instance copying the data and range of \a other.
 */
 QCPColorMapData::QCPColorMapData(const QCPColorMapData &other) :
-  mData(0),
   mKeySize(0),
   mValueSize(0),
-  mDataModified(true),
-  mIsEmpty(true)
+  mIsEmpty(true),
+  mData(0),
+  mDataModified(true)
 {
   *this = other;
 }

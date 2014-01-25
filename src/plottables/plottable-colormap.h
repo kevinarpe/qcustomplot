@@ -77,9 +77,9 @@ protected:
   QCPRange mKeyRange, mValueRange;
   bool mIsEmpty;
   // non-property members:
+  double *mData;
   QCPRange mDataBounds;
   bool mDataModified;
-  double *mData;
   
   friend class QCPColorMap;
 };
