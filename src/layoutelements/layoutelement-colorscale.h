@@ -83,7 +83,7 @@ public:
   bool rangeZoom() const;
   
   // setters:
-  void setAxisType(QCPAxis::AxisType axisType);
+  void setType(QCPAxis::AxisType axisType);
   Q_SLOT void setDataRange(const QCPRange &dataRange);
   Q_SLOT void setDataScaleType(QCPAxis::ScaleType scaleType);
   Q_SLOT void setGradient(const QCPColorGradient &gradient);

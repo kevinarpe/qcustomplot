@@ -42,13 +42,13 @@
 
 QCPColorScale::QCPColorScale(QCustomPlot *parentPlot) :
   QCPLayoutElement(parentPlot),
-  mAxisType(QCPAxis::atTop), // set to atTop such that setAxisType(QCPAxis::atRight) below doesn't skip work because it thinks it's already atRight
+  mAxisType(QCPAxis::atTop), // set to atTop such that setType(QCPAxis::atRight) below doesn't skip work because it thinks it's already atRight
   mDataScaleType(QCPAxis::stLinear),
   mBarWidth(20),
   mAxisRect(new QCPColorScaleAxisRectPrivate(this))
 {
-  setMinimumMargins(QMargins(0, 6, 0, 6)); // for default right axis types, keep some room at bottom and top (important if no margin group is used)
-  setAxisType(QCPAxis::atRight);
+  setMinimumMargins(QMargins(0, 6, 0, 6)); // for default right color scale types, keep some room at bottom and top (important if no margin group is used)
+  setType(QCPAxis::atRight);
   setDataRange(QCPRange(0, 6));
 }
 
@@ -93,7 +93,7 @@ bool QCPColorScale::rangeZoom() const
       mAxisRect.data()->rangeZoomAxis(QCPAxis::orientation(mAxisType))->orientation() == QCPAxis::orientation(mAxisType);
 }
 
-void QCPColorScale::setAxisType(QCPAxis::AxisType axisType)
+void QCPColorScale::setType(QCPAxis::AxisType axisType)
 {
   if (!mAxisRect)
   {
@@ -345,15 +345,9 @@ void QCPColorScaleAxisRectPrivate::draw(QCPPainter *painter)
 
 void QCPColorScaleAxisRectPrivate::updateGradientImage()
 {
-  if (!mParentColorScale->mAxisRect)
-  {
-    qDebug() << Q_FUNC_INFO << "internal axis rect was deleted";
-    return;
-  }
   if (rect().isEmpty())
     return;
   
-  QImage *gradientImage = &(mParentColorScale->mAxisRect.data()->mGradientImage);
   int n = mParentColorScale->mGradient.levelCount();
   int w, h;
   QVector<double> data(n);
@@ -363,10 +357,10 @@ void QCPColorScaleAxisRectPrivate::updateGradientImage()
   {
     w = n;
     h = rect().height();
-    *gradientImage = QImage(w, h, QImage::Format_RGB32);
+    mGradientImage = QImage(w, h, QImage::Format_RGB32);
     QVector<QRgb*> pixels;
     for (int y=0; y<h; ++y)
-      pixels.append(reinterpret_cast<QRgb*>(gradientImage->scanLine(y)));
+      pixels.append(reinterpret_cast<QRgb*>(mGradientImage.scanLine(y)));
     mParentColorScale->mGradient.colorize(data.constData(), QCPRange(0, n-1), pixels.first(), n);
     for (int y=1; y<h; ++y)
       memcpy(pixels.at(y), pixels.first(), n*sizeof(QRgb));
@@ -374,10 +368,10 @@ void QCPColorScaleAxisRectPrivate::updateGradientImage()
   {
     w = rect().width();
     h = n;
-    *gradientImage = QImage(w, h, QImage::Format_RGB32);
+    mGradientImage = QImage(w, h, QImage::Format_RGB32);
     for (int y=0; y<h; ++y)
     {
-      QRgb *pixels = reinterpret_cast<QRgb*>(gradientImage->scanLine(y));
+      QRgb *pixels = reinterpret_cast<QRgb*>(mGradientImage.scanLine(y));
       const QRgb lineColor = mParentColorScale->mGradient.color(data[h-1-y], QCPRange(0, n-1));
       for (int x=0; x<w; ++x)
         pixels[x] = lineColor;

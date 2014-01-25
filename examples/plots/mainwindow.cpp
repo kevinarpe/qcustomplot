@@ -1330,7 +1330,7 @@ void MainWindow::setupColorMapDemo(QCustomPlot *customPlot)
   // add a color scale:
   QCPColorScale *colorScale = new QCPColorScale(customPlot);
   customPlot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
-  colorScale->setAxisType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
+  colorScale->setType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
   colorMap->setColorScale(colorScale); // associate the color map with the color scale
   colorScale->axis()->setLabel("Magnetic Field Strength");
   
