@@ -50,6 +50,8 @@ public slots:
   
   void genQCPColorMap_Interpolate();
   void genQCPColorMap_TightBoundary();
+  void genQCPColorGradient_LevelCount();
+  void genQCPColorGradient_Periodic();
   
 private:
   // helpers:

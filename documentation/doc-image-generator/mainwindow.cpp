@@ -843,6 +843,173 @@ void MainWindow::genQCPColorMap_TightBoundary()
   customPlot->savePng(dir.filePath("QCPColorMap-tightboundary.png"), 450, 200);
 }
 
+void MainWindow::genQCPColorGradient_LevelCount()
+{
+  resetPlot(false);
+  customPlot->plotLayout()->clear();
+  
+  QCPAxisRect *r1 = new QCPAxisRect(customPlot, true);
+  QCPAxisRect *r2 = new QCPAxisRect(customPlot, true);
+  r1->setupFullAxesBox(true);
+  r2->setupFullAxesBox(true);
+  r1->axis(QCPAxis::atLeft)->setTickLabels(false);
+  r1->axis(QCPAxis::atBottom)->setTickLabels(false);
+  r2->axis(QCPAxis::atLeft)->setTickLabels(false);
+  r2->axis(QCPAxis::atBottom)->setTickLabels(false);
+  QCPColorScale *scale1 = new QCPColorScale(customPlot);
+  QCPColorScale *scale2 = new QCPColorScale(customPlot);
+  customPlot->plotLayout()->addElement(0, 0, r1);
+  customPlot->plotLayout()->addElement(0, 1, scale1);
+  customPlot->plotLayout()->addElement(0, 2, r2);
+  customPlot->plotLayout()->addElement(0, 3, scale2);
+  QCPColorGradient gradient;
+  scale1->setGradient(gradient);
+  gradient.setLevelCount(10);
+  scale2->setGradient(gradient);
+  
+  QMargins m = r1->minimumMargins();
+  m.setTop(m.top() + 10); // make some space for label
+  m.setRight(0);
+  r1->setMinimumMargins(m); 
+  r2->setMinimumMargins(m);
+
+  QCPColorMap *map1 = new QCPColorMap(r1->axis(QCPAxis::atBottom), r1->axis(QCPAxis::atLeft));
+  QCPColorMap *map2 = new QCPColorMap(r2->axis(QCPAxis::atBottom), r2->axis(QCPAxis::atLeft));
+  customPlot->addPlottable(map1);
+  customPlot->addPlottable(map2);
+  int nx = 400;
+  int ny = 400;
+  map1->data()->setSize(nx, ny);
+  map1->data()->setRange(QCPRange(0, 10), QCPRange(0, 10));
+  for (int x=0; x<nx; ++x)
+    for (int y=0; y<ny; ++y)
+      map1->data()->setCell(x, y, (qExp(-qSqrt((x-310)*(x-310)+(y-260)*(y-260))/200.0)+
+                                       qExp(-qSqrt((x-200)*(x-200)+(y-290)*(y-290))/80.0)-
+                                       qExp(-qSqrt((x-180)*(x-180)+(y-140)*(y-140))/200.0)+0.436285)/1.53251*2-1);
+  map2->setData(map1->data(), true);
+  map1->setColorScale(scale1);
+  map2->setColorScale(scale2);
+  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
+  r1->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  r2->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  scale1->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  scale2->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  
+  map1->rescaleDataRange();
+  map2->rescaleDataRange();
+  customPlot->rescaleAxes();
+  
+  QCPItemText *t1 = new QCPItemText(customPlot);
+  customPlot->addItem(t1);
+  t1->setText("350 Levels");
+  t1->position->setType(QCPItemPosition::ptAxisRectRatio);
+  t1->position->setAxisRect(r1);
+  t1->position->setCoords(0.5, -0.02);
+  t1->setPositionAlignment(Qt::AlignHCenter|Qt::AlignBottom);
+  t1->setClipToAxisRect(false);
+  QCPItemText *t2 = new QCPItemText(customPlot);
+  customPlot->addItem(t2);
+  t2->setText("10 Levels");
+  t2->position->setType(QCPItemPosition::ptAxisRectRatio);
+  t2->position->setAxisRect(r2);
+  t2->position->setCoords(0.5, -0.02);
+  t2->setPositionAlignment(Qt::AlignHCenter|Qt::AlignBottom);
+  t2->setClipToAxisRect(false);
+  
+  QList<QCPAxis*> allAxes;
+  allAxes << r1->axes() << r2->axes();
+  foreach (QCPAxis *axis, allAxes)
+  {
+    axis->setLayer("axes");
+    axis->grid()->setLayer("grid");
+  }
+  customPlot->savePng(dir.filePath("QCPColorGradient-levelcount.png"), 450, 180);
+}
+
+void MainWindow::genQCPColorGradient_Periodic()
+{
+  resetPlot(false);
+  customPlot->plotLayout()->clear();
+  
+  QCPAxisRect *r1 = new QCPAxisRect(customPlot, true);
+  QCPAxisRect *r2 = new QCPAxisRect(customPlot, true);
+  r1->setupFullAxesBox(true);
+  r2->setupFullAxesBox(true);
+  r1->axis(QCPAxis::atLeft)->setTickLabels(false);
+  r1->axis(QCPAxis::atBottom)->setTickLabels(false);
+  r2->axis(QCPAxis::atLeft)->setTickLabels(false);
+  r2->axis(QCPAxis::atBottom)->setTickLabels(false);
+  QCPColorScale *scale1 = new QCPColorScale(customPlot);
+  QCPColorScale *scale2 = new QCPColorScale(customPlot);
+  customPlot->plotLayout()->addElement(0, 0, r1);
+  customPlot->plotLayout()->addElement(0, 1, scale1);
+  customPlot->plotLayout()->addElement(0, 2, r2);
+  customPlot->plotLayout()->addElement(0, 3, scale2);
+  QCPColorGradient gradient(QCPColorGradient::gpHues);
+  scale1->setGradient(gradient);
+  gradient.setPeriodic(true);
+  scale2->setGradient(gradient);
+  
+  QMargins m = r1->minimumMargins();
+  m.setTop(m.top() + 10); // make some space for label
+  m.setRight(0);
+  r1->setMinimumMargins(m); 
+  r2->setMinimumMargins(m);
+
+  QCPColorMap *map1 = new QCPColorMap(r1->axis(QCPAxis::atBottom), r1->axis(QCPAxis::atLeft));
+  QCPColorMap *map2 = new QCPColorMap(r2->axis(QCPAxis::atBottom), r2->axis(QCPAxis::atLeft));
+  customPlot->addPlottable(map1);
+  customPlot->addPlottable(map2);
+  int nx = 400;
+  int ny = 400;
+  map1->data()->setSize(nx, ny);
+  map1->data()->setRange(QCPRange(0, 10), QCPRange(0, 10));
+  for (int x=0; x<nx; ++x)
+    for (int y=0; y<ny; ++y)
+      map1->data()->setCell(x, y, (qExp(-qSqrt((x-310)*(x-310)+(y-260)*(y-260))/200.0)+
+                                       qExp(-qSqrt((x-200)*(x-200)+(y-290)*(y-290))/80.0)-
+                                       qExp(-qSqrt((x-180)*(x-180)+(y-140)*(y-140))/200.0)+0.436285)/1.53251*2-1);
+  map2->setData(map1->data(), true);
+  map1->setColorScale(scale1);
+  map2->setColorScale(scale2);
+  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
+  r1->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  r2->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  scale1->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  scale2->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  scale1->axis()->setAutoTickCount(3);
+  scale2->axis()->setAutoTickCount(3);
+  map1->setDataRange(QCPRange(-0.2, 0.2));
+  map2->setDataRange(QCPRange(-0.2, 0.2));
+  customPlot->rescaleAxes();
+  
+  QCPItemText *t1 = new QCPItemText(customPlot);
+  customPlot->addItem(t1);
+  t1->setText("Periodic false");
+  t1->position->setType(QCPItemPosition::ptAxisRectRatio);
+  t1->position->setAxisRect(r1);
+  t1->position->setCoords(0.5, -0.02);
+  t1->setPositionAlignment(Qt::AlignHCenter|Qt::AlignBottom);
+  t1->setClipToAxisRect(false);
+  QCPItemText *t2 = new QCPItemText(customPlot);
+  customPlot->addItem(t2);
+  t2->setText("Periodic true");
+  t2->position->setType(QCPItemPosition::ptAxisRectRatio);
+  t2->position->setAxisRect(r2);
+  t2->position->setCoords(0.5, -0.02);
+  t2->setPositionAlignment(Qt::AlignHCenter|Qt::AlignBottom);
+  t2->setClipToAxisRect(false);
+  
+  QList<QCPAxis*> allAxes;
+  allAxes << r1->axes() << r2->axes();
+  foreach (QCPAxis *axis, allAxes)
+  {
+    axis->setLayer("axes");
+    axis->grid()->setLayer("grid");
+  }
+  customPlot->savePng(dir.filePath("QCPColorGradient-periodic.png"), 450, 180);
+}
+
 void MainWindow::labelItemAnchors(QCPAbstractItem *item, double fontSize, bool circle, bool labelBelow)
 {
   QList<QCPItemAnchor*> anchors = item->anchors();
