@@ -296,6 +296,11 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   grid is displayed.
 */
 
+/*! \fn static Qt::Orientation orientation(AxisType type)
+  
+  Returns the orientation of the specified axis type
+*/
+
 /* end of documentation of inline functions */
 /* start of documentation of signals */
 
@@ -1820,6 +1825,9 @@ QCPAxis::AxisType QCPAxis::marginSideToAxisType(QCP::MarginSide side)
   return atLeft;
 }
 
+/*!
+  Returns the axis type that describes the opposite axis of an axis with the specified \a type.
+*/
 QCPAxis::AxisType QCPAxis::opposite(QCPAxis::AxisType type)
 {
   switch (type)

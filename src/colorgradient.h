@@ -33,11 +33,20 @@ class QCP_LIB_DECL QCPColorGradient
 {
   Q_GADGET
 public:
+  /*!
+    Defines the color spaces in which color interpolation between gradient stops can be performed.
+    
+    \see setColorInterpolation
+  */
   enum ColorInterpolation {ciRGB,
                            ciHSV
                           };
   Q_ENUMS(ColorInterpolation)
   
+  /*!
+    Defines the available presets that can be loaded with \ref loadPreset. See the documentation
+    there for an image of the presets.
+  */
   enum GradientPreset {gpGrayscale,
                        gpHot,
                        gpCold,
@@ -54,7 +63,6 @@ public:
   Q_ENUMS(GradientPreset)
   
   QCPColorGradient(GradientPreset preset=gpCold);
-  ~QCPColorGradient();
   bool operator==(const QCPColorGradient &other) const;
   bool operator!=(const QCPColorGradient &other) const { return !(*this == other); }
   

@@ -56,6 +56,12 @@
   the data range specified on the plottable instance can be controlled with \ref setPeriodic.
 */
 
+/*!
+  Constructs a new QCPColorGradient initialized with the colors and color interpolation according
+  to \a preset.
+  
+  The color level count is initialized to 350.
+*/
 QCPColorGradient::QCPColorGradient(GradientPreset preset) :
   mLevelCount(350),
   mColorInterpolation(ciRGB),
@@ -66,10 +72,7 @@ QCPColorGradient::QCPColorGradient(GradientPreset preset) :
   loadPreset(preset);
 }
 
-QCPColorGradient::~QCPColorGradient()
-{
-}
-
+/* undocumented operator */
 bool QCPColorGradient::operator==(const QCPColorGradient &other) const
 {
   return ((other.mLevelCount == this->mLevelCount) &&
@@ -78,6 +81,12 @@ bool QCPColorGradient::operator==(const QCPColorGradient &other) const
           (other.mColorStops == this->mColorStops));
 }
 
+/*!
+  Sets the number of discretization levels of the color gradient to \a n. The default is 350 which
+  is typically enough to create a smooth appearance.
+  
+  \image html QCPColorGradient-levelcount.png
+*/
 void QCPColorGradient::setLevelCount(int n)
 {
   if (n < 2)
@@ -92,18 +101,41 @@ void QCPColorGradient::setLevelCount(int n)
   }
 }
 
+/*!
+  Sets at which positions from 0 to 1 which color shall occur. The positions are the keys, the
+  colors are the values of the passed QMap \a colorStops. In between these color stops, the color
+  is interpolated according to \ref setColorInterpolation.
+  
+  A more convenient way to create a custom gradient may be to clear all color stops with \ref
+  clearColorStops and then adding them one by one with \ref setColorStopAt.
+  
+  \see clearColorStops
+*/
 void QCPColorGradient::setColorStops(const QMap<double, QColor> &colorStops)
 {
   mColorStops = colorStops;
   mColorBufferInvalidated = true;
 }
 
+/*!
+  Sets the \a color the gradient will have at \a position (from 0 to 1 ). In between these color
+  stops, the color is interpolated according to \ref setColorInterpolation.
+  
+  \see setColorStops, clearColorStops
+*/
 void QCPColorGradient::setColorStopAt(double position, const QColor &color)
 {
   mColorStops.insert(position, color);
   mColorBufferInvalidated = true;
 }
 
+/*!
+  Sets whether the colors in between the configured color stops (see \ref setColorStopAt) shall be
+  interpolated linearly in RGB or in HSV color space.
+  
+  For example, a sweep in RGB space from red to green will have a muddy brown intermediate color,
+  whereas in HSV space the intermediate color is yellow.
+*/
 void QCPColorGradient::setColorInterpolation(QCPColorGradient::ColorInterpolation interpolation)
 {
   if (interpolation != mColorInterpolation)
@@ -113,11 +145,38 @@ void QCPColorGradient::setColorInterpolation(QCPColorGradient::ColorInterpolatio
   }
 }
 
+/*!
+  Sets whether data points that are outside the configured data range (e.g. \ref
+  QCPColorMap::setDataRange) are colored by periodically repeating the color gradient or whether
+  they all have the same color, corresponding to the respective gradient boundary color.
+  
+  \image html QCPColorGradient-periodic.png
+  
+  As shown in the image above, gradients that have the same start and end color are especially
+  suitable for a periodic gradient mapping, since they produce smooth color transitions throughout
+  the color map. A preset that has this property is \ref gpHues.
+  
+  In Practice, periodic color gradients make especially sense when the data corresponds to a
+  periodic dimension, such as an angle or a phase. If this is not the case, the color encoding
+  might become ambiguous, because multiple different data values are shown as the same color.
+*/
 void QCPColorGradient::setPeriodic(bool enabled)
 {
   mPeriodic = enabled;
 }
 
+/*!
+  This method is used to quickly convert a \a data array to colors. The colors will be output in
+  the array \a scanLine. Both \a data and \a scanLine must have the length \a n when passed to this
+  function. The data range that shall be used for mapping the data value to the gradient is passed
+  in \a range. \a logarithmic indicates whether the data values shall be mapped to colors
+  logarithmically.
+  
+  if \a data actually contains 2D-data linearized via <tt>[row*columnCount + column]</tt>, you can
+  set \a dataIndexFactor to <tt>columnCount</tt> to convert a column instead of a row of the data
+  array, in \a scanLine. \a scanLine will remain a regular (1D) array. This works because \a data
+  is addressed <tt>data[i*dataIndexFactor]</tt>.
+*/
 void QCPColorGradient::colorize(const double *data, const QCPRange &range, QRgb *scanLine, int n, int dataIndexFactor, bool logarithmic)
 {
   // If you change something here, make sure to also adapt ::color()
@@ -184,6 +243,15 @@ void QCPColorGradient::colorize(const double *data, const QCPRange &range, QRgb 
   }
 }
 
+/*! \internal
+  
+  This method is used to colorize a single data value given in \a position, to colors. The data
+  range that shall be used for mapping the data value to the gradient is passed in \a range. \a
+  logarithmic indicates whether the data value shall be mapped to a color logarithmically.
+  
+  If an entire array of data values shall be converted, rather use \ref colorize, for better
+  performance.
+*/
 QRgb QCPColorGradient::color(double position, const QCPRange &range, bool logarithmic)
 {
   // If you change something here, make sure to also adapt ::colorize()
@@ -209,6 +277,13 @@ QRgb QCPColorGradient::color(double position, const QCPRange &range, bool logari
   return mColorBuffer.at(index);
 }
 
+/*!
+  Clears the current color stops and loads the specified \a preset. A preset consists of predefined
+  color stops and the corresponding color interpolation method.
+  
+  The available presets are:
+  \image html QCPColorGradient.png
+*/
 void QCPColorGradient::loadPreset(GradientPreset preset)
 {
   clearColorStops();
@@ -313,12 +388,23 @@ void QCPColorGradient::loadPreset(GradientPreset preset)
   }
 }
 
+/*!
+  Clears all color stops.
+  
+  \see setColorStops, setColorStopAt
+*/
 void QCPColorGradient::clearColorStops()
 {
   mColorStops.clear();
   mColorBufferInvalidated = true;
 }
 
+/*!
+  Returns an inverted gradient. The inverted gradient has all properties as this \ref
+  QCPColorGradient, but the order of the color stops is inverted.
+  
+  \see setColorStops, setColorStopAt
+*/
 QCPColorGradient QCPColorGradient::inverted() const
 {
   QCPColorGradient result(*this);
@@ -328,6 +414,11 @@ QCPColorGradient QCPColorGradient::inverted() const
   return result;
 }
 
+/*! \internal
+  
+  Updates the internal color buffer which will be used by \ref colorize and \ref color, to quickly
+  convert positions to colors. This is where the interpolation between color stops is calculated.
+*/
 void QCPColorGradient::updateColorBuffer()
 {
   if (mColorBuffer.size() != mLevelCount)
