@@ -164,11 +164,6 @@ bool QCPColorScale::rangeDrag() const
     qDebug() << Q_FUNC_INFO << "internal axis rect was deleted";
     return false;
   }
-  if (!mColorAxis)
-  {
-    qDebug() << Q_FUNC_INFO << "internal color axis undefined";
-    return false;
-  }
   
   return mAxisRect.data()->rangeDrag().testFlag(QCPAxis::orientation(mAxisType)) &&
       mAxisRect.data()->rangeDragAxis(QCPAxis::orientation(mAxisType)) &&
@@ -181,11 +176,6 @@ bool QCPColorScale::rangeZoom() const
   if (!mAxisRect)
   {
     qDebug() << Q_FUNC_INFO << "internal axis rect was deleted";
-    return false;
-  }
-  if (!mColorAxis)
-  {
-    qDebug() << Q_FUNC_INFO << "internal color axis undefined";
     return false;
   }
   
