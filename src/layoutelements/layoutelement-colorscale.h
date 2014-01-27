@@ -78,6 +78,7 @@ public:
   QCPRange dataRange() const { return mDataRange; }
   QCPAxis::ScaleType dataScaleType() const { return mDataScaleType; }
   QCPColorGradient gradient() const { return mGradient; }
+  QString label() const;
   int barWidth () const { return mBarWidth; }
   bool rangeDrag() const;
   bool rangeZoom() const;
@@ -87,6 +88,7 @@ public:
   Q_SLOT void setDataRange(const QCPRange &dataRange);
   Q_SLOT void setDataScaleType(QCPAxis::ScaleType scaleType);
   Q_SLOT void setGradient(const QCPColorGradient &gradient);
+  void setLabel(const QString &str);
   void setBarWidth(int width);
   void setRangeDrag(bool enabled);
   void setRangeZoom(bool enabled);

@@ -145,6 +145,17 @@ QCPColorScale::~QCPColorScale()
   delete mAxisRect;
 }
 
+QString QCPColorScale::label() const
+{
+  if (!mColorAxis)
+  {
+    qDebug() << Q_FUNC_INFO << "internal color axis undefined";
+    return QString();
+  }
+  
+  return mColorAxis.data()->label();
+}
+
 /* undocumented getter */
 bool QCPColorScale::rangeDrag() const
 {
@@ -290,6 +301,21 @@ void QCPColorScale::setGradient(const QCPColorGradient &gradient)
       mAxisRect.data()->mGradientImageInvalidated = true;
     emit gradientChanged(mGradient);
   }
+}
+
+/*!
+  Sets the axis label of the color scale. This is equivalent to calling \ref QCPAxis::setLabel on
+  the internal \ref axis.
+*/
+void QCPColorScale::setLabel(const QString &str)
+{
+  if (!mColorAxis)
+  {
+    qDebug() << Q_FUNC_INFO << "internal color axis undefined";
+    return;
+  }
+  
+  mColorAxis.data()->setLabel(str);
 }
 
 /*!
