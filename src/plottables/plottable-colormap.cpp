@@ -467,6 +467,43 @@ void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, dou
   \endcode
 */
 
+/* start documentation of inline functions */
+
+/*! \fn QCPColorMapData *QCPColorMap::data() const
+  
+  Returns a pointer to the internal data storage of type \ref QCPColorMapData. Access this to
+  modify data points (cells) and the color map key/value range.
+  
+  \see setData
+*/
+
+/* end documentation of inline functions */
+
+/* start documentation of signals */
+
+/*! \fn void QCPColorMap::dataRangeChanged(QCPRange newRange);
+  
+  This signal is emitted when the data range changes.
+  
+  \see setDataRange
+*/
+
+/*! \fn void QCPColorMap::dataScaleTypeChanged(QCPAxis::ScaleType scaleType);
+  
+  This signal is emitted when the data scale type changes.
+  
+  \see setDataScaleType
+*/
+
+/*! \fn void QCPColorMap::gradientChanged(QCPColorGradient newGradient);
+  
+  This signal is emitted when the gradient changes.
+  
+  \see setGradient
+*/
+
+/* end documentation of signals */
+
 /*!
   Constructs a color map with the specified \a keyAxis and \a valueAxis.
   
@@ -489,7 +526,7 @@ QCPColorMap::~QCPColorMap()
 }
 
 /*!
-  Replaces the current data with the provided \a data.
+  Replaces the current \ref data with the provided \a data.
   
   If \a copy is set to true, the \a data object will only be copied. if false, the color map
   takes ownership of the passed data and replaces the internal data pointer with it. This is

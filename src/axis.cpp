@@ -286,8 +286,10 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 
 /*! \fn Qt::Orientation QCPAxis::orientation() const
   
-  Returns the orientation of the axis. The axis orientation (horizontal or vertical) is deduced
+  Returns the orientation of this axis. The axis orientation (horizontal or vertical) is deduced
   from the axis type (left, top, right or bottom).
+  
+  \see orientation(AxisType type)
 */
 
 /*! \fn QCPGrid *QCPAxis::grid() const
@@ -296,9 +298,11 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   grid is displayed.
 */
 
-/*! \fn static Qt::Orientation orientation(AxisType type)
+/*! \fn static Qt::Orientation QCPAxis::orientation(AxisType type)
   
   Returns the orientation of the specified axis type
+  
+  \see orientation()
 */
 
 /* end of documentation of inline functions */
@@ -333,10 +337,20 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   \a oldRange.
 */
 
+/*! \fn void QCPAxis::scaleTypeChanged(QCPAxis::ScaleType scaleType);
+  
+  This signal is emitted when the scale type changes, by calls to \ref setScaleType
+*/
+
 /*! \fn void QCPAxis::selectionChanged(QCPAxis::SelectableParts selection)
   
   This signal is emitted when the selection state of this axis has changed, either by user interaction
   or by a direct call to \ref setSelectedParts.
+*/
+
+/*! \fn void QCPAxis::selectableChanged(const QCPAxis::SelectableParts &parts);
+  
+  This signal is emitted when the selectability changes, by calls to \ref setSelectableParts
 */
 
 /* end of documentation of signals */
@@ -2115,7 +2129,7 @@ void QCPAxis::applyDefaultAntialiasingHint(QCPPainter *painter) const
 
 /*! \internal
   
-  Draws the axis with the specified \a painter, using the internal \ref QCPAxisPainterPrivate instance.
+  Draws the axis with the specified \a painter, using the internal QCPAxisPainterPrivate instance.
 
 */
 void QCPAxis::draw(QCPPainter *painter)
@@ -2379,13 +2393,22 @@ QCP::Interaction QCPAxis::selectionCategory() const
 //////////////////// QCPAxisPainterPrivate
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*! \class QCPAxisPainterPrivate \internal
+/*! \class QCPAxisPainterPrivate
+
+  \internal
   \brief (Private)
   
   This is a private class and not part of the public QCustomPlot interface.
   
+  It is used by QCPAxis to do the low-level drawing of axis backbone, tick marks, tick labels and
+  axis label. It also buffers the labels to reduce replot times. The parameters are configured by
+  directly accessing the public member variables.
 */
 
+/*!
+  Constructs a QCPAxisPainterPrivate instance. Make sure to not create a new instance on every
+  redraw, to utilize the caching mechanisms.
+*/
 QCPAxisPainterPrivate::QCPAxisPainterPrivate(QCustomPlot *parentPlot) :
   type(QCPAxis::atLeft),
   basePen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
@@ -2588,6 +2611,11 @@ void QCPAxisPainterPrivate::draw(QCPPainter *painter)
   //painter->drawRects(QVector<QRect>() << mAxisSelectionBox << mTickLabelsSelectionBox << mLabelSelectionBox);
 }
 
+/*! \internal
+  
+  Returns the size ("margin" in QCPAxisRect context, so measured perpendicular to the axis backbone
+  direction) needed to fit the axis.
+*/
 int QCPAxisPainterPrivate::size() const
 {
   int result = 0;
@@ -2618,11 +2646,24 @@ int QCPAxisPainterPrivate::size() const
   return result;
 }
 
+/*! \internal
+  
+  Clears the internal label cache. Upon the next \ref draw, all labels will be created new. This
+  method is called automatically in \ref draw, if any parameters have changed that invalidate the
+  cached labels, such as font, color, etc.
+*/
 void QCPAxisPainterPrivate::clearCache()
 {
   mLabelCache.clear();
 }
 
+/*! \internal
+  
+  Returns a hash that allows uniquely identifying whether the label parameters have changed such
+  that the cached labels must be refreshed (\ref clearCache). It is used in \ref draw. If the
+  return value of this method hasn't changed since the last redraw, the respective label parameters
+  haven't changed and cached labels may be used.
+*/
 QByteArray QCPAxisPainterPrivate::generateLabelParameterHash() const
 {
   QByteArray result;
@@ -2768,7 +2809,7 @@ void QCPAxisPainterPrivate::drawTickLabel(QCPPainter *painter, double x, double 
   
   Transforms the passed \a text and \a font to a tickLabelData structure that can then be further
   processed by \ref getTickLabelDrawOffset and \ref drawTickLabel. It splits the text into base and
-  exponent if necessary (see \ref setNumberFormat) and calculates appropriate bounding boxes.
+  exponent if necessary (member substituteExponent) and calculates appropriate bounding boxes.
 */
 QCPAxisPainterPrivate::TickLabelData QCPAxisPainterPrivate::getTickLabelData(const QFont &font, const QString &text) const
 {

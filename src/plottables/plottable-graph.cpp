@@ -1237,7 +1237,7 @@ void QCPGraph::drawImpulsePlot(QCPPainter *painter, QVector<QPointF> *lineData) 
   densities.
   
   0 may be passed as \a lineData or \a scatterData to indicate that the respective dataset isn't
-  needed. For example, if the scatter style (\ref setStyle) is \ref QCPScatterStyle::ssNone, \a
+  needed. For example, if the scatter style (\ref setScatterStyle) is \ref QCPScatterStyle::ssNone, \a
   scatterData should be 0 to prevent unnecessary calculations.
   
   This method is used by the various "get(...)PlotData" methods to get the basic working set of data.

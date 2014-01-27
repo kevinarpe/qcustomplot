@@ -251,6 +251,16 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
 */
 
 /* end documentation of pure virtual functions */
+/* start documentation of signals */
+
+/*! \fn void QCPLayerable::layerChanged(QCPLayer *newLayer);
+  
+  This signal is emitted when the layer of this layerable changes.
+  
+  \see setLayer
+*/
+
+/* end documentation of signals */
 
 /*!
   Creates a new QCPLayerable instance.

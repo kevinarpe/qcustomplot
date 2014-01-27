@@ -154,7 +154,7 @@ void QCPColorGradient::setColorInterpolation(QCPColorGradient::ColorInterpolatio
   
   As shown in the image above, gradients that have the same start and end color are especially
   suitable for a periodic gradient mapping, since they produce smooth color transitions throughout
-  the color map. A preset that has this property is \ref gpHues.
+  the color map. A preset that has this property is <tt>gpHues</tt>.
   
   In Practice, periodic color gradients make especially sense when the data corresponds to a
   periodic dimension, such as an angle or a phase. If this is not the case, the color encoding

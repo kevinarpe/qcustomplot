@@ -52,19 +52,21 @@
   scale, to make them all synchronize these properties.
   
   To have finer control over the number display and axis behaviour, you can directly access the
-  \ref axis. See the documentation of QCPAxis for details about configuring axes. For example, if you want to
-  set the label of the axis, call
+  \ref axis. See the documentation of QCPAxis for details about configuring axes. For example, if
+  you want to change the number of automatically generated ticks, call
   \code
-  colorScale->axis()->setLabel("some label text");
+  colorScale->axis()->setAutoTickCount(3);
   \endcode
   
   Placing a color scale next to the main axis rect works like with any other layout element:
   \code
   QCPColorScale *colorScale = new QCPColorScale(customPlot);
   customPlot->plotLayout()->addElement(0, 1, colorScale);
+  colorScale->setLabel("Some Label Text");
   \endcode
   In this case we have placed it to the right of the default axis rect, so it wasn't necessary to
-  call \ref setType, since \ref QCP::atRight is already the default.
+  call \ref setType, since \ref QCPAxis::atRight is already the default. The text next to the color
+  scale can be set with \ref setLabel.
   
   For optimum appearance (like in the image above), it may be desirable to line up the axis rect and
   the borders of the color scale. Use a \ref QCPMarginGroup to achieve this:
@@ -77,10 +79,51 @@
   Color scales are initialized with a non-zero minimum top and bottom margin (\ref
   setMinimumMargins), because vertical color scales are most common and the minimum top/bottom
   margin makes sure it keeps some distance to the top/bottom widget border. So if you change to a
-  horizontal color scale by setting \ref setType to \ref QCP::atBottom or \ref QCP::atTop, you
+  horizontal color scale by setting \ref setType to \ref QCPAxis::atBottom or \ref QCPAxis::atTop, you
   might want to also change the minimum margins accordingly, e.g. \ref
   setMinimumMargins(QMargins(6, 0, 6, 0)).
 */
+
+/* start documentation of inline functions */
+
+/*! \fn QCPAxis *QCPColorScale::axis() const
+  
+  Returns the internal \ref QCPAxis instance of this color scale. You can access it to alter the
+  appearance and behaviour of the axis. \ref QCPColorScale duplicates three properties in its
+  interface for convenience. Those are \ref QCPAxis::setRange and \ref setDataRange, the methods
+  \ref QCPAxis::setScaleType and \ref setDataScaleType, and the methods \ref QCPAxis::setLabel and
+  \ref setLabel. As they are connected, it does not matter whether you use the method on the
+  QCPColorScale or on its QCPAxis.
+  
+  If the type of the color scale is changed with \ref setType, the axis returned by this method
+  will change, too, to either the left, right, bottom or top axis, depending on which type was set.
+*/
+
+/* end documentation of signals */
+/* start documentation of signals */
+
+/*! \fn void QCPColorScale::dataRangeChanged(QCPRange newRange);
+  
+  This signal is emitted when the data range changes.
+  
+  \see setDataRange
+*/
+
+/*! \fn void QCPColorScale::dataScaleTypeChanged(QCPAxis::ScaleType scaleType);
+  
+  This signal is emitted when the data scale type changes.
+  
+  \see setDataScaleType
+*/
+
+/*! \fn void QCPColorScale::gradientChanged(QCPColorGradient newGradient);
+  
+  This signal is emitted when the gradient changes.
+  
+  \see setGradient
+*/
+
+/* end documentation of signals */
 
 /*!
   Constructs a new QCPColorScale. 
@@ -388,7 +431,9 @@ void QCPColorScale::wheelEvent(QWheelEvent *event)
 //////////////////// QCPColorScaleAxisRectPrivate
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*! \class QCPColorScaleAxisRectPrivate \internal
+/*! \class QCPColorScaleAxisRectPrivate
+
+  \internal
   \brief An axis rect subclass for use in a QCPColorScale
   
   This is a private class and not part of the public QCustomPlot interface.
