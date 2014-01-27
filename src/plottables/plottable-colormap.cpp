@@ -269,7 +269,7 @@ void QCPColorMapData::setValueRange(const QCPRange &valueRange)
 void QCPColorMapData::setData(double key, double value, double z)
 {
   int keyCell = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
-  int valueCell = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)+0.5;
+  int valueCell = (value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower)*(mValueSize-1)+0.5;
   if (keyCell >= 0 && keyCell < mKeySize && valueCell >= 0 && valueCell < mValueSize)
   {
     mData[valueCell*mKeySize + keyCell] = z;
@@ -340,7 +340,7 @@ void QCPColorMapData::recalculateDataBounds()
 /*!
   Frees the internal data memory.
   
-  This is equivalent to calling \ref setSize(0, 0).
+  This is equivalent to calling \ref setSize "setSize(0, 0)".
 */
 void QCPColorMapData::clear()
 {
@@ -375,7 +375,7 @@ void QCPColorMapData::coordToCell(double key, double value, int *keyIndex, int *
   if (keyIndex)
     *keyIndex = (key-mKeyRange.lower)/(mKeyRange.upper-mKeyRange.lower)*(mKeySize-1)+0.5;
   if (valueIndex)
-    *valueIndex = (1.0-(value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower))*(mValueSize-1)+0.5;
+    *valueIndex = (value-mValueRange.lower)/(mValueRange.upper-mValueRange.lower)*(mValueSize-1)+0.5;
 }
 
 /*!
@@ -393,7 +393,7 @@ void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, dou
   if (key)
     *key = keyIndex/(double)(mKeySize-1)*(mKeyRange.upper-mKeyRange.lower)+mKeyRange.lower;
   if (value)
-    *value = (1.0-valueIndex/(double)(mValueSize-1))*(mValueRange.upper-mValueRange.lower)+mValueRange.lower;
+    *value = valueIndex/(double)(mValueSize-1)*(mValueRange.upper-mValueRange.lower)+mValueRange.lower;
 }
 
 
@@ -715,11 +715,14 @@ void QCPColorMap::rescaleDataRange(bool recalculateDataBounds)
 */
 void QCPColorMap::updateLegendIcon(Qt::TransformationMode transformMode, const QSize &thumbSize)
 {
-  if (!mMapImage.isNull())
+  if (mMapImage.isNull() && !data()->isEmpty())
+    updateMapImage(); // try to update map image if it's null (happens if no draw has happened yet)
+  
+  if (!mMapImage.isNull()) // might still be null, e.g. if data is empty, so check here again
   {
-    QRectF imageRect(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().upper),
-                     coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().lower));
-    mLegendIcon = QPixmap::fromImage(mMapImage.mirrored(imageRect.width() < 0, imageRect.height() < 0)).scaled(thumbSize, Qt::KeepAspectRatio, transformMode);
+    bool mirrorX = (keyAxis()->orientation() == Qt::Horizontal ? keyAxis() : valueAxis())->rangeReversed();
+    bool mirrorY = (valueAxis()->orientation() == Qt::Vertical ? valueAxis() : keyAxis())->rangeReversed();
+    mLegendIcon = QPixmap::fromImage(mMapImage.mirrored(mirrorX, mirrorY)).scaled(thumbSize, Qt::KeepAspectRatio, transformMode);
   }
 }
 
@@ -777,7 +780,7 @@ void QCPColorMap::updateMapImage()
     const int rowCount = keySize;
     for (int line=0; line<lineCount; ++line)
     {
-      QRgb* pixels = reinterpret_cast<QRgb*>(mMapImage.scanLine(line));
+      QRgb* pixels = reinterpret_cast<QRgb*>(mMapImage.scanLine(lineCount-1-line)); // invert scanline index because QImage counts scanlines from top, but our vertical index counts from bottom (mathematical coordinate system)
       mGradient.colorize(rawData+line*rowCount, mDataRange, pixels, rowCount, 1, mDataScaleType==QCPAxis::stLogarithmic);
     }
   } else // keyAxis->orientation() == Qt::Vertical
@@ -786,7 +789,7 @@ void QCPColorMap::updateMapImage()
     const int rowCount = valueSize;
     for (int line=0; line<lineCount; ++line)
     {
-      QRgb* pixels = reinterpret_cast<QRgb*>(mMapImage.scanLine(line));
+      QRgb* pixels = reinterpret_cast<QRgb*>(mMapImage.scanLine(lineCount-1-line)); // invert scanline index because QImage counts scanlines from top, but our vertical index counts from bottom (mathematical coordinate system)
       mGradient.colorize(rawData+line, mDataRange, pixels, rowCount, lineCount, mDataScaleType==QCPAxis::stLogarithmic);
     }
   }
@@ -811,18 +814,21 @@ void QCPColorMap::draw(QCPPainter *painter)
     halfSampleKey = 0.5*mMapData->keyRange().size()/(double)(mMapData->keySize()-1);
   if (mMapData->valueSize() > 1)
     halfSampleValue = 0.5*mMapData->valueRange().size()/(double)(mMapData->valueSize()-1);
-  QRectF imageRect(coordsToPixels(mMapData->keyRange().lower-halfSampleKey, mMapData->valueRange().upper+halfSampleValue),
-                   coordsToPixels(mMapData->keyRange().upper+halfSampleKey, mMapData->valueRange().lower-halfSampleValue));
+  QRectF imageRect(coordsToPixels(mMapData->keyRange().lower-halfSampleKey, mMapData->valueRange().lower-halfSampleValue),
+                   coordsToPixels(mMapData->keyRange().upper+halfSampleKey, mMapData->valueRange().upper+halfSampleValue));
+  imageRect = imageRect.normalized();
+  bool mirrorX = (keyAxis()->orientation() == Qt::Horizontal ? keyAxis() : valueAxis())->rangeReversed();
+  bool mirrorY = (valueAxis()->orientation() == Qt::Vertical ? valueAxis() : keyAxis())->rangeReversed();
   bool smoothBackup = painter->renderHints().testFlag(QPainter::SmoothPixmapTransform);
   painter->setRenderHint(QPainter::SmoothPixmapTransform, mInterpolate);
   QRegion clipBackup;
   if (mTightBoundary)
   { 
     clipBackup = painter->clipRegion();
-    painter->setClipRect(QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().upper),
-                                coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().lower)).normalized(), Qt::IntersectClip);
+    painter->setClipRect(QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().lower),
+                                coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().upper)).normalized(), Qt::IntersectClip);
   }
-  painter->drawImage(imageRect.normalized(), mMapImage.mirrored(imageRect.width() < 0, imageRect.height() < 0));
+  painter->drawImage(imageRect, mMapImage.mirrored(mirrorX, mirrorY));
   if (mTightBoundary)
     painter->setClipRegion(clipBackup);
   painter->setRenderHint(QPainter::SmoothPixmapTransform, smoothBackup);
