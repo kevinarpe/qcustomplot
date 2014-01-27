@@ -1881,12 +1881,6 @@ void QCustomPlot::replot(QCustomPlot::RefreshPriority refreshPriority)
     return;
   mReplotting = true;
   emit beforeReplot();
-#ifdef QCUSTOMPLOT_TIMED_REPLOT
-  static quint32 frameNumber = 1;
-  static qint64 nsecsSum = 0;
-  QElapsedTimer timer;
-  timer.start();
-#endif
   
   mPaintBuffer.fill(mBackgroundBrush.style() == Qt::SolidPattern ? mBackgroundBrush.color() : Qt::transparent);
   QCPPainter painter;
@@ -1905,15 +1899,6 @@ void QCustomPlot::replot(QCustomPlot::RefreshPriority refreshPriority)
   } else // might happen if QCustomPlot has width or height zero
     qDebug() << Q_FUNC_INFO << "Couldn't activate painter on buffer";
   
-#ifdef QCUSTOMPLOT_TIMED_REPLOT
-  nsecsSum += timer.nsecsElapsed();
-  if (frameNumber % 50 == 0)
-  {
-    qDebug() << "QCustomPlot Replot duration" << (nsecsSum/50.0/1000)/1000.0 << "ms during frames" << frameNumber-49 << "to" << frameNumber;
-    nsecsSum = 0;
-  }
-  frameNumber++;
-#endif
   emit afterReplot();
   mReplotting = false;
 }
