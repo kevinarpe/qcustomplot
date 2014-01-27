@@ -60,9 +60,11 @@ public slots:
   void setupMultiAxisRectInteractionsMouseMove(QMouseEvent *event);
   void daqPerformanceDataSlot();
   void daqPerformanceReplotSlot();
+  void colorMapMouseMove(QMouseEvent *event);
   
   void integerTickStepCase_xRangeChanged(QCPRange newRange);
   void integerTickStepCase_yRangeChanged(QCPRange newRange);
+  
   
   void mouseWheel(QWheelEvent *event);
   
