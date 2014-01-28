@@ -159,3 +159,22 @@ QCPGraph_RemoveDataBetween   107.25 +/- 2.05 ms
 QCPGraph_Standard             34.10 +/- 4.30 ms
 
 
+*** Benchmark on 2014-01-28 04:14 ***
+Platform: Linux-3.5.0-45-generic-i686-athlon-with-LinuxMint-14-nadia, dermanu on manulinux
+Qt Version: 5.2.0
+Git Branch: dev-1.2.0
+Git Head: b6a9143 - Bugfix: potential assert halt if QCPAxis autoTickLabels not disabled, but nevertheless a custom tick label ending in "e" given
+Rounds: 20
+Comment: First benchmark with adaptive sampling
+QCPAxis_TickLabels             1.58 +/- 0.20 ms
+QCPAxis_TickLabelsCached       0.65 +/- 0.10 ms
+QCPGraph_AddData             166.05 +/- 10.13 ms
+QCPGraph_ManyLines             6.56 +/- 0.38 ms
+QCPGraph_ManyOffScreenLines    0.54 +/- 0.03 ms
+QCPGraph_ManyPoints           16.00 +/- 0.00 ms
+QCPGraph_RemoveDataAfter     118.80 +/- 1.21 ms
+QCPGraph_RemoveDataBefore     44.80 +/- 1.03 ms
+QCPGraph_RemoveDataBetween   115.00 +/- 1.90 ms
+QCPGraph_Standard              2.37 +/- 0.61 ms
+
+
