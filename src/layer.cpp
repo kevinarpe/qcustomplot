@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #include "layer.h"
@@ -104,7 +104,8 @@ QCPLayer::QCPLayer(QCustomPlot *parentPlot, const QString &layerName) :
   QObject(parentPlot),
   mParentPlot(parentPlot),
   mName(layerName),
-  mIndex(-1) // will be set to a proper value by the QCustomPlot layer creation function
+  mIndex(-1), // will be set to a proper value by the QCustomPlot layer creation function
+  mVisible(true)
 {
   // Note: no need to make sure layerName is unique, because layer
   // management is done with QCustomPlot functions.
@@ -122,6 +123,19 @@ QCPLayer::~QCPLayer()
   
   if (mParentPlot->currentLayer() == this)
     qDebug() << Q_FUNC_INFO << "The parent plot's mCurrentLayer will be a dangling pointer. Should have been set to a valid layer or 0 beforehand.";
+}
+
+/*!
+  Sets whether this layer is visible or not. If \a visible is set to false, all layerables on this
+  layer will be invisible.
+
+  This function doesn't change the visibility property of the layerables (\ref
+  QCPLayerable::setVisible), but the \ref QCPLayerable::realVisibility of each layerable takes the
+  visibility of the parent layer into account.
+*/
+void QCPLayer::setVisible(bool visible)
+{
+  mVisible = visible;
 }
 
 /*! \internal
@@ -237,6 +251,16 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
 */
 
 /* end documentation of pure virtual functions */
+/* start documentation of signals */
+
+/*! \fn void QCPLayerable::layerChanged(QCPLayer *newLayer);
+  
+  This signal is emitted when the layer of this layerable changes.
+  
+  \see setLayer
+*/
+
+/* end documentation of signals */
 
 /*!
   Creates a new QCPLayerable instance.
@@ -337,9 +361,9 @@ void QCPLayerable::setAntialiased(bool enabled)
 }
 
 /*!
-  Returns whether this layerable is visible, taking possible direct layerable parent visibility
-  into account. This is the method that is consulted to decide whether a layerable shall be drawn
-  or not.
+  Returns whether this layerable is visible, taking the visibility of the layerable parent and the
+  visibility of the layer this layerable is on into account. This is the method that is consulted
+  to decide whether a layerable shall be drawn or not.
   
   If this layerable has a direct layerable parent (usually set via hierarchies implemented in
   subclasses, like in the case of QCPLayoutElement), this function returns true only if this
@@ -351,7 +375,7 @@ void QCPLayerable::setAntialiased(bool enabled)
 */
 bool QCPLayerable::realVisibility() const
 {
-  return mVisible && (!mParentLayerable || mParentLayerable.data()->realVisibility());
+  return mVisible && (!mLayer || mLayer->visible()) && (!mParentLayerable || mParentLayerable.data()->realVisibility());
 }
 
 /*!
@@ -465,11 +489,14 @@ bool QCPLayerable::moveToLayer(QCPLayer *layer, bool prepend)
     return false;
   }
   
+  QCPLayer *oldLayer = mLayer;
   if (mLayer)
     mLayer->removeChild(this);
   mLayer = layer;
   if (mLayer)
     mLayer->addChild(this, prepend);
+  if (mLayer != oldLayer)
+    emit layerChanged(mLayer);
   return true;
 }
 

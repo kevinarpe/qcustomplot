@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_LAYOUT_H
@@ -75,6 +75,16 @@ class QCP_LIB_DECL QCPLayoutElement : public QCPLayerable
   Q_PROPERTY(QSize maximumSize READ maximumSize WRITE setMaximumSize)
   /// \endcond
 public:
+  /*!
+    Defines the phases of the update process, that happens just before a replot. At each phase,
+    \ref update is called with the according UpdatePhase value.
+  */
+  enum UpdatePhase { upPreparation ///< Phase used for any type of preparation that needs to be done before margin calculation and layout
+                     ,upMargins    ///< Phase in which the margins are calculated and set
+                     ,upLayout     ///< Final phase in which the layout system places the rects of the elements
+                   };
+  Q_ENUMS(UpdatePhase)
+
   explicit QCPLayoutElement(QCustomPlot *parentPlot=0);
   virtual ~QCPLayoutElement();
   
@@ -102,7 +112,7 @@ public:
   void setMarginGroup(QCP::MarginSides sides, QCPMarginGroup *group);
   
   // introduced virtual methods:
-  virtual void update();
+  virtual void update(UpdatePhase phase);
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;
   virtual QList<QCPLayoutElement*> elements(bool recursive) const;
@@ -149,7 +159,7 @@ public:
   explicit QCPLayout();
   
   // reimplemented virtual methods:
-  virtual void update();
+  virtual void update(UpdatePhase phase);
   virtual QList<QCPLayoutElement*> elements(bool recursive) const;
   
   // introduced virtual methods:

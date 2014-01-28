@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 /************************************************************************************************************
@@ -74,10 +74,11 @@ MainWindow::MainWindow(QWidget *parent) :
   // 15: setupItemDemo(ui->customPlot);
   // 16: setupStyledDemo(ui->customPlot);
   // 17: setupAdvancedAxesDemo(ui->customPlot);
+  // 18: setupColorMapDemo(ui->customPlot);
   
   // for making screenshots of the current demo or all demos (for website screenshots):
   //QTimer::singleShot(1500, this, SLOT(allScreenShots()));
-  //QTimer::singleShot(1000, this, SLOT(screenShot()));
+  //QTimer::singleShot(4000, this, SLOT(screenShot()));
 }
 
 void MainWindow::setupDemo(int demoIndex)
@@ -102,6 +103,7 @@ void MainWindow::setupDemo(int demoIndex)
     case 15: setupItemDemo(ui->customPlot); break;
     case 16: setupStyledDemo(ui->customPlot); break;
     case 17: setupAdvancedAxesDemo(ui->customPlot); break;
+    case 18: setupColorMapDemo(ui->customPlot); break;
   }
   setWindowTitle("QCustomPlot: "+demoName);
   statusBar()->clearMessage();
@@ -1295,6 +1297,60 @@ void MainWindow::setupAdvancedAxesDemo(QCustomPlot *customPlot)
   wideAxisRect->axis(QCPAxis::atLeft, 1)->setRangeLower(0);
 }
 
+void MainWindow::setupColorMapDemo(QCustomPlot *customPlot)
+{
+  demoName = "Color Map Demo";
+  
+  // configure axis rect:
+  customPlot->setInteractions(QCP::iRangeDrag|QCP::iRangeZoom); // this will also allow rescaling the color scale by dragging/zooming
+  customPlot->axisRect()->setupFullAxesBox(true);
+  customPlot->xAxis->setLabel("x");
+  customPlot->yAxis->setLabel("y");
+
+  // set up the QCPColorMap:
+  QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(colorMap);
+  int nx = 200;
+  int ny = 200;
+  colorMap->data()->setSize(nx, ny); // we want the color map to have nx * ny data points
+  colorMap->data()->setRange(QCPRange(-4, 4), QCPRange(-4, 4)); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions
+  // now we assign some data, by accessing the QCPColorMapData instance of the color map:
+  double x, y, z;
+  for (int xIndex=0; xIndex<nx; ++xIndex)
+  {
+    for (int yIndex=0; yIndex<ny; ++yIndex)
+    {
+      colorMap->data()->cellToCoord(xIndex, yIndex, &x, &y);
+      double r = 3*qSqrt(x*x+y*y)+1e-2;
+      z = 2*x*(qCos(r+2)/r-qSin(r+2)/r); // the B field strength of dipole radiation (modulo physical constants)
+      colorMap->data()->setCell(xIndex, yIndex, z);
+    }
+  }
+  
+  // add a color scale:
+  QCPColorScale *colorScale = new QCPColorScale(customPlot);
+  customPlot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
+  colorScale->setType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
+  colorMap->setColorScale(colorScale); // associate the color map with the color scale
+  colorScale->axis()->setLabel("Magnetic Field Strength");
+  
+  // set the color gradient of the color map to one of the presets:
+  colorMap->setGradient(QCPColorGradient::gpPolar);
+  // we could have also created a QCPColorGradient instance and added own colors to
+  // the gradient, see the documentation of QCPColorGradient for what's possible.
+  
+  // rescale the data dimension (color) such that all data points lie in the span visualized by the color gradient:
+  colorMap->rescaleDataRange();
+  
+  // make sure the axis rect and color scale synchronize their bottom and top margins (so they line up):
+  QCPMarginGroup *marginGroup = new QCPMarginGroup(customPlot);
+  customPlot->axisRect()->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
+  colorScale->setMarginGroup(QCP::msBottom|QCP::msTop, marginGroup);
+  
+  // rescale the key (x) and value (y) axes so the whole color map is visible:
+  customPlot->rescaleAxes();
+}
+
 void MainWindow::realtimeDataSlot()
 {
   // calculate two new data points:
@@ -1419,7 +1475,7 @@ void MainWindow::allScreenShots()
   fileName.replace(" ", "");
   pm.save("./screenshots/"+fileName);
   
-  if (currentDemoIndex < 17)
+  if (currentDemoIndex < 18)
   {
     if (dataTimer.isActive())
       dataTimer.stop();

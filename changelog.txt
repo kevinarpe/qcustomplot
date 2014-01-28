@@ -1,3 +1,27 @@
+#### Version 1.2.0-beta released on 28.01.14 ####
+
+  Added features:
+    - Adaptive Sampling for QCPGraph greatly improves performance for high data densities (see QCPGraph::setAdaptiveSampling)
+    - QCPColorMap plottable with QCPColorScale layout element allows plotting of 2D color maps
+    - QCustomPlot::savePdf now has additional optional parameters pdfCreator and pdfTitle to set according PDF metadata fields
+    - QCustomPlot::replot now allows specifying whether the widget update is immediate (repaint) or queued (update)
+    - QCPRange operators +, -, *, / with double operand for range shifting and scaling, and ==, != for range comparison
+    - Layers now have a visibility property (QCPLayer::setVisible)
+    - static functions QCPAxis::opposite and QCPAxis::orientation now offer more convenience when handling axis types
+    - added notification signals for selectability change (selectableChanged) on all objects that have a selected/selectable property
+    - added notification signal for QCPAxis scaleType property
+    - added notification signal QCPLayerable::layerChanged
+  
+  Bugfixes:
+    - Fixed assert halt, when QCPAxis auto tick labels not disabled but nevertheless a custom non-number tick label ending in "e" given
+    - Fixed painting glitches when QCustomPlot resized inside a QMdiArea or under certain conditions inside a QLayout
+    - If changing QCPAxis::scaleType and thus causing range sanitizing and a range modification, rangeChanged wouldn't be emitted
+    - Fixed documentation bug that caused indentation to be lost in code examples
+    
+  Other:
+    - In method QCPAbstractPlottable::getKeyRange/getValueRange, renamed parameter "validRange" to "foundRange", to better reflect its meaning (and contrast it from QCPRange::validRange)
+    - QCPAxis low-level axis painting methods exported to QCPAxisPainterPrivate
+
 #### Version 1.1.1 released on 09.12.13 ####
 
   Bugfixes:

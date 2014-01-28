@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #include "plottable.h"
@@ -114,30 +114,36 @@
   of this plottable inside \a rect, next to the plottable name.
 */
 
-/*! \fn QCPRange QCPAbstractPlottable::getKeyRange(bool &validRange, SignDomain inSignDomain) const = 0
+/*! \fn QCPRange QCPAbstractPlottable::getKeyRange(bool &foundRange, SignDomain inSignDomain) const = 0
   \internal
   
   called by rescaleAxes functions to get the full data key bounds. For logarithmic plots, one can
   set \a inSignDomain to either \ref sdNegative or \ref sdPositive in order to restrict the
   returned range to that sign domain. E.g. when only negative range is wanted, set \a inSignDomain
   to \ref sdNegative and all positive points will be ignored for range calculation. For no
-  restriction, just set \a inSignDomain to \ref sdBoth (default). \a validRange is an output
-  parameter that indicates whether a proper range could be found or not. If this is false, you
-  shouldn't use the returned range (e.g. no points in data).
+  restriction, just set \a inSignDomain to \ref sdBoth (default). \a foundRange is an output
+  parameter that indicates whether a range could be found or not. If this is false, you shouldn't
+  use the returned range (e.g. no points in data).
+
+  Note that \a foundRange is not the same as \ref QCPRange::validRange, since the range returned by
+  this function may have size zero, which wouldn't count as a valid range.
   
   \see rescaleAxes, getValueRange
 */
 
-/*! \fn QCPRange QCPAbstractPlottable::getValueRange(bool &validRange, SignDomain inSignDomain) const = 0
+/*! \fn QCPRange QCPAbstractPlottable::getValueRange(bool &foundRange, SignDomain inSignDomain) const = 0
   \internal
   
   called by rescaleAxes functions to get the full data value bounds. For logarithmic plots, one can
   set \a inSignDomain to either \ref sdNegative or \ref sdPositive in order to restrict the
   returned range to that sign domain. E.g. when only negative range is wanted, set \a inSignDomain
   to \ref sdNegative and all positive points will be ignored for range calculation. For no
-  restriction, just set \a inSignDomain to \ref sdBoth (default). \a validRange is an output
-  parameter that indicates whether a proper range could be found or not. If this is false, you
-  shouldn't use the returned range (e.g. no points in data).
+  restriction, just set \a inSignDomain to \ref sdBoth (default). \a foundRange is an output
+  parameter that indicates whether a range could be found or not. If this is false, you shouldn't
+  use the returned range (e.g. no points in data).
+
+  Note that \a foundRange is not the same as \ref QCPRange::validRange, since the range returned by
+  this function may have size zero, which wouldn't count as a valid range.
   
   \see rescaleAxes, getKeyRange
 */
@@ -147,8 +153,15 @@
 
 /*! \fn void QCPAbstractPlottable::selectionChanged(bool selected)
   
-  This signal is emitted when the selection state of this plottable has changed to \a selected,
-  either by user interaction or by a direct call to \ref setSelected.
+  This signal is emitted when the selection state of this plottable has changed, either by user
+  interaction or by a direct call to \ref setSelected.
+*/
+
+/*! \fn void QCPAbstractPlottable::selectableChanged(bool selectable);
+  
+  This signal is emitted when the selectability of this plottable has changed.
+  
+  \see setSelectable
 */
 
 /* end of documentation of signals */
@@ -321,7 +334,11 @@ void QCPAbstractPlottable::setValueAxis(QCPAxis *axis)
 */
 void QCPAbstractPlottable::setSelectable(bool selectable)
 {
-  mSelectable = selectable;
+  if (mSelectable != selectable)
+  {
+    mSelectable = selectable;
+    emit selectableChanged(mSelectable);
+  }
 }
 
 /*!
@@ -380,9 +397,9 @@ void QCPAbstractPlottable::rescaleKeyAxis(bool onlyEnlarge) const
   if (keyAxis->scaleType() == QCPAxis::stLogarithmic)
     signDomain = (keyAxis->range().upper < 0 ? sdNegative : sdPositive);
   
-  bool rangeValid;
-  QCPRange newRange = getKeyRange(rangeValid, signDomain);
-  if (rangeValid)
+  bool foundRange;
+  QCPRange newRange = getKeyRange(foundRange, signDomain);
+  if (foundRange)
   {
     if (onlyEnlarge)
       newRange.expand(keyAxis->range());
@@ -420,9 +437,9 @@ void QCPAbstractPlottable::rescaleValueAxis(bool onlyEnlarge) const
   if (valueAxis->scaleType() == QCPAxis::stLogarithmic)
     signDomain = (valueAxis->range().upper < 0 ? sdNegative : sdPositive);
   
-  bool rangeValid;
-  QCPRange newRange = getValueRange(rangeValid, signDomain);
-  if (rangeValid)
+  bool foundRange;
+  QCPRange newRange = getValueRange(foundRange, signDomain);
+  if (foundRange)
   {
     if (onlyEnlarge)
       newRange.expand(valueAxis->range());

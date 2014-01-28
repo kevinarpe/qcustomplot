@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #include "layout.h"
@@ -119,15 +119,28 @@
   \code
   customPlot->plotLayout()->clear(); // let's start from scratch and remove the default axis rect
   // add the first axis rect in second row (row index 1):
-  customPlot->plotLayout()->addElement(1, 0, new QCPAxisRect(customPlot));
+  QCPAxisRect *topAxisRect = new QCPAxisRect(customPlot);
+  customPlot->plotLayout()->addElement(1, 0, topAxisRect);
   // create a sub layout that we'll place in first row:
   QCPLayoutGrid *subLayout = new QCPLayoutGrid;
   customPlot->plotLayout()->addElement(0, 0, subLayout);
   // add two axis rects in the sub layout next to eachother:
-  subLayout->addElement(0, 0, new QCPAxisRect(customPlot));
-  subLayout->addElement(0, 1, new QCPAxisRect(customPlot));
+  QCPAxisRect *leftAxisRect = new QCPAxisRect(customPlot);
+  QCPAxisRect *rightAxisRect = new QCPAxisRect(customPlot);
+  subLayout->addElement(0, 0, leftAxisRect);
+  subLayout->addElement(0, 1, rightAxisRect);
   subLayout->setColumnStretchFactor(0, 3); // left axis rect shall have 60% of width
   subLayout->setColumnStretchFactor(1, 2); // right one only 40% (3:2 = 60:40)
+  // since we've created the axis rects and axes from scratch, we need to place them on
+  // according layers, if we don't want the grid to be drawn above the axes etc.
+  // place the axis on "axes" layer and grids on the "grid" layer, which is below "axes":
+  QList<QCPAxis*> allAxes;
+  allAxes << topAxisRect->axes() << leftAxisRect->axes() << rightAxisRect->axes();
+  foreach (QCPAxis *axis, allAxes)
+  {
+    axis->setLayer("axes");
+    axis->grid()->setLayer("grid");
+  }
   \endcode
   \image html layoutsystem-multipleaxisrects.png
   
@@ -557,37 +570,40 @@ void QCPLayoutElement::setMarginGroup(QCP::MarginSides sides, QCPMarginGroup *gr
 }
 
 /*!
-  Updates the layout element and sub-elements. This function is automatically called upon replot by
-  the parent layout element.
+  Updates the layout element and sub-elements. This function is automatically called before every
+  replot by the parent layout element. It is called multiple times, once for every \ref
+  UpdatePhase. The phases are run through in the order of the enum values. For details about what
+  happens at the different phases, see the documentation of \ref UpdatePhase.
   
   Layout elements that have child elements should call the \ref update method of their child
-  elements.
+  elements, and pass the current \a phase unchanged.
   
-  The default implementation executes the automatic margin mechanism, so subclasses should make
-  sure to call the base class implementation.
+  The default implementation executes the automatic margin mechanism in the \ref upMargins phase.
+  Subclasses should make sure to call the base class implementation.
 */
-void QCPLayoutElement::update()
+void QCPLayoutElement::update(UpdatePhase phase)
 {
-  if (mAutoMargins != QCP::msNone)
+  if (phase == upMargins)
   {
-    // set the margins of this layout element according to automatic margin calculation, either directly or via a margin group:
-    QMargins newMargins = mMargins;
-    QVector<QCP::MarginSide> marginSides = QVector<QCP::MarginSide>() << QCP::msLeft << QCP::msRight << QCP::msTop << QCP::msBottom;
-    for (int i=0; i<marginSides.size(); ++i)
+    if (mAutoMargins != QCP::msNone)
     {
-      QCP::MarginSide side = marginSides.at(i);
-      if (mAutoMargins.testFlag(side)) // this side's margin shall be calculated automatically
+      // set the margins of this layout element according to automatic margin calculation, either directly or via a margin group:
+      QMargins newMargins = mMargins;
+      foreach (QCP::MarginSide side, QList<QCP::MarginSide>() << QCP::msLeft << QCP::msRight << QCP::msTop << QCP::msBottom)
       {
-        if (mMarginGroups.contains(side)) 
-          QCP::setMarginValue(newMargins, side, mMarginGroups[side]->commonMargin(side)); // this side is part of a margin group, so get the margin value from that group
-        else 
-          QCP::setMarginValue(newMargins, side, calculateAutoMargin(side)); // this side is not part of a group, so calculate the value directly
-        // apply minimum margin restrictions:
-        if (QCP::getMarginValue(newMargins, side) < QCP::getMarginValue(mMinimumMargins, side))
-          QCP::setMarginValue(newMargins, side, QCP::getMarginValue(mMinimumMargins, side));
+        if (mAutoMargins.testFlag(side)) // this side's margin shall be calculated automatically
+        {
+          if (mMarginGroups.contains(side)) 
+            QCP::setMarginValue(newMargins, side, mMarginGroups[side]->commonMargin(side)); // this side is part of a margin group, so get the margin value from that group
+          else 
+            QCP::setMarginValue(newMargins, side, calculateAutoMargin(side)); // this side is not part of a group, so calculate the value directly
+          // apply minimum margin restrictions:
+          if (QCP::getMarginValue(newMargins, side) < QCP::getMarginValue(mMinimumMargins, side))
+            QCP::setMarginValue(newMargins, side, QCP::getMarginValue(mMinimumMargins, side));
+        }
       }
+      setMargins(newMargins);
     }
-    setMargins(newMargins);
   }
 }
 
@@ -619,7 +635,7 @@ QSize QCPLayoutElement::maximumSizeHint() const
   Returns a list of all child elements in this layout element. If \a recursive is true, all
   sub-child elements are included in the list, too.
   
-  Note that there may be entries with value 0 in the returned list. (For example, QCPLayoutGrid may have
+  \warning There may be entries with value 0 in the returned list. (For example, QCPLayoutGrid may have
   empty cells which yield 0 at the respective index.)
 */
 QList<QCPLayoutElement*> QCPLayoutElement::elements(bool recursive) const
@@ -666,11 +682,10 @@ double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVa
 */
 void QCPLayoutElement::parentPlotInitialized(QCustomPlot *parentPlot)
 {
-  QList<QCPLayoutElement*> els = elements(false);
-  for (int i=0; i<els.size(); ++i)
+  foreach (QCPLayoutElement* el, elements(false))
   {
-    if (!els.at(i)->parentPlot())
-      els.at(i)->initializeParentPlot(parentPlot);
+    if (!el->parentPlot())
+      el->initializeParentPlot(parentPlot);
   }
 }
 
@@ -777,25 +792,27 @@ QCPLayout::QCPLayout()
   
   Finally, \ref update is called on all child elements.
 */
-void QCPLayout::update()
+void QCPLayout::update(UpdatePhase phase)
 {
-  QCPLayoutElement::update(); // recalculates (auto-)margins
+  QCPLayoutElement::update(phase);
   
   // set child element rects according to layout:
-  updateLayout();
+  if (phase == upLayout)
+    updateLayout();
   
   // propagate update call to child elements:
-  for (int i=0; i<elementCount(); ++i)
+  const int elCount = elementCount();
+  for (int i=0; i<elCount; ++i)
   {
     if (QCPLayoutElement *el = elementAt(i))
-      el->update();
+      el->update(phase);
   }
 }
 
 /* inherits documentation from base class */
 QList<QCPLayoutElement*> QCPLayout::elements(bool recursive) const
 {
-  int c = elementCount();
+  const int c = elementCount();
   QList<QCPLayoutElement*> result;
 #if QT_VERSION >= QT_VERSION_CHECK(4, 7, 0)
   result.reserve(c);

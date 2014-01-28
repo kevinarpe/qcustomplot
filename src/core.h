@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_CORE_H
@@ -63,6 +63,16 @@ public:
                          ,limAbove ///< Layer is inserted above other layer
                        };
   Q_ENUMS(LayerInsertMode)
+  
+  /*!
+    Defines with what timing the QCustomPlot surface is refreshed after a replot.
+
+    \see replot
+  */
+  enum RefreshPriority { rpImmediate     ///< The QCustomPlot surface is immediately refreshed, by calling QWidget::repaint() after the replot
+                         ,rpQueued       ///< Queues the refresh such that it is performed at a slightly delayed point in time after the replot, by calling QWidget::update() after the replot
+                         ,rpHint ///< Whether to use immediate repaint or queued update depends on whether the plotting hint \ref QCP::phForceRepaint is set, see \ref setPlottingHints.
+                       };
   
   explicit QCustomPlot(QWidget *parent = 0);
   virtual ~QCustomPlot();
@@ -159,14 +169,14 @@ public:
   QList<QCPLegend*> selectedLegends() const;
   Q_SLOT void deselectAll();
   
-  bool savePdf(const QString &fileName, bool noCosmeticPen=false, int width=0, int height=0);
+  bool savePdf(const QString &fileName, bool noCosmeticPen=false, int width=0, int height=0, const QString &pdfCreator="", const QString &pdfTitle="");
   bool savePng(const QString &fileName, int width=0, int height=0, double scale=1.0, int quality=-1);
   bool saveJpg(const QString &fileName, int width=0, int height=0, double scale=1.0, int quality=-1);
   bool saveBmp(const QString &fileName, int width=0, int height=0, double scale=1.0);
   bool saveRastered(const QString &fileName, int width, int height, double scale, const char *format, int quality=-1);
   QPixmap toPixmap(int width=0, int height=0, double scale=1.0);
   void toPainter(QCPPainter *painter, int width=0, int height=0);
-  Q_SLOT void replot();
+  Q_SLOT void replot(QCustomPlot::RefreshPriority refreshPriority=QCustomPlot::rpHint);
   
   QCPAxis *xAxis, *yAxis, *xAxis2, *yAxis2;
   QCPLegend *legend;

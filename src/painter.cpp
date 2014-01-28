@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #include "painter.h"
@@ -32,7 +32,7 @@
 /*! \class QCPPainter
   \brief QPainter subclass used internally
   
-  This internal class is used to provide some extended functionality e.g. for tweaking position
+  This QPainter subclass is used to provide some extended functionality e.g. for tweaking position
   consistency between antialiased and non-antialiased painting. Further it provides workarounds
   for QPainter quirks.
   

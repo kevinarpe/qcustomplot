@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #include "plottable-statisticalbox.h"
@@ -38,14 +38,14 @@
   \image html QCPStatisticalBox.png
   
   To plot data, assign it with the individual parameter functions or use \ref setData to set all
-  parameters at once. The individual funcions are:
+  parameters at once. The individual functions are:
   \li \ref setMinimum
   \li \ref setLowerQuartile
   \li \ref setMedian
   \li \ref setUpperQuartile
   \li \ref setMaximum
   
-  Additionally you can define a list of outliers, drawn as circle datapoints:
+  Additionally you can define a list of outliers, drawn as scatter datapoints:
   \li \ref setOutliers
   
   \section appearance Changing the appearance
@@ -183,9 +183,9 @@ void QCPStatisticalBox::setMaximum(double value)
 }
 
 /*!
-  Sets a vector of outlier values that will be drawn as circles. Any data points in the sample that
-  are not within the whiskers (\ref setMinimum, \ref setMaximum) should be considered outliers and
-  displayed as such.
+  Sets a vector of outlier values that will be drawn as scatters. Any data points in the sample
+  that are not within the whiskers (\ref setMinimum, \ref setMaximum) should be considered outliers
+  and displayed as such.
   
   \see setOutlierStyle
 */
@@ -412,9 +412,9 @@ void QCPStatisticalBox::drawOutliers(QCPPainter *painter) const
 }
 
 /* inherits documentation from base class */
-QCPRange QCPStatisticalBox::getKeyRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPStatisticalBox::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
 {
-  validRange = mWidth > 0;
+  foundRange = true;
   if (inSignDomain == sdBoth)
   {
     return QCPRange(mKey-mWidth*0.5, mKey+mWidth*0.5);
@@ -426,7 +426,7 @@ QCPRange QCPStatisticalBox::getKeyRange(bool &validRange, SignDomain inSignDomai
       return QCPRange(mKey-mWidth*0.5, mKey);
     else
     {
-      validRange = false;
+      foundRange = false;
       return QCPRange();
     }
   } else if (inSignDomain == sdPositive)
@@ -437,67 +437,52 @@ QCPRange QCPStatisticalBox::getKeyRange(bool &validRange, SignDomain inSignDomai
       return QCPRange(mKey, mKey+mWidth*0.5);
     else
     {
-      validRange = false;
+      foundRange = false;
       return QCPRange();
     }
   }
-  validRange = false;
+  foundRange = false;
   return QCPRange();
 }
 
 /* inherits documentation from base class */
-QCPRange QCPStatisticalBox::getValueRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPStatisticalBox::getValueRange(bool &foundRange, SignDomain inSignDomain) const
 {
-  if (inSignDomain == sdBoth)
+  QVector<double> values; // values that must be considered (i.e. all outliers and the five box-parameters)
+  values.reserve(mOutliers.size() + 5);
+  values << mMaximum << mUpperQuartile << mMedian << mLowerQuartile << mMinimum;
+  values << mOutliers;
+  // go through values and find the ones in legal range:
+  bool haveUpper = false;
+  bool haveLower = false;
+  double upper = 0;
+  double lower = 0;
+  for (int i=0; i<values.size(); ++i)
   {
-    double lower = qMin(mMinimum, qMin(mMedian, mLowerQuartile));
-    double upper = qMax(mMaximum, qMax(mMedian, mUpperQuartile));
-    for (int i=0; i<mOutliers.size(); ++i)
+    if ((inSignDomain == sdNegative && values.at(i) < 0) ||
+        (inSignDomain == sdPositive && values.at(i) > 0) ||
+        (inSignDomain == sdBoth))
     {
-      if (mOutliers.at(i) < lower)
-        lower = mOutliers.at(i);
-      if (mOutliers.at(i) > upper)
-        upper = mOutliers.at(i);
-    }
-    validRange = upper > lower;
-    return QCPRange(lower, upper);
-  } else
-  {
-    QVector<double> values; // values that must be considered (i.e. all outliers and the five box-parameters)
-    values.reserve(mOutliers.size() + 5);
-    values << mMaximum << mUpperQuartile << mMedian << mLowerQuartile << mMinimum;
-    values << mOutliers;
-    // go through values and find the ones in legal range:
-    bool haveUpper = false;
-    bool haveLower = false;
-    double upper = 0;
-    double lower = 0;
-    for (int i=0; i<values.size(); ++i)
-    {
-      if ((inSignDomain == sdNegative && values.at(i) < 0) ||
-          (inSignDomain == sdPositive && values.at(i) > 0))
+      if (values.at(i) > upper || !haveUpper)
       {
-        if (values.at(i) > upper || !haveUpper)
-        {
-          upper = values.at(i);
-          haveUpper = true;
-        }
-        if (values.at(i) < lower || !haveLower)
-        {
-          lower = values.at(i);
-          haveLower = true;
-        }
+        upper = values.at(i);
+        haveUpper = true;
+      }
+      if (values.at(i) < lower || !haveLower)
+      {
+        lower = values.at(i);
+        haveLower = true;
       }
     }
-    // return the bounds if we found some sensible values:
-    if (haveLower && haveUpper && lower < upper)
-    {
-      validRange = true;
-      return QCPRange(lower, upper);
-    } else
-    {
-      validRange = false;
-      return QCPRange();
-    }
+  }
+  // return the bounds if we found some sensible values:
+  if (haveLower && haveUpper)
+  {
+    foundRange = true;
+    return QCPRange(lower, upper);
+  } else // might happen if all values are in other sign domain
+  {
+    foundRange = false;
+    return QCPRange();
   }
 }

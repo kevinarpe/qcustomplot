@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #include "plottable-curve.h"
@@ -657,7 +657,7 @@ QPointF QCPCurve::outsideCoordsToPixels(double key, double value, int region, QR
 }
 
 /* inherits documentation from base class */
-QCPRange QCPCurve::getKeyRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPCurve::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
 {
   QCPRange range;
   bool haveLower = false;
@@ -685,12 +685,12 @@ QCPRange QCPCurve::getKeyRange(bool &validRange, SignDomain inSignDomain) const
     ++it;
   }
   
-  validRange = haveLower && haveUpper;
+  foundRange = haveLower && haveUpper;
   return range;
 }
 
 /* inherits documentation from base class */
-QCPRange QCPCurve::getValueRange(bool &validRange, SignDomain inSignDomain) const
+QCPRange QCPCurve::getValueRange(bool &foundRange, SignDomain inSignDomain) const
 {
   QCPRange range;
   bool haveLower = false;
@@ -718,6 +718,6 @@ QCPRange QCPCurve::getValueRange(bool &validRange, SignDomain inSignDomain) cons
     ++it;
   }
   
-  validRange = haveLower && haveUpper;
+  foundRange = haveLower && haveUpper;
   return range;
 }

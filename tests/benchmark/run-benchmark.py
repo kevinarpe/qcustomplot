@@ -65,7 +65,7 @@ for i in range(config.rounds):
 
 # Output result statistics:
 proc = subprocess.Popen(["git", "status", "--porcelain", "--branch"], stdout=subprocess.PIPE)
-gitBranch = re.search("## (\\w+)", proc.stdout.readline()).group(1)
+gitBranch = re.search("## (.*)", proc.stdout.readline()).group(1)
 proc = subprocess.Popen(["git", "log", "HEAD^..HEAD", "--oneline"], stdout=subprocess.PIPE)
 gitHead = proc.stdout.readline().rstrip()
 timeStamp = time.strftime("%Y-%m-%d %H:%M", time.localtime())

@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_ITEM_H
@@ -81,8 +81,12 @@ public:
     \see setType
   */
   enum PositionType { ptAbsolute        ///< Static positioning in pixels, starting from the top left corner of the viewport/widget.
-                      ,ptViewportRatio  ///< Static positioning given by a fraction of the viewport size.
-                      ,ptAxisRectRatio  ///< Static positioning given by a fraction of the axis rect size (see \ref setAxisRect).
+                      ,ptViewportRatio  ///< Static positioning given by a fraction of the viewport size. For example, if you call setCoords(0, 0), the position will be at the top
+                                        ///< left corner of the viewport/widget. setCoords(1, 1) will be at the bottom right corner, setCoords(0.5, 0) will be horizontally centered and
+                                        ///< vertically at the top of the viewport/widget, etc.
+                      ,ptAxisRectRatio  ///< Static positioning given by a fraction of the axis rect size (see \ref setAxisRect). For example, if you call setCoords(0, 0), the position will be at the top
+                                        ///< left corner of the axis rect. setCoords(1, 1) will be at the bottom right corner, setCoords(0.5, 0) will be horizontally centered and
+                                        ///< vertically at the top of the axis rect, etc. You can also go beyond the axis rect by providing negative coordinates or coordinates larger than 1.
                       ,ptPlotCoords     ///< Dynamic positioning at a plot coordinate defined by two axes (see \ref setAxes).
                     };
   
@@ -132,8 +136,8 @@ class QCP_LIB_DECL QCPAbstractItem : public QCPLayerable
   /// \cond INCLUDE_QPROPERTIES
   Q_PROPERTY(bool clipToAxisRect READ clipToAxisRect WRITE setClipToAxisRect)
   Q_PROPERTY(QCPAxisRect* clipAxisRect READ clipAxisRect WRITE setClipAxisRect)
-  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable)
-  Q_PROPERTY(bool selected READ selected WRITE setSelected)
+  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable NOTIFY selectableChanged)
+  Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectionChanged)
   /// \endcond
 public:
   QCPAbstractItem(QCustomPlot *parentPlot);
@@ -148,8 +152,8 @@ public:
   // setters:
   void setClipToAxisRect(bool clip);
   void setClipAxisRect(QCPAxisRect *rect);
-  void setSelectable(bool selectable);
-  void setSelected(bool selected);
+  Q_SLOT void setSelectable(bool selectable);
+  Q_SLOT void setSelected(bool selected);
   
   // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const = 0;
@@ -163,6 +167,7 @@ public:
   
 signals:
   void selectionChanged(bool selected);
+  void selectableChanged(bool selectable);
   
 protected:
   // property members:

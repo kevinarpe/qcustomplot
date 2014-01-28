@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_LAYER_H
@@ -42,6 +42,7 @@ class QCP_LIB_DECL QCPLayer : public QObject
   Q_PROPERTY(QString name READ name)
   Q_PROPERTY(int index READ index)
   Q_PROPERTY(QList<QCPLayerable*> children READ children)
+  Q_PROPERTY(bool visible READ visible WRITE setVisible)
   /// \endcond
 public:
   QCPLayer(QCustomPlot* parentPlot, const QString &layerName);
@@ -52,6 +53,10 @@ public:
   QString name() const { return mName; }
   int index() const { return mIndex; }
   QList<QCPLayerable*> children() const { return mChildren; }
+  bool visible() const { return mVisible; }
+  
+  // setters:
+  void setVisible(bool visible);
   
 protected:
   // property members:
@@ -59,6 +64,7 @@ protected:
   QString mName;
   int mIndex;
   QList<QCPLayerable*> mChildren;
+  bool mVisible;
   
   // non-virtual methods:
   void addChild(QCPLayerable *layerable, bool prepend);
@@ -78,7 +84,7 @@ class QCP_LIB_DECL QCPLayerable : public QObject
   Q_PROPERTY(bool visible READ visible WRITE setVisible)
   Q_PROPERTY(QCustomPlot* parentPlot READ parentPlot)
   Q_PROPERTY(QCPLayerable* parentLayerable READ parentLayerable)
-  Q_PROPERTY(QCPLayer* layer READ layer WRITE setLayer)
+  Q_PROPERTY(QCPLayer* layer READ layer WRITE setLayer NOTIFY layerChanged)
   Q_PROPERTY(bool antialiased READ antialiased WRITE setAntialiased)
   /// \endcond
 public:
@@ -94,7 +100,7 @@ public:
   
   // setters:
   void setVisible(bool on);
-  bool setLayer(QCPLayer *layer);
+  Q_SLOT bool setLayer(QCPLayer *layer);
   bool setLayer(const QString &layerName);
   void setAntialiased(bool enabled);
   
@@ -103,6 +109,9 @@ public:
   
   // non-property methods:
   bool realVisibility() const;
+  
+signals:
+  void layerChanged(QCPLayer *newLayer);
   
 protected:
   // property members:

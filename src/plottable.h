@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_PLOTTABLE_H
@@ -47,8 +47,8 @@ class QCP_LIB_DECL QCPAbstractPlottable : public QCPLayerable
   Q_PROPERTY(QBrush selectedBrush READ selectedBrush WRITE setSelectedBrush)
   Q_PROPERTY(QCPAxis* keyAxis READ keyAxis WRITE setKeyAxis)
   Q_PROPERTY(QCPAxis* valueAxis READ valueAxis WRITE setValueAxis)
-  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable)
-  Q_PROPERTY(bool selected READ selected WRITE setSelected)
+  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable NOTIFY selectableChanged)
+  Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectionChanged)
   /// \endcond
 public:
   QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis);
@@ -94,6 +94,7 @@ public:
   
 signals:
   void selectionChanged(bool selected);
+  void selectableChanged(bool selectable);
   
 protected:
   /*!
@@ -123,8 +124,8 @@ protected:
   
   // introduced virtual methods:
   virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const = 0;
-  virtual QCPRange getKeyRange(bool &validRange, SignDomain inSignDomain=sdBoth) const = 0;
-  virtual QCPRange getValueRange(bool &validRange, SignDomain inSignDomain=sdBoth) const = 0;
+  virtual QCPRange getKeyRange(bool &foundRange, SignDomain inSignDomain=sdBoth) const = 0;
+  virtual QCPRange getValueRange(bool &foundRange, SignDomain inSignDomain=sdBoth) const = 0;
   
   // non-virtual methods:
   void coordsToPixels(double key, double value, double &x, double &y) const;

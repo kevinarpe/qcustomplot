@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013 Emanuel Eichhammer                     **
+**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 09.12.13                                             **
-**          Version: 1.1.1                                                **
+**             Date: 28.01.14                                             **
+**          Version: 1.2.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_H
@@ -36,10 +36,12 @@
 #include "item.h"
 #include "lineending.h"
 #include "core.h"
+#include "colorgradient.h"
 #include "plottables/plottable-graph.h"
 #include "plottables/plottable-curve.h"
 #include "plottables/plottable-bars.h"
 #include "plottables/plottable-statisticalbox.h"
+#include "plottables/plottable-colormap.h"
 #include "items/item-straightline.h"
 #include "items/item-line.h"
 #include "items/item-curve.h"
@@ -52,5 +54,6 @@
 #include "layoutelements/layoutelement-axisrect.h"
 #include "layoutelements/layoutelement-legend.h"
 #include "layoutelements/layoutelement-plottitle.h"
+#include "layoutelements/layoutelement-colorscale.h"
 
 #endif // QCP_H
