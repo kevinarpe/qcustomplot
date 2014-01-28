@@ -36,10 +36,12 @@
 #include "item.h"
 #include "lineending.h"
 #include "core.h"
+#include "colorgradient.h"
 #include "plottables/plottable-graph.h"
 #include "plottables/plottable-curve.h"
 #include "plottables/plottable-bars.h"
 #include "plottables/plottable-statisticalbox.h"
+#include "plottables/plottable-colormap.h"
 #include "items/item-straightline.h"
 #include "items/item-line.h"
 #include "items/item-curve.h"
@@ -52,5 +54,6 @@
 #include "layoutelements/layoutelement-axisrect.h"
 #include "layoutelements/layoutelement-legend.h"
 #include "layoutelements/layoutelement-plottitle.h"
+#include "layoutelements/layoutelement-colorscale.h"
 
 #endif // QCP_H

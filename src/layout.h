@@ -75,6 +75,16 @@ class QCP_LIB_DECL QCPLayoutElement : public QCPLayerable
   Q_PROPERTY(QSize maximumSize READ maximumSize WRITE setMaximumSize)
   /// \endcond
 public:
+  /*!
+    Defines the phases of the update process, that happens just before a replot. At each phase,
+    \ref update is called with the according UpdatePhase value.
+  */
+  enum UpdatePhase { upPreparation ///< Phase used for preparation that need to be done before margin calculation and layout
+                     ,upMargins    ///< Phase in which the margins are calculated and set
+                     ,upLayout     ///< Final phase in which the layout system places the rects of the elements
+                   };
+  Q_ENUMS(UpdatePhase)
+
   explicit QCPLayoutElement(QCustomPlot *parentPlot=0);
   virtual ~QCPLayoutElement();
   
@@ -102,7 +112,7 @@ public:
   void setMarginGroup(QCP::MarginSides sides, QCPMarginGroup *group);
   
   // introduced virtual methods:
-  virtual void update();
+  virtual void update(UpdatePhase phase);
   virtual QSize minimumSizeHint() const;
   virtual QSize maximumSizeHint() const;
   virtual QList<QCPLayoutElement*> elements(bool recursive) const;
@@ -149,7 +159,7 @@ public:
   explicit QCPLayout();
   
   // reimplemented virtual methods:
-  virtual void update();
+  virtual void update(UpdatePhase phase);
   virtual QList<QCPLayoutElement*> elements(bool recursive) const;
   
   // introduced virtual methods:

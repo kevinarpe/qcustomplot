@@ -41,6 +41,7 @@ plottables/plottable-graph.h \
 plottables/plottable-curve.h \
 plottables/plottable-bars.h \
 plottables/plottable-statisticalbox.h \
+plottables/plottable-colormap.h \
 items/item-straightline.h \
 items/item-line.h \
 items/item-curve.h \
@@ -52,7 +53,9 @@ items/item-tracer.h \
 items/item-bracket.h \
 layoutelements/layoutelement-axisrect.h \
     layoutelements/layoutelement-legend.h \
-    layoutelements/layoutelement-plottitle.h
+    layoutelements/layoutelement-plottitle.h \
+    layoutelements/layoutelement-colorscale.h \
+    colorgradient.h
 
 SOURCES += \
 painter.cpp \
@@ -68,6 +71,7 @@ plottables/plottable-graph.cpp \
 plottables/plottable-curve.cpp \
 plottables/plottable-bars.cpp \
 plottables/plottable-statisticalbox.cpp \
+plottables/plottable-colormap.cpp \
 items/item-straightline.cpp \
 items/item-line.cpp \
 items/item-curve.cpp \
@@ -79,7 +83,9 @@ items/item-tracer.cpp \
 items/item-bracket.cpp \
 layoutelements/layoutelement-axisrect.cpp \
     layoutelements/layoutelement-legend.cpp \
-    layoutelements/layoutelement-plottitle.cpp
+    layoutelements/layoutelement-plottitle.cpp \
+    layoutelements/layoutelement-colorscale.cpp \
+    colorgradient.cpp
 
 OTHER_FILES += \
     ../changelog.txt \

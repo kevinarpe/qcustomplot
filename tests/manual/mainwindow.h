@@ -38,6 +38,7 @@ public:
   void setupLegendTest(QCustomPlot *customPlot);
   void setupMultiAxisRectInteractions(QCustomPlot *customPlot);
   void setupAdaptiveSamplingTest(QCustomPlot *customPlot);
+  void setupColorMapTest(QCustomPlot *customPlot);
   // testbed:
   void setupTestbed(QCustomPlot *customPlot);
   
@@ -47,7 +48,6 @@ public:
   // helpers:
   void labelItemAnchors(QCPAbstractItem *item, double fontSize=8, bool circle=true, bool labelBelow=true);
   void showSelectTestColorMap(QCustomPlot *customPlot);
-  
   
   // special use cases test:
   void setupIntegerTickStepCase(QCustomPlot *customPlot);
@@ -60,11 +60,14 @@ public slots:
   void setupMultiAxisRectInteractionsMouseMove(QMouseEvent *event);
   void daqPerformanceDataSlot();
   void daqPerformanceReplotSlot();
+  void colorMapMouseMove(QMouseEvent *event);
   
   void integerTickStepCase_xRangeChanged(QCPRange newRange);
   void integerTickStepCase_yRangeChanged(QCPRange newRange);
   
+  
   void mouseWheel(QWheelEvent *event);
+  
 private:
   Ui::MainWindow *ui;
   QCustomPlot *mCustomPlot;

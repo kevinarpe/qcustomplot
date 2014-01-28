@@ -38,14 +38,14 @@
   \image html QCPStatisticalBox.png
   
   To plot data, assign it with the individual parameter functions or use \ref setData to set all
-  parameters at once. The individual funcions are:
+  parameters at once. The individual functions are:
   \li \ref setMinimum
   \li \ref setLowerQuartile
   \li \ref setMedian
   \li \ref setUpperQuartile
   \li \ref setMaximum
   
-  Additionally you can define a list of outliers, drawn as circle datapoints:
+  Additionally you can define a list of outliers, drawn as scatter datapoints:
   \li \ref setOutliers
   
   \section appearance Changing the appearance
@@ -183,9 +183,9 @@ void QCPStatisticalBox::setMaximum(double value)
 }
 
 /*!
-  Sets a vector of outlier values that will be drawn as circles. Any data points in the sample that
-  are not within the whiskers (\ref setMinimum, \ref setMaximum) should be considered outliers and
-  displayed as such.
+  Sets a vector of outlier values that will be drawn as scatters. Any data points in the sample
+  that are not within the whiskers (\ref setMinimum, \ref setMaximum) should be considered outliers
+  and displayed as such.
   
   \see setOutlierStyle
 */

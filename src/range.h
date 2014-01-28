@@ -36,6 +36,20 @@ public:
   QCPRange();
   QCPRange(double lower, double upper);
   
+  bool operator==(const QCPRange& other) { return lower == other.lower && upper == other.upper; }
+  bool operator!=(const QCPRange& other) { return !(*this == other); }
+  
+  QCPRange &operator+=(const double& value) { lower+=value; upper+=value; return *this; }
+  QCPRange &operator-=(const double& value) { lower-=value; upper-=value; return *this; }
+  QCPRange &operator*=(const double& value) { lower*=value; upper*=value; return *this; }
+  QCPRange &operator/=(const double& value) { lower/=value; upper/=value; return *this; }
+  friend inline const QCPRange operator+(const QCPRange&, double);
+  friend inline const QCPRange operator+(double, const QCPRange&);
+  friend inline const QCPRange operator-(const QCPRange& range, double value);
+  friend inline const QCPRange operator*(const QCPRange& range, double value);
+  friend inline const QCPRange operator*(double value, const QCPRange& range);
+  friend inline const QCPRange operator/(const QCPRange& range, double value);
+  
   double size() const;
   double center() const;
   void normalize();
@@ -49,7 +63,92 @@ public:
   static bool validRange(const QCPRange &range);
   static const double minRange; //1e-280;
   static const double maxRange; //1e280;
+  
 };
 Q_DECLARE_TYPEINFO(QCPRange, Q_MOVABLE_TYPE);
+
+/* documentation of inline functions */
+
+/*! \fn QCPRange &QCPRange::operator+=(const double& value)
+  
+  Adds \a value to both boundaries of the range.
+*/
+
+/*! \fn QCPRange &QCPRange::operator-=(const double& value)
+  
+  Subtracts \a value from both boundaries of the range.
+*/
+
+/*! \fn QCPRange &QCPRange::operator*=(const double& value)
+  
+  Multiplies both boundaries of the range by \a value.
+*/
+
+/*! \fn QCPRange &QCPRange::operator/=(const double& value)
+  
+  Divides both boundaries of the range by \a value.
+*/
+
+/* end documentation of inline functions */
+
+/*!
+  Adds \a value to both boundaries of the range.
+*/
+inline const QCPRange operator+(const QCPRange& range, double value)
+{
+  QCPRange result(range);
+  result += value;
+  return result;
+}
+
+/*!
+  Adds \a value to both boundaries of the range.
+*/
+inline const QCPRange operator+(double value, const QCPRange& range)
+{
+  QCPRange result(range);
+  result += value;
+  return result;
+}
+
+/*!
+  Subtracts \a value from both boundaries of the range.
+*/
+inline const QCPRange operator-(const QCPRange& range, double value)
+{
+  QCPRange result(range);
+  result -= value;
+  return result;
+}
+
+/*!
+  Multiplies both boundaries of the range by \a value.
+*/
+inline const QCPRange operator*(const QCPRange& range, double value)
+{
+  QCPRange result(range);
+  result *= value;
+  return result;
+}
+
+/*!
+  Multiplies both boundaries of the range by \a value.
+*/
+inline const QCPRange operator*(double value, const QCPRange& range)
+{
+  QCPRange result(range);
+  result *= value;
+  return result;
+}
+
+/*!
+  Divides both boundaries of the range by \a value.
+*/
+inline const QCPRange operator/(const QCPRange& range, double value)
+{
+  QCPRange result(range);
+  result /= value;
+  return result;
+}
 
 #endif // QCP_RANGE_H

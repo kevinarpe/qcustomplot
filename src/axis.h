@@ -36,6 +36,7 @@ class QCPPainter;
 class QCustomPlot;
 class QCPAxis;
 class QCPAxisRect;
+class QCPAxisPainterPrivate;
 class QCPAbstractPlottable;
 class QCPGraph;
 class QCPAbstractItem;
@@ -96,9 +97,9 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   /// \cond INCLUDE_QPROPERTIES
   Q_PROPERTY(AxisType axisType READ axisType)
   Q_PROPERTY(QCPAxisRect* axisRect READ axisRect)
-  Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType)
+  Q_PROPERTY(ScaleType scaleType READ scaleType WRITE setScaleType NOTIFY scaleTypeChanged)
   Q_PROPERTY(double scaleLogBase READ scaleLogBase WRITE setScaleLogBase)
-  Q_PROPERTY(QCPRange range READ range WRITE setRange)
+  Q_PROPERTY(QCPRange range READ range WRITE setRange NOTIFY rangeChanged)
   Q_PROPERTY(bool rangeReversed READ rangeReversed WRITE setRangeReversed)
   Q_PROPERTY(bool autoTicks READ autoTicks WRITE setAutoTicks)
   Q_PROPERTY(int autoTickCount READ autoTickCount WRITE setAutoTickCount)
@@ -133,8 +134,8 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(int labelPadding READ labelPadding WRITE setLabelPadding)
   Q_PROPERTY(int padding READ padding WRITE setPadding)
   Q_PROPERTY(int offset READ offset WRITE setOffset)
-  Q_PROPERTY(SelectableParts selectedParts READ selectedParts WRITE setSelectedParts)
-  Q_PROPERTY(SelectableParts selectableParts READ selectableParts WRITE setSelectableParts)
+  Q_PROPERTY(SelectableParts selectedParts READ selectedParts WRITE setSelectedParts NOTIFY selectionChanged)
+  Q_PROPERTY(SelectableParts selectableParts READ selectableParts WRITE setSelectableParts NOTIFY selectableChanged)
   Q_PROPERTY(QFont selectedTickLabelFont READ selectedTickLabelFont WRITE setSelectedTickLabelFont)
   Q_PROPERTY(QFont selectedLabelFont READ selectedLabelFont WRITE setSelectedLabelFont)
   Q_PROPERTY(QColor selectedTickLabelColor READ selectedTickLabelColor WRITE setSelectedTickLabelColor)
@@ -189,7 +190,8 @@ public:
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)
   
   explicit QCPAxis(QCPAxisRect *parent, AxisType type);
-      
+  virtual ~QCPAxis();
+  
   // getters:
   AxisType axisType() const { return mAxisType; }
   QCPAxisRect *axisRect() const { return mAxisRect; }
@@ -204,11 +206,11 @@ public:
   bool autoSubTicks() const { return mAutoSubTicks; }
   bool ticks() const { return mTicks; }
   bool tickLabels() const { return mTickLabels; }
-  int tickLabelPadding() const { return mTickLabelPadding; }
+  int tickLabelPadding() const;
   LabelType tickLabelType() const { return mTickLabelType; }
   QFont tickLabelFont() const { return mTickLabelFont; }
   QColor tickLabelColor() const { return mTickLabelColor; }
-  double tickLabelRotation() const { return mTickLabelRotation; }
+  double tickLabelRotation() const;
   QString dateTimeFormat() const { return mDateTimeFormat; }
   Qt::TimeSpec dateTimeSpec() const { return mDateTimeSpec; }
   QString numberFormat() const;
@@ -216,20 +218,20 @@ public:
   double tickStep() const { return mTickStep; }
   QVector<double> tickVector() const { return mTickVector; }
   QVector<QString> tickVectorLabels() const { return mTickVectorLabels; }
-  int tickLengthIn() const { return mTickLengthIn; }
-  int tickLengthOut() const { return mTickLengthOut; }
+  int tickLengthIn() const;
+  int tickLengthOut() const;
   int subTickCount() const { return mSubTickCount; }
-  int subTickLengthIn() const { return mSubTickLengthIn; }
-  int subTickLengthOut() const { return mSubTickLengthOut; }
+  int subTickLengthIn() const;
+  int subTickLengthOut() const;
   QPen basePen() const { return mBasePen; }
   QPen tickPen() const { return mTickPen; }
   QPen subTickPen() const { return mSubTickPen; }
   QFont labelFont() const { return mLabelFont; }
   QColor labelColor() const { return mLabelColor; }
   QString label() const { return mLabel; }
-  int labelPadding() const { return mLabelPadding; }
+  int labelPadding() const;
   int padding() const { return mPadding; }
-  int offset() const { return mOffset; }
+  int offset() const;
   SelectableParts selectedParts() const { return mSelectedParts; }
   SelectableParts selectableParts() const { return mSelectableParts; }
   QFont selectedTickLabelFont() const { return mSelectedTickLabelFont; }
@@ -239,12 +241,12 @@ public:
   QPen selectedBasePen() const { return mSelectedBasePen; }
   QPen selectedTickPen() const { return mSelectedTickPen; }
   QPen selectedSubTickPen() const { return mSelectedSubTickPen; }
-  QCPLineEnding lowerEnding() const { return mLowerEnding; }
-  QCPLineEnding upperEnding() const { return mUpperEnding; }
+  QCPLineEnding lowerEnding() const;
+  QCPLineEnding upperEnding() const;
   QCPGrid *grid() const { return mGrid; }
   
   // setters:
-  void setScaleType(ScaleType type);
+  Q_SLOT void setScaleType(QCPAxis::ScaleType type);
   void setScaleLogBase(double base);
   Q_SLOT void setRange(const QCPRange &range);
   void setRange(double lower, double upper);
@@ -302,7 +304,7 @@ public:
   // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
-  // non-virtual methods:
+  // non-property methods:
   Qt::Orientation orientation() const { return mOrientation; }
   void moveRange(double diff);
   void scaleRange(double factor, double center);
@@ -316,44 +318,37 @@ public:
   QList<QCPAbstractItem*> items() const;
   
   static AxisType marginSideToAxisType(QCP::MarginSide side);
+  static Qt::Orientation orientation(AxisType type) { return type==atBottom||type==atTop ? Qt::Horizontal : Qt::Vertical; }
+  static AxisType opposite(AxisType type);
   
 signals:
   void ticksRequest();
   void rangeChanged(const QCPRange &newRange);
   void rangeChanged(const QCPRange &newRange, const QCPRange &oldRange);
+  void scaleTypeChanged(QCPAxis::ScaleType scaleType);
   void selectionChanged(const QCPAxis::SelectableParts &parts);
+  void selectableChanged(const QCPAxis::SelectableParts &parts);
 
 protected:
-  struct CachedLabel
-  {
-    QPointF offset;
-    QPixmap pixmap;
-  };
-  struct TickLabelData
-  {
-    QString basePart, expPart;
-    QRect baseBounds, expBounds, totalBounds, rotatedTotalBounds;
-    QFont baseFont, expFont;
-  };
-  
   // property members:
   // axis base:
   AxisType mAxisType;
   QCPAxisRect *mAxisRect;
-  int mOffset, mPadding;
+  //int mOffset; // in QCPAxisPainter
+  int mPadding;
   Qt::Orientation mOrientation;
   SelectableParts mSelectableParts, mSelectedParts;
   QPen mBasePen, mSelectedBasePen;
-  QCPLineEnding mLowerEnding, mUpperEnding;
+  //QCPLineEnding mLowerEnding, mUpperEnding; // in QCPAxisPainter
   // axis label:
-  int mLabelPadding;
+  //int mLabelPadding; // in QCPAxisPainter
   QString mLabel;
   QFont mLabelFont, mSelectedLabelFont;
   QColor mLabelColor, mSelectedLabelColor;
   // tick labels:
-  int mTickLabelPadding;
+  //int mTickLabelPadding; // in QCPAxisPainter
   bool mTickLabels, mAutoTickLabels;
-  double mTickLabelRotation;
+  //double mTickLabelRotation; // in QCPAxisPainter
   LabelType mTickLabelType;
   QFont mTickLabelFont, mSelectedTickLabelFont;
   QColor mTickLabelColor, mSelectedTickLabelColor;
@@ -362,13 +357,13 @@ protected:
   int mNumberPrecision;
   char mNumberFormatChar;
   bool mNumberBeautifulPowers;
-  bool mNumberMultiplyCross;
+  //bool mNumberMultiplyCross; // QCPAxisPainter
   // ticks and subticks:
   bool mTicks;
   double mTickStep;
   int mSubTickCount, mAutoTickCount;
   bool mAutoTicks, mAutoTickStep, mAutoSubTicks;
-  int mTickLengthIn, mTickLengthOut, mSubTickLengthIn, mSubTickLengthOut;
+  //int mTickLengthIn, mTickLengthOut, mSubTickLengthIn, mSubTickLengthOut; // QCPAxisPainter
   QPen mTickPen, mSelectedTickPen;
   QPen mSubTickPen, mSelectedSubTickPen;
   // scale and range:
@@ -379,13 +374,11 @@ protected:
   
   // non-property members:
   QCPGrid *mGrid;
-  QCache<QString, CachedLabel> mLabelCache;
+  QCPAxisPainterPrivate *mAxisPainter;
   int mLowestVisibleTick, mHighestVisibleTick;
-  QChar mExponentialChar, mPositiveSignChar;
   QVector<double> mTickVector;
   QVector<QString> mTickVectorLabels;
   QVector<double> mSubTickVector;
-  QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
   bool mCachedMarginValid;
   int mCachedMargin;
   
@@ -394,12 +387,6 @@ protected:
   virtual void generateAutoTicks();
   virtual int calculateAutoSubTickCount(double tickStep) const;
   virtual int calculateMargin();
-  // tick label drawing/caching:
-  virtual void placeTickLabel(QCPPainter *painter, double position, int distanceToAxis, const QString &text, QSize *tickLabelsSize);
-  virtual void drawTickLabel(QCPPainter *painter, double x, double y, const TickLabelData &labelData) const;
-  virtual TickLabelData getTickLabelData(const QFont &font, const QString &text) const;
-  virtual QPointF getTickLabelDrawOffset(const TickLabelData &labelData) const;
-  virtual void getMaxTickLabelSize(const QFont &font, const QString &text, QSize *tickLabelsSize) const;
   
   // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
@@ -431,5 +418,71 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::SelectableParts)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QCPAxis::AxisTypes)
 Q_DECLARE_METATYPE(QCPAxis::SelectablePart)
+
+
+class QCPAxisPainterPrivate
+{
+public:
+  explicit QCPAxisPainterPrivate(QCustomPlot *parentPlot);
+  virtual ~QCPAxisPainterPrivate();
+  
+  virtual void draw(QCPPainter *painter);
+  virtual int size() const;
+  void clearCache();
+  
+  QRect axisSelectionBox() const { return mAxisSelectionBox; }
+  QRect tickLabelsSelectionBox() const { return mTickLabelsSelectionBox; }
+  QRect labelSelectionBox() const { return mLabelSelectionBox; }
+  
+  // public property members:
+  QCPAxis::AxisType type;
+  QPen basePen;
+  QCPLineEnding lowerEnding, upperEnding; // directly accessed by QCPAxis setters/getters
+  int labelPadding; // directly accessed by QCPAxis setters/getters
+  QFont labelFont;
+  QColor labelColor;
+  QString label;
+  int tickLabelPadding; // directly accessed by QCPAxis setters/getters
+  double tickLabelRotation; // directly accessed by QCPAxis setters/getters
+  bool substituteExponent;
+  bool numberMultiplyCross; // directly accessed by QCPAxis setters/getters
+  int tickLengthIn, tickLengthOut, subTickLengthIn, subTickLengthOut; // directly accessed by QCPAxis setters/getters
+  QPen tickPen, subTickPen;
+  QFont tickLabelFont;
+  QColor tickLabelColor;
+  QRect alignmentRect, viewportRect;
+  double offset; // directly accessed by QCPAxis setters/getters
+  bool abbreviateDecimalPowers;
+  bool reversedEndings;
+  
+  QVector<double> subTickPositions;
+  QVector<double> tickPositions;
+  QVector<QString> tickLabels;
+  
+protected:
+  struct CachedLabel
+  {
+    QPointF offset;
+    QPixmap pixmap;
+  };
+  struct TickLabelData
+  {
+    QString basePart, expPart;
+    QRect baseBounds, expBounds, totalBounds, rotatedTotalBounds;
+    QFont baseFont, expFont;
+  };
+  QCustomPlot *mParentPlot;
+  QByteArray mLabelParameterHash; // to determine whether mLabelCache needs to be cleared due to changed parameters
+  QCache<QString, CachedLabel> mLabelCache;
+  QRect mAxisSelectionBox, mTickLabelsSelectionBox, mLabelSelectionBox;
+  
+  virtual QByteArray generateLabelParameterHash() const;
+  
+  virtual void placeTickLabel(QCPPainter *painter, double position, int distanceToAxis, const QString &text, QSize *tickLabelsSize);
+  virtual void drawTickLabel(QCPPainter *painter, double x, double y, const TickLabelData &labelData) const;
+  virtual TickLabelData getTickLabelData(const QFont &font, const QString &text) const;
+  virtual QPointF getTickLabelDrawOffset(const TickLabelData &labelData) const;
+  virtual void getMaxTickLabelSize(const QFont &font, const QString &text, QSize *tickLabelsSize) const;
+};
 
 #endif // QCP_AXIS_H

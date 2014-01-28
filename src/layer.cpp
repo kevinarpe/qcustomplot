@@ -251,6 +251,16 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
 */
 
 /* end documentation of pure virtual functions */
+/* start documentation of signals */
+
+/*! \fn void QCPLayerable::layerChanged(QCPLayer *newLayer);
+  
+  This signal is emitted when the layer of this layerable changes.
+  
+  \see setLayer
+*/
+
+/* end documentation of signals */
 
 /*!
   Creates a new QCPLayerable instance.
@@ -365,7 +375,7 @@ void QCPLayerable::setAntialiased(bool enabled)
 */
 bool QCPLayerable::realVisibility() const
 {
-  return mVisible && mLayer && mLayer->visible() && (!mParentLayerable || mParentLayerable.data()->realVisibility());
+  return mVisible && (!mLayer || mLayer->visible()) && (!mParentLayerable || mParentLayerable.data()->realVisibility());
 }
 
 /*!
@@ -479,11 +489,14 @@ bool QCPLayerable::moveToLayer(QCPLayer *layer, bool prepend)
     return false;
   }
   
+  QCPLayer *oldLayer = mLayer;
   if (mLayer)
     mLayer->removeChild(this);
   mLayer = layer;
   if (mLayer)
     mLayer->addChild(this, prepend);
+  if (mLayer != oldLayer)
+    emit layerChanged(mLayer);
   return true;
 }
 

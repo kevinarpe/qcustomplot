@@ -44,8 +44,8 @@ class QCP_LIB_DECL QCPAbstractLegendItem : public QCPLayoutElement
   Q_PROPERTY(QColor textColor READ textColor WRITE setTextColor)
   Q_PROPERTY(QFont selectedFont READ selectedFont WRITE setSelectedFont)
   Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor)
-  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable)
-  Q_PROPERTY(bool selected READ selected WRITE setSelected)
+  Q_PROPERTY(bool selectable READ selectable WRITE setSelectable NOTIFY selectionChanged)
+  Q_PROPERTY(bool selected READ selected WRITE setSelected NOTIFY selectableChanged)
   /// \endcond
 public:
   explicit QCPAbstractLegendItem(QCPLegend *parent);
@@ -64,14 +64,15 @@ public:
   void setTextColor(const QColor &color);
   void setSelectedFont(const QFont &font);
   void setSelectedTextColor(const QColor &color);
-  void setSelectable(bool selectable);
-  void setSelected(bool selected);
+  Q_SLOT void setSelectable(bool selectable);
+  Q_SLOT void setSelected(bool selected);
   
   // reimplemented virtual methods:
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
 signals:
   void selectionChanged(bool selected);
+  void selectableChanged(bool selectable);
   
 protected:
   // property members:
@@ -133,8 +134,8 @@ class QCP_LIB_DECL QCPLegend : public QCPLayoutGrid
   Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
   Q_PROPERTY(int iconTextPadding READ iconTextPadding WRITE setIconTextPadding)
   Q_PROPERTY(QPen iconBorderPen READ iconBorderPen WRITE setIconBorderPen)
-  Q_PROPERTY(SelectableParts selectableParts READ selectableParts WRITE setSelectableParts)
-  Q_PROPERTY(SelectableParts selectedParts READ selectedParts WRITE setSelectedParts)
+  Q_PROPERTY(SelectableParts selectableParts READ selectableParts WRITE setSelectableParts NOTIFY selectionChanged)
+  Q_PROPERTY(SelectableParts selectedParts READ selectedParts WRITE setSelectedParts NOTIFY selectableChanged)
   Q_PROPERTY(QPen selectedBorderPen READ selectedBorderPen WRITE setSelectedBorderPen)
   Q_PROPERTY(QPen selectedIconBorderPen READ selectedIconBorderPen WRITE setSelectedIconBorderPen)
   Q_PROPERTY(QBrush selectedBrush READ selectedBrush WRITE setSelectedBrush)
@@ -182,8 +183,8 @@ public:
   void setIconSize(int width, int height);
   void setIconTextPadding(int padding);
   void setIconBorderPen(const QPen &pen);
-  void setSelectableParts(const SelectableParts &selectableParts);
-  void setSelectedParts(const SelectableParts &selectedParts);
+  Q_SLOT void setSelectableParts(const SelectableParts &selectableParts);
+  Q_SLOT void setSelectedParts(const SelectableParts &selectedParts);
   void setSelectedBorderPen(const QPen &pen);
   void setSelectedIconBorderPen(const QPen &pen);
   void setSelectedBrush(const QBrush &brush);
@@ -206,7 +207,8 @@ public:
   QList<QCPAbstractLegendItem*> selectedItems() const;
   
 signals:
-  void selectionChanged(QCPLegend::SelectableParts selection);
+  void selectionChanged(QCPLegend::SelectableParts parts);
+  void selectableChanged(QCPLegend::SelectableParts parts);
   
 protected:
   // property members:

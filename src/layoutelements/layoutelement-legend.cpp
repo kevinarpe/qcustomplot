@@ -134,7 +134,11 @@ void QCPAbstractLegendItem::setSelectedTextColor(const QColor &color)
 */
 void QCPAbstractLegendItem::setSelectable(bool selectable)
 {
-  mSelectable = selectable;
+  if (mSelectable != selectable)
+  {
+    mSelectable = selectable;
+    emit selectableChanged(mSelectable);
+  }
 }
 
 /*!
@@ -526,7 +530,11 @@ void QCPLegend::setIconBorderPen(const QPen &pen)
 */
 void QCPLegend::setSelectableParts(const SelectableParts &selectable)
 {
-  mSelectableParts = selectable;
+  if (mSelectableParts != selectable)
+  {
+    mSelectableParts = selectable;
+    emit selectableChanged(mSelectableParts);
+  }
 }
 
 /*!

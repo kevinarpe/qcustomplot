@@ -64,6 +64,16 @@ public:
                        };
   Q_ENUMS(LayerInsertMode)
   
+  /*!
+    Defines with what timing the QCustomPlot surface is refreshed after a replot.
+
+    \see replot
+  */
+  enum RefreshPriority { rpImmediate     ///< The QCustomPlot surface is immediately refreshed, by calling QWidget::repaint() after the replot
+                         ,rpQueued       ///< Queues the refresh such that it is performed at a slightly delayed point in time after the replot, by calling QWidget::update() after the replot
+                         ,rpHint ///< Whether to use immediate repaint or queued update depends on whether the plotting hint \ref QCP::phForceRepaint is set, see \ref setPlottingHints.
+                       };
+  
   explicit QCustomPlot(QWidget *parent = 0);
   virtual ~QCustomPlot();
   
@@ -166,7 +176,7 @@ public:
   bool saveRastered(const QString &fileName, int width, int height, double scale, const char *format, int quality=-1);
   QPixmap toPixmap(int width=0, int height=0, double scale=1.0);
   void toPainter(QCPPainter *painter, int width=0, int height=0);
-  Q_SLOT void replot();
+  Q_SLOT void replot(QCustomPlot::RefreshPriority refreshPriority=QCustomPlot::rpHint);
   
   QCPAxis *xAxis, *yAxis, *xAxis2, *yAxis2;
   QCPLegend *legend;

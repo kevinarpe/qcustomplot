@@ -31,7 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupInsetLayoutTest(mCustomPlot);
   //setupLegendTest(mCustomPlot);
   //setupMultiAxisRectInteractions(mCustomPlot);
-  setupAdaptiveSamplingTest(mCustomPlot);
+  //setupAdaptiveSamplingTest(mCustomPlot);
+  setupColorMapTest(mCustomPlot);
   //setupTestbed(mCustomPlot);
 }
 
@@ -626,6 +627,66 @@ void MainWindow::setupMultiAxisRectInteractions(QCustomPlot *customPlot)
   connect(mCustomPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(setupMultiAxisRectInteractionsMouseMove(QMouseEvent*)));
 }
 
+void MainWindow::setupColorMapTest(QCustomPlot *customPlot)
+{
+  customPlot->legend->setVisible(true);
+  presetInteractive(customPlot);
+  QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(colorMap);
+  colorMap->setName("Color Map");
+  customPlot->addLayer("maplayer", customPlot->layer("grid"), QCustomPlot::limBelow);
+  colorMap->setLayer("maplayer");
+  
+  int nx = 400;
+  int ny = 400;
+  colorMap->data()->setSize(nx, ny);
+  colorMap->data()->setRange(QCPRange(0, 10), QCPRange(0, 10));
+  colorMap->setInterpolate(true);
+  colorMap->setTightBoundary(false);
+  for (int x=0; x<nx; ++x)
+  {
+    for (int y=0; y<ny; ++y)
+    {
+      colorMap->data()->setCell(x, y, qExp(-qSqrt((x-310)*(x-310)+(y-260)*(y-260))/200.0)+
+                                      qExp(-qSqrt((x-200)*(x-200)+(y-290)*(y-290))/80.0)-qExp(-qSqrt((x-180)*(x-180)+(y-140)*(y-140))/200.0));
+    }
+  }
+  
+  /* manual test of coordinate to cell transformations (and vice versa):
+  connect(customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(colorMapMouseMove(QMouseEvent*)));
+  colorMap->data()->setRange(QCPRange(0, 1), QCPRange(0, 1));
+  colorMap->data()->setSize(2,2);
+  colorMap->data()->setCell(0, 0, 0);
+  colorMap->data()->setCell(0, 1, 0);
+  colorMap->data()->setCell(1, 0, 2);
+  colorMap->data()->setCell(1, 1, 4);
+  */
+  
+  //customPlot->xAxis->setRangeReversed(true);
+  //customPlot->yAxis->setRangeReversed(true);
+  
+  colorMap->setInterpolate(false);
+  
+  QCPColorScale *colorScale = new QCPColorScale(customPlot);
+  customPlot->plotLayout()->addElement(0, 1, colorScale);
+  colorMap->setColorScale(colorScale);
+  colorScale->setLabel("test");
+  
+  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
+  colorScale->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  customPlot->axisRect()->setMarginGroup(QCP::msTop|QCP::msBottom, group);
+  
+  QCPColorGradient gradient = colorMap->gradient();
+  gradient.loadPreset(QCPColorGradient::gpJet);
+  gradient.setPeriodic(false);
+  colorMap->setGradient(gradient);
+  colorMap->rescaleDataRange(true);
+  
+  connect(customPlot, SIGNAL(beforeReplot()), colorMap, SLOT(updateLegendIcon()));
+  customPlot->rescaleAxes();
+  customPlot->replot();
+}
+
 void MainWindow::setupAdaptiveSamplingTest(QCustomPlot *customPlot)
 {
   qsrand(1);
@@ -883,6 +944,37 @@ void MainWindow::daqPerformanceReplotSlot()
   }
   ui->statusBar->showMessage(QString("Data Points: %1, Data Frequency: %2").arg(dataPoints).arg(dataPointFrequency));
 #endif
+}
+
+void MainWindow::colorMapMouseMove(QMouseEvent *event)
+{
+  if (QCPColorMap *map = qobject_cast<QCPColorMap*>(mCustomPlot->plottable(0)))
+  {
+    double keyCoord = map->keyAxis()->pixelToCoord(map->keyAxis()->orientation()==Qt::Horizontal ? event->pos().x() : event->pos().y());
+    double valueCoord = map->valueAxis()->pixelToCoord(map->valueAxis()->orientation()==Qt::Horizontal ? event->pos().x() : event->pos().y());
+    int ik, iv;
+    map->data()->coordToCell(keyCoord, valueCoord, &ik, &iv);
+    map->data()->fill(0);
+    map->data()->setCell(ik, iv, 1);
+    map->rescaleDataRange(true);
+    
+    double ck, cv;
+    map->data()->cellToCoord(ik, iv, &ck, &cv);
+    if (mCustomPlot->itemCount() == 0)
+    {
+      QCPItemTracer *t = new QCPItemTracer(mCustomPlot);
+      mCustomPlot->addItem(t);
+      t->position->setType(QCPItemPosition::ptPlotCoords);
+      t->position->setCoords(ck, cv);
+      t->position->setAxes(map->keyAxis(), map->valueAxis());
+      t->setClipToAxisRect(false);
+      t->setStyle(QCPItemTracer::tsCircle);
+      t->setPen(QPen(Qt::red));
+    } else if (QCPItemTracer *t = qobject_cast<QCPItemTracer*>(mCustomPlot->item(0)))
+      t->position->setCoords(ck, cv);
+    
+    mCustomPlot->replot();
+  }
 }
 
 void MainWindow::integerTickStepCase_xRangeChanged(QCPRange newRange)

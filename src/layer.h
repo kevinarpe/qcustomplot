@@ -84,7 +84,7 @@ class QCP_LIB_DECL QCPLayerable : public QObject
   Q_PROPERTY(bool visible READ visible WRITE setVisible)
   Q_PROPERTY(QCustomPlot* parentPlot READ parentPlot)
   Q_PROPERTY(QCPLayerable* parentLayerable READ parentLayerable)
-  Q_PROPERTY(QCPLayer* layer READ layer WRITE setLayer)
+  Q_PROPERTY(QCPLayer* layer READ layer WRITE setLayer NOTIFY layerChanged)
   Q_PROPERTY(bool antialiased READ antialiased WRITE setAntialiased)
   /// \endcond
 public:
@@ -100,7 +100,7 @@ public:
   
   // setters:
   void setVisible(bool on);
-  bool setLayer(QCPLayer *layer);
+  Q_SLOT bool setLayer(QCPLayer *layer);
   bool setLayer(const QString &layerName);
   void setAntialiased(bool enabled);
   
@@ -109,6 +109,9 @@ public:
   
   // non-property methods:
   bool realVisibility() const;
+  
+signals:
+  void layerChanged(QCPLayer *newLayer);
   
 protected:
   // property members:

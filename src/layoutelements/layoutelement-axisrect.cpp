@@ -533,13 +533,29 @@ QList<QCPAbstractItem *> QCPAxisRect::items() const
   and finally passes the \ref rect to the inset layout (\ref insetLayout) and calls its
   QCPInsetLayout::update function.
 */
-void QCPAxisRect::update()
+void QCPAxisRect::update(UpdatePhase phase)
 {
-  QCPLayoutElement::update();
+  QCPLayoutElement::update(phase);
+  
+  switch (phase)
+  {
+    case upPreparation:
+    {
+      QList<QCPAxis*> allAxes = axes();
+      for (int i=0; i<allAxes.size(); ++i)
+        allAxes.at(i)->setupTickVectors();
+      break;
+    }
+    case upLayout:
+    {
+      mInsetLayout->setOuterRect(rect());
+      break;
+    }
+    default: break;
+  }
   
   // pass update call on to inset layout (doesn't happen automatically, because QCPAxisRect doesn't derive from QCPLayout):
-  mInsetLayout->setOuterRect(rect());
-  mInsetLayout->update();
+  mInsetLayout->update(phase);
 }
 
 /* inherits documentation from base class */

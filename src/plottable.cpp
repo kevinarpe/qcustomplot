@@ -153,8 +153,15 @@
 
 /*! \fn void QCPAbstractPlottable::selectionChanged(bool selected)
   
-  This signal is emitted when the selection state of this plottable has changed to \a selected,
-  either by user interaction or by a direct call to \ref setSelected.
+  This signal is emitted when the selection state of this plottable has changed, either by user
+  interaction or by a direct call to \ref setSelected.
+*/
+
+/*! \fn void QCPAbstractPlottable::selectableChanged(bool selectable);
+  
+  This signal is emitted when the selectability of this plottable has changed.
+  
+  \see setSelectable
 */
 
 /* end of documentation of signals */
@@ -327,7 +334,11 @@ void QCPAbstractPlottable::setValueAxis(QCPAxis *axis)
 */
 void QCPAbstractPlottable::setSelectable(bool selectable)
 {
-  mSelectable = selectable;
+  if (mSelectable != selectable)
+  {
+    mSelectable = selectable;
+    emit selectableChanged(mSelectable);
+  }
 }
 
 /*!

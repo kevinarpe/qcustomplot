@@ -1109,10 +1109,10 @@ int QCustomPlot::plottableCount() const
 QList<QCPAbstractPlottable*> QCustomPlot::selectedPlottables() const
 {
   QList<QCPAbstractPlottable*> result;
-  for (int i=0; i<mPlottables.size(); ++i)
+  foreach (QCPAbstractPlottable *plottable, mPlottables)
   {
-    if (mPlottables.at(i)->selected())
-      result.append(mPlottables.at(i));
+    if (plottable->selected())
+      result.append(plottable);
   }
   return result;
 }
@@ -1134,17 +1134,16 @@ QCPAbstractPlottable *QCustomPlot::plottableAt(const QPointF &pos, bool onlySele
   QCPAbstractPlottable *resultPlottable = 0;
   double resultDistance = mSelectionTolerance; // only regard clicks with distances smaller than mSelectionTolerance as selections, so initialize with that value
   
-  for (int i=0; i<mPlottables.size(); ++i)
+  foreach (QCPAbstractPlottable *plottable, mPlottables)
   {
-    QCPAbstractPlottable *currentPlottable = mPlottables.at(i);
-    if (onlySelectable && !currentPlottable->selectable()) // we could have also passed onlySelectable to the selectTest function, but checking here is faster, because we have access to QCPabstractPlottable::selectable
+    if (onlySelectable && !plottable->selectable()) // we could have also passed onlySelectable to the selectTest function, but checking here is faster, because we have access to QCPabstractPlottable::selectable
       continue;
-    if ((currentPlottable->keyAxis()->axisRect()->rect() & currentPlottable->valueAxis()->axisRect()->rect()).contains(pos.toPoint())) // only consider clicks inside the rect that is spanned by the plottable's key/value axes
+    if ((plottable->keyAxis()->axisRect()->rect() & plottable->valueAxis()->axisRect()->rect()).contains(pos.toPoint())) // only consider clicks inside the rect that is spanned by the plottable's key/value axes
     {
-      double currentDistance = currentPlottable->selectTest(pos, false);
+      double currentDistance = plottable->selectTest(pos, false);
       if (currentDistance >= 0 && currentDistance < resultDistance)
       {
-        resultPlottable = currentPlottable;
+        resultPlottable = plottable;
         resultDistance = currentDistance;
       }
     }
@@ -1300,10 +1299,10 @@ int QCustomPlot::graphCount() const
 QList<QCPGraph*> QCustomPlot::selectedGraphs() const
 {
   QList<QCPGraph*> result;
-  for (int i=0; i<mGraphs.size(); ++i)
+  foreach (QCPGraph *graph, mGraphs)
   {
-    if (mGraphs.at(i)->selected())
-      result.append(mGraphs.at(i));
+    if (graph->selected())
+      result.append(graph);
   }
   return result;
 }
@@ -1434,10 +1433,10 @@ int QCustomPlot::itemCount() const
 QList<QCPAbstractItem*> QCustomPlot::selectedItems() const
 {
   QList<QCPAbstractItem*> result;
-  for (int i=0; i<mItems.size(); ++i)
+  foreach (QCPAbstractItem *item, mItems)
   {
-    if (mItems.at(i)->selected())
-      result.append(mItems.at(i));
+    if (item->selected())
+      result.append(item);
   }
   return result;
 }
@@ -1460,17 +1459,16 @@ QCPAbstractItem *QCustomPlot::itemAt(const QPointF &pos, bool onlySelectable) co
   QCPAbstractItem *resultItem = 0;
   double resultDistance = mSelectionTolerance; // only regard clicks with distances smaller than mSelectionTolerance as selections, so initialize with that value
   
-  for (int i=0; i<mItems.size(); ++i)
+  foreach (QCPAbstractItem *item, mItems)
   {
-    QCPAbstractItem *currentItem = mItems[i];
-    if (onlySelectable && !currentItem->selectable()) // we could have also passed onlySelectable to the selectTest function, but checking here is faster, because we have access to QCPAbstractItem::selectable
+    if (onlySelectable && !item->selectable()) // we could have also passed onlySelectable to the selectTest function, but checking here is faster, because we have access to QCPAbstractItem::selectable
       continue;
-    if (!currentItem->clipToAxisRect() || currentItem->clipRect().contains(pos.toPoint())) // only consider clicks inside axis cliprect of the item if actually clipped to it
+    if (!item->clipToAxisRect() || item->clipRect().contains(pos.toPoint())) // only consider clicks inside axis cliprect of the item if actually clipped to it
     {
-      double currentDistance = currentItem->selectTest(pos, false);
+      double currentDistance = item->selectTest(pos, false);
       if (currentDistance >= 0 && currentDistance < resultDistance)
       {
-        resultItem = currentItem;
+        resultItem = item;
         resultDistance = currentDistance;
       }
     }
@@ -1499,10 +1497,10 @@ bool QCustomPlot::hasItem(QCPAbstractItem *item) const
 */
 QCPLayer *QCustomPlot::layer(const QString &name) const
 {
-  for (int i=0; i<mLayers.size(); ++i)
+  foreach (QCPLayer *layer, mLayers)
   {
-    if (mLayers.at(i)->name() == name)
-      return mLayers.at(i);
+    if (layer->name() == name)
+      return layer;
   }
   return 0;
 }
@@ -1747,10 +1745,9 @@ QList<QCPAxisRect*> QCustomPlot::axisRects() const
   
   while (!elementStack.isEmpty())
   {
-    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements(false);
-    for (int i=0; i<subElements.size(); ++i)
+    foreach (QCPLayoutElement *element, elementStack.pop()->elements(false))
     {
-      if (QCPLayoutElement *element = subElements.at(i))
+      if (element)
       {
         elementStack.push(element);
         if (QCPAxisRect *ar = qobject_cast<QCPAxisRect*>(element))
@@ -1773,23 +1770,22 @@ QList<QCPAxisRect*> QCustomPlot::axisRects() const
 */
 QCPLayoutElement *QCustomPlot::layoutElementAt(const QPointF &pos) const
 {
-  QCPLayoutElement *current = mPlotLayout;
+  QCPLayoutElement *currentElement = mPlotLayout;
   bool searchSubElements = true;
-  while (searchSubElements && current)
+  while (searchSubElements && currentElement)
   {
     searchSubElements = false;
-    const QList<QCPLayoutElement*> elements = current->elements(false);
-    for (int i=0; i<elements.size(); ++i)
+    foreach (QCPLayoutElement *subElement, currentElement->elements(false))
     {
-      if (elements.at(i) && elements.at(i)->realVisibility() && elements.at(i)->selectTest(pos, false) >= 0)
+      if (subElement && subElement->realVisibility() && subElement->selectTest(pos, false) >= 0)
       {
-        current = elements.at(i);
+        currentElement = subElement;
         searchSubElements = true;
         break;
       }
     }
   }
-  return current;
+  return currentElement;
 }
 
 /*!
@@ -1802,14 +1798,13 @@ QCPLayoutElement *QCustomPlot::layoutElementAt(const QPointF &pos) const
 QList<QCPAxis*> QCustomPlot::selectedAxes() const
 {
   QList<QCPAxis*> result, allAxes;
-  QList<QCPAxisRect*> rects = axisRects();
-  for (int i=0; i<rects.size(); ++i)
-    allAxes << rects.at(i)->axes();
+  foreach (QCPAxisRect *rect, axisRects())
+    allAxes << rect->axes();
   
-  for (int i=0; i<allAxes.size(); ++i)
+  foreach (QCPAxis *axis, allAxes)
   {
-    if (allAxes.at(i)->selectedParts() != QCPAxis::spNone)
-      result.append(allAxes.at(i));
+    if (axis->selectedParts() != QCPAxis::spNone)
+      result.append(axis);
   }
   
   return result;
@@ -1832,13 +1827,12 @@ QList<QCPLegend*> QCustomPlot::selectedLegends() const
   
   while (!elementStack.isEmpty())
   {
-    QList<QCPLayoutElement*> subElements = elementStack.pop()->elements(false);
-    for (int i=0; i<subElements.size(); ++i)
+    foreach (QCPLayoutElement *subElement, elementStack.pop()->elements(false))
     {
-      if (QCPLayoutElement *element = subElements.at(i))
+      if (subElement)
       {
-        elementStack.push(element);
-        if (QCPLegend *leg = qobject_cast<QCPLegend*>(element))
+        elementStack.push(subElement);
+        if (QCPLegend *leg = qobject_cast<QCPLegend*>(subElement))
         {
           if (leg->selectedParts() != QCPLegend::spNone)
             result.append(leg);
@@ -1861,11 +1855,10 @@ QList<QCPLegend*> QCustomPlot::selectedLegends() const
 */
 void QCustomPlot::deselectAll()
 {
-  for (int i=0; i<mLayers.size(); ++i)
+  foreach (QCPLayer *layer, mLayers)
   {
-    QList<QCPLayerable*> layerables = mLayers.at(i)->children();
-    for (int k=0; k<layerables.size(); ++k)
-      layerables.at(k)->deselectEvent(0);
+    foreach (QCPLayerable *layerable, layer->children())
+      layerable->deselectEvent(0);
   }
 }
 
@@ -1882,18 +1875,12 @@ void QCustomPlot::deselectAll()
   signals on two QCustomPlots to make them replot synchronously, it won't cause an infinite
   recursion.
 */
-void QCustomPlot::replot()
+void QCustomPlot::replot(QCustomPlot::RefreshPriority refreshPriority)
 {
   if (mReplotting) // incase signals loop back to replot slot
     return;
   mReplotting = true;
   emit beforeReplot();
-#ifdef QCUSTOMPLOT_TIMED_REPLOT
-  static quint32 frameNumber = 1;
-  static qint64 nsecsSum = 0;
-  QElapsedTimer timer;
-  timer.start();
-#endif
   
   mPaintBuffer.fill(mBackgroundBrush.style() == Qt::SolidPattern ? mBackgroundBrush.color() : Qt::transparent);
   QCPPainter painter;
@@ -1905,22 +1892,13 @@ void QCustomPlot::replot()
       painter.fillRect(mViewport, mBackgroundBrush);
     draw(&painter);
     painter.end();
-    if (mPlottingHints.testFlag(QCP::phForceRepaint))
+    if ((refreshPriority == rpHint && mPlottingHints.testFlag(QCP::phForceRepaint)) || refreshPriority==rpImmediate)
       repaint();
     else
       update();
   } else // might happen if QCustomPlot has width or height zero
     qDebug() << Q_FUNC_INFO << "Couldn't activate painter on buffer";
   
-#ifdef QCUSTOMPLOT_TIMED_REPLOT
-  nsecsSum += timer.nsecsElapsed();
-  if (frameNumber % 50 == 0)
-  {
-    qDebug() << "QCustomPlot Replot duration" << (nsecsSum/50.0/1000)/1000.0 << "ms during frames" << frameNumber-49 << "to" << frameNumber;
-    nsecsSum = 0;
-  }
-  frameNumber++;
-#endif
   emit afterReplot();
   mReplotting = false;
 }
@@ -1935,15 +1913,12 @@ void QCustomPlot::replot()
 */
 void QCustomPlot::rescaleAxes(bool onlyVisiblePlottables)
 {
-  // get a list of all axes in the plot:
-  QList<QCPAxis*> axes;
-  QList<QCPAxisRect*> rects = axisRects();
-  for (int i=0; i<rects.size(); ++i)
-    axes << rects.at(i)->axes();
+  QList<QCPAxis*> allAxes;
+  foreach (QCPAxisRect *rect, axisRects())
+    allAxes << rect->axes();
   
-  // call rescale on all axes:
-  for (int i=0; i<axes.size(); ++i)
-    axes.at(i)->rescale(onlyVisiblePlottables);
+  foreach (QCPAxis *axis, allAxes)
+    axis->rescale(onlyVisiblePlottables);
 }
 
 /*!
@@ -2198,7 +2173,7 @@ void QCustomPlot::resizeEvent(QResizeEvent *event)
   // resize and repaint the buffer:
   mPaintBuffer = QPixmap(event->size());
   setViewport(rect());
-  replot();
+  replot(rpQueued); // queued update is important here, to prevent painting issues in some contexts
 }
 
 /*! \internal
@@ -2313,29 +2288,28 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
       QCPLayerable *clickedLayerable = layerableAt(event->pos(), true, &details);
       bool selectionStateChanged = false;
       bool additive = mInteractions.testFlag(QCP::iMultiSelect) && event->modifiers().testFlag(mMultiSelectModifier);
+      // deselect all other layerables if not additive selection:
+      if (!additive)
+      {
+        foreach (QCPLayer *layer, mLayers)
+        {
+          foreach (QCPLayerable *layerable, layer->children())
+          {
+            if (layerable != clickedLayerable && mInteractions.testFlag(layerable->selectionCategory()))
+            {
+              bool selChanged = false;
+              layerable->deselectEvent(&selChanged);
+              selectionStateChanged |= selChanged;
+            }
+          }
+        }
+      }
       if (clickedLayerable && mInteractions.testFlag(clickedLayerable->selectionCategory()))
       {
         // a layerable was actually clicked, call its selectEvent:
         bool selChanged = false;
         clickedLayerable->selectEvent(event, additive, details, &selChanged);
         selectionStateChanged |= selChanged;
-      }
-      // deselect all other layerables if not additive selection:
-      if (!additive)
-      {
-        for (int i=0; i<mLayers.size(); ++i)
-        {
-          QList<QCPLayerable*> layerables = mLayers.at(i)->children();
-          for (int k=0; k<layerables.size(); ++k)
-          {
-            if (layerables.at(k) != clickedLayerable && mInteractions.testFlag(layerables.at(k)->selectionCategory()))
-            {
-              bool selChanged = false;
-              layerables.at(k)->deselectEvent(&selChanged);
-              selectionStateChanged |= selChanged;
-            }
-          }
-        }
       }
       doReplot = true;
       if (selectionStateChanged)
@@ -2398,28 +2372,19 @@ void QCustomPlot::wheelEvent(QWheelEvent *event)
 */
 void QCustomPlot::draw(QCPPainter *painter)
 {
-  // update all axis tick vectors:
-  QList<QCPAxisRect*> rects = axisRects();
-  for (int i=0; i<rects.size(); ++i)
-  {
-    QList<QCPAxis*> axes = rects.at(i)->axes();
-    for (int k=0; k<axes.size(); ++k)
-      axes.at(k)->setupTickVectors();
-  }
-  
-  // recalculate layout:
-  mPlotLayout->update();
+  // run through layout phases:
+  mPlotLayout->update(QCPLayoutElement::upPreparation);
+  mPlotLayout->update(QCPLayoutElement::upMargins);
+  mPlotLayout->update(QCPLayoutElement::upLayout);
   
   // draw viewport background pixmap:
   drawBackground(painter);
 
   // draw all layered objects (grid, axes, plottables, items, legend,...):
-  for (int layerIndex=0; layerIndex < mLayers.size(); ++layerIndex)
+  foreach (QCPLayer *layer, mLayers)
   {
-    QList<QCPLayerable*> layerChildren = mLayers.at(layerIndex)->children();
-    for (int k=0; k < layerChildren.size(); ++k)
+    foreach (QCPLayerable *child, layer->children())
     {
-      QCPLayerable *child = layerChildren.at(k);
       if (child->realVisibility())
       {
         painter->save();
@@ -2430,6 +2395,17 @@ void QCustomPlot::draw(QCPPainter *painter)
       }
     }
   }
+  
+  /* Debug code to draw all layout element rects
+  foreach (QCPLayoutElement* el, findChildren<QCPLayoutElement*>())
+  {
+    painter->setBrush(Qt::NoBrush);
+    painter->setPen(QPen(QColor(0, 0, 0, 100), 0, Qt::DashLine));
+    painter->drawRect(el->rect());
+    painter->setPen(QPen(QColor(255, 0, 0, 100), 0, Qt::DashLine));
+    painter->drawRect(el->outerRect());
+  }
+  */
 }
 
 /*! \internal
