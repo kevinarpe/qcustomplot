@@ -79,7 +79,7 @@ public:
     Defines the phases of the update process, that happens just before a replot. At each phase,
     \ref update is called with the according UpdatePhase value.
   */
-  enum UpdatePhase { upPreparation ///< Phase used for preparation that need to be done before margin calculation and layout
+  enum UpdatePhase { upPreparation ///< Phase used for any type of preparation that needs to be done before margin calculation and layout
                      ,upMargins    ///< Phase in which the margins are calculated and set
                      ,upLayout     ///< Final phase in which the layout system places the rects of the elements
                    };

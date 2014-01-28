@@ -118,7 +118,7 @@ void QCPColorGradient::setColorStops(const QMap<double, QColor> &colorStops)
 }
 
 /*!
-  Sets the \a color the gradient will have at \a position (from 0 to 1 ). In between these color
+  Sets the \a color the gradient will have at \a position (from 0 to 1). In between these color
   stops, the color is interpolated according to \ref setColorInterpolation.
   
   \see setColorStops, clearColorStops

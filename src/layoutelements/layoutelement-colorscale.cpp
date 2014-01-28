@@ -188,20 +188,20 @@ bool QCPColorScale::rangeZoom() const
 /*!
   Sets at which side of the color scale the axis is placed, and thus also its orientation.
   
-  Note that after setting \a axisType to a different value, the axis returned by \ref axis() will
+  Note that after setting \a type to a different value, the axis returned by \ref axis() will
   be a different one. The new axis will adopt the following properties from the previous axis: The
   range, scale type, log base and label.
 */
-void QCPColorScale::setType(QCPAxis::AxisType axisType)
+void QCPColorScale::setType(QCPAxis::AxisType type)
 {
   if (!mAxisRect)
   {
     qDebug() << Q_FUNC_INFO << "internal axis rect was deleted";
     return;
   }
-  if (mType != axisType)
+  if (mType != type)
   {
-    mType = axisType;
+    mType = type;
     QCPRange rangeTransfer(0, 6);
     double logBaseTransfer = 10;
     QString labelTransfer;
@@ -215,10 +215,10 @@ void QCPColorScale::setType(QCPAxis::AxisType axisType)
       disconnect(mColorAxis.data(), SIGNAL(rangeChanged(QCPRange)), this, SLOT(setDataRange(QCPRange)));
       disconnect(mColorAxis.data(), SIGNAL(scaleTypeChanged(QCPAxis::ScaleType)), this, SLOT(setDataScaleType(QCPAxis::ScaleType)));
     }
-    foreach (QCPAxis::AxisType type, QList<QCPAxis::AxisType>() << QCPAxis::atLeft << QCPAxis::atRight << QCPAxis::atBottom << QCPAxis::atTop)
+    foreach (QCPAxis::AxisType atype, QList<QCPAxis::AxisType>() << QCPAxis::atLeft << QCPAxis::atRight << QCPAxis::atBottom << QCPAxis::atTop)
     {
-      mAxisRect.data()->axis(type)->setTicks(type == mType);
-      mAxisRect.data()->axis(type)->setTickLabels(type== mType);
+      mAxisRect.data()->axis(atype)->setTicks(atype == mType);
+      mAxisRect.data()->axis(atype)->setTickLabels(atype== mType);
     }
     // set new mColorAxis pointer:
     mColorAxis = mAxisRect.data()->axis(mType);

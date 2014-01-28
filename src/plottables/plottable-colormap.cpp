@@ -287,8 +287,8 @@ void QCPColorMapData::setData(double key, double value, double z)
   \ref setSize).
   
   In the standard plot configuration (horizontal key axis and vertical value axis, both not
-  range-reversed), the cell with indices (0, 0) is in the top left corner and the cell with indices
-  (keySize-1, valueSize-1) is in the bottom right corner of the color map.
+  range-reversed), the cell with indices (0, 0) is in the bottom left corner and the cell with
+  indices (keySize-1, valueSize-1) is in the top right corner of the color map.
   
   \see setData, setSize
 */
@@ -424,7 +424,7 @@ void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, dou
   setCell, since it doesn't need to do any coordinate transformation and thus performs a bit
   better.
   
-  The cell with index (0, 0) is at the top left, if the color map uses normal (i.e. not reversed)
+  The cell with index (0, 0) is at the bottom left, if the color map uses normal (i.e. not reversed)
   key and value axes.
   
   To show the user which colors correspond to which \a data values, a \ref QCPColorScale is
