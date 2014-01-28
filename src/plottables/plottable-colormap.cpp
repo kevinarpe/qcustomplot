@@ -25,7 +25,6 @@
 
 #include "plottable-colormap.h"
 
-//#include <QRgb>
 #include "../painter.h"
 #include "../core.h"
 #include "../axis.h"
