@@ -2839,9 +2839,9 @@ QCPAxisPainterPrivate::TickLabelData QCPAxisPainterPrivate::getTickLabelData(con
       result.basePart += (numberMultiplyCross ? QString(QChar(215)) : QString(QChar(183))) + "10";
     result.expPart = text.mid(ePos+1);
     // clip "+" and leading zeros off expPart:
-    while (result.expPart.at(1) == '0' && result.expPart.length() > 2) // length > 2 so we leave one zero when numberFormatChar is 'e'
+    while (result.expPart.length() > 2 && result.expPart.at(1) == '0') // length > 2 so we leave one zero when numberFormatChar is 'e'
       result.expPart.remove(1, 1);
-    if (result.expPart.at(0) == '+')
+    if (!result.expPart.isEmpty() && result.expPart.at(0) == '+')
       result.expPart.remove(0, 1);
     // prepare smaller font for exponent:
     result.expFont = font;
