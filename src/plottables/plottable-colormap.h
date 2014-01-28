@@ -88,6 +88,14 @@ protected:
 class QCP_LIB_DECL QCPColorMap : public QCPAbstractPlottable
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(QCPRange dataRange READ dataRange WRITE setDataRange NOTIFY dataRangeChanged)
+  Q_PROPERTY(QCPAxis::ScaleType dataScaleType READ dataScaleType WRITE setDataScaleType NOTIFY dataScaleTypeChanged)
+  Q_PROPERTY(QCPColorGradient gradient READ gradient WRITE setGradient NOTIFY gradientChanged)
+  Q_PROPERTY(bool interpolate READ interpolate WRITE setInterpolate)
+  Q_PROPERTY(bool tightBoundary READ tightBoundary WRITE setTightBoundary)
+  Q_PROPERTY(QCPColorScale* colorScale READ colorScale WRITE setColorScale)
+  /// \endcond
 public:
   explicit QCPColorMap(QCPAxis *keyAxis, QCPAxis *valueAxis);
   virtual ~QCPColorMap();

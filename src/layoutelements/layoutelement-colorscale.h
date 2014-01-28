@@ -66,7 +66,14 @@ class QCP_LIB_DECL QCPColorScale : public QCPLayoutElement
 {
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
-// TODO
+  Q_PROPERTY(QCPAxis::AxisType type READ type WRITE setType)
+  Q_PROPERTY(QCPRange dataRange READ dataRange WRITE setDataRange NOTIFY dataRangeChanged)
+  Q_PROPERTY(QCPAxis::ScaleType dataScaleType READ dataScaleType WRITE setDataScaleType NOTIFY dataScaleTypeChanged)
+  Q_PROPERTY(QCPColorGradient gradient READ gradient WRITE setGradient NOTIFY gradientChanged)
+  Q_PROPERTY(QString label READ label WRITE setLabel)
+  Q_PROPERTY(int barWidth READ barWidth WRITE setBarWidth)
+  Q_PROPERTY(bool rangeDrag READ rangeDrag WRITE setRangeDrag)
+  Q_PROPERTY(bool rangeZoom READ rangeZoom WRITE setRangeZoom)
   /// \endcond
 public:
   explicit QCPColorScale(QCustomPlot *parentPlot);
