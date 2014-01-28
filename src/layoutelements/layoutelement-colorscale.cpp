@@ -145,6 +145,7 @@ QCPColorScale::~QCPColorScale()
   delete mAxisRect;
 }
 
+/* undocumented getter */
 QString QCPColorScale::label() const
 {
   if (!mColorAxis)
