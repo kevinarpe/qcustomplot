@@ -130,7 +130,7 @@
 */
 QCPColorScale::QCPColorScale(QCustomPlot *parentPlot) :
   QCPLayoutElement(parentPlot),
-  mAxisType(QCPAxis::atTop), // set to atTop such that setType(QCPAxis::atRight) below doesn't skip work because it thinks it's already atRight
+  mType(QCPAxis::atTop), // set to atTop such that setType(QCPAxis::atRight) below doesn't skip work because it thinks it's already atRight
   mDataScaleType(QCPAxis::stLinear),
   mBarWidth(20),
   mAxisRect(new QCPColorScaleAxisRectPrivate(this))
@@ -165,9 +165,9 @@ bool QCPColorScale::rangeDrag() const
     return false;
   }
   
-  return mAxisRect.data()->rangeDrag().testFlag(QCPAxis::orientation(mAxisType)) &&
-      mAxisRect.data()->rangeDragAxis(QCPAxis::orientation(mAxisType)) &&
-      mAxisRect.data()->rangeDragAxis(QCPAxis::orientation(mAxisType))->orientation() == QCPAxis::orientation(mAxisType);
+  return mAxisRect.data()->rangeDrag().testFlag(QCPAxis::orientation(mType)) &&
+      mAxisRect.data()->rangeDragAxis(QCPAxis::orientation(mType)) &&
+      mAxisRect.data()->rangeDragAxis(QCPAxis::orientation(mType))->orientation() == QCPAxis::orientation(mType);
 }
 
 /* undocumented getter */
@@ -179,9 +179,9 @@ bool QCPColorScale::rangeZoom() const
     return false;
   }
   
-  return mAxisRect.data()->rangeZoom().testFlag(QCPAxis::orientation(mAxisType)) &&
-      mAxisRect.data()->rangeZoomAxis(QCPAxis::orientation(mAxisType)) &&
-      mAxisRect.data()->rangeZoomAxis(QCPAxis::orientation(mAxisType))->orientation() == QCPAxis::orientation(mAxisType);
+  return mAxisRect.data()->rangeZoom().testFlag(QCPAxis::orientation(mType)) &&
+      mAxisRect.data()->rangeZoomAxis(QCPAxis::orientation(mType)) &&
+      mAxisRect.data()->rangeZoomAxis(QCPAxis::orientation(mType))->orientation() == QCPAxis::orientation(mType);
 }
 
 /*!
@@ -198,9 +198,9 @@ void QCPColorScale::setType(QCPAxis::AxisType axisType)
     qDebug() << Q_FUNC_INFO << "internal axis rect was deleted";
     return;
   }
-  if (mAxisType != axisType)
+  if (mType != axisType)
   {
-    mAxisType = axisType;
+    mType = axisType;
     QCPRange rangeTransfer(0, 6);
     double logBaseTransfer = 10;
     QString labelTransfer;
@@ -216,19 +216,19 @@ void QCPColorScale::setType(QCPAxis::AxisType axisType)
     }
     foreach (QCPAxis::AxisType type, QList<QCPAxis::AxisType>() << QCPAxis::atLeft << QCPAxis::atRight << QCPAxis::atBottom << QCPAxis::atTop)
     {
-      mAxisRect.data()->axis(type)->setTicks(type == mAxisType);
-      mAxisRect.data()->axis(type)->setTickLabels(type== mAxisType);
+      mAxisRect.data()->axis(type)->setTicks(type == mType);
+      mAxisRect.data()->axis(type)->setTickLabels(type== mType);
     }
     // set new mColorAxis pointer:
-    mColorAxis = mAxisRect.data()->axis(mAxisType);
+    mColorAxis = mAxisRect.data()->axis(mType);
     // transfer settings to new axis:
     mColorAxis.data()->setRange(rangeTransfer); // transfer range of old axis to new one (necessary if axis changes from vertical to horizontal or vice versa)
     mColorAxis.data()->setLabel(labelTransfer);
     mColorAxis.data()->setScaleLogBase(logBaseTransfer); // scaleType is synchronized among axes in realtime via signals (connected in QCPColorScale ctor), so we only need to take care of log base here
     connect(mColorAxis.data(), SIGNAL(rangeChanged(QCPRange)), this, SLOT(setDataRange(QCPRange)));
     connect(mColorAxis.data(), SIGNAL(scaleTypeChanged(QCPAxis::ScaleType)), this, SLOT(setDataScaleType(QCPAxis::ScaleType)));
-    mAxisRect.data()->setRangeDragAxes(QCPAxis::orientation(mAxisType) == Qt::Horizontal ? mColorAxis.data() : 0,
-                                       QCPAxis::orientation(mAxisType) == Qt::Vertical ? mColorAxis.data() : 0);
+    mAxisRect.data()->setRangeDragAxes(QCPAxis::orientation(mType) == Qt::Horizontal ? mColorAxis.data() : 0,
+                                       QCPAxis::orientation(mType) == Qt::Vertical ? mColorAxis.data() : 0);
   }
 }
 
@@ -332,7 +332,7 @@ void QCPColorScale::setRangeDrag(bool enabled)
   }
   
   if (enabled)
-    mAxisRect.data()->setRangeDrag(QCPAxis::orientation(mAxisType));
+    mAxisRect.data()->setRangeDrag(QCPAxis::orientation(mType));
   else
     mAxisRect.data()->setRangeDrag(0);
 }
@@ -352,7 +352,7 @@ void QCPColorScale::setRangeZoom(bool enabled)
   }
   
   if (enabled)
-    mAxisRect.data()->setRangeZoom(QCPAxis::orientation(mAxisType));
+    mAxisRect.data()->setRangeZoom(QCPAxis::orientation(mType));
   else
     mAxisRect.data()->setRangeZoom(0);
 }
@@ -373,7 +373,7 @@ void QCPColorScale::update(UpdatePhase phase)
   {
     case upMargins:
     {
-      if (mAxisType == QCPAxis::atBottom || mAxisType == QCPAxis::atTop)
+      if (mType == QCPAxis::atBottom || mType == QCPAxis::atTop)
       {
         setMaximumSize(QWIDGETSIZE_MAX, mBarWidth+mAxisRect.data()->margins().top()+mAxisRect.data()->margins().bottom()+margins().top()+margins().bottom());
         setMinimumSize(0,               mBarWidth+mAxisRect.data()->margins().top()+mAxisRect.data()->margins().bottom()+margins().top()+margins().bottom());
@@ -506,8 +506,8 @@ void QCPColorScaleAxisRectPrivate::draw(QCPPainter *painter)
   bool mirrorVert = false;
   if (mParentColorScale->mColorAxis)
   {
-    mirrorHorz = mParentColorScale->mColorAxis.data()->rangeReversed() && (mParentColorScale->axisType() == QCPAxis::atBottom || mParentColorScale->axisType() == QCPAxis::atTop); 
-    mirrorVert = mParentColorScale->mColorAxis.data()->rangeReversed() && (mParentColorScale->axisType() == QCPAxis::atLeft || mParentColorScale->axisType() == QCPAxis::atRight); 
+    mirrorHorz = mParentColorScale->mColorAxis.data()->rangeReversed() && (mParentColorScale->type() == QCPAxis::atBottom || mParentColorScale->type() == QCPAxis::atTop); 
+    mirrorVert = mParentColorScale->mColorAxis.data()->rangeReversed() && (mParentColorScale->type() == QCPAxis::atLeft || mParentColorScale->type() == QCPAxis::atRight); 
   }
   
   painter->drawImage(rect(), mGradientImage.mirrored(mirrorHorz, mirrorVert));
@@ -529,7 +529,7 @@ void QCPColorScaleAxisRectPrivate::updateGradientImage()
   QVector<double> data(n);
   for (int i=0; i<n; ++i)
     data[i] = i;
-  if (mParentColorScale->mAxisType == QCPAxis::atBottom || mParentColorScale->mAxisType == QCPAxis::atTop)
+  if (mParentColorScale->mType == QCPAxis::atBottom || mParentColorScale->mType == QCPAxis::atTop)
   {
     w = n;
     h = rect().height();

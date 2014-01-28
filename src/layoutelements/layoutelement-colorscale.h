@@ -74,7 +74,7 @@ public:
   
   // getters:
   QCPAxis *axis() const { return mColorAxis.data(); }
-  QCPAxis::AxisType axisType() const { return mAxisType; }
+  QCPAxis::AxisType type() const { return mType; }
   QCPRange dataRange() const { return mDataRange; }
   QCPAxis::ScaleType dataScaleType() const { return mDataScaleType; }
   QCPColorGradient gradient() const { return mGradient; }
@@ -84,7 +84,7 @@ public:
   bool rangeZoom() const;
   
   // setters:
-  void setType(QCPAxis::AxisType axisType);
+  void setType(QCPAxis::AxisType type);
   Q_SLOT void setDataRange(const QCPRange &dataRange);
   Q_SLOT void setDataScaleType(QCPAxis::ScaleType scaleType);
   Q_SLOT void setGradient(const QCPColorGradient &gradient);
@@ -105,7 +105,7 @@ signals:
 
 protected:
   // property members:
-  QCPAxis::AxisType mAxisType;
+  QCPAxis::AxisType mType;
   QCPRange mDataRange;
   QCPAxis::ScaleType mDataScaleType;
   QCPColorGradient mGradient;
