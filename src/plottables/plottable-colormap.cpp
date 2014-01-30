@@ -172,11 +172,17 @@ void QCPColorMapData::setSize(int keySize, int valueSize)
     mIsEmpty = mKeySize == 0 || mValueSize == 0;
     if (!mIsEmpty)
     {
+#ifdef __EXCEPTIONS
+      try { // 2D arrays get memory intensive fast. So if the allocation fails, at least output debug message
+#endif
       mData = new double[mKeySize*mValueSize];
-      if (!mData)
-        qDebug() << Q_FUNC_INFO << "out of memory for data dimensions "<< mKeySize << "*" << mValueSize;
-      else
+#ifdef __EXCEPTIONS
+      } catch (...) { mData = 0; }
+#endif
+      if (mData)
         fill(0);
+      else
+        qDebug() << Q_FUNC_INFO << "out of memory for data dimensions "<< mKeySize << "*" << mValueSize;
     } else
       mData = 0;
     mDataModified = true;
