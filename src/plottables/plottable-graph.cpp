@@ -365,7 +365,7 @@ void QCPGraph::setLineStyle(LineStyle ls)
   mLineStyle = ls;
 }
 
-/*! 
+/*!
   Sets the visual appearance of single data points in the plot. If set to \ref QCPScatterStyle::ssNone, no scatter points
   are drawn (e.g. for line-only-plots with appropriate line style).
   
@@ -398,7 +398,7 @@ void QCPGraph::setErrorPen(const QPen &pen)
   mErrorPen = pen;
 }
 
-/*! 
+/*!
   Sets the width of the handles at both ends of an error bar in pixels.
 */
 void QCPGraph::setErrorBarSize(double size)
@@ -406,7 +406,7 @@ void QCPGraph::setErrorBarSize(double size)
   mErrorBarSize = size;
 }
 
-/*! 
+/*!
   If \a enabled is set to true, the error bar will not be drawn as a solid line under the scatter symbol but
   leave some free space around the symbol.
   
@@ -422,7 +422,7 @@ void QCPGraph::setErrorBarSkipSymbol(bool enabled)
   mErrorBarSkipSymbol = enabled;
 }
 
-/*! 
+/*!
   Sets the target graph for filling the area between this graph and \a targetGraph with the current
   brush (\ref setBrush).
   
@@ -859,7 +859,7 @@ void QCPGraph::getLinePlotData(QVector<QPointF> *linePixelData, QVector<QCPData>
   }
 }
 
-/*! 
+/*!
   \internal
   Places the raw data points needed for a step plot with left oriented steps in \a lineData.
 
@@ -912,7 +912,7 @@ void QCPGraph::getStepLeftPlotData(QVector<QPointF> *linePixelData, QVector<QCPD
   }
 }
 
-/*! 
+/*!
   \internal
   Places the raw data points needed for a step plot with right oriented steps in \a lineData.
 
@@ -965,7 +965,7 @@ void QCPGraph::getStepRightPlotData(QVector<QPointF> *linePixelData, QVector<QCP
   }
 }
 
-/*! 
+/*!
   \internal
   Places the raw data points needed for a step plot with centered steps in \a lineData.
 
@@ -1030,7 +1030,7 @@ void QCPGraph::getStepCenterPlotData(QVector<QPointF> *linePixelData, QVector<QC
 
 }
 
-/*! 
+/*!
   \internal
   Places the raw data points needed for an impulse plot in \a lineData.
 
@@ -1203,7 +1203,7 @@ void QCPGraph::drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) con
       for (int i=1; i<lineData->size(); ++i)
         painter->drawLine(lineData->at(i-1), lineData->at(i));
     } else
-    {  
+    {
       painter->drawPolyline(QPolygonF(*lineData));
     }
   }
@@ -1454,7 +1454,7 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
       {
         if (a-y > skipSymbolMargin) // don't draw spine if error is so small it's within skipSymbolmargin
           painter->drawLine(QLineF(x, a, x, y+skipSymbolMargin));
-        if (y-b > skipSymbolMargin) 
+        if (y-b > skipSymbolMargin)
           painter->drawLine(QLineF(x, y-skipSymbolMargin, x, b));
       } else
         painter->drawLine(QLineF(x, a, x, b));
@@ -1965,7 +1965,7 @@ int QCPGraph::findIndexAboveY(const QVector<QPointF> *data, double y) const
   return -1;
 }
 
-/*! \internal 
+/*! \internal
   
   Calculates the (minimum) distance (in pixels) the graph's representation has from the given \a
   pixelPoint in pixels. This is used to determine whether the graph was clicked or not, e.g. in
@@ -2025,7 +2025,7 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
         if (currentDistSqr < minDistSqr)
           minDistSqr = currentDistSqr;
       }
-    } else 
+    } else
     {
       // all other line plots (line and step) connect points directly:
       for (int i=0; i<lineData->size()-1; ++i)

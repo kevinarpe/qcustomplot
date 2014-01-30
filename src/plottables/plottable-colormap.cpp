@@ -828,7 +828,7 @@ void QCPColorMap::draw(QCPPainter *painter)
   painter->setRenderHint(QPainter::SmoothPixmapTransform, mInterpolate);
   QRegion clipBackup;
   if (mTightBoundary)
-  { 
+  {
     clipBackup = painter->clipRegion();
     painter->setClipRect(QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().lower),
                                 coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().upper)).normalized(), Qt::IntersectClip);

@@ -196,7 +196,7 @@ void QCPCurve::setData(const QVector<double> &key, const QVector<double> &value)
   }
 }
 
-/*! 
+/*!
   Sets the visual appearance of single data points in the plot. If set to \ref
   QCPScatterStyle::ssNone, no scatter points are drawn (e.g. for line-only plots with appropriate
   line style).
@@ -408,7 +408,7 @@ void QCPCurve::draw(QCPPainter *painter)
       for (int i=1; i<lineData->size(); ++i)
         painter->drawLine(lineData->at(i-1), lineData->at(i));
     } else
-    {  
+    {
       painter->drawPolyline(QPolygonF(*lineData));
     }
   }
@@ -479,9 +479,9 @@ void QCPCurve::drawScatterPlot(QCPPainter *painter, const QVector<QPointF> *poin
 void QCPCurve::getCurveData(QVector<QPointF> *lineData) const
 {
   /* Extended sides of axis rect R divide space into 9 regions:
-     1__|_4_|__7  
+     1__|_4_|__7
      2__|_R_|__8
-     3  | 6 |  9 
+     3  | 6 |  9
      General idea: If the two points of a line segment are in the same region (that is not R), the line segment corner is removed.
      Curves outside R become straight lines closely outside of R which greatly reduces drawing time, yet keeps the look of lines and
      fills inside R consistent.
@@ -590,7 +590,7 @@ void QCPCurve::getCurveData(QVector<QPointF> *lineData) const
     lineData->append(coordsToPixels((mData->constEnd()-1).value().key, (mData->constEnd()-1).value().value));
 }
 
-/*! \internal 
+/*! \internal
   
   Calculates the (minimum) distance (in pixels) the curve's representation has from the given \a
   pixelPoint in pixels. This is used to determine whether the curve was clicked or not, e.g. in

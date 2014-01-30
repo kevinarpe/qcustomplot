@@ -485,7 +485,7 @@ bool QCPAbstractPlottable::addToLegend()
     return false;
 }
 
-/*! 
+/*!
   Removes the plottable from the legend of the parent QCustomPlot. This means the
   QCPAbstractLegendItem (usually a QCPPlottableLegendItem) that is associated with this plottable
   is removed.
@@ -548,7 +548,7 @@ void QCPAbstractPlottable::coordsToPixels(double key, double value, double &x, d
   }
 }
 
-/*! \internal 
+/*! \internal
   \overload
   
   Returns the input as pixel coordinates in a QPointF.

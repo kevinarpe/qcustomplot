@@ -258,7 +258,7 @@ void MainWindow::genLineEnding()
   for (int i=0; i<endingStyleEnum.keyCount(); ++i)
   {
     QCPLineEnding ending(static_cast<QCPLineEnding::EndingStyle>(endingStyleEnum.value(i)));
-    QString endingName(endingStyleEnum.key(i)); 
+    QString endingName(endingStyleEnum.key(i));
     
     if (ending.style() == QCPLineEnding::esSkewedBar)
       ending.setInverted(true);
@@ -700,7 +700,7 @@ void MainWindow::genQCPColorGradient()
     m.setTop(m.top() + 10);
     m.setRight(0);
     customPlot->axisRect()->setMinimumMargins(m); // make some space for label
-    QString gradientName(presetEnum.key(i)); 
+    QString gradientName(presetEnum.key(i));
     
     QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
     customPlot->addPlottable(colorMap);
@@ -870,7 +870,7 @@ void MainWindow::genQCPColorGradient_LevelCount()
   QMargins m = r1->minimumMargins();
   m.setTop(m.top() + 10); // make some space for label
   m.setRight(0);
-  r1->setMinimumMargins(m); 
+  r1->setMinimumMargins(m);
   r2->setMinimumMargins(m);
 
   QCPColorMap *map1 = new QCPColorMap(r1->axis(QCPAxis::atBottom), r1->axis(QCPAxis::atLeft));
@@ -953,7 +953,7 @@ void MainWindow::genQCPColorGradient_Periodic()
   QMargins m = r1->minimumMargins();
   m.setTop(m.top() + 10); // make some space for label
   m.setRight(0);
-  r1->setMinimumMargins(m); 
+  r1->setMinimumMargins(m);
   r2->setMinimumMargins(m);
 
   QCPColorMap *map1 = new QCPColorMap(r1->axis(QCPAxis::atBottom), r1->axis(QCPAxis::atLeft));

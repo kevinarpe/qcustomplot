@@ -1528,7 +1528,7 @@ QCPLayer *QCustomPlot::layer(int index) const
 */
 QCPLayer *QCustomPlot::currentLayer() const
 {
-  return mCurrentLayer; 
+  return mCurrentLayer;
 }
 
 /*!
@@ -1885,7 +1885,7 @@ void QCustomPlot::replot(QCustomPlot::RefreshPriority refreshPriority)
   mPaintBuffer.fill(mBackgroundBrush.style() == Qt::SolidPattern ? mBackgroundBrush.color() : Qt::transparent);
   QCPPainter painter;
   painter.begin(&mPaintBuffer);
-  if (painter.isActive()) 
+  if (painter.isActive())
   {
     painter.setRenderHint(QPainter::HighQualityAntialiasing); // to make Antialiasing look good if using the OpenGL graphicssystem
     if (mBackgroundBrush.style() != Qt::SolidPattern && mBackgroundBrush.style() != Qt::NoBrush)
@@ -2048,7 +2048,7 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   \see savePdf, saveBmp, saveJpg, saveRastered
 */
 bool QCustomPlot::savePng(const QString &fileName, int width, int height, double scale, int quality)
-{  
+{
   return saveRastered(fileName, width, height, scale, "PNG", quality);
 }
 
@@ -2417,7 +2417,7 @@ void QCustomPlot::draw(QCPPainter *painter)
   the viewport with the provided \a painter. The scaled version is buffered in
   mScaledBackgroundPixmap to prevent expensive rescaling at every redraw. It is only updated, when
   the axis rect has changed in a way that requires a rescale of the background pixmap (this is
-  dependant on the \ref setBackgroundScaledMode), or when a differend axis backgroud pixmap was
+  dependent on the \ref setBackgroundScaledMode), or when a differend axis background pixmap was
   set.
   
   Note that this function does not draw a fill with the background brush (\ref setBackground(const
@@ -2558,7 +2558,7 @@ bool QCustomPlot::saveRastered(const QString &fileName, int width, int height, d
 */
 QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
 {
-  // this method is somewhat similar to toPainter. Change something here, and a change in toPainter might be necessary, too. 
+  // this method is somewhat similar to toPainter. Change something here, and a change in toPainter might be necessary, too.
   int newWidth, newHeight;
   if (width == 0 || height == 0)
   {
@@ -2614,7 +2614,7 @@ QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
 */
 void QCustomPlot::toPainter(QCPPainter *painter, int width, int height)
 {
-  // this method is somewhat similar to toPixmap. Change something here, and a change in toPixmap might be necessary, too. 
+  // this method is somewhat similar to toPixmap. Change something here, and a change in toPixmap might be necessary, too.
   int newWidth, newHeight;
   if (width == 0 || height == 0)
   {

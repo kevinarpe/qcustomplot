@@ -175,7 +175,7 @@
   \section QCPMarginGroup-example Example
   
   First create a margin group:
-  \code 
+  \code
   QCPMarginGroup *group = new QCPMarginGroup(customPlot);
   \endcode
   Then set this group on the layout element sides:
@@ -593,9 +593,9 @@ void QCPLayoutElement::update(UpdatePhase phase)
       {
         if (mAutoMargins.testFlag(side)) // this side's margin shall be calculated automatically
         {
-          if (mMarginGroups.contains(side)) 
+          if (mMarginGroups.contains(side))
             QCP::setMarginValue(newMargins, side, mMarginGroups[side]->commonMargin(side)); // this side is part of a margin group, so get the margin value from that group
-          else 
+          else
             QCP::setMarginValue(newMargins, side, calculateAutoMargin(side)); // this side is not part of a group, so calculate the value directly
           // apply minimum margin restrictions:
           if (QCP::getMarginValue(newMargins, side) < QCP::getMarginValue(mMinimumMargins, side))
@@ -675,7 +675,7 @@ double QCPLayoutElement::selectTest(const QPointF &pos, bool onlySelectable, QVa
     return -1;
 }
 
-/*! \internal 
+/*! \internal
   
   propagates the parent plot initialization to all child elements, by calling \ref
   QCPLayerable::initializeParentPlot on them.
@@ -689,7 +689,7 @@ void QCPLayoutElement::parentPlotInitialized(QCustomPlot *parentPlot)
   }
 }
 
-/*! \internal 
+/*! \internal
   
   Returns the margin size for this \a side. It is used if automatic margins is enabled for this \a
   side (see \ref setAutoMargins). If a minimum margin was set with \ref setMinimumMargins, the
@@ -1224,7 +1224,7 @@ bool QCPLayoutGrid::addElement(int row, int column, QCPLayoutElement *element)
       adoptElement(element);
       return true;
     } else
-      qDebug() << Q_FUNC_INFO << "There is already an element in the specified row/column:" << row << column; 
+      qDebug() << Q_FUNC_INFO << "There is already an element in the specified row/column:" << row << column;
   } else
     qDebug() << Q_FUNC_INFO << "Can't add null element to row/column:" << row << column;
   return false;

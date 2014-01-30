@@ -224,14 +224,14 @@ void MainWindow::contextMenuRequest(QPoint pos)
   QMenu *menu = new QMenu(this);
   menu->setAttribute(Qt::WA_DeleteOnClose);
   
-  if (ui->customPlot->legend->selectTest(pos, false) >= 0) // context menu on legend requested
+  /*if (ui->customPlot->legend->selectTest(pos, false) >= 0) // context menu on legend requested
   {
     menu->addAction("Move to top left", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignLeft));
     menu->addAction("Move to top center", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignHCenter));
     menu->addAction("Move to top right", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignRight));
     menu->addAction("Move to bottom right", this, SLOT(moveLegend()))->setData((int)(Qt::AlignBottom|Qt::AlignRight));
     menu->addAction("Move to bottom left", this, SLOT(moveLegend()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
-  } else  // general context menu on graphs requested
+  } else  // general context menu on graphs requested*/
   {
     menu->addAction("Add random graph", this, SLOT(addRandomGraph()));
     if (ui->customPlot->selectedGraphs().size() > 0)

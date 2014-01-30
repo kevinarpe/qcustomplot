@@ -67,7 +67,7 @@
   
   To set the title text in the constructor, rather use \ref QCPPlotTitle(QCustomPlot *parentPlot, const QString &text).
 */
-QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot) : 
+QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot) :
   QCPLayoutElement(parentPlot),
   mFont(QFont("sans serif", 13*1.5, QFont::Bold)),
   mTextColor(Qt::black),

@@ -71,7 +71,7 @@
   Constructs a QCPAbstractLegendItem and associates it with the QCPLegend \a parent. This does not
   cause the item to be added to \a parent, so \ref QCPLegend::addItem must be called separately.
 */
-QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) : 
+QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) :
   QCPLayoutElement(parent->parentPlot()),
   mParentLegend(parent),
   mFont(parent->font()),

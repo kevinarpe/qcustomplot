@@ -446,13 +446,13 @@ QCPAxis::~QCPAxis()
 /* No documentation as it is a property getter */
 int QCPAxis::tickLabelPadding() const
 {
-  return mAxisPainter->tickLabelPadding; 
+  return mAxisPainter->tickLabelPadding;
 }
 
 /* No documentation as it is a property getter */
 double QCPAxis::tickLabelRotation() const
 {
-  return mAxisPainter->tickLabelRotation; 
+  return mAxisPainter->tickLabelRotation;
 }
 
 /* No documentation as it is a property getter */
@@ -484,7 +484,7 @@ int QCPAxis::tickLengthOut() const
 /* No documentation as it is a property getter */
 int QCPAxis::subTickLengthIn() const
 {
-  return mAxisPainter->subTickLengthIn; 
+  return mAxisPainter->subTickLengthIn;
 }
 
 /* No documentation as it is a property getter */
@@ -820,7 +820,7 @@ void QCPAxis::setAutoTickLabels(bool on)
 /*!
   Sets whether the tick step, i.e. the interval between two (major) ticks, is calculated
   automatically. If \a on is set to true, the axis finds a tick step that is reasonable for human
-  readable plots. 
+  readable plots.
 
   The number of ticks the algorithm aims for within the visible range can be specified with \ref
   setAutoTickCount.
@@ -1704,7 +1704,7 @@ double QCPAxis::coordToPixel(double value) const
       else
         return mAxisRect->bottom()-(mRange.upper-value)/mRange.size()*mAxisRect->height();
     } else // mScaleType == stLogarithmic
-    {     
+    {
       if (value >= 0 && mRange.upper < 0) // invalid value for logarithmic scale, just draw it outside visible range
         return !mRangeReversed ? mAxisRect->top()-200 : mAxisRect->bottom()+200;
       else if (value <= 0 && mRange.upper > 0) // invalid value for logarithmic scale, just draw it outside visible range
@@ -1851,7 +1851,7 @@ QCPAxis::AxisType QCPAxis::opposite(QCPAxis::AxisType type)
     case atBottom: return atTop; break;
     case atTop: return atBottom; break;
     default: qDebug() << Q_FUNC_INFO << "invalid axis type"; return atLeft; break;
-  } 
+  }
 }
 
 /*! \internal
@@ -2506,7 +2506,7 @@ void QCPAxisPainterPrivate::draw(QCPPainter *painter)
     int tickDir = (type == QCPAxis::atBottom || type == QCPAxis::atRight) ? -1 : 1;
     if (QCPAxis::orientation(type) == Qt::Horizontal)
     {
-      for (int i=0; i<subTickPositions.size(); ++i) 
+      for (int i=0; i<subTickPositions.size(); ++i)
         painter->drawLine(QLineF(subTickPositions.at(i)+xCor, origin.y()-subTickLengthOut*tickDir+yCor, subTickPositions.at(i)+xCor, origin.y()+subTickLengthIn*tickDir+yCor));
     } else
     {
@@ -2759,7 +2759,7 @@ void QCPAxisPainterPrivate::placeTickLabel(QCPPainter *painter, double position,
   }
   
   // expand passed tickLabelsSize if current tick label is larger:
-  if (finalSize.width() > tickLabelsSize->width()) 
+  if (finalSize.width() > tickLabelsSize->width())
     tickLabelsSize->setWidth(finalSize.width());
   if (finalSize.height() > tickLabelsSize->height())
     tickLabelsSize->setHeight(finalSize.height());
@@ -2827,7 +2827,7 @@ QCPAxisPainterPrivate::TickLabelData QCPAxisPainterPrivate::getTickLabelData(con
   
   // calculate text bounding rects and do string preparation for beautiful decimal powers:
   result.baseFont = font;
-  result.baseFont.setPointSizeF(result.baseFont.pointSizeF()+0.05); // QFontMetrics.boundingRect has a bug for exact point sizes that make the results oscillate due to internal rounding 
+  result.baseFont.setPointSizeF(result.baseFont.pointSizeF()+0.05); // QFontMetrics.boundingRect has a bug for exact point sizes that make the results oscillate due to internal rounding
   if (useBeautifulPowers)
   {
     // split text into parts of number/symbol that will be drawn normally and part that will be drawn as exponent:
@@ -2994,7 +2994,7 @@ void QCPAxisPainterPrivate::getMaxTickLabelSize(const QFont &font, const QString
   }
   
   // expand passed tickLabelsSize if current tick label is larger:
-  if (finalSize.width() > tickLabelsSize->width()) 
+  if (finalSize.width() > tickLabelsSize->width())
     tickLabelsSize->setWidth(finalSize.width());
   if (finalSize.height() > tickLabelsSize->height())
     tickLabelsSize->setHeight(finalSize.height());

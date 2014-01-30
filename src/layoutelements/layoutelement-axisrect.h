@@ -35,7 +35,7 @@ class QCustomPlot;
 class QCPAxis;
 class QCPAbstractPlottable;
 class QCPGraph;
-class QCPAbstractItem; 
+class QCPAbstractItem;
 
 class QCP_LIB_DECL QCPAxisRect : public QCPLayoutElement
 {

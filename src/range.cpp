@@ -37,7 +37,7 @@
   \see QCPAxis::setRange
 */
 
-/*! 
+/*!
   Minimum range size (\a upper - \a lower) the range changing functions will accept. Smaller
   intervals would cause errors due to the 11-bit exponent of double precision numbers,
   corresponding to a minimum magnitude of roughly 1e-308.
@@ -45,7 +45,7 @@
 */
 const double QCPRange::minRange = 1e-280;
 
-/*! 
+/*!
   Maximum values (negative and positive) the range will accept in range-changing functions.
   Larger absolute values would cause errors due to the 11-bit exponent of double precision numbers,
   corresponding to a maximum magnitude of roughly 1e308.
@@ -55,7 +55,7 @@ const double QCPRange::minRange = 1e-280;
 */
 const double QCPRange::maxRange = 1e250;
 
-/*! 
+/*!
   Constructs a range with \a lower and \a upper set to zero.
 */
 QCPRange::QCPRange() :
@@ -74,7 +74,7 @@ QCPRange::QCPRange(double lower, double upper) :
   normalize();
 }
 
-/*! 
+/*!
   Returns the size of the range, i.e. \a upper-\a lower
 */
 double QCPRange::size() const
@@ -82,7 +82,7 @@ double QCPRange::size() const
   return upper-lower;
 }
 
-/*! 
+/*!
   Returns the center of the range, i.e. (\a upper+\a lower)*0.5
 */
 double QCPRange::center() const
@@ -90,7 +90,7 @@ double QCPRange::center() const
   return (upper+lower)*0.5;
 }
 
-/*! 
+/*!
   Makes sure \a lower is numerically smaller than \a upper. If this is not the case, the values
   are swapped.
 */
@@ -100,7 +100,7 @@ void QCPRange::normalize()
     qSwap(lower, upper);
 }
 
-/*! 
+/*!
   Expands this range such that \a otherRange is contained in the new range. It is assumed that both
   this range and \a otherRange are normalized (see \ref normalize).
   
@@ -117,7 +117,7 @@ void QCPRange::expand(const QCPRange &otherRange)
 }
 
 
-/*! 
+/*!
   Returns an expanded range that contains this and \a otherRange. It is assumed that both this
   range and \a otherRange are normalized (see \ref normalize).
   
@@ -130,7 +130,7 @@ QCPRange QCPRange::expanded(const QCPRange &otherRange) const
   return result;
 }
 
-/*! 
+/*!
   Returns a sanitized version of the range. Sanitized means for logarithmic scales, that
   the range won't span the positive and negative sign domain, i.e. contain zero. Further
   \a lower will always be numerically smaller (or equal) to \a upper.
@@ -187,7 +187,7 @@ QCPRange QCPRange::sanitizedForLogScale() const
   return sanitizedRange;
 }
 
-/*! 
+/*!
   Returns a sanitized version of the range. Sanitized means for linear scales, that
   \a lower will always be numerically smaller (or equal) to \a upper.
 */
@@ -198,7 +198,7 @@ QCPRange QCPRange::sanitizedForLinScale() const
   return sanitizedRange;
 }
 
-/*! 
+/*!
   Returns true when \a value lies within or exactly on the borders of the range.
 */
 bool QCPRange::contains(double value) const
@@ -206,7 +206,7 @@ bool QCPRange::contains(double value) const
   return value >= lower && value <= upper;
 }
 
-/*! 
+/*!
   Checks, whether the specified range is within valid bounds, which are defined
   as QCPRange::maxRange and QCPRange::minRange.
   A valid range means:
@@ -229,7 +229,7 @@ bool QCPRange::validRange(double lower, double upper)
           qAbs(lower-upper) < maxRange);
 }
 
-/*! 
+/*!
   \overload
   Checks, whether the specified range is within valid bounds, which are defined
   as QCPRange::maxRange and QCPRange::minRange.

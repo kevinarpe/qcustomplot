@@ -390,7 +390,7 @@ protected:
   
   // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const;
-  virtual void draw(QCPPainter *painter); 
+  virtual void draw(QCPPainter *painter);
   virtual QCP::Interaction selectionCategory() const;
   // events:
   virtual void selectEvent(QMouseEvent *event, bool additive, const QVariant &details, bool *selectionStateChanged);

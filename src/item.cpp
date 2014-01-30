@@ -866,7 +866,7 @@ void QCPAbstractItem::setSelected(bool selected)
   positions direcly by their member pointers (which typically have the same variable name as \a
   name).
   
-  \see positions, anchor 
+  \see positions, anchor
 */
 QCPItemPosition *QCPAbstractItem::position(const QString &name) const
 {
@@ -887,7 +887,7 @@ QCPItemPosition *QCPAbstractItem::position(const QString &name) const
   anchors direcly by their member pointers (which typically have the same variable name as \a
   name).
   
-  \see anchors, position 
+  \see anchors, position
 */
 QCPItemAnchor *QCPAbstractItem::anchor(const QString &name) const
 {
@@ -906,7 +906,7 @@ QCPItemAnchor *QCPAbstractItem::anchor(const QString &name) const
   Note that you can check for positions with this function, too. This is because every position is
   also an anchor (QCPItemPosition inherits from QCPItemAnchor).
   
-  \see anchor, position 
+  \see anchor, position
 */
 bool QCPAbstractItem::hasAnchor(const QString &name) const
 {

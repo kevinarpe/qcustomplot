@@ -126,7 +126,7 @@
 /* end documentation of signals */
 
 /*!
-  Constructs a new QCPColorScale. 
+  Constructs a new QCPColorScale.
 */
 QCPColorScale::QCPColorScale(QCustomPlot *parentPlot) :
   QCPLayoutElement(parentPlot),
@@ -507,8 +507,8 @@ void QCPColorScaleAxisRectPrivate::draw(QCPPainter *painter)
   bool mirrorVert = false;
   if (mParentColorScale->mColorAxis)
   {
-    mirrorHorz = mParentColorScale->mColorAxis.data()->rangeReversed() && (mParentColorScale->type() == QCPAxis::atBottom || mParentColorScale->type() == QCPAxis::atTop); 
-    mirrorVert = mParentColorScale->mColorAxis.data()->rangeReversed() && (mParentColorScale->type() == QCPAxis::atLeft || mParentColorScale->type() == QCPAxis::atRight); 
+    mirrorHorz = mParentColorScale->mColorAxis.data()->rangeReversed() && (mParentColorScale->type() == QCPAxis::atBottom || mParentColorScale->type() == QCPAxis::atTop);
+    mirrorVert = mParentColorScale->mColorAxis.data()->rangeReversed() && (mParentColorScale->type() == QCPAxis::atLeft || mParentColorScale->type() == QCPAxis::atRight);
   }
   
   painter->drawImage(rect(), mGradientImage.mirrored(mirrorHorz, mirrorVert));
