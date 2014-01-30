@@ -69,9 +69,9 @@ public:
 
     \see replot
   */
-  enum RefreshPriority { rpImmediate     ///< The QCustomPlot surface is immediately refreshed, by calling QWidget::repaint() after the replot
-                         ,rpQueued       ///< Queues the refresh such that it is performed at a slightly delayed point in time after the replot, by calling QWidget::update() after the replot
-                         ,rpHint ///< Whether to use immediate repaint or queued update depends on whether the plotting hint \ref QCP::phForceRepaint is set, see \ref setPlottingHints.
+  enum RefreshPriority { rpImmediate ///< The QCustomPlot surface is immediately refreshed, by calling QWidget::repaint() after the replot
+                         ,rpQueued   ///< Queues the refresh such that it is performed at a slightly delayed point in time after the replot, by calling QWidget::update() after the replot
+                         ,rpHint     ///< Whether to use immediate repaint or queued update depends on whether the plotting hint \ref QCP::phForceRepaint is set, see \ref setPlottingHints.
                        };
   
   explicit QCustomPlot(QWidget *parent = 0);

@@ -90,7 +90,7 @@ QCPCurveData::QCPCurveData(double t, double key, double value) :
   \section usage Usage
   
   Like all data representing objects in QCustomPlot, the QCPCurve is a plottable (QCPAbstractPlottable). So
-  the plottable-interface of QCustomPlot applies (QCustomPlot::plottable, QCustomPlot::addPlottable, QCustomPlot::removePlottable, etc.) 
+  the plottable-interface of QCustomPlot applies (QCustomPlot::plottable, QCustomPlot::addPlottable, QCustomPlot::removePlottable, etc.)
   
   Usually, you first create an instance:
   \code
