@@ -199,8 +199,8 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
   if (lengthVec.isNull())
     lengthVec = QVector2D(1, 0);
   QVector2D widthVec(-lengthVec.y(), lengthVec.x());
-  lengthVec *= mLength*(mInverted ? -1 : 1);
-  widthVec *= mWidth*0.5*(mInverted ? -1 : 1);
+  lengthVec *= (float)(mLength*(mInverted ? -1 : 1));
+  widthVec *= (float)(mWidth*0.5*(mInverted ? -1 : 1));
   
   QPen penBackup = painter->pen();
   QBrush brushBackup = painter->brush();
@@ -227,7 +227,7 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
     {
       QPointF points[4] = {pos.toPointF(),
                            (pos-lengthVec+widthVec).toPointF(),
-                           (pos-lengthVec*0.8).toPointF(),
+                           (pos-lengthVec*0.8f).toPointF(),
                            (pos-lengthVec-widthVec).toPointF()
                           };
       painter->setPen(miterPen);
@@ -300,13 +300,13 @@ void QCPLineEnding::draw(QCPPainter *painter, const QVector2D &pos, const QVecto
       if (qFuzzyIsNull(painter->pen().widthF()) && !painter->modes().testFlag(QCPPainter::pmNonCosmetic))
       {
         // if drawing with cosmetic pen (perfectly thin stroke, happens only in vector exports), draw bar exactly on tip of line
-        painter->drawLine((pos+widthVec+lengthVec*0.2*(mInverted?-1:1)).toPointF(),
-                          (pos-widthVec-lengthVec*0.2*(mInverted?-1:1)).toPointF());
+        painter->drawLine((pos+widthVec+lengthVec*0.2f*(mInverted?-1:1)).toPointF(),
+                          (pos-widthVec-lengthVec*0.2f*(mInverted?-1:1)).toPointF());
       } else
       {
         // if drawing with thick (non-cosmetic) pen, shift bar a little in line direction to prevent line from sticking through bar slightly
-        painter->drawLine((pos+widthVec+lengthVec*0.2*(mInverted?-1:1)+dir.normalized()*qMax(1.0, (double)painter->pen().widthF())*0.5).toPointF(),
-                          (pos-widthVec-lengthVec*0.2*(mInverted?-1:1)+dir.normalized()*qMax(1.0, (double)painter->pen().widthF())*0.5).toPointF());
+        painter->drawLine((pos+widthVec+lengthVec*0.2f*(mInverted?-1:1)+dir.normalized()*qMax(1.0f, (float)painter->pen().widthF())*0.5f).toPointF(),
+                          (pos-widthVec-lengthVec*0.2f*(mInverted?-1:1)+dir.normalized()*qMax(1.0f, (float)painter->pen().widthF())*0.5f).toPointF());
       }
       break;
     }

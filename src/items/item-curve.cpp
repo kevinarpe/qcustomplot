@@ -153,7 +153,7 @@ void QCPItemCurve::draw(QCPPainter *painter)
   QPointF startDirVec(startDir->pixelPoint());
   QPointF endDirVec(endDir->pixelPoint());
   QPointF endVec(end->pixelPoint());
-  if (QVector2D(endVec-startVec).length() > 1e10) // too large curves cause crash
+  if (QVector2D(endVec-startVec).length() > 1e10f) // too large curves cause crash
     return;
 
   QPainterPath cubicPath(startVec);
