@@ -228,7 +228,7 @@ protected:
   // non-property members:
   QPixmap mPaintBuffer;
   QPoint mMousePressPos;
-  QCPLayoutElement *mMouseEventElement;
+  QPointer<QCPLayoutElement> mMouseEventElement;
   bool mReplotting;
   
   // reimplemented virtual methods:
