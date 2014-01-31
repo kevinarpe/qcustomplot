@@ -29,6 +29,7 @@
 #include "../core.h"
 #include "../plottable.h"
 #include "../axis.h"
+#include "../plottables/plottable-colormap.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -240,7 +241,7 @@ void QCPColorScale::setType(QCPAxis::AxisType type)
   also equivalent to directly accessing the \ref axis and setting its range with \ref
   QCPAxis::setRange.
   
-  \see setDataScaleType, setGradient
+  \see setDataScaleType, setGradient, rescaleDataRange
 */
 void QCPColorScale::setDataRange(const QCPRange &dataRange)
 {
@@ -356,6 +357,86 @@ void QCPColorScale::setRangeZoom(bool enabled)
     mAxisRect.data()->setRangeZoom(QCPAxis::orientation(mType));
   else
     mAxisRect.data()->setRangeZoom(0);
+}
+
+/*!
+  Returns a list of all the color maps associated with this color scale.
+*/
+QList<QCPColorMap*> QCPColorScale::colorMaps() const
+{
+  QList<QCPColorMap*> result;
+  for (int i=0; i<mParentPlot->plottableCount(); ++i)
+  {
+    if (QCPColorMap *cm = qobject_cast<QCPColorMap*>(mParentPlot->plottable(i)))
+      if (cm->colorScale() == this)
+        result.append(cm);
+  }
+  return result;
+}
+
+/*!
+  Changes the data range such that all color maps associated with this color scale are fully mapped
+  to the gradient in the data dimension.
+  
+  \see setDataRange
+*/
+void QCPColorScale::rescaleDataRange(bool onlyVisibleMaps)
+{
+  QList<QCPColorMap*> maps = colorMaps();
+  QCPRange newRange;
+  bool haveRange = false;
+  int sign = 0; // TODO: should change this to QCPAbstractPlottable::SignDomain later (currently is protected, maybe move to QCP namespace)
+  if (mDataScaleType == QCPAxis::stLogarithmic)
+    sign = (mDataRange.upper < 0 ? -1 : 1);
+  for (int i=0; i<maps.size(); ++i)
+  {
+    if (!maps.at(i)->realVisibility() && onlyVisibleMaps)
+      continue;
+    QCPRange mapRange;
+    if (maps.at(i)->colorScale() == this)
+    {
+      bool currentFoundRange = true;
+      mapRange = maps.at(i)->data()->dataBounds();
+      if (sign == 1)
+      {
+        if (mapRange.lower <= 0 && mapRange.upper > 0)
+          mapRange.lower = mapRange.upper*1e-3;
+        else if (mapRange.lower <= 0 && mapRange.upper <= 0)
+          currentFoundRange = false;
+      } else if (sign == -1)
+      {
+        if (mapRange.upper >= 0 && mapRange.lower < 0)
+          mapRange.upper = mapRange.lower*1e-3;
+        else if (mapRange.upper >= 0 && mapRange.lower >= 0)
+          currentFoundRange = false;
+      }
+      if (currentFoundRange)
+      {
+        if (!haveRange)
+          newRange = mapRange;
+        else
+          newRange.expand(mapRange);
+        haveRange = true;
+      }
+    }
+  }
+  if (haveRange)
+  {
+    if (!QCPRange::validRange(newRange)) // likely due to range being zero (plottable has only constant data in this dimension), shift current range to at least center the data
+    {
+      double center = (newRange.lower+newRange.upper)*0.5; // upper and lower should be equal anyway, but just to make sure, incase validRange returned false for other reason
+      if (mDataScaleType == QCPAxis::stLinear)
+      {
+        newRange.lower = center-mDataRange.size()/2.0;
+        newRange.upper = center+mDataRange.size()/2.0;
+      } else // mScaleType == stLogarithmic
+      {
+        newRange.lower = center/qSqrt(mDataRange.upper/mDataRange.lower);
+        newRange.upper = center*qSqrt(mDataRange.upper/mDataRange.lower);
+      }
+    }
+    setDataRange(newRange);
+  }
 }
 
 /* inherits documentation from base class */

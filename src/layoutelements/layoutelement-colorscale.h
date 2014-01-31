@@ -101,6 +101,8 @@ public:
   void setRangeZoom(bool enabled);
   
   // non-property methods:
+  QList<QCPColorMap*> colorMaps() const;
+  void rescaleDataRange(bool onlyVisibleMaps);
   
   // reimplemented virtual methods:
   virtual void update(UpdatePhase phase);
