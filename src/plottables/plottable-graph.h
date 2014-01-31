@@ -99,7 +99,7 @@ public:
   virtual ~QCPGraph();
   
   // getters:
-  const QCPDataMap *data() const { return mData; }
+  QCPDataMap *data() const { return mData; }
   LineStyle lineStyle() const { return mLineStyle; }
   QCPScatterStyle scatterStyle() const { return mScatterStyle; }
   ErrorType errorType() const { return mErrorType; }
