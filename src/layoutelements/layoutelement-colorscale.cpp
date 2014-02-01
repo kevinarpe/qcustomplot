@@ -90,11 +90,11 @@
 /*! \fn QCPAxis *QCPColorScale::axis() const
   
   Returns the internal \ref QCPAxis instance of this color scale. You can access it to alter the
-  appearance and behaviour of the axis. \ref QCPColorScale duplicates three properties in its
-  interface for convenience. Those are \ref QCPAxis::setRange and \ref setDataRange, the methods
-  \ref QCPAxis::setScaleType and \ref setDataScaleType, and the methods \ref QCPAxis::setLabel and
-  \ref setLabel. As they are connected, it does not matter whether you use the method on the
-  QCPColorScale or on its QCPAxis.
+  appearance and behaviour of the axis. \ref QCPColorScale duplicates some properties in its
+  interface for convenience. Those are \ref setDataRange (\ref QCPAxis::setRange), \ref
+  setDataScaleType (\ref QCPAxis::setScaleType), and the method \ref setLabel (\ref
+  QCPAxis::setLabel). As they each are connected, it does not matter whether you use the method on
+  the QCPColorScale or on its QCPAxis.
   
   If the type of the color scale is changed with \ref setType, the axis returned by this method
   will change, too, to either the left, right, bottom or top axis, depending on which type was set.

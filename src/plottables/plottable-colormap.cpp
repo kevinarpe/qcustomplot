@@ -596,7 +596,7 @@ void QCPColorMap::setDataScaleType(QCPAxis::ScaleType scaleType)
   The colors defined by the gradient will be used to represent data values in the currently set
   data range, see \ref setDataRange. Data points that are outside this data range will either be
   colored uniformly with the respective gradient boundary color, or the gradient will repeat,
-  depending on QCPColorGradient::setPeriodic.
+  depending on \ref QCPColorGradient::setPeriodic.
   
   \see QCPColorScale::setGradient
 */
