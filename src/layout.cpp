@@ -82,17 +82,11 @@
   Since a QCPLayout is a layout element itself, it may be placed inside other layouts. This way,
   complex hierarchies may be created, offering very flexible arrangements.
   
-  <div style="text-align:center">
-  <div style="display:inline-block; margin-left:auto; margin-right:auto">\image html LayoutsystemSketch0.png ""</div>
-  <div style="display:inline-block; margin-left:auto; margin-right:auto">\image html LayoutsystemSketch1.png ""</div>
-  <div style="clear:both"></div>
-  <div style="display:inline-block; max-width:1000px; text-align:justify">
-  Sketch of the default QCPLayoutGrid accessible via \ref QCustomPlot::plotLayout. The left image
-  shows the outer and inner rect of the grid layout itself while the right image shows how two
-  child layout elements are placed inside the grid layout next to each other in cells (0, 0) and
-  (0, 1).
-  </div>
-  </div>
+  \image html LayoutsystemSketch.png 
+  
+  Above is a sketch of the default \ref QCPLayoutGrid accessible via \ref QCustomPlot::plotLayout.
+  It shows how two child layout elements are placed inside the grid layout next to each other in
+  cells (0, 0) and (0, 1).
   
   \subsection layoutsystem-plotlayout The top level plot layout
   
@@ -111,7 +105,7 @@
   title->setFont(QFont("sans", 12, QFont::Bold));
   // then we add it to the main plot layout:
   customPlot->plotLayout()->insertRow(0); // insert an empty row above the axis rect
-  customPlot->plotLayout()->addElement(0, 0, title); // insert the title in the empty cell we just created
+  customPlot->plotLayout()->addElement(0, 0, title); // place the title in the empty cell we've just created
   \endcode
   \image html layoutsystem-addingplottitle.png
 
@@ -124,7 +118,7 @@
   // create a sub layout that we'll place in first row:
   QCPLayoutGrid *subLayout = new QCPLayoutGrid;
   customPlot->plotLayout()->addElement(0, 0, subLayout);
-  // add two axis rects in the sub layout next to eachother:
+  // add two axis rects in the sub layout next to each other:
   QCPAxisRect *leftAxisRect = new QCPAxisRect(customPlot);
   QCPAxisRect *rightAxisRect = new QCPAxisRect(customPlot);
   subLayout->addElement(0, 0, leftAxisRect);

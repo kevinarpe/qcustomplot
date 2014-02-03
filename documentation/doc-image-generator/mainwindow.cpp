@@ -418,7 +418,7 @@ void MainWindow::genLayoutsystem_AddingPlotTitle()
   title->setFont(QFont("sans", 12, QFont::Bold));
   // then we add it to the main plot layout:
   customPlot->plotLayout()->insertRow(0); // insert an empty row above the axis rect
-  customPlot->plotLayout()->addElement(0, 0, title); // insert the title in the empty cell we just created
+  customPlot->plotLayout()->addElement(0, 0, title); // place the title in the empty cell we've just created
   
   customPlot->savePng(dir.filePath("layoutsystem-addingplottitle.png"), 300, 200);
 }
@@ -434,7 +434,7 @@ void MainWindow::genLayoutsystem_MultipleAxisRects()
   // create a sub layout that we'll place in first row:
   QCPLayoutGrid *subLayout = new QCPLayoutGrid;
   customPlot->plotLayout()->addElement(0, 0, subLayout);
-  // add two axis rects in the sub layout next to eachother:
+  // add two axis rects in the sub layout next to each other:
   QCPAxisRect *leftAxisRect = new QCPAxisRect(customPlot);
   QCPAxisRect *rightAxisRect = new QCPAxisRect(customPlot);
   subLayout->addElement(0, 0, leftAxisRect);
