@@ -470,7 +470,7 @@ void MainWindow::setupTextureBrushDemo(QCustomPlot *customPlot)
   redDotPen.setColor(QColor(170, 100, 100, 180));
   redDotPen.setWidthF(2);
   customPlot->graph(0)->setPen(redDotPen);
-  customPlot->graph(0)->setBrush(QBrush(QPixmap("./dali.png"))); // fill with texture of specified png-image
+  customPlot->graph(0)->setBrush(QBrush(QPixmap("./balboa.jpg"))); // fill with texture of specified image
   
   customPlot->addGraph();
   customPlot->graph(1)->setPen(QPen(Qt::red));
@@ -523,7 +523,7 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
   // will contain left maxwell-like function
   customPlot->addGraph(customPlot->yAxis, customPlot->xAxis);
   customPlot->graph(0)->setPen(QPen(QColor(255, 100, 0)));
-  customPlot->graph(0)->setBrush(QBrush(QPixmap("./dali.png"))); // fill with texture of specified png-image
+  customPlot->graph(0)->setBrush(QBrush(QPixmap("./balboa.jpg"))); // fill with texture of specified image
   customPlot->graph(0)->setLineStyle(QCPGraph::lsLine);
   customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
   customPlot->graph(0)->setName("Left maxwell function");
@@ -532,7 +532,7 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
   // will contain bottom maxwell-like function
   customPlot->addGraph();
   customPlot->graph(1)->setPen(QPen(Qt::red));
-  customPlot->graph(1)->setBrush(QBrush(QPixmap("./dali.png"))); // same fill as we used for graph 0
+  customPlot->graph(1)->setBrush(QBrush(QPixmap("./balboa.jpg"))); // same fill as we used for graph 0
   customPlot->graph(1)->setLineStyle(QCPGraph::lsStepCenter);
   customPlot->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
   customPlot->graph(1)->setErrorType(QCPGraph::etValue);
