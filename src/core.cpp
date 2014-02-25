@@ -83,7 +83,8 @@
   usual, if the cast returns zero, the plottable wasn't of that specific subclass.)
   
   All further interfacing with plottables (e.g how to set data) is specific to the plottable type.
-  See the documentations of the subclasses: QCPGraph, QCPCurve, QCPBars, QCPStatisticalBox.
+  See the documentations of the subclasses: QCPGraph, QCPCurve, QCPBars, QCPStatisticalBox,
+  QCPColorMap.
 
   \section mainpage-axes Controlling the Axes
   
@@ -110,20 +111,20 @@
   
   \section mainpage-legend Plot Legend
   
-  Every QCustomPlot owns one QCPLegend (as \a legend) by default. A legend is a small layout
-  element inside the plot which lists the plottables with an icon of the plottable line/symbol and
-  a description. The Description is retrieved from the plottable name
-  (QCPAbstractPlottable::setName). Plottables can be added and removed from the legend via \ref
-  QCPAbstractPlottable::addToLegend and \ref QCPAbstractPlottable::removeFromLegend. By default,
-  adding a plottable to QCustomPlot automatically adds it to the legend, too. This behaviour can be
-  modified with the QCustomPlot::setAutoAddPlottableToLegend property.
+  Every QCustomPlot has one QCPLegend (as \ref QCustomPlot::legend) by default. A legend is a small
+  layout element inside the plot which lists the plottables with an icon of the plottable
+  line/symbol and a name (QCPAbstractPlottable::setName). Plottables can be added and removed from
+  the main legend via \ref QCPAbstractPlottable::addToLegend and \ref
+  QCPAbstractPlottable::removeFromLegend. By default, adding a plottable to QCustomPlot
+  automatically adds it to the legend, too. This behaviour can be modified with the
+  QCustomPlot::setAutoAddPlottableToLegend property.
   
   The QCPLegend provides an interface to access, add and remove legend items directly, too. See
   QCPLegend::item, QCPLegend::itemWithPlottable, QCPLegend::addItem, QCPLegend::removeItem for
   example.
   
-  Multiple legends are supported via the layout system (as a QCPLegend simply is a normal layout
-  element).
+  Multiple legends are supported via the \link thelayoutsystem layout system\endlink (as a
+  QCPLegend simply is a normal layout element).
   
   \section mainpage-userinteraction User Interactions
   

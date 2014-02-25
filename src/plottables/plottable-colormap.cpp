@@ -470,6 +470,12 @@ void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, dou
   customPlot->rescaleAxes();
   customPlot->replot();
   \endcode
+  
+  \note The QCPColorMap always displays the data at equal key/value intervals, even if the key or
+  value axis is set to a logarithmic scaling. If you want to use QCPColorMap with logarithmic axes,
+  you shouldn't use the \ref QCPColorMapData::setData method as it uses a linear transformation to
+  determine the cell index. Rather directly access the cell index with \ref
+  QCPColorMapData::setCell.
 */
 
 /* start documentation of inline functions */

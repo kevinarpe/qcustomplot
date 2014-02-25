@@ -35,8 +35,8 @@
   
   This class describes a color gradient which can be used to encode data with color. For example,
   QCPColorMap and QCPColorScale have a \ref QCPColorMap::setGradient "setGradient" method which
-  takes an instance of this class. You set colors with \ref setColorStopAt(double position, const
-  QColor &color) with a \a position from 0 to 1. In between these defined color positions, the
+  takes an instance of this class. Colors are set with \ref setColorStopAt(double position, const QColor &color)
+  with a \a position from 0 to 1. In between these defined color positions, the
   color will be interpolated linearly either in RGB or HSV space, see \ref setColorInterpolation.
 
   Alternatively, load one of the preset color gradients shown in the image below, with \ref
@@ -118,8 +118,8 @@ void QCPColorGradient::setColorStops(const QMap<double, QColor> &colorStops)
 }
 
 /*!
-  Sets the \a color the gradient will have at \a position (from 0 to 1). In between these color
-  stops, the color is interpolated according to \ref setColorInterpolation.
+  Sets the \a color the gradient will have at the specified \a position (from 0 to 1). In between
+  these color stops, the color is interpolated according to \ref setColorInterpolation.
   
   \see setColorStops, clearColorStops
 */
@@ -156,9 +156,9 @@ void QCPColorGradient::setColorInterpolation(QCPColorGradient::ColorInterpolatio
   suitable for a periodic gradient mapping, since they produce smooth color transitions throughout
   the color map. A preset that has this property is \ref gpHues.
   
-  In Practice, periodic color gradients make especially sense when the data corresponds to a
-  periodic dimension, such as an angle or a phase. If this is not the case, the color encoding
-  might become ambiguous, because multiple different data values are shown as the same color.
+  In practice, using periodic color gradients makes sense when the data corresponds to a periodic
+  dimension, such as an angle or a phase. If this is not the case, the color encoding might become
+  ambiguous, because multiple different data values are shown as the same color.
 */
 void QCPColorGradient::setPeriodic(bool enabled)
 {
