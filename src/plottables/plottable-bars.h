@@ -68,12 +68,14 @@ public:
   
   // getters:
   double width() const { return mWidth; }
+  double baseValue() const { return mBaseValue; }
   QCPBars *barBelow() const { return mBarBelow.data(); }
   QCPBars *barAbove() const { return mBarAbove.data(); }
   QCPBarDataMap *data() const { return mData; }
   
   // setters:
   void setWidth(double width);
+  void setBaseValue(double baseValue);
   void setData(QCPBarDataMap *data, bool copy=false);
   void setData(const QVector<double> &key, const QVector<double> &value);
   
@@ -97,6 +99,7 @@ protected:
   // property members:
   QCPBarDataMap *mData;
   double mWidth;
+  double mBaseValue;
   QPointer<QCPBars> mBarBelow, mBarAbove;
   
   // reimplemented virtual methods:
@@ -107,7 +110,7 @@ protected:
   
   // non-virtual methods:
   QPolygonF getBarPolygon(double key, double value) const;
-  double getBaseValue(double key, bool positive) const;
+  double getStackedBaseValue(double key, bool positive) const;
   static void connectBars(QCPBars* lower, QCPBars* upper);
   
   friend class QCustomPlot;

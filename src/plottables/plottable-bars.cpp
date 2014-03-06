@@ -126,9 +126,12 @@ QCPBarData::QCPBarData(double key, double value) :
   then takes ownership of the bar chart.
 */
 QCPBars::QCPBars(QCPAxis *keyAxis, QCPAxis *valueAxis) :
-  QCPAbstractPlottable(keyAxis, valueAxis)
+  QCPAbstractPlottable(keyAxis, valueAxis),
+  mData(new QCPBarDataMap),
+  mWidth(0.75),
+  mBaseValue(0)
 {
-  mData = new QCPBarDataMap;
+  // modify inherited properties from abstract plottable:
   mPen.setColor(Qt::blue);
   mPen.setStyle(Qt::SolidLine);
   mBrush.setColor(QColor(40, 50, 255, 30));
@@ -137,8 +140,6 @@ QCPBars::QCPBars(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   mSelectedPen.setWidthF(2.5);
   mSelectedPen.setColor(QColor(80, 80, 255)); // lighter than Qt::blue of mPen
   mSelectedBrush = mBrush;
-  
-  mWidth = 0.75;
 }
 
 QCPBars::~QCPBars()
@@ -154,6 +155,23 @@ QCPBars::~QCPBars()
 void QCPBars::setWidth(double width)
 {
   mWidth = width;
+}
+
+/*!
+  Sets the base value of this bars plottable.
+
+  The base value defines where on the value coordinate the bars start. How far the bars extend from
+  the base value is given by their individual value data. For example, if the base value is set to
+  1, a bar with data value 2 will have its lowest point at value coordinate 1 and highest point at
+  3.
+  
+  For stacked bars, only the base value of the bottom-most QCPBars has meaning.
+  
+  The default base value is 0.
+*/
+void QCPBars::setBaseValue(double baseValue)
+{
+  mBaseValue = baseValue;
 }
 
 /*!
@@ -384,9 +402,9 @@ double QCPBars::selectTest(const QPointF &pos, bool onlySelectable, QVariant *de
     pixelsToCoords(pos, posKey, posValue);
     for (it = mData->constBegin(); it != mData->constEnd(); ++it)
     {
-      double baseValue = getBaseValue(it.key(), it.value().value >=0);
+      double base = getStackedBaseValue(it.key(), it.value().value >= 0);
       QCPRange keyRange(it.key()-mWidth*0.5, it.key()+mWidth*0.5);
-      QCPRange valueRange(baseValue, baseValue+it.value().value);
+      QCPRange valueRange(base, base+it.value().value);
       if (keyRange.contains(posKey) && valueRange.contains(posValue))
         return mParentPlot->selectionTolerance()*0.99;
     }
@@ -446,16 +464,17 @@ void QCPBars::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 /*! \internal
   
   Returns the polygon of a single bar with \a key and \a value. The Polygon is open at the bottom
-  and shifted according to the bar stacking (see \ref moveAbove).
+  and shifted according to the bar stacking (see \ref moveAbove) and base value (see \ref
+  setBaseValue).
 */
 QPolygonF QCPBars::getBarPolygon(double key, double value) const
 {
   QPolygonF result;
-  double baseValue = getBaseValue(key, value >= 0);
-  result << coordsToPixels(key-mWidth*0.5, baseValue);
-  result << coordsToPixels(key-mWidth*0.5, baseValue+value);
-  result << coordsToPixels(key+mWidth*0.5, baseValue+value);
-  result << coordsToPixels(key+mWidth*0.5, baseValue);
+  double base = getStackedBaseValue(key, value >= 0);
+  result << coordsToPixels(key-mWidth*0.5, base);
+  result << coordsToPixels(key-mWidth*0.5, base+value);
+  result << coordsToPixels(key+mWidth*0.5, base+value);
+  result << coordsToPixels(key+mWidth*0.5, base);
   return result;
 }
 
@@ -464,15 +483,15 @@ QPolygonF QCPBars::getBarPolygon(double key, double value) const
   This function is called to find at which value to start drawing the base of a bar at \a key, when
   it is stacked on top of another QCPBars (e.g. with \ref moveAbove).
   
-  positive and negative bars are separated per stack (positive are stacked above 0-value upwards,
-  negative are stacked below 0-value downwards). This can be indicated with \a positive. So if the
+  positive and negative bars are separated per stack (positive are stacked above baseValue upwards,
+  negative are stacked below baseValue downwards). This can be indicated with \a positive. So if the
   bar for which we need the base value is negative, set \a positive to false.
 */
-double QCPBars::getBaseValue(double key, bool positive) const
+double QCPBars::getStackedBaseValue(double key, bool positive) const
 {
   if (mBarBelow)
   {
-    double max = 0;
+    double max = 0; // don't use mBaseValue here because only base value of bottom-most bar has meaning in a bar stack
     // find bars of mBarBelow that are approximately at key and find largest one:
     QCPBarDataMap::const_iterator it = mBarBelow.data()->mData->lowerBound(key-mWidth*0.1);
     QCPBarDataMap::const_iterator itEnd = mBarBelow.data()->mData->upperBound(key+mWidth*0.1);
@@ -484,15 +503,15 @@ double QCPBars::getBaseValue(double key, bool positive) const
       ++it;
     }
     // recurse down the bar-stack to find the total height:
-    return max + mBarBelow.data()->getBaseValue(key, positive);
+    return max + mBarBelow.data()->getStackedBaseValue(key, positive);
   } else
-    return 0;
+    return mBaseValue;
 }
 
 /*! \internal
 
-  Connects \a below and \a above to each other via their mBarAbove/mBarBelow properties.
-  The bar(s) currently below lower and upper will become disconnected to lower/upper.
+  Connects \a below and \a above to each other via their mBarAbove/mBarBelow properties. The bar(s)
+  currently above lower and below upper will become disconnected to lower/upper.
   
   If lower is zero, upper will be disconnected at the bottom.
   If upper is zero, lower will be disconnected at the top.
@@ -563,15 +582,16 @@ QCPRange QCPBars::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
 QCPRange QCPBars::getValueRange(bool &foundRange, SignDomain inSignDomain) const
 {
   QCPRange range;
-  bool haveLower = true; // set to true, because 0 should always be visible in bar charts
-  bool haveUpper = true; // set to true, because 0 should always be visible in bar charts
-  
+  range.lower = mBaseValue;
+  range.upper = mBaseValue;
+  bool haveLower = true; // set to true, because baseValue should always be visible in bar charts
+  bool haveUpper = true; // set to true, because baseValue should always be visible in bar charts
   double current;
   
   QCPBarDataMap::const_iterator it = mData->constBegin();
   while (it != mData->constEnd())
   {
-    current = it.value().value + getBaseValue(it.value().key, it.value().value >= 0);
+    current = it.value().value + getStackedBaseValue(it.value().key, it.value().value >= 0);
     if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current < 0) || (inSignDomain == sdPositive && current > 0))
     {
       if (current < range.lower || !haveLower)
