@@ -63,11 +63,24 @@ class QCP_LIB_DECL QCPBars : public QCPAbstractPlottable
   Q_PROPERTY(QCPBars* barAbove READ barAbove)
   /// \endcond
 public:
+  /*!
+    Defines the ways the width of the bar can be specified. Thus it defines what the number passed
+    to \ref setWidth actually means.
+    
+    \see setWidthType, setWidth
+  */
+  enum WidthType { wtAbsolute       ///< Bar width is in absolute pixels
+                   ,wtAxisRectRatio ///< Bar width is given by a fraction of the axis rect size
+                   ,wtPlotCoords    ///< Bar width is in key coordinates and thus scales with the key axis range
+                 };
+   Q_ENUMS(WidthType)
+  
   explicit QCPBars(QCPAxis *keyAxis, QCPAxis *valueAxis);
   virtual ~QCPBars();
   
   // getters:
   double width() const { return mWidth; }
+  WidthType widthType() const { return mWidthType; }
   double baseValue() const { return mBaseValue; }
   QCPBars *barBelow() const { return mBarBelow.data(); }
   QCPBars *barAbove() const { return mBarAbove.data(); }
@@ -75,6 +88,7 @@ public:
   
   // setters:
   void setWidth(double width);
+  void setWidthType(WidthType widthType);
   void setBaseValue(double baseValue);
   void setData(QCPBarDataMap *data, bool copy=false);
   void setData(const QVector<double> &key, const QVector<double> &value);
@@ -99,6 +113,7 @@ protected:
   // property members:
   QCPBarDataMap *mData;
   double mWidth;
+  WidthType mWidthType;
   double mBaseValue;
   QPointer<QCPBars> mBarBelow, mBarAbove;
   
@@ -110,6 +125,7 @@ protected:
   
   // non-virtual methods:
   QPolygonF getBarPolygon(double key, double value) const;
+  void getPixelWidth(double key, double &left, double &right) const;
   double getStackedBaseValue(double key, bool positive) const;
   static void connectBars(QCPBars* lower, QCPBars* upper);
   

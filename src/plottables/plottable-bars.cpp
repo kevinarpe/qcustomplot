@@ -84,6 +84,8 @@ QCPBarData::QCPBarData(double key, double value) :
   (see \ref QCPBars::moveAbove). Then, when two bars are at the same key position, they will appear
   stacked.
   
+  The width of the individual bars can be controlled with \ref setWidthType and \ref setWidth.
+  
   \section usage Usage
   
   Like all data representing objects in QCustomPlot, the QCPBars is a plottable
@@ -129,6 +131,7 @@ QCPBars::QCPBars(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   QCPAbstractPlottable(keyAxis, valueAxis),
   mData(new QCPBarDataMap),
   mWidth(0.75),
+  mWidthType(wtPlotCoords),
   mBaseValue(0)
 {
   // modify inherited properties from abstract plottable:
@@ -150,11 +153,27 @@ QCPBars::~QCPBars()
 }
 
 /*!
-  Sets the width of the bars in plot (key) coordinates.
+  Sets the width of the bars.
+
+  How the number passed as \a width is interpreted (e.g. screen pixels, plot coordinates,...),
+  depends on the currently set width type, see \ref setWidthType and \ref WidthType.
 */
 void QCPBars::setWidth(double width)
 {
   mWidth = width;
+}
+
+/*!
+  Sets how the width of the bars is defined. See the documentation of \ref WidthType for an
+  explanation of the possible values for \a widthType.
+  
+  The default value is \ref wtPlotCoords.
+  
+  \see setWidth
+*/
+void QCPBars::setWidthType(QCPBars::WidthType widthType)
+{
+  mWidthType = widthType;
 }
 
 /*!
@@ -398,14 +417,9 @@ double QCPBars::selectTest(const QPointF &pos, bool onlySelectable, QVariant *de
   if (mKeyAxis.data()->axisRect()->rect().contains(pos.toPoint()))
   {
     QCPBarDataMap::ConstIterator it;
-    double posKey, posValue;
-    pixelsToCoords(pos, posKey, posValue);
     for (it = mData->constBegin(); it != mData->constEnd(); ++it)
     {
-      double base = getStackedBaseValue(it.key(), it.value().value >= 0);
-      QCPRange keyRange(it.key()-mWidth*0.5, it.key()+mWidth*0.5);
-      QCPRange valueRange(base, base+it.value().value);
-      if (keyRange.contains(posKey) && valueRange.contains(posValue))
+      if (getBarPolygon(it.value().key, it.value().value).boundingRect().contains(pos))
         return mParentPlot->selectionTolerance()*0.99;
     }
   }
@@ -469,13 +483,73 @@ void QCPBars::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 */
 QPolygonF QCPBars::getBarPolygon(double key, double value) const
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return QPolygonF(); }
+  
   QPolygonF result;
+  double leftPixel, rightPixel;
+  getPixelWidth(key, leftPixel, rightPixel);
   double base = getStackedBaseValue(key, value >= 0);
-  result << coordsToPixels(key-mWidth*0.5, base);
-  result << coordsToPixels(key-mWidth*0.5, base+value);
-  result << coordsToPixels(key+mWidth*0.5, base+value);
-  result << coordsToPixels(key+mWidth*0.5, base);
+  double basePixel = valueAxis->coordToPixel(base);
+  double valuePixel = valueAxis->coordToPixel(base+value);
+  double keyPixel = keyAxis->coordToPixel(key);
+  if (keyAxis->orientation() == Qt::Horizontal)
+  {
+    result << QPointF(keyPixel+leftPixel, basePixel);
+    result << QPointF(keyPixel+leftPixel, valuePixel);
+    result << QPointF(keyPixel+rightPixel, valuePixel);
+    result << QPointF(keyPixel+rightPixel, basePixel);
+  } else
+  {
+    result << QPointF(basePixel, keyPixel+leftPixel);
+    result << QPointF(valuePixel, keyPixel+leftPixel);
+    result << QPointF(valuePixel, keyPixel+rightPixel);
+    result << QPointF(basePixel, keyPixel+rightPixel);
+  }
   return result;
+}
+
+/*! \internal
+  
+  This function is used to determine the width of the bar at coordinate \a key, according to the
+  specified width (\ref setWidth) and width type (\ref setWidthType).
+  
+  The output parameters \a left and \a right return the number of pixels the bar extends to lower
+  and higher keys, relative to the \a key coordinate.
+*/
+void QCPBars::getPixelWidth(double key, double &left, double &right) const
+{
+  switch (mWidthType)
+  {
+    case wtAbsolute:
+    {
+      right = mWidth*0.5;
+      left = -right;
+      break;
+    }
+    case wtAxisRectRatio:
+    {
+      if (mKeyAxis && mKeyAxis.data()->axisRect())
+      {
+        right = mKeyAxis.data()->axisRect()->width()*mWidth*0.5;
+        left = -right;
+      } else
+        qDebug() << Q_FUNC_INFO << "No key axis or axis rect defined";
+      break;
+    }
+    case wtPlotCoords:
+    {
+      if (mKeyAxis)
+      {
+        double keyPixel = mKeyAxis.data()->coordToPixel(key);
+        right = mKeyAxis.data()->coordToPixel(key+mWidth*0.5)-keyPixel;
+        left = mKeyAxis.data()->coordToPixel(key-mWidth*0.5)-keyPixel;
+      } else
+        qDebug() << Q_FUNC_INFO << "No key axis defined";
+      break;
+    }
+  }
 }
 
 /*! \internal
@@ -493,8 +567,11 @@ double QCPBars::getStackedBaseValue(double key, bool positive) const
   {
     double max = 0; // don't use mBaseValue here because only base value of bottom-most bar has meaning in a bar stack
     // find bars of mBarBelow that are approximately at key and find largest one:
-    QCPBarDataMap::const_iterator it = mBarBelow.data()->mData->lowerBound(key-mWidth*0.1);
-    QCPBarDataMap::const_iterator itEnd = mBarBelow.data()->mData->upperBound(key+mWidth*0.1);
+    double epsilon = key*1e-6; // should be safe even when changed to use float at some point
+    if (key == 0)
+      epsilon = 1e-6;
+    QCPBarDataMap::const_iterator it = mBarBelow.data()->mData->lowerBound(key-epsilon);
+    QCPBarDataMap::const_iterator itEnd = mBarBelow.data()->mData->upperBound(key+epsilon);
     while (it != itEnd)
     {
       if ((positive && it.value().value > max) ||
@@ -553,7 +630,9 @@ QCPRange QCPBars::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
   bool haveUpper = false;
   
   double current;
-  double barWidthHalf = mWidth*0.5;
+  double barWidthHalf = 0;
+  if (mWidthType == wtPlotCoords) // only when given in plot coords, we're able to include the bar width in the key range, e.g. for axis rescaling
+    barWidthHalf = mWidth*0.5;
   QCPBarDataMap::const_iterator it = mData->constBegin();
   while (it != mData->constEnd())
   {
