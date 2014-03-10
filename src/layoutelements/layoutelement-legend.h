@@ -149,8 +149,8 @@ public:
     \see setSelectedParts, setSelectableParts
   */
   enum SelectablePart { spNone       = 0x000  ///< <tt>0x000</tt> None
-                       ,spLegendBox  = 0x001  ///< <tt>0x001</tt> The legend box (frame)
-                       ,spItems      = 0x002  ///< <tt>0x002</tt> Legend items individually (see \ref selectedItems)
+                        ,spLegendBox  = 0x001 ///< <tt>0x001</tt> The legend box (frame)
+                        ,spItems      = 0x002 ///< <tt>0x002</tt> Legend items individually (see \ref selectedItems)
                       };
   Q_FLAGS(SelectablePart SelectableParts)
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)

@@ -69,8 +69,8 @@ public:
     current pen of the curve (\ref setPen).
     \see setLineStyle
   */
-  enum LineStyle { lsNone, ///< No line is drawn between data points (e.g. only scatters)
-                   lsLine  ///< Data points are connected with a straight line
+  enum LineStyle { lsNone  ///< No line is drawn between data points (e.g. only scatters)
+                   ,lsLine ///< Data points are connected with a straight line
                  };
   explicit QCPCurve(QCPAxis *keyAxis, QCPAxis *valueAxis);
   virtual ~QCPCurve();

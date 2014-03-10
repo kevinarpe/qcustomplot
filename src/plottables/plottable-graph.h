@@ -78,20 +78,20 @@ public:
   */
   enum LineStyle { lsNone        ///< data points are not connected with any lines (e.g. data only represented
                                  ///< with symbols according to the scatter style, see \ref setScatterStyle)
-                  ,lsLine        ///< data points are connected by a straight line
-                  ,lsStepLeft    ///< line is drawn as steps where the step height is the value of the left data point
-                  ,lsStepRight   ///< line is drawn as steps where the step height is the value of the right data point
-                  ,lsStepCenter  ///< line is drawn as steps where the step is in between two data points
-                  ,lsImpulse     ///< each data point is represented by a line parallel to the value axis, which reaches from the data point to the zero-value-line
+                   ,lsLine       ///< data points are connected by a straight line
+                   ,lsStepLeft   ///< line is drawn as steps where the step height is the value of the left data point
+                   ,lsStepRight  ///< line is drawn as steps where the step height is the value of the right data point
+                   ,lsStepCenter ///< line is drawn as steps where the step is in between two data points
+                   ,lsImpulse    ///< each data point is represented by a line parallel to the value axis, which reaches from the data point to the zero-value-line
                  };
   Q_ENUMS(LineStyle)
   /*!
     Defines what kind of error bars are drawn for each data point
   */
   enum ErrorType { etNone   ///< No error bars are shown
-                  ,etKey    ///< Error bars for the key dimension of the data point are shown
-                  ,etValue  ///< Error bars for the value dimension of the data point are shown
-                  ,etBoth   ///< Error bars for both key and value dimensions of the data point are shown
+                   ,etKey   ///< Error bars for the key dimension of the data point are shown
+                   ,etValue ///< Error bars for the value dimension of the data point are shown
+                   ,etBoth  ///< Error bars for both key and value dimensions of the data point are shown
                  };
   Q_ENUMS(ErrorType)
   
