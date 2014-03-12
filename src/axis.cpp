@@ -1374,8 +1374,10 @@ void QCPAxis::setPadding(int padding)
 /*!
   Sets the offset the axis has to its axis rect side.
   
-  If an axis rect side has multiple axes, only the offset of the inner most axis has meaning. The offset of the other axes
-  is controlled automatically, to place the axes at appropriate positions to prevent them from overlapping.
+  If an axis rect side has multiple axes and automatic margin calculation is enabled for that side,
+  only the offset of the inner most axis has meaning (even if it is set to be invisible). The
+  offset of the other, outer axes is controlled automatically, to place them at appropriate
+  positions.
 */
 void QCPAxis::setOffset(int offset)
 {
@@ -2340,41 +2342,41 @@ QColor QCPAxis::getLabelColor() const
 */
 int QCPAxis::calculateMargin()
 {
+  if (!mVisible) // if not visible, directly return 0, don't cache 0 because we can't react to setVisible in QCPAxis
+    return 0;
+  
   if (mCachedMarginValid)
     return mCachedMargin;
   
   // run through similar steps as QCPAxis::draw, and caluclate margin needed to fit axis and its labels
   int margin = 0;
   
-  if (mVisible)
+  int lowTick, highTick;
+  visibleTickBounds(lowTick, highTick);
+  QVector<double> tickPositions; // the final coordToPixel transformed vector passed to QCPAxisPainter
+  QVector<QString> tickLabels; // the final vector passed to QCPAxisPainter
+  tickPositions.reserve(highTick-lowTick+1);
+  tickLabels.reserve(highTick-lowTick+1);
+  if (mTicks)
   {
-    int lowTick, highTick;
-    visibleTickBounds(lowTick, highTick);
-    QVector<double> tickPositions; // the final coordToPixel transformed vector passed to QCPAxisPainter
-    QVector<QString> tickLabels; // the final vector passed to QCPAxisPainter
-    tickPositions.reserve(highTick-lowTick+1);
-    tickLabels.reserve(highTick-lowTick+1);
-    if (mTicks)
+    for (int i=lowTick; i<=highTick; ++i)
     {
-      for (int i=lowTick; i<=highTick; ++i)
-      {
-        tickPositions.append(coordToPixel(mTickVector.at(i)));
-        if (mTickLabels)
-          tickLabels.append(mTickVectorLabels.at(i));
-      }
+      tickPositions.append(coordToPixel(mTickVector.at(i)));
+      if (mTickLabels)
+        tickLabels.append(mTickVectorLabels.at(i));
     }
-    // transfer all properties of this axis to QCPAxisPainterPrivate which it needs to calculate the size.
-    // Note that some axis painter properties are already set by direct feed-through with QCPAxis setters
-    mAxisPainter->type = mAxisType;
-    mAxisPainter->labelFont = getLabelFont();
-    mAxisPainter->label = mLabel;
-    mAxisPainter->tickLabelFont = mTickLabelFont;
-    mAxisPainter->alignmentRect = mAxisRect->rect();
-    mAxisPainter->viewportRect = mParentPlot->viewport();
-    mAxisPainter->tickPositions = tickPositions;
-    mAxisPainter->tickLabels = tickLabels;
-    margin += mAxisPainter->size();
   }
+  // transfer all properties of this axis to QCPAxisPainterPrivate which it needs to calculate the size.
+  // Note that some axis painter properties are already set by direct feed-through with QCPAxis setters
+  mAxisPainter->type = mAxisType;
+  mAxisPainter->labelFont = getLabelFont();
+  mAxisPainter->label = mLabel;
+  mAxisPainter->tickLabelFont = mTickLabelFont;
+  mAxisPainter->alignmentRect = mAxisRect->rect();
+  mAxisPainter->viewportRect = mParentPlot->viewport();
+  mAxisPainter->tickPositions = tickPositions;
+  mAxisPainter->tickLabels = tickLabels;
+  margin += mAxisPainter->size();
   margin += mPadding;
 
   mCachedMargin = margin;
