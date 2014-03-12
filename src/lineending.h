@@ -43,7 +43,7 @@ public:
     and \ref setLength. Some decorations like \ref esDisc, \ref esSquare, \ref esDiamond and \ref esBar only
     support a width, the length property is ignored.
     
-    \see QCPItemLine::setHead, QCPItemLine::setTail, QCPItemCurve::setHead, QCPItemCurve::setTail
+    \see QCPItemLine::setHead, QCPItemLine::setTail, QCPItemCurve::setHead, QCPItemCurve::setTail, QCPAxis::setLowerEnding, QCPAxis::setUpperEnding
   */
   Q_ENUMS(EndingStyle)
   enum EndingStyle { esNone          ///< No ending decoration
@@ -54,7 +54,7 @@ public:
                      ,esSquare       ///< A filled square
                      ,esDiamond      ///< A filled diamond (45° rotated square)
                      ,esBar          ///< A bar perpendicular to the line
-                     ,esHalfBar      ///< A bar perpendicular to the line sticking out to one side
+                     ,esHalfBar      ///< A bar perpendicular to the line, pointing out to only one side (to which side can be changed with \ref setInverted)
                      ,esSkewedBar    ///< A bar that is skewed (skew controllable via \ref setLength)
                    };
   
