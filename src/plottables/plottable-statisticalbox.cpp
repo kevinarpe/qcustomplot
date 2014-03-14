@@ -27,6 +27,7 @@
 
 #include "../core.h"
 #include "../axis.h"
+#include "../layoutelements/layoutelement-axisrect.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPStatisticalBox
@@ -291,18 +292,20 @@ double QCPStatisticalBox::selectTest(const QPointF &pos, bool onlySelectable, QV
     return -1;
   if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
   
-  double posKey, posValue;
-  pixelsToCoords(pos, posKey, posValue);
-  // quartile box:
-  QCPRange keyRange(mKey-mWidth*0.5, mKey+mWidth*0.5);
-  QCPRange valueRange(mLowerQuartile, mUpperQuartile);
-  if (keyRange.contains(posKey) && valueRange.contains(posValue))
-    return mParentPlot->selectionTolerance()*0.99;
-  
-  // min/max whiskers:
-  if (QCPRange(mMinimum, mMaximum).contains(posValue))
-    return qAbs(mKeyAxis.data()->coordToPixel(mKey)-mKeyAxis.data()->coordToPixel(posKey));
-  
+  if (mKeyAxis.data()->axisRect()->rect().contains(pos.toPoint()))
+  {
+    double posKey, posValue;
+    pixelsToCoords(pos, posKey, posValue);
+    // quartile box:
+    QCPRange keyRange(mKey-mWidth*0.5, mKey+mWidth*0.5);
+    QCPRange valueRange(mLowerQuartile, mUpperQuartile);
+    if (keyRange.contains(posKey) && valueRange.contains(posValue))
+      return mParentPlot->selectionTolerance()*0.99;
+    
+    // min/max whiskers:
+    if (QCPRange(mMinimum, mMaximum).contains(posValue))
+      return qAbs(mKeyAxis.data()->coordToPixel(mKey)-mKeyAxis.data()->coordToPixel(posKey));
+  }
   return -1;
 }
 

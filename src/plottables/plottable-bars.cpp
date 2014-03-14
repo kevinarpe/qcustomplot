@@ -28,6 +28,7 @@
 #include "../painter.h"
 #include "../core.h"
 #include "../axis.h"
+#include "../layoutelements/layoutelement-axisrect.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPBarData
@@ -374,17 +375,21 @@ double QCPBars::selectTest(const QPointF &pos, bool onlySelectable, QVariant *de
   Q_UNUSED(details)
   if (onlySelectable && !mSelectable)
     return -1;
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
   
-  QCPBarDataMap::ConstIterator it;
-  double posKey, posValue;
-  pixelsToCoords(pos, posKey, posValue);
-  for (it = mData->constBegin(); it != mData->constEnd(); ++it)
+  if (mKeyAxis.data()->axisRect()->rect().contains(pos.toPoint()))
   {
-    double baseValue = getBaseValue(it.key(), it.value().value >=0);
-    QCPRange keyRange(it.key()-mWidth*0.5, it.key()+mWidth*0.5);
-    QCPRange valueRange(baseValue, baseValue+it.value().value);
-    if (keyRange.contains(posKey) && valueRange.contains(posValue))
-      return mParentPlot->selectionTolerance()*0.99;
+    QCPBarDataMap::ConstIterator it;
+    double posKey, posValue;
+    pixelsToCoords(pos, posKey, posValue);
+    for (it = mData->constBegin(); it != mData->constEnd(); ++it)
+    {
+      double baseValue = getBaseValue(it.key(), it.value().value >=0);
+      QCPRange keyRange(it.key()-mWidth*0.5, it.key()+mWidth*0.5);
+      QCPRange valueRange(baseValue, baseValue+it.value().value);
+      if (keyRange.contains(posKey) && valueRange.contains(posValue))
+        return mParentPlot->selectionTolerance()*0.99;
+    }
   }
   return -1;
 }

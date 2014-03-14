@@ -632,8 +632,12 @@ double QCPGraph::selectTest(const QPointF &pos, bool onlySelectable, QVariant *d
   Q_UNUSED(details)
   if ((onlySelectable && !mSelectable) || mData->isEmpty())
     return -1;
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
   
-  return pointDistance(pos);
+  if (mKeyAxis.data()->axisRect()->rect().contains(pos.toPoint()))
+    return pointDistance(pos);
+  else
+    return -1;
 }
 
 /*! \overload

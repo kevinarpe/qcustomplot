@@ -752,13 +752,16 @@ double QCPColorMap::selectTest(const QPointF &pos, bool onlySelectable, QVariant
   Q_UNUSED(details)
   if (onlySelectable && !mSelectable)
     return -1;
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
   
-  double posKey, posValue;
-  pixelsToCoords(pos, posKey, posValue);
-  if (mMapData->keyRange().contains(posKey) && mMapData->valueRange().contains(posValue))
-    return mParentPlot->selectionTolerance()*0.99;
-  else
-    return -1;
+  if (mKeyAxis.data()->axisRect()->rect().contains(pos.toPoint()))
+  {
+    double posKey, posValue;
+    pixelsToCoords(pos, posKey, posValue);
+    if (mMapData->keyRange().contains(posKey) && mMapData->valueRange().contains(posValue))
+      return mParentPlot->selectionTolerance()*0.99;
+  }
+  return -1;
 }
 
 /*! \internal
