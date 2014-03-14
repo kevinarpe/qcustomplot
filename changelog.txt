@@ -1,3 +1,11 @@
+#### Version 1.2.0 released on 14.03.14 ####
+
+  Bugfixes:
+    - Fixed bug that caused crash if clicked-on legend item is removed in mousePressEvent.
+    - On some systems, font size defaults to -1, which used to cause a debug output in QCPAxisPainterPrivate::TickLabelDataQCP. Now it's checked before setting values based on the default font size.
+    - When using multiple axes on one side, setting one to invisible didn't properly compress the freed space.
+    - Fixed bug that allowed selection of plottables when clicking in the bottom or top margin of a QCPAxisRect (outside the inner rect)
+
 #### Version 1.2.0-beta released on 28.01.14 ####
 
   Added features:

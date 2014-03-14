@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 /*! \file */
@@ -37,7 +37,7 @@
 #include "plottables/plottable-graph.h"
 #include "item.h"
 
-/*! \mainpage %QCustomPlot 1.2.0-beta Documentation
+/*! \mainpage %QCustomPlot 1.2.0 Documentation
 
   \image html qcp-doc-logo.png
   
