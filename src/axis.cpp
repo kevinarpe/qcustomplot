@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #include "axis.h"
@@ -446,13 +446,13 @@ QCPAxis::~QCPAxis()
 /* No documentation as it is a property getter */
 int QCPAxis::tickLabelPadding() const
 {
-  return mAxisPainter->tickLabelPadding; 
+  return mAxisPainter->tickLabelPadding;
 }
 
 /* No documentation as it is a property getter */
 double QCPAxis::tickLabelRotation() const
 {
-  return mAxisPainter->tickLabelRotation; 
+  return mAxisPainter->tickLabelRotation;
 }
 
 /* No documentation as it is a property getter */
@@ -484,7 +484,7 @@ int QCPAxis::tickLengthOut() const
 /* No documentation as it is a property getter */
 int QCPAxis::subTickLengthIn() const
 {
-  return mAxisPainter->subTickLengthIn; 
+  return mAxisPainter->subTickLengthIn;
 }
 
 /* No documentation as it is a property getter */
@@ -820,7 +820,7 @@ void QCPAxis::setAutoTickLabels(bool on)
 /*!
   Sets whether the tick step, i.e. the interval between two (major) ticks, is calculated
   automatically. If \a on is set to true, the axis finds a tick step that is reasonable for human
-  readable plots. 
+  readable plots.
 
   The number of ticks the algorithm aims for within the visible range can be specified with \ref
   setAutoTickCount.
@@ -1374,8 +1374,10 @@ void QCPAxis::setPadding(int padding)
 /*!
   Sets the offset the axis has to its axis rect side.
   
-  If an axis rect side has multiple axes, only the offset of the inner most axis has meaning. The offset of the other axes
-  is controlled automatically, to place the axes at appropriate positions to prevent them from overlapping.
+  If an axis rect side has multiple axes and automatic margin calculation is enabled for that side,
+  only the offset of the inner most axis has meaning (even if it is set to be invisible). The
+  offset of the other, outer axes is controlled automatically, to place them at appropriate
+  positions.
 */
 void QCPAxis::setOffset(int offset)
 {
@@ -1704,7 +1706,7 @@ double QCPAxis::coordToPixel(double value) const
       else
         return mAxisRect->bottom()-(mRange.upper-value)/mRange.size()*mAxisRect->height();
     } else // mScaleType == stLogarithmic
-    {     
+    {
       if (value >= 0 && mRange.upper < 0) // invalid value for logarithmic scale, just draw it outside visible range
         return !mRangeReversed ? mAxisRect->top()-200 : mAxisRect->bottom()+200;
       else if (value <= 0 && mRange.upper > 0) // invalid value for logarithmic scale, just draw it outside visible range
@@ -1851,7 +1853,7 @@ QCPAxis::AxisType QCPAxis::opposite(QCPAxis::AxisType type)
     case atBottom: return atTop; break;
     case atTop: return atBottom; break;
     default: qDebug() << Q_FUNC_INFO << "invalid axis type"; return atLeft; break;
-  } 
+  }
 }
 
 /*! \internal
@@ -2340,41 +2342,41 @@ QColor QCPAxis::getLabelColor() const
 */
 int QCPAxis::calculateMargin()
 {
+  if (!mVisible) // if not visible, directly return 0, don't cache 0 because we can't react to setVisible in QCPAxis
+    return 0;
+  
   if (mCachedMarginValid)
     return mCachedMargin;
   
   // run through similar steps as QCPAxis::draw, and caluclate margin needed to fit axis and its labels
   int margin = 0;
   
-  if (mVisible)
+  int lowTick, highTick;
+  visibleTickBounds(lowTick, highTick);
+  QVector<double> tickPositions; // the final coordToPixel transformed vector passed to QCPAxisPainter
+  QVector<QString> tickLabels; // the final vector passed to QCPAxisPainter
+  tickPositions.reserve(highTick-lowTick+1);
+  tickLabels.reserve(highTick-lowTick+1);
+  if (mTicks)
   {
-    int lowTick, highTick;
-    visibleTickBounds(lowTick, highTick);
-    QVector<double> tickPositions; // the final coordToPixel transformed vector passed to QCPAxisPainter
-    QVector<QString> tickLabels; // the final vector passed to QCPAxisPainter
-    tickPositions.reserve(highTick-lowTick+1);
-    tickLabels.reserve(highTick-lowTick+1);
-    if (mTicks)
+    for (int i=lowTick; i<=highTick; ++i)
     {
-      for (int i=lowTick; i<=highTick; ++i)
-      {
-        tickPositions.append(coordToPixel(mTickVector.at(i)));
-        if (mTickLabels)
-          tickLabels.append(mTickVectorLabels.at(i));
-      }
+      tickPositions.append(coordToPixel(mTickVector.at(i)));
+      if (mTickLabels)
+        tickLabels.append(mTickVectorLabels.at(i));
     }
-    // transfer all properties of this axis to QCPAxisPainterPrivate which it needs to calculate the size.
-    // Note that some axis painter properties are already set by direct feed-through with QCPAxis setters
-    mAxisPainter->type = mAxisType;
-    mAxisPainter->labelFont = getLabelFont();
-    mAxisPainter->label = mLabel;
-    mAxisPainter->tickLabelFont = mTickLabelFont;
-    mAxisPainter->alignmentRect = mAxisRect->rect();
-    mAxisPainter->viewportRect = mParentPlot->viewport();
-    mAxisPainter->tickPositions = tickPositions;
-    mAxisPainter->tickLabels = tickLabels;
-    margin += mAxisPainter->size();
   }
+  // transfer all properties of this axis to QCPAxisPainterPrivate which it needs to calculate the size.
+  // Note that some axis painter properties are already set by direct feed-through with QCPAxis setters
+  mAxisPainter->type = mAxisType;
+  mAxisPainter->labelFont = getLabelFont();
+  mAxisPainter->label = mLabel;
+  mAxisPainter->tickLabelFont = mTickLabelFont;
+  mAxisPainter->alignmentRect = mAxisRect->rect();
+  mAxisPainter->viewportRect = mParentPlot->viewport();
+  mAxisPainter->tickPositions = tickPositions;
+  mAxisPainter->tickLabels = tickLabels;
+  margin += mAxisPainter->size();
   margin += mPadding;
 
   mCachedMargin = margin;
@@ -2506,7 +2508,7 @@ void QCPAxisPainterPrivate::draw(QCPPainter *painter)
     int tickDir = (type == QCPAxis::atBottom || type == QCPAxis::atRight) ? -1 : 1;
     if (QCPAxis::orientation(type) == Qt::Horizontal)
     {
-      for (int i=0; i<subTickPositions.size(); ++i) 
+      for (int i=0; i<subTickPositions.size(); ++i)
         painter->drawLine(QLineF(subTickPositions.at(i)+xCor, origin.y()-subTickLengthOut*tickDir+yCor, subTickPositions.at(i)+xCor, origin.y()+subTickLengthIn*tickDir+yCor));
     } else
     {
@@ -2759,7 +2761,7 @@ void QCPAxisPainterPrivate::placeTickLabel(QCPPainter *painter, double position,
   }
   
   // expand passed tickLabelsSize if current tick label is larger:
-  if (finalSize.width() > tickLabelsSize->width()) 
+  if (finalSize.width() > tickLabelsSize->width())
     tickLabelsSize->setWidth(finalSize.width());
   if (finalSize.height() > tickLabelsSize->height())
     tickLabelsSize->setHeight(finalSize.height());
@@ -2827,7 +2829,8 @@ QCPAxisPainterPrivate::TickLabelData QCPAxisPainterPrivate::getTickLabelData(con
   
   // calculate text bounding rects and do string preparation for beautiful decimal powers:
   result.baseFont = font;
-  result.baseFont.setPointSizeF(result.baseFont.pointSizeF()+0.05); // QFontMetrics.boundingRect has a bug for exact point sizes that make the results oscillate due to internal rounding 
+  if (result.baseFont.pointSizeF() > 0) // On some rare systems, this sometimes is initialized with -1 (Qt bug?), so we check here before possibly setting a negative value in the next line
+    result.baseFont.setPointSizeF(result.baseFont.pointSizeF()+0.05); // QFontMetrics.boundingRect has a bug for exact point sizes that make the results oscillate due to internal rounding
   if (useBeautifulPowers)
   {
     // split text into parts of number/symbol that will be drawn normally and part that will be drawn as exponent:
@@ -2994,7 +2997,7 @@ void QCPAxisPainterPrivate::getMaxTickLabelSize(const QFont &font, const QString
   }
   
   // expand passed tickLabelsSize if current tick label is larger:
-  if (finalSize.width() > tickLabelsSize->width()) 
+  if (finalSize.width() > tickLabelsSize->width())
     tickLabelsSize->setWidth(finalSize.width());
   if (finalSize.height() > tickLabelsSize->height())
     tickLabelsSize->setHeight(finalSize.height());

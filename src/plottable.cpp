@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #include "plottable.h"
@@ -485,7 +485,7 @@ bool QCPAbstractPlottable::addToLegend()
     return false;
 }
 
-/*! 
+/*!
   Removes the plottable from the legend of the parent QCustomPlot. This means the
   QCPAbstractLegendItem (usually a QCPPlottableLegendItem) that is associated with this plottable
   is removed.
@@ -548,7 +548,7 @@ void QCPAbstractPlottable::coordsToPixels(double key, double value, double &x, d
   }
 }
 
-/*! \internal 
+/*! \internal
   \overload
   
   Returns the input as pixel coordinates in a QPointF.

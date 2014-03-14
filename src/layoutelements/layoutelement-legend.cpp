@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #include "layoutelement-legend.h"
@@ -71,7 +71,7 @@
   Constructs a QCPAbstractLegendItem and associates it with the QCPLegend \a parent. This does not
   cause the item to be added to \a parent, so \ref QCPLegend::addItem must be called separately.
 */
-QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) : 
+QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) :
   QCPLayoutElement(parent->parentPlot()),
   mParentLegend(parent),
   mFont(parent->font()),
@@ -520,7 +520,7 @@ void QCPLegend::setIconBorderPen(const QPen &pen)
 
 /*!
   Sets whether the user can (de-)select the parts in \a selectable by clicking on the QCustomPlot surface.
-  (When \ref QCustomPlot::setInteractions contains iSelectLegend.)
+  (When \ref QCustomPlot::setInteractions contains \ref QCP::iSelectLegend.)
   
   However, even when \a selectable is set to a value not allowing the selection of a specific part,
   it is still possible to set the selection of this part manually, by calling \ref setSelectedParts

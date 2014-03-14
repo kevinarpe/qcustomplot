@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #include "plottable-colormap.h"
@@ -172,11 +172,17 @@ void QCPColorMapData::setSize(int keySize, int valueSize)
     mIsEmpty = mKeySize == 0 || mValueSize == 0;
     if (!mIsEmpty)
     {
+#ifdef __EXCEPTIONS
+      try { // 2D arrays get memory intensive fast. So if the allocation fails, at least output debug message
+#endif
       mData = new double[mKeySize*mValueSize];
-      if (!mData)
-        qDebug() << Q_FUNC_INFO << "out of memory for data dimensions "<< mKeySize << "*" << mValueSize;
-      else
+#ifdef __EXCEPTIONS
+      } catch (...) { mData = 0; }
+#endif
+      if (mData)
         fill(0);
+      else
+        qDebug() << Q_FUNC_INFO << "out of memory for data dimensions "<< mKeySize << "*" << mValueSize;
     } else
       mData = 0;
     mDataModified = true;
@@ -464,6 +470,12 @@ void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, dou
   customPlot->rescaleAxes();
   customPlot->replot();
   \endcode
+  
+  \note The QCPColorMap always displays the data at equal key/value intervals, even if the key or
+  value axis is set to a logarithmic scaling. If you want to use QCPColorMap with logarithmic axes,
+  you shouldn't use the \ref QCPColorMapData::setData method as it uses a linear transformation to
+  determine the cell index. Rather directly access the cell index with \ref
+  QCPColorMapData::setCell.
 */
 
 /* start documentation of inline functions */
@@ -590,7 +602,7 @@ void QCPColorMap::setDataScaleType(QCPAxis::ScaleType scaleType)
   The colors defined by the gradient will be used to represent data values in the currently set
   data range, see \ref setDataRange. Data points that are outside this data range will either be
   colored uniformly with the respective gradient boundary color, or the gradient will repeat,
-  depending on QCPColorGradient::setPeriodic.
+  depending on \ref QCPColorGradient::setPeriodic.
   
   \see QCPColorScale::setGradient
 */
@@ -740,13 +752,16 @@ double QCPColorMap::selectTest(const QPointF &pos, bool onlySelectable, QVariant
   Q_UNUSED(details)
   if (onlySelectable && !mSelectable)
     return -1;
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
   
-  double posKey, posValue;
-  pixelsToCoords(pos, posKey, posValue);
-  if (mMapData->keyRange().contains(posKey) && mMapData->valueRange().contains(posValue))
-    return mParentPlot->selectionTolerance()*0.99;
-  else
-    return -1;
+  if (mKeyAxis.data()->axisRect()->rect().contains(pos.toPoint()))
+  {
+    double posKey, posValue;
+    pixelsToCoords(pos, posKey, posValue);
+    if (mMapData->keyRange().contains(posKey) && mMapData->valueRange().contains(posValue))
+      return mParentPlot->selectionTolerance()*0.99;
+  }
+  return -1;
 }
 
 /*! \internal
@@ -822,7 +837,7 @@ void QCPColorMap::draw(QCPPainter *painter)
   painter->setRenderHint(QPainter::SmoothPixmapTransform, mInterpolate);
   QRegion clipBackup;
   if (mTightBoundary)
-  { 
+  {
     clipBackup = painter->clipRegion();
     painter->setClipRect(QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().lower),
                                 coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().upper)).normalized(), Qt::IntersectClip);

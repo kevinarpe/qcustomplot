@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 /*! \file */
@@ -37,7 +37,7 @@
 #include "plottables/plottable-graph.h"
 #include "item.h"
 
-/*! \mainpage %QCustomPlot 1.2.0-beta Documentation
+/*! \mainpage %QCustomPlot 1.2.0 Documentation
 
   \image html qcp-doc-logo.png
   
@@ -83,7 +83,8 @@
   usual, if the cast returns zero, the plottable wasn't of that specific subclass.)
   
   All further interfacing with plottables (e.g how to set data) is specific to the plottable type.
-  See the documentations of the subclasses: QCPGraph, QCPCurve, QCPBars, QCPStatisticalBox.
+  See the documentations of the subclasses: QCPGraph, QCPCurve, QCPBars, QCPStatisticalBox,
+  QCPColorMap.
 
   \section mainpage-axes Controlling the Axes
   
@@ -110,20 +111,20 @@
   
   \section mainpage-legend Plot Legend
   
-  Every QCustomPlot owns one QCPLegend (as \a legend) by default. A legend is a small layout
-  element inside the plot which lists the plottables with an icon of the plottable line/symbol and
-  a description. The Description is retrieved from the plottable name
-  (QCPAbstractPlottable::setName). Plottables can be added and removed from the legend via \ref
-  QCPAbstractPlottable::addToLegend and \ref QCPAbstractPlottable::removeFromLegend. By default,
-  adding a plottable to QCustomPlot automatically adds it to the legend, too. This behaviour can be
-  modified with the QCustomPlot::setAutoAddPlottableToLegend property.
+  Every QCustomPlot has one QCPLegend (as \ref QCustomPlot::legend) by default. A legend is a small
+  layout element inside the plot which lists the plottables with an icon of the plottable
+  line/symbol and a name (QCPAbstractPlottable::setName). Plottables can be added and removed from
+  the main legend via \ref QCPAbstractPlottable::addToLegend and \ref
+  QCPAbstractPlottable::removeFromLegend. By default, adding a plottable to QCustomPlot
+  automatically adds it to the legend, too. This behaviour can be modified with the
+  QCustomPlot::setAutoAddPlottableToLegend property.
   
   The QCPLegend provides an interface to access, add and remove legend items directly, too. See
   QCPLegend::item, QCPLegend::itemWithPlottable, QCPLegend::addItem, QCPLegend::removeItem for
   example.
   
-  Multiple legends are supported via the layout system (as a QCPLegend simply is a normal layout
-  element).
+  Multiple legends are supported via the \link thelayoutsystem layout system\endlink (as a
+  QCPLegend simply is a normal layout element).
   
   \section mainpage-userinteraction User Interactions
   
@@ -1528,7 +1529,7 @@ QCPLayer *QCustomPlot::layer(int index) const
 */
 QCPLayer *QCustomPlot::currentLayer() const
 {
-  return mCurrentLayer; 
+  return mCurrentLayer;
 }
 
 /*!
@@ -1885,7 +1886,7 @@ void QCustomPlot::replot(QCustomPlot::RefreshPriority refreshPriority)
   mPaintBuffer.fill(mBackgroundBrush.style() == Qt::SolidPattern ? mBackgroundBrush.color() : Qt::transparent);
   QCPPainter painter;
   painter.begin(&mPaintBuffer);
-  if (painter.isActive()) 
+  if (painter.isActive())
   {
     painter.setRenderHint(QPainter::HighQualityAntialiasing); // to make Antialiasing look good if using the OpenGL graphicssystem
     if (mBackgroundBrush.style() != Qt::SolidPattern && mBackgroundBrush.style() != Qt::NoBrush)
@@ -2048,7 +2049,7 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   \see savePdf, saveBmp, saveJpg, saveRastered
 */
 bool QCustomPlot::savePng(const QString &fileName, int width, int height, double scale, int quality)
-{  
+{
   return saveRastered(fileName, width, height, scale, "PNG", quality);
 }
 
@@ -2417,7 +2418,7 @@ void QCustomPlot::draw(QCPPainter *painter)
   the viewport with the provided \a painter. The scaled version is buffered in
   mScaledBackgroundPixmap to prevent expensive rescaling at every redraw. It is only updated, when
   the axis rect has changed in a way that requires a rescale of the background pixmap (this is
-  dependant on the \ref setBackgroundScaledMode), or when a differend axis backgroud pixmap was
+  dependent on the \ref setBackgroundScaledMode), or when a differend axis background pixmap was
   set.
   
   Note that this function does not draw a fill with the background brush (\ref setBackground(const
@@ -2558,7 +2559,7 @@ bool QCustomPlot::saveRastered(const QString &fileName, int width, int height, d
 */
 QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
 {
-  // this method is somewhat similar to toPainter. Change something here, and a change in toPainter might be necessary, too. 
+  // this method is somewhat similar to toPainter. Change something here, and a change in toPainter might be necessary, too.
   int newWidth, newHeight;
   if (width == 0 || height == 0)
   {
@@ -2614,7 +2615,7 @@ QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
 */
 void QCustomPlot::toPainter(QCPPainter *painter, int width, int height)
 {
-  // this method is somewhat similar to toPixmap. Change something here, and a change in toPixmap might be necessary, too. 
+  // this method is somewhat similar to toPixmap. Change something here, and a change in toPixmap might be necessary, too.
   int newWidth, newHeight;
   if (width == 0 || height == 0)
   {

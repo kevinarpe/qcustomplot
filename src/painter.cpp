@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #include "painter.h"
@@ -132,7 +132,7 @@ void QCPPainter::drawLine(const QLineF &line)
     QPainter::drawLine(line.toLine());
 }
 
-/*! 
+/*!
   Sets whether painting uses antialiasing or not. Use this method instead of using setRenderHint
   with QPainter::Antialiasing directly, as it allows QCPPainter to regain pixel exactness between
   antialiased and non-antialiased painting (Since Qt < 5.0 uses slightly different coordinate systems for

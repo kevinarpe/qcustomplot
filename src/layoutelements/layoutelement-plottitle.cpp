@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #include "layoutelement-plottitle.h"
@@ -67,7 +67,7 @@
   
   To set the title text in the constructor, rather use \ref QCPPlotTitle(QCustomPlot *parentPlot, const QString &text).
 */
-QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot) : 
+QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot) :
   QCPLayoutElement(parentPlot),
   mFont(QFont("sans serif", 13*1.5, QFont::Bold)),
   mTextColor(Qt::black),

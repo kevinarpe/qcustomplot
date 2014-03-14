@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #include "layer.h"
@@ -255,7 +255,8 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
 
 /*! \fn void QCPLayerable::layerChanged(QCPLayer *newLayer);
   
-  This signal is emitted when the layer of this layerable changes.
+  This signal is emitted when the layer of this layerable changes, i.e. this layerable is moved to
+  a different layer.
   
   \see setLayer
 */

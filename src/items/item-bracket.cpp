@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #include "item-bracket.h"
@@ -135,10 +135,10 @@ double QCPItemBracket::selectTest(const QPointF &pos, bool onlySelectable, QVari
   if (leftVec.toPoint() == rightVec.toPoint())
     return -1;
   
-  QVector2D widthVec = (rightVec-leftVec)*0.5;
+  QVector2D widthVec = (rightVec-leftVec)*0.5f;
   QVector2D lengthVec(-widthVec.y(), widthVec.x());
   lengthVec = lengthVec.normalized()*mLength;
-  QVector2D centerVec = (rightVec+leftVec)*0.5-lengthVec;
+  QVector2D centerVec = (rightVec+leftVec)*0.5f-lengthVec;
   
   return qSqrt(distSqrToLine((centerVec-widthVec).toPointF(), (centerVec+widthVec).toPointF(), pos));
 }
@@ -151,10 +151,10 @@ void QCPItemBracket::draw(QCPPainter *painter)
   if (leftVec.toPoint() == rightVec.toPoint())
     return;
   
-  QVector2D widthVec = (rightVec-leftVec)*0.5;
+  QVector2D widthVec = (rightVec-leftVec)*0.5f;
   QVector2D lengthVec(-widthVec.y(), widthVec.x());
   lengthVec = lengthVec.normalized()*mLength;
-  QVector2D centerVec = (rightVec+leftVec)*0.5-lengthVec;
+  QVector2D centerVec = (rightVec+leftVec)*0.5f-lengthVec;
 
   QPolygon boundingPoly;
   boundingPoly << leftVec.toPoint() << rightVec.toPoint()
@@ -187,8 +187,8 @@ void QCPItemBracket::draw(QCPPainter *painter)
         painter->setBrush(Qt::NoBrush);
         QPainterPath path;
         path.moveTo((centerVec+widthVec+lengthVec).toPointF());
-        path.cubicTo((centerVec+widthVec*1-lengthVec*0.8).toPointF(), (centerVec+0.4*widthVec+1*lengthVec).toPointF(), centerVec.toPointF());
-        path.cubicTo((centerVec-0.4*widthVec+1*lengthVec).toPointF(), (centerVec-widthVec*1-lengthVec*0.8).toPointF(), (centerVec-widthVec+lengthVec).toPointF());
+        path.cubicTo((centerVec+widthVec-lengthVec*0.8f).toPointF(), (centerVec+0.4f*widthVec+lengthVec).toPointF(), centerVec.toPointF());
+        path.cubicTo((centerVec-0.4f*widthVec+lengthVec).toPointF(), (centerVec-widthVec-lengthVec*0.8f).toPointF(), (centerVec-widthVec+lengthVec).toPointF());
         painter->drawPath(path);
         break;
       }
@@ -199,11 +199,11 @@ void QCPItemBracket::draw(QCPPainter *painter)
         QPainterPath path;
         path.moveTo((centerVec+widthVec+lengthVec).toPointF());
         
-        path.cubicTo((centerVec+widthVec*1-lengthVec*0.8).toPointF(), (centerVec+0.4*widthVec+0.8*lengthVec).toPointF(), centerVec.toPointF());
-        path.cubicTo((centerVec-0.4*widthVec+0.8*lengthVec).toPointF(), (centerVec-widthVec*1-lengthVec*0.8).toPointF(), (centerVec-widthVec+lengthVec).toPointF());
+        path.cubicTo((centerVec+widthVec-lengthVec*0.8f).toPointF(), (centerVec+0.4f*widthVec+0.8f*lengthVec).toPointF(), centerVec.toPointF());
+        path.cubicTo((centerVec-0.4f*widthVec+0.8f*lengthVec).toPointF(), (centerVec-widthVec-lengthVec*0.8f).toPointF(), (centerVec-widthVec+lengthVec).toPointF());
         
-        path.cubicTo((centerVec-widthVec*1-lengthVec*0.5).toPointF(), (centerVec-0.2*widthVec+1.2*lengthVec).toPointF(), (centerVec+lengthVec*0.2).toPointF());
-        path.cubicTo((centerVec+0.2*widthVec+1.2*lengthVec).toPointF(), (centerVec+widthVec*1-lengthVec*0.5).toPointF(), (centerVec+widthVec+lengthVec).toPointF());
+        path.cubicTo((centerVec-widthVec-lengthVec*0.5f).toPointF(), (centerVec-0.2f*widthVec+1.2f*lengthVec).toPointF(), (centerVec+lengthVec*0.2f).toPointF());
+        path.cubicTo((centerVec+0.2f*widthVec+1.2f*lengthVec).toPointF(), (centerVec+widthVec-lengthVec*0.5f).toPointF(), (centerVec+widthVec+lengthVec).toPointF());
         
         painter->drawPath(path);
         break;
@@ -220,10 +220,10 @@ QPointF QCPItemBracket::anchorPixelPoint(int anchorId) const
   if (leftVec.toPoint() == rightVec.toPoint())
     return leftVec.toPointF();
   
-  QVector2D widthVec = (rightVec-leftVec)*0.5;
+  QVector2D widthVec = (rightVec-leftVec)*0.5f;
   QVector2D lengthVec(-widthVec.y(), widthVec.x());
   lengthVec = lengthVec.normalized()*mLength;
-  QVector2D centerVec = (rightVec+leftVec)*0.5-lengthVec;
+  QVector2D centerVec = (rightVec+leftVec)*0.5f-lengthVec;
   
   switch (anchorId)
   {

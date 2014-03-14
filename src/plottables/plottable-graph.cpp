@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #include "plottable-graph.h"
@@ -89,7 +89,9 @@ QCPData::QCPData(double key, double value) :
   Usually QCustomPlot creates graphs internally via QCustomPlot::addGraph and the resulting
   instance is accessed via QCustomPlot::graph.
 
-  To plot data, assign it with the \ref setData or \ref addData functions.
+  To plot data, assign it with the \ref setData or \ref addData functions. Alternatively, you can
+  also access and modify the graph's data via the \ref data method, which returns a pointer to the
+  internal \ref QCPDataMap.
   
   Graphs are used to display single-valued data. Single-valued means that there should only be one
   data point per unique key coordinate. In other words, the graph can't have \a loops. If you do
@@ -112,6 +114,17 @@ QCPData::QCPData(double key, double value) :
 
   \see QCustomPlot::addGraph, QCustomPlot::graph, QCPLegend::addGraph
 */
+
+/* start of documentation of inline functions */
+
+/*! \fn QCPDataMap *QCPGraph::data() const
+  
+  Returns a pointer to the internal data storage of type \ref QCPDataMap. You may use it to
+  directly manipulate the data, which may be more convenient and faster than using the regular \ref
+  setData or \ref addData methods, in certain situations.
+*/
+
+/* end of documentation of inline functions */
 
 /*!
   Constructs a graph which uses \a keyAxis as its key axis ("x") and \a valueAxis as its value
@@ -154,6 +167,9 @@ QCPGraph::~QCPGraph()
   If \a copy is set to true, data points in \a data will only be copied. if false, the graph
   takes ownership of the passed data and replaces the internal data pointer with it. This is
   significantly faster than copying for large datasets.
+  
+  Alternatively, you can also access and modify the graph's data via the \ref data method, which
+  returns a pointer to the internal \ref QCPDataMap.
 */
 void QCPGraph::setData(QCPDataMap *data, bool copy)
 {
@@ -365,7 +381,7 @@ void QCPGraph::setLineStyle(LineStyle ls)
   mLineStyle = ls;
 }
 
-/*! 
+/*!
   Sets the visual appearance of single data points in the plot. If set to \ref QCPScatterStyle::ssNone, no scatter points
   are drawn (e.g. for line-only-plots with appropriate line style).
   
@@ -398,7 +414,7 @@ void QCPGraph::setErrorPen(const QPen &pen)
   mErrorPen = pen;
 }
 
-/*! 
+/*!
   Sets the width of the handles at both ends of an error bar in pixels.
 */
 void QCPGraph::setErrorBarSize(double size)
@@ -406,7 +422,7 @@ void QCPGraph::setErrorBarSize(double size)
   mErrorBarSize = size;
 }
 
-/*! 
+/*!
   If \a enabled is set to true, the error bar will not be drawn as a solid line under the scatter symbol but
   leave some free space around the symbol.
   
@@ -422,7 +438,7 @@ void QCPGraph::setErrorBarSkipSymbol(bool enabled)
   mErrorBarSkipSymbol = enabled;
 }
 
-/*! 
+/*!
   Sets the target graph for filling the area between this graph and \a targetGraph with the current
   brush (\ref setBrush).
   
@@ -489,6 +505,10 @@ void QCPGraph::setAdaptiveSampling(bool enabled)
 
 /*!
   Adds the provided data points in \a dataMap to the current data.
+  
+  Alternatively, you can also access and modify the graph's data via the \ref data method, which
+  returns a pointer to the internal \ref QCPDataMap.
+  
   \see removeData
 */
 void QCPGraph::addData(const QCPDataMap &dataMap)
@@ -498,6 +518,10 @@ void QCPGraph::addData(const QCPDataMap &dataMap)
 
 /*! \overload
   Adds the provided single data point in \a data to the current data.
+  
+  Alternatively, you can also access and modify the graph's data via the \ref data method, which
+  returns a pointer to the internal \ref QCPDataMap.
+  
   \see removeData
 */
 void QCPGraph::addData(const QCPData &data)
@@ -507,6 +531,10 @@ void QCPGraph::addData(const QCPData &data)
 
 /*! \overload
   Adds the provided single data point as \a key and \a value pair to the current data.
+  
+  Alternatively, you can also access and modify the graph's data via the \ref data method, which
+  returns a pointer to the internal \ref QCPDataMap.
+  
   \see removeData
 */
 void QCPGraph::addData(double key, double value)
@@ -519,6 +547,10 @@ void QCPGraph::addData(double key, double value)
 
 /*! \overload
   Adds the provided data points as \a key and \a value pairs to the current data.
+  
+  Alternatively, you can also access and modify the graph's data via the \ref data method, which
+  returns a pointer to the internal \ref QCPDataMap.
+  
   \see removeData
 */
 void QCPGraph::addData(const QVector<double> &keys, const QVector<double> &values)
@@ -600,8 +632,12 @@ double QCPGraph::selectTest(const QPointF &pos, bool onlySelectable, QVariant *d
   Q_UNUSED(details)
   if ((onlySelectable && !mSelectable) || mData->isEmpty())
     return -1;
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
   
-  return pointDistance(pos);
+  if (mKeyAxis.data()->axisRect()->rect().contains(pos.toPoint()))
+    return pointDistance(pos);
+  else
+    return -1;
 }
 
 /*! \overload
@@ -859,7 +895,7 @@ void QCPGraph::getLinePlotData(QVector<QPointF> *linePixelData, QVector<QCPData>
   }
 }
 
-/*! 
+/*!
   \internal
   Places the raw data points needed for a step plot with left oriented steps in \a lineData.
 
@@ -912,7 +948,7 @@ void QCPGraph::getStepLeftPlotData(QVector<QPointF> *linePixelData, QVector<QCPD
   }
 }
 
-/*! 
+/*!
   \internal
   Places the raw data points needed for a step plot with right oriented steps in \a lineData.
 
@@ -965,7 +1001,7 @@ void QCPGraph::getStepRightPlotData(QVector<QPointF> *linePixelData, QVector<QCP
   }
 }
 
-/*! 
+/*!
   \internal
   Places the raw data points needed for a step plot with centered steps in \a lineData.
 
@@ -1030,7 +1066,7 @@ void QCPGraph::getStepCenterPlotData(QVector<QPointF> *linePixelData, QVector<QC
 
 }
 
-/*! 
+/*!
   \internal
   Places the raw data points needed for an impulse plot in \a lineData.
 
@@ -1203,7 +1239,7 @@ void QCPGraph::drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) con
       for (int i=1; i<lineData->size(); ++i)
         painter->drawLine(lineData->at(i-1), lineData->at(i));
     } else
-    {  
+    {
       painter->drawPolyline(QPolygonF(*lineData));
     }
   }
@@ -1454,7 +1490,7 @@ void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData 
       {
         if (a-y > skipSymbolMargin) // don't draw spine if error is so small it's within skipSymbolmargin
           painter->drawLine(QLineF(x, a, x, y+skipSymbolMargin));
-        if (y-b > skipSymbolMargin) 
+        if (y-b > skipSymbolMargin)
           painter->drawLine(QLineF(x, y-skipSymbolMargin, x, b));
       } else
         painter->drawLine(QLineF(x, a, x, b));
@@ -1965,7 +2001,7 @@ int QCPGraph::findIndexAboveY(const QVector<QPointF> *data, double y) const
   return -1;
 }
 
-/*! \internal 
+/*! \internal
   
   Calculates the (minimum) distance (in pixels) the graph's representation has from the given \a
   pixelPoint in pixels. This is used to determine whether the graph was clicked or not, e.g. in
@@ -2025,7 +2061,7 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
         if (currentDistSqr < minDistSqr)
           minDistSqr = currentDistSqr;
       }
-    } else 
+    } else
     {
       // all other line plots (line and step) connect points directly:
       for (int i=0; i<lineData->size()-1; ++i)

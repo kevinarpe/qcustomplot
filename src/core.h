@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_CORE_H
@@ -69,9 +69,9 @@ public:
 
     \see replot
   */
-  enum RefreshPriority { rpImmediate     ///< The QCustomPlot surface is immediately refreshed, by calling QWidget::repaint() after the replot
-                         ,rpQueued       ///< Queues the refresh such that it is performed at a slightly delayed point in time after the replot, by calling QWidget::update() after the replot
-                         ,rpHint ///< Whether to use immediate repaint or queued update depends on whether the plotting hint \ref QCP::phForceRepaint is set, see \ref setPlottingHints.
+  enum RefreshPriority { rpImmediate ///< The QCustomPlot surface is immediately refreshed, by calling QWidget::repaint() after the replot
+                         ,rpQueued   ///< Queues the refresh such that it is performed at a slightly delayed point in time after the replot, by calling QWidget::update() after the replot
+                         ,rpHint     ///< Whether to use immediate repaint or queued update depends on whether the plotting hint \ref QCP::phForceRepaint is set, see \ref setPlottingHints.
                        };
   
   explicit QCustomPlot(QWidget *parent = 0);
@@ -228,7 +228,7 @@ protected:
   // non-property members:
   QPixmap mPaintBuffer;
   QPoint mMousePressPos;
-  QCPLayoutElement *mMouseEventElement;
+  QPointer<QCPLayoutElement> mMouseEventElement;
   bool mReplotting;
   
   // reimplemented virtual methods:

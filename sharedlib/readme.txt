@@ -1,5 +1,5 @@
 Compiling QCustomPlot as shared library:
-  - Make sure the amalgamated QCustomPlot source files (qcustomplot.h/.cpp) are in the directory above sharedlib (two directories above the .pro files). 
+  - Make sure the amalgamated QCustomPlot source files (qcustomplot.h/.cpp) are in the directory above sharedlib (two directories above the .pro files).
   - Run qmake; make; in the sharedlib-compilation directory. This will create two library versions: "qcustomplot" for release mode and "qcustomplotd" for debug mode.
     For example, on Unix this will create libqcustomplot.so and libqcustomplotd.so and some softlink files to those shared library files.
     On MS Windows it will create corresponding .dll files.

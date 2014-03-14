@@ -48,7 +48,7 @@ void TestQCPLayout::layoutGridElementManagement()
    def  r1   0    0    0
    r2   0    0    0    0
    0    0    0    0    r3
-  */     
+  */
   
   // simplify should remove columns 2 and 3
   mainLayout->simplify();
@@ -56,7 +56,7 @@ void TestQCPLayout::layoutGridElementManagement()
    def  r1   0
    r2   0    0
    0    0    r3
-  */ 
+  */
   
   QCOMPARE(mainLayout->columnCount(), 3);
   QCOMPARE(mainLayout->rowCount(), 3);

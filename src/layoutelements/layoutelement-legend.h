@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_LAYOUTELEMENT_LEGEND_H
@@ -149,8 +149,8 @@ public:
     \see setSelectedParts, setSelectableParts
   */
   enum SelectablePart { spNone       = 0x000  ///< <tt>0x000</tt> None
-                       ,spLegendBox  = 0x001  ///< <tt>0x001</tt> The legend box (frame)
-                       ,spItems      = 0x002  ///< <tt>0x002</tt> Legend items individually (see \ref selectedItems)
+                        ,spLegendBox  = 0x001 ///< <tt>0x001</tt> The legend box (frame)
+                        ,spItems      = 0x002 ///< <tt>0x002</tt> Legend items individually (see \ref selectedItems)
                       };
   Q_FLAGS(SelectablePart SelectableParts)
   Q_DECLARE_FLAGS(SelectableParts, SelectablePart)

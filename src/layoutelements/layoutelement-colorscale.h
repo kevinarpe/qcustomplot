@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_LAYOUTELEMENT_COLORSCALE_H
@@ -101,6 +101,8 @@ public:
   void setRangeZoom(bool enabled);
   
   // non-property methods:
+  QList<QCPColorMap*> colorMaps() const;
+  void rescaleDataRange(bool onlyVisibleMaps);
   
   // reimplemented virtual methods:
   virtual void update(UpdatePhase phase);

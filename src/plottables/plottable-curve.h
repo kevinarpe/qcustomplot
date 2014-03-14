@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 /*! \file */
 #ifndef QCP_PLOTTABLE_CURVE_H
@@ -69,8 +69,8 @@ public:
     current pen of the curve (\ref setPen).
     \see setLineStyle
   */
-  enum LineStyle { lsNone, ///< No line is drawn between data points (e.g. only scatters)
-                   lsLine  ///< Data points are connected with a straight line
+  enum LineStyle { lsNone  ///< No line is drawn between data points (e.g. only scatters)
+                   ,lsLine ///< Data points are connected with a straight line
                  };
   explicit QCPCurve(QCPAxis *keyAxis, QCPAxis *valueAxis);
   virtual ~QCPCurve();

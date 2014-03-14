@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 /************************************************************************************************************
@@ -470,7 +470,7 @@ void MainWindow::setupTextureBrushDemo(QCustomPlot *customPlot)
   redDotPen.setColor(QColor(170, 100, 100, 180));
   redDotPen.setWidthF(2);
   customPlot->graph(0)->setPen(redDotPen);
-  customPlot->graph(0)->setBrush(QBrush(QPixmap("./dali.png"))); // fill with texture of specified png-image
+  customPlot->graph(0)->setBrush(QBrush(QPixmap("./balboa.jpg"))); // fill with texture of specified image
   
   customPlot->addGraph();
   customPlot->graph(1)->setPen(QPen(Qt::red));
@@ -486,7 +486,7 @@ void MainWindow::setupTextureBrushDemo(QCustomPlot *customPlot)
     // just playing with numbers, not much to learn here
     x[i] = 3*i/250.0;
     y0[i] = 1+exp(-x[i]*x[i]*0.8)*(x[i]*x[i]+x[i]);
-    y1[i] = 1-exp(-x[i]*x[i]*0.4)*(x[i]*x[i])*0.1; 
+    y1[i] = 1-exp(-x[i]*x[i]*0.4)*(x[i]*x[i])*0.1;
   }
   
   // pass data points to graphs:
@@ -523,7 +523,7 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
   // will contain left maxwell-like function
   customPlot->addGraph(customPlot->yAxis, customPlot->xAxis);
   customPlot->graph(0)->setPen(QPen(QColor(255, 100, 0)));
-  customPlot->graph(0)->setBrush(QBrush(QPixmap("./dali.png"))); // fill with texture of specified png-image
+  customPlot->graph(0)->setBrush(QBrush(QPixmap("./balboa.jpg"))); // fill with texture of specified image
   customPlot->graph(0)->setLineStyle(QCPGraph::lsLine);
   customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
   customPlot->graph(0)->setName("Left maxwell function");
@@ -532,7 +532,7 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
   // will contain bottom maxwell-like function
   customPlot->addGraph();
   customPlot->graph(1)->setPen(QPen(Qt::red));
-  customPlot->graph(1)->setBrush(QBrush(QPixmap("./dali.png"))); // same fill as we used for graph 0
+  customPlot->graph(1)->setBrush(QBrush(QPixmap("./balboa.jpg"))); // same fill as we used for graph 0
   customPlot->graph(1)->setLineStyle(QCPGraph::lsStepCenter);
   customPlot->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 7));
   customPlot->graph(1)->setErrorType(QCPGraph::etValue);
@@ -736,7 +736,7 @@ void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot)
   customPlot->graph(2)->setLineStyle(QCPGraph::lsNone);
   customPlot->graph(2)->setScatterStyle(QCPScatterStyle::ssDisc);
   customPlot->addGraph(); // red dot
-  customPlot->graph(3)->setPen(QPen(Qt::red)); 
+  customPlot->graph(3)->setPen(QPen(Qt::red));
   customPlot->graph(3)->setLineStyle(QCPGraph::lsNone);
   customPlot->graph(3)->setScatterStyle(QCPScatterStyle::ssDisc);
   
@@ -834,7 +834,7 @@ void MainWindow::setupBarChartDemo(QCustomPlot *customPlot)
   
   // prepare x axis with country labels:
   QVector<double> ticks;
-  QVector<QString> labels; 
+  QVector<QString> labels;
   ticks << 1 << 2 << 3 << 4 << 5 << 6 << 7;
   labels << "USA" << "Japan" << "Germany" << "France" << "UK" << "Italy" << "Canada";
   customPlot->xAxis->setAutoTicks(false);
@@ -1204,7 +1204,7 @@ void MainWindow::setupAdvancedAxesDemo(QCustomPlot *customPlot)
   wideAxisRect->axis(QCPAxis::atRight, 0)->setTickLabels(true);
   wideAxisRect->addAxis(QCPAxis::atLeft)->setTickLabelColor(QColor("#6050F8")); // add an extra axis on the left and color its numbers
   QCPLayoutGrid *subLayout = new QCPLayoutGrid;
-  customPlot->plotLayout()->addElement(0, 0, wideAxisRect); // insert axis rect in first row 
+  customPlot->plotLayout()->addElement(0, 0, wideAxisRect); // insert axis rect in first row
   customPlot->plotLayout()->addElement(1, 0, subLayout); // sub layout in second row (grid layout will grow accordingly)
   //customPlot->plotLayout()->setRowStretchFactor(1, 2);
   // prepare axis rects that will be placed in the sublayout:
@@ -1487,7 +1487,7 @@ void MainWindow::allScreenShots()
     // setup delay for demos that need time to develop proper look:
     int delay = 250;
     if (currentDemoIndex == 10) // Next is Realtime data demo
-      delay = 12000; 
+      delay = 12000;
     else if (currentDemoIndex == 15) // Next is Item demo
       delay = 5000;
     QTimer::singleShot(delay, this, SLOT(allScreenShots()));

@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 28.01.14                                             **
-**          Version: 1.2.0-beta                                           **
+**             Date: 14.03.14                                             **
+**          Version: 1.2.0                                                **
 ****************************************************************************/
 
 #ifndef QCP_COLORGRADIENT_H
@@ -38,8 +38,8 @@ public:
     
     \see setColorInterpolation
   */
-  enum ColorInterpolation {ciRGB,
-                           ciHSV
+  enum ColorInterpolation { ciRGB  ///< Color channels red, green and blue are linearly interpolated
+                            ,ciHSV ///< Color channels hue, saturation and value are linearly interpolated (The hue is interpolated over the shortest angle distance)
                           };
   Q_ENUMS(ColorInterpolation)
   
@@ -47,18 +47,18 @@ public:
     Defines the available presets that can be loaded with \ref loadPreset. See the documentation
     there for an image of the presets.
   */
-  enum GradientPreset {gpGrayscale,
-                       gpHot,
-                       gpCold,
-                       gpNight,
-                       gpCandy,
-                       gpGeography,
-                       gpIon,
-                       gpThermal,
-                       gpPolar,
-                       gpSpectrum,
-                       gpJet,
-                       gpHues,
+  enum GradientPreset { gpGrayscale  ///< Continuous lightness from black to white (suited for non-biased data representation)
+                        ,gpHot       ///< Continuous lightness from black over firey colors to white (suited for non-biased data representation)
+                        ,gpCold      ///< Continuous lightness from black over icey colors to white (suited for non-biased data representation)
+                        ,gpNight     ///< Continuous lightness from black over weak blueish colors to white (suited for non-biased data representation)
+                        ,gpCandy     ///< Blue over pink to white
+                        ,gpGeography ///< Colors suitable to represent different elevations on geographical maps
+                        ,gpIon       ///< Half hue spectrum from black over purple to blue and finally green (creates banding illusion but allows more precise magnitude estimates)
+                        ,gpThermal   ///< Colors suitable for thermal imaging, ranging from dark blue over purple to orange, yellow and white
+                        ,gpPolar     ///< Colors suitable to emphasize polarity around the center, with blue for negative, black in the middle and red for positive values
+                        ,gpSpectrum  ///< An approximation of the visible light spectrum (creates banding illusion but allows more precise magnitude estimates)
+                        ,gpJet       ///< Hue variation similar to a spectrum, often used in numerical visualization (creates banding illusion but allows more precise magnitude estimates)
+                        ,gpHues      ///< Full hue cycle, with highest and lowest color red (suitable for periodic data, such as angles and phases, see \ref setPeriodic)
                       };
   Q_ENUMS(GradientPreset)
   
