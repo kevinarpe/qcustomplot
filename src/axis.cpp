@@ -2168,7 +2168,7 @@ void QCPAxis::draw(QCPPainter *painter)
   mAxisPainter->labelFont = getLabelFont();
   mAxisPainter->labelColor = getLabelColor();
   mAxisPainter->label = mLabel;
-  mAxisPainter->substituteExponent = mAutoTickLabels && mNumberBeautifulPowers;
+  mAxisPainter->substituteExponent = mAutoTickLabels && mNumberBeautifulPowers && mTickLabelType == ltNumber;
   mAxisPainter->tickPen = getTickPen();
   mAxisPainter->subTickPen = getSubTickPen();
   mAxisPainter->tickLabelFont = getTickLabelFont();
