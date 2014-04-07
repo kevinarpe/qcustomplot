@@ -1,3 +1,8 @@
+#### Version 1.2.1 released on 07.04.14 ####
+
+  Bugfixes:
+    - Fixed regression which garbled date-time tick labels on axes, if setTickLabelType is ltDateTime and setNumberFormat contains the "b" option
+
 #### Version 1.2.0 released on 14.03.14 ####
 
   Bugfixes:
