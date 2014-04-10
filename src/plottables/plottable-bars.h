@@ -124,6 +124,7 @@ protected:
   virtual QCPRange getValueRange(bool &foundRange, SignDomain inSignDomain=sdBoth) const;
   
   // non-virtual methods:
+  void getVisibleDataBounds(QCPBarDataMap::const_iterator &lower, QCPBarDataMap::const_iterator &upperEnd) const;
   QPolygonF getBarPolygon(double key, double value) const;
   void getPixelWidth(double key, double &left, double &right) const;
   double getStackedBaseValue(double key, bool positive) const;

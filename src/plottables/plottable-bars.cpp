@@ -432,12 +432,10 @@ void QCPBars::draw(QCPPainter *painter)
   if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
   if (mData->isEmpty()) return;
   
-  QCPBarDataMap::const_iterator it;
-  for (it = mData->constBegin(); it != mData->constEnd(); ++it)
+  QCPBarDataMap::const_iterator it, lower, upperEnd;
+  getVisibleDataBounds(lower, upperEnd);
+  for (it = lower; it != upperEnd; ++it)
   {
-    // skip bar if not visible in key axis range:
-    if (it.key()+mWidth*0.5 < mKeyAxis.data()->range().lower || it.key()-mWidth*0.5 > mKeyAxis.data()->range().upper)
-      continue;
     // check data validity if flag set:
 #ifdef QCUSTOMPLOT_CHECK_DATA
     if (QCP::isInvalidData(it.value().key, it.value().value))
@@ -473,6 +471,68 @@ void QCPBars::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
   QRectF r = QRectF(0, 0, rect.width()*0.67, rect.height()*0.67);
   r.moveCenter(rect.center());
   painter->drawRect(r);
+}
+
+/*!  \internal
+  
+  called by \ref draw to determine which data (key) range is visible at the current key axis range
+  setting, so only that needs to be processed. It also takes into account the bar width.
+  
+  \a lower returns an iterator to the lowest data point that needs to be taken into account when
+  plotting. Note that in order to get a clean plot all the way to the edge of the axis rect, \a
+  lower may still be just outside the visible range.
+  
+  \a upperEnd returns an iterator one higher than the highest visible data point. Same as before, \a
+  upperEnd may also lie just outside of the visible range.
+  
+  if the bars plottable contains no data, both \a lower and \a upperEnd point to constEnd.
+*/
+void QCPBars::getVisibleDataBounds(QCPBarDataMap::const_iterator &lower, QCPBarDataMap::const_iterator &upperEnd) const
+{
+  if (!mKeyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
+  if (mData->isEmpty())
+  {
+    lower = mData->constEnd();
+    upperEnd = mData->constEnd();
+    return;
+  }
+  
+  // get visible data range as QMap iterators
+  lower = mData->lowerBound(mKeyAxis.data()->range().lower);
+  upperEnd = mData->upperBound(mKeyAxis.data()->range().upper);
+  double lowerPixelBound = mKeyAxis.data()->coordToPixel(mKeyAxis.data()->range().lower);
+  double upperPixelBound = mKeyAxis.data()->coordToPixel(mKeyAxis.data()->range().upper);
+  bool isVisible = false;
+  // walk left from lbound to find lower bar that actually is completely outside visible pixel range:
+  QCPBarDataMap::const_iterator it = lower;
+  while (it != mData->constBegin())
+  {
+    --it;
+    QRectF barBounds = getBarPolygon(it.value().key, it.value().value).boundingRect();
+    if (mKeyAxis.data()->orientation() == Qt::Horizontal)
+      isVisible = ((!mKeyAxis.data()->rangeReversed() && barBounds.right() >= lowerPixelBound) || (mKeyAxis.data()->rangeReversed() && barBounds.left() <= lowerPixelBound));
+    else // keyaxis is vertical
+      isVisible = ((!mKeyAxis.data()->rangeReversed() && barBounds.top() <= lowerPixelBound) || (mKeyAxis.data()->rangeReversed() && barBounds.bottom() >= lowerPixelBound));
+    if (isVisible)
+      lower = it;
+    else
+      break;
+  }
+  // walk right from ubound to find upper bar that actually is completely outside visible pixel range:
+  it = upperEnd;
+  while (it != mData->constEnd())
+  {
+    QRectF barBounds = getBarPolygon(upperEnd.value().key, upperEnd.value().value).boundingRect();
+    if (mKeyAxis.data()->orientation() == Qt::Horizontal)
+      isVisible = ((!mKeyAxis.data()->rangeReversed() && barBounds.left() <= upperPixelBound) || (mKeyAxis.data()->rangeReversed() && barBounds.right() >= upperPixelBound));
+    else // keyaxis is vertical
+      isVisible = ((!mKeyAxis.data()->rangeReversed() && barBounds.bottom() >= upperPixelBound) || (mKeyAxis.data()->rangeReversed() && barBounds.top() <= upperPixelBound));
+    if (isVisible)
+      upperEnd = it+1;
+    else
+      break;
+    ++it;
+  }
 }
 
 /*! \internal
