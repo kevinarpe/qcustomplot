@@ -592,7 +592,10 @@ void QCPBars::getPixelWidth(double key, double &left, double &right) const
     {
       if (mKeyAxis && mKeyAxis.data()->axisRect())
       {
-        right = mKeyAxis.data()->axisRect()->width()*mWidth*0.5;
+        if (mKeyAxis.data()->orientation() == Qt::Horizontal)
+          right = mKeyAxis.data()->axisRect()->width()*mWidth*0.5;
+        else
+          right = mKeyAxis.data()->axisRect()->height()*mWidth*0.5;
         left = -right;
       } else
         qDebug() << Q_FUNC_INFO << "No key axis or axis rect defined";
