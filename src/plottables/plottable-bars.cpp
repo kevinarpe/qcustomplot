@@ -30,6 +30,194 @@
 #include "../axis.h"
 #include "../layoutelements/layoutelement-axisrect.h"
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////// QCPBarsGroup
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+QCPBarsGroup::QCPBarsGroup(QCustomPlot *parentPlot) :
+  QObject(parentPlot),
+  mParentPlot(parentPlot),
+  mSpacingType(stAbsolute),
+  mSpacing(10)
+{
+}
+
+QCPBarsGroup::~QCPBarsGroup()
+{
+  clear();
+}
+
+void QCPBarsGroup::setSpacingType(SpacingType spacingType)
+{
+  mSpacingType = spacingType;
+}
+
+void QCPBarsGroup::setSpacing(double spacing)
+{
+  mSpacing = spacing;
+}
+
+QCPBars *QCPBarsGroup::bars(int index) const
+{
+  if (index >= 0 && index < mBars.size())
+  {
+    return mBars.at(index);
+  } else
+  {
+    qDebug() << Q_FUNC_INFO << "index out of bounds:" << index;
+    return 0;
+  }
+}
+
+void QCPBarsGroup::clear()
+{
+  foreach (QCPBars *bars, mBars) // since foreach takes a copy, removing bars in the loop is okay
+    bars->setBarsGroup(0); // removes itself via removeBars
+}
+
+void QCPBarsGroup::append(QCPBars *bars)
+{
+  if (!bars)
+  {
+    qDebug() << Q_FUNC_INFO << "bars is 0";
+    return;
+  }
+    
+  if (!mBars.contains(bars))
+    bars->setBarsGroup(this);
+  else
+    qDebug() << Q_FUNC_INFO << "bars plottable is already in this bars group:" << reinterpret_cast<quintptr>(bars);
+}
+
+void QCPBarsGroup::insert(int i, QCPBars *bars)
+{
+  if (!bars)
+  {
+    qDebug() << Q_FUNC_INFO << "bars is 0";
+    return;
+  }
+  
+  // first append to bars list normally:
+  if (!mBars.contains(bars))
+    bars->setBarsGroup(this);
+  // then move to according position:
+  mBars.move(mBars.indexOf(bars), qBound(0, i, mBars.size()-1));
+}
+
+void QCPBarsGroup::remove(QCPBars *bars)
+{
+  if (!bars)
+  {
+    qDebug() << Q_FUNC_INFO << "bars is 0";
+    return;
+  }
+  
+  if (mBars.contains(bars))
+    bars->setBarsGroup(0);
+  else
+    qDebug() << Q_FUNC_INFO << "bars plottable is not in this bars group:" << reinterpret_cast<quintptr>(bars);
+}
+
+void QCPBarsGroup::registerBars(QCPBars *bars)
+{
+  if (!mBars.contains(bars))
+    mBars.append(bars);
+}
+
+void QCPBarsGroup::unregisterBars(QCPBars *bars)
+{
+  mBars.removeOne(bars);
+}
+
+double QCPBarsGroup::keyPixelOffset(const QCPBars *bars, double keyCoord)
+{
+  int index = mBars.indexOf(const_cast<QCPBars*>(bars));
+  int startIndex;
+  double left, right;
+  double result = 0;
+  if (index >= 0)
+  {
+    if (mBars.size() % 2 == 1 && index == (mBars.size()-1)/2) // is center bar (int division on purpose)
+    {
+      return result;
+    } else if (index < (mBars.size()-1)/2.0) // bar is to the left of center
+    {
+      if (mBars.size() % 2 == 0) // even number of bars
+      {
+        startIndex = mBars.size()/2-1;
+        result -= getPixelSpacing(mBars.at(startIndex), keyCoord)*0.5; // half of middle spacing
+      } else // uneven number of bars
+      {
+        startIndex = (mBars.size()-1)/2-1;
+        mBars.at((mBars.size()-1)/2)->getPixelWidth(keyCoord, left, right);
+        result -= qAbs(right-left)*0.5; // half of center bar
+        result -= getPixelSpacing(mBars.at((mBars.size()-1)/2), keyCoord); // center bar spacing
+      }
+      for (int i=startIndex; i>index; --i) // add widths and spacings of bars in between center and our bars
+      {
+        mBars.at(i)->getPixelWidth(keyCoord, left, right);
+        result -= qAbs(right-left);
+        result -= getPixelSpacing(mBars.at(i), keyCoord);
+      }
+      // finally half of our bars width:
+      mBars.at(index)->getPixelWidth(keyCoord, left, right);
+      result -= qAbs(right-left)*0.5;
+    } else // bar is to the right of center
+    {
+      if (mBars.size() % 2 == 0) // even number of bars
+      {
+        startIndex = mBars.size()/2;
+        result += getPixelSpacing(mBars.at(startIndex), keyCoord)*0.5; // half of middle spacing
+      } else // uneven number of bars
+      {
+        startIndex = (mBars.size()-1)/2+1;
+        mBars.at((mBars.size()-1)/2)->getPixelWidth(keyCoord, left, right);
+        result += qAbs(right-left)*0.5; // half of center bar
+        result += getPixelSpacing(mBars.at((mBars.size()-1)/2), keyCoord); // center bar spacing
+      }
+      for (int i=startIndex; i<index; ++i) // add widths and spacings of bars in between center and our bars
+      {
+        mBars.at(i)->getPixelWidth(keyCoord, left, right);
+        result += qAbs(right-left);
+        result += getPixelSpacing(mBars.at(i), keyCoord);
+      }
+      // finally half of our bars width:
+      mBars.at(index)->getPixelWidth(keyCoord, left, right);
+      result += qAbs(right-left)*0.5;
+    }
+  }
+  return result;
+}
+
+double QCPBarsGroup::getPixelSpacing(const QCPBars *bars, double keyCoord)
+{
+  switch (mSpacingType)
+  {
+    case stAbsolute:
+    {
+      return mSpacing;
+      break;
+    }
+    case stAxisRectRatio:
+    {
+      if (bars->keyAxis()->orientation() == Qt::Horizontal)
+        return bars->keyAxis()->axisRect()->width()*mSpacing;
+      else
+        return bars->keyAxis()->axisRect()->height()*mSpacing;
+      break;
+    }
+    case stPlotCoords:
+    {
+      double keyPixel = bars->keyAxis()->coordToPixel(keyCoord);
+      return bars->keyAxis()->coordToPixel(keyCoord+mSpacing)-keyPixel;
+      break;
+    }
+  }
+  return 0;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCPBarData
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,6 +320,7 @@ QCPBars::QCPBars(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   mData(new QCPBarDataMap),
   mWidth(0.75),
   mWidthType(wtPlotCoords),
+  mBarsGroup(0),
   mBaseValue(0)
 {
   // modify inherited properties from abstract plottable:
@@ -147,6 +336,7 @@ QCPBars::QCPBars(QCPAxis *keyAxis, QCPAxis *valueAxis) :
 
 QCPBars::~QCPBars()
 {
+  setBarsGroup(0);
   if (mBarBelow || mBarAbove)
     connectBars(mBarBelow.data(), mBarAbove.data()); // take this bar out of any stacking
   delete mData;
@@ -174,6 +364,17 @@ void QCPBars::setWidth(double width)
 void QCPBars::setWidthType(QCPBars::WidthType widthType)
 {
   mWidthType = widthType;
+}
+
+void QCPBars::setBarsGroup(QCPBarsGroup *barsGroup)
+{
+  // deregister at old group:
+  if (mBarsGroup)
+    mBarsGroup->unregisterBars(this);
+  mBarsGroup = barsGroup;
+  // register at new group:
+  if (mBarsGroup)
+    mBarsGroup->registerBars(this);
 }
 
 /*!
@@ -554,6 +755,8 @@ QPolygonF QCPBars::getBarPolygon(double key, double value) const
   double basePixel = valueAxis->coordToPixel(base);
   double valuePixel = valueAxis->coordToPixel(base+value);
   double keyPixel = keyAxis->coordToPixel(key);
+  if (mBarsGroup)
+    keyPixel += mBarsGroup->keyPixelOffset(this, key);
   if (keyAxis->orientation() == Qt::Horizontal)
   {
     result << QPointF(keyPixel+leftPixel, basePixel);
@@ -753,3 +956,4 @@ QCPRange QCPBars::getValueRange(bool &foundRange, SignDomain inSignDomain) const
   foundRange = true; // return true because bar charts always have the 0-line visible
   return range;
 }
+
