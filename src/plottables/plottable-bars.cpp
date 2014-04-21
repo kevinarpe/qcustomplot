@@ -749,8 +749,8 @@ QPolygonF QCPBars::getBarPolygon(double key, double value) const
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return QPolygonF(); }
   
   QPolygonF result;
-  double leftPixel, rightPixel;
-  getPixelWidth(key, leftPixel, rightPixel);
+  double lowerPixelWidth, upperPixelWidth;
+  getPixelWidth(key, lowerPixelWidth, upperPixelWidth);
   double base = getStackedBaseValue(key, value >= 0);
   double basePixel = valueAxis->coordToPixel(base);
   double valuePixel = valueAxis->coordToPixel(base+value);
@@ -759,16 +759,16 @@ QPolygonF QCPBars::getBarPolygon(double key, double value) const
     keyPixel += mBarsGroup->keyPixelOffset(this, key);
   if (keyAxis->orientation() == Qt::Horizontal)
   {
-    result << QPointF(keyPixel+leftPixel, basePixel);
-    result << QPointF(keyPixel+leftPixel, valuePixel);
-    result << QPointF(keyPixel+rightPixel, valuePixel);
-    result << QPointF(keyPixel+rightPixel, basePixel);
+    result << QPointF(keyPixel+lowerPixelWidth, basePixel);
+    result << QPointF(keyPixel+lowerPixelWidth, valuePixel);
+    result << QPointF(keyPixel+upperPixelWidth, valuePixel);
+    result << QPointF(keyPixel+upperPixelWidth, basePixel);
   } else
   {
-    result << QPointF(basePixel, keyPixel+leftPixel);
-    result << QPointF(valuePixel, keyPixel+leftPixel);
-    result << QPointF(valuePixel, keyPixel+rightPixel);
-    result << QPointF(basePixel, keyPixel+rightPixel);
+    result << QPointF(basePixel, keyPixel+lowerPixelWidth);
+    result << QPointF(valuePixel, keyPixel+lowerPixelWidth);
+    result << QPointF(valuePixel, keyPixel+upperPixelWidth);
+    result << QPointF(basePixel, keyPixel+upperPixelWidth);
   }
   return result;
 }
@@ -778,17 +778,20 @@ QPolygonF QCPBars::getBarPolygon(double key, double value) const
   This function is used to determine the width of the bar at coordinate \a key, according to the
   specified width (\ref setWidth) and width type (\ref setWidthType).
   
-  The output parameters \a left and \a right return the number of pixels the bar extends to lower
-  and higher keys, relative to the \a key coordinate.
+  The output parameters \a lower and \a upper return the number of pixels the bar extends to lower
+  and higher keys, relative to the \a key coordinate (so with a non-reversed horizontal axis, \a
+  lower is negative and \a upper positive).
 */
-void QCPBars::getPixelWidth(double key, double &left, double &right) const
+void QCPBars::getPixelWidth(double key, double &lower, double &upper) const
 {
   switch (mWidthType)
   {
     case wtAbsolute:
     {
-      right = mWidth*0.5;
-      left = -right;
+      upper = mWidth*0.5;
+      lower = -upper;
+      if (mKeyAxis && (mKeyAxis.data()->rangeReversed() ^ (mKeyAxis.data()->orientation() == Qt::Vertical)))
+        qSwap(lower, upper);
       break;
     }
     case wtAxisRectRatio:
@@ -796,10 +799,12 @@ void QCPBars::getPixelWidth(double key, double &left, double &right) const
       if (mKeyAxis && mKeyAxis.data()->axisRect())
       {
         if (mKeyAxis.data()->orientation() == Qt::Horizontal)
-          right = mKeyAxis.data()->axisRect()->width()*mWidth*0.5;
+          upper = mKeyAxis.data()->axisRect()->width()*mWidth*0.5;
         else
-          right = mKeyAxis.data()->axisRect()->height()*mWidth*0.5;
-        left = -right;
+          upper = mKeyAxis.data()->axisRect()->height()*mWidth*0.5;
+        lower = -upper;
+        if (mKeyAxis && (mKeyAxis.data()->rangeReversed() ^ (mKeyAxis.data()->orientation() == Qt::Vertical)))
+          qSwap(lower, upper);
       } else
         qDebug() << Q_FUNC_INFO << "No key axis or axis rect defined";
       break;
@@ -809,8 +814,10 @@ void QCPBars::getPixelWidth(double key, double &left, double &right) const
       if (mKeyAxis)
       {
         double keyPixel = mKeyAxis.data()->coordToPixel(key);
-        right = mKeyAxis.data()->coordToPixel(key+mWidth*0.5)-keyPixel;
-        left = mKeyAxis.data()->coordToPixel(key-mWidth*0.5)-keyPixel;
+        upper = mKeyAxis.data()->coordToPixel(key+mWidth*0.5)-keyPixel;
+        lower = mKeyAxis.data()->coordToPixel(key-mWidth*0.5)-keyPixel;
+        // no need to qSwap(lower, higher) when range reversed, because higher/lower are gained by
+        // coordinate transform which includes range direction
       } else
         qDebug() << Q_FUNC_INFO << "No key axis defined";
       break;
