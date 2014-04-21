@@ -918,29 +918,44 @@ QCPRange QCPBars::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
   bool haveUpper = false;
   
   double current;
-  double barWidthHalf = 0;
-  if (mWidthType == wtPlotCoords) // only when given in plot coords, we're able to include the bar width in the key range, e.g. for axis rescaling
-    barWidthHalf = mWidth*0.5;
   QCPBarDataMap::const_iterator it = mData->constBegin();
   while (it != mData->constEnd())
   {
     current = it.value().key;
-    if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current+barWidthHalf < 0) || (inSignDomain == sdPositive && current-barWidthHalf > 0))
+    if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current < 0) || (inSignDomain == sdPositive && current > 0))
     {
-      if (current-barWidthHalf < range.lower || !haveLower)
+      if (current < range.lower || !haveLower)
       {
-        range.lower = current-barWidthHalf;
+        range.lower = current;
         haveLower = true;
       }
-      if (current+barWidthHalf > range.upper || !haveUpper)
+      if (current > range.upper || !haveUpper)
       {
-        range.upper = current+barWidthHalf;
+        range.upper = current;
         haveUpper = true;
       }
     }
     ++it;
   }
-  
+  // determine exact range of bars by including bar width and barsgroup offset:
+  if (haveLower && mKeyAxis)
+  {
+    double lowerPixelWidth, upperPixelWidth, keyPixel;
+    getPixelWidth(range.lower, lowerPixelWidth, upperPixelWidth);
+    keyPixel = mKeyAxis.data()->coordToPixel(range.lower) + lowerPixelWidth;
+    if (mBarsGroup)
+      keyPixel += mBarsGroup->keyPixelOffset(this, range.lower);
+    range.lower = mKeyAxis.data()->pixelToCoord(keyPixel);
+  }
+  if (haveUpper && mKeyAxis)
+  {
+    double lowerPixelWidth, upperPixelWidth, keyPixel;
+    getPixelWidth(range.upper, lowerPixelWidth, upperPixelWidth);
+    keyPixel = mKeyAxis.data()->coordToPixel(range.upper) + upperPixelWidth;
+    if (mBarsGroup)
+      keyPixel += mBarsGroup->keyPixelOffset(this, range.upper);
+    range.upper = mKeyAxis.data()->pixelToCoord(keyPixel);
+  }
   foundRange = haveLower && haveUpper;
   return range;
 }
