@@ -132,59 +132,74 @@ void QCPBarsGroup::unregisterBars(QCPBars *bars)
 
 double QCPBarsGroup::keyPixelOffset(const QCPBars *bars, double keyCoord)
 {
-  int index = mBars.indexOf(const_cast<QCPBars*>(bars));
+  // find list of all base bars in case some mBars are stacked:
+  QList<const QCPBars*> baseBars;
+  foreach (const QCPBars *b, mBars)
+  {
+    while (b->barBelow())
+      b = b->barBelow();
+    if (!baseBars.contains(b))
+      baseBars.append(b);
+  }
+  // find base bar this "bars" is stacked on:
+  const QCPBars *thisBase = bars;
+  while (thisBase->barBelow())
+    thisBase = thisBase->barBelow();
+  
+  // determine key pixel offset of this base bars considering all other base bars in this barsgroup:
+  int index = baseBars.indexOf(thisBase);
   int startIndex;
-  double left, right;
+  double lowerPixelWidth, upperPixelWidth;
   double result = 0;
   if (index >= 0)
   {
-    if (mBars.size() % 2 == 1 && index == (mBars.size()-1)/2) // is center bar (int division on purpose)
+    if (baseBars.size() % 2 == 1 && index == (baseBars.size()-1)/2) // is center bar (int division on purpose)
     {
       return result;
-    } else if (index < (mBars.size()-1)/2.0) // bar is to the left of center
+    } else if (index < (baseBars.size()-1)/2.0) // bar is to the left of center
     {
-      if (mBars.size() % 2 == 0) // even number of bars
+      if (baseBars.size() % 2 == 0) // even number of bars
       {
-        startIndex = mBars.size()/2-1;
-        result -= getPixelSpacing(mBars.at(startIndex), keyCoord)*0.5; // half of middle spacing
+        startIndex = baseBars.size()/2-1;
+        result -= getPixelSpacing(baseBars.at(startIndex), keyCoord)*0.5; // half of middle spacing
       } else // uneven number of bars
       {
-        startIndex = (mBars.size()-1)/2-1;
-        mBars.at((mBars.size()-1)/2)->getPixelWidth(keyCoord, left, right);
-        result -= qAbs(right-left)*0.5; // half of center bar
-        result -= getPixelSpacing(mBars.at((mBars.size()-1)/2), keyCoord); // center bar spacing
+        startIndex = (baseBars.size()-1)/2-1;
+        baseBars.at((baseBars.size()-1)/2)->getPixelWidth(keyCoord, lowerPixelWidth, upperPixelWidth);
+        result -= qAbs(upperPixelWidth-lowerPixelWidth)*0.5; // half of center bar
+        result -= getPixelSpacing(baseBars.at((baseBars.size()-1)/2), keyCoord); // center bar spacing
       }
       for (int i=startIndex; i>index; --i) // add widths and spacings of bars in between center and our bars
       {
-        mBars.at(i)->getPixelWidth(keyCoord, left, right);
-        result -= qAbs(right-left);
-        result -= getPixelSpacing(mBars.at(i), keyCoord);
+        baseBars.at(i)->getPixelWidth(keyCoord, lowerPixelWidth, upperPixelWidth);
+        result -= qAbs(upperPixelWidth-lowerPixelWidth);
+        result -= getPixelSpacing(baseBars.at(i), keyCoord);
       }
       // finally half of our bars width:
-      mBars.at(index)->getPixelWidth(keyCoord, left, right);
-      result -= qAbs(right-left)*0.5;
+      baseBars.at(index)->getPixelWidth(keyCoord, lowerPixelWidth, upperPixelWidth);
+      result -= qAbs(upperPixelWidth-lowerPixelWidth)*0.5;
     } else // bar is to the right of center
     {
-      if (mBars.size() % 2 == 0) // even number of bars
+      if (baseBars.size() % 2 == 0) // even number of bars
       {
-        startIndex = mBars.size()/2;
-        result += getPixelSpacing(mBars.at(startIndex), keyCoord)*0.5; // half of middle spacing
+        startIndex = baseBars.size()/2;
+        result += getPixelSpacing(baseBars.at(startIndex), keyCoord)*0.5; // half of middle spacing
       } else // uneven number of bars
       {
-        startIndex = (mBars.size()-1)/2+1;
-        mBars.at((mBars.size()-1)/2)->getPixelWidth(keyCoord, left, right);
-        result += qAbs(right-left)*0.5; // half of center bar
-        result += getPixelSpacing(mBars.at((mBars.size()-1)/2), keyCoord); // center bar spacing
+        startIndex = (baseBars.size()-1)/2+1;
+        baseBars.at((baseBars.size()-1)/2)->getPixelWidth(keyCoord, lowerPixelWidth, upperPixelWidth);
+        result += qAbs(upperPixelWidth-lowerPixelWidth)*0.5; // half of center bar
+        result += getPixelSpacing(baseBars.at((baseBars.size()-1)/2), keyCoord); // center bar spacing
       }
       for (int i=startIndex; i<index; ++i) // add widths and spacings of bars in between center and our bars
       {
-        mBars.at(i)->getPixelWidth(keyCoord, left, right);
-        result += qAbs(right-left);
-        result += getPixelSpacing(mBars.at(i), keyCoord);
+        baseBars.at(i)->getPixelWidth(keyCoord, lowerPixelWidth, upperPixelWidth);
+        result += qAbs(upperPixelWidth-lowerPixelWidth);
+        result += getPixelSpacing(baseBars.at(i), keyCoord);
       }
       // finally half of our bars width:
-      mBars.at(index)->getPixelWidth(keyCoord, left, right);
-      result += qAbs(right-left)*0.5;
+      baseBars.at(index)->getPixelWidth(keyCoord, lowerPixelWidth, upperPixelWidth);
+      result += qAbs(upperPixelWidth-lowerPixelWidth)*0.5;
     }
   }
   return result;
