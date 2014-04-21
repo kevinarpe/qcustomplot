@@ -39,7 +39,7 @@ QCPBarsGroup::QCPBarsGroup(QCustomPlot *parentPlot) :
   QObject(parentPlot),
   mParentPlot(parentPlot),
   mSpacingType(stAbsolute),
-  mSpacing(10)
+  mSpacing(4)
 {
 }
 
