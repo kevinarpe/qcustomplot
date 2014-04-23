@@ -429,8 +429,8 @@ void MainWindow::genLayoutsystem_MultipleAxisRects()
   
   customPlot->plotLayout()->clear(); // let's start from scratch and remove the default axis rect
   // add the first axis rect in second row (row index 1):
-  QCPAxisRect *topAxisRect = new QCPAxisRect(customPlot);
-  customPlot->plotLayout()->addElement(1, 0, topAxisRect);
+  QCPAxisRect *bottomAxisRect = new QCPAxisRect(customPlot);
+  customPlot->plotLayout()->addElement(1, 0, bottomAxisRect);
   // create a sub layout that we'll place in first row:
   QCPLayoutGrid *subLayout = new QCPLayoutGrid;
   customPlot->plotLayout()->addElement(0, 0, subLayout);
@@ -445,7 +445,7 @@ void MainWindow::genLayoutsystem_MultipleAxisRects()
   // according layers, if we don't want the grid to be drawn above the axes etc.
   // place the axis on "axes" layer and grids on the "grid" layer, which is below "axes":
   QList<QCPAxis*> allAxes;
-  allAxes << topAxisRect->axes() << leftAxisRect->axes() << rightAxisRect->axes();
+  allAxes << bottomAxisRect->axes() << leftAxisRect->axes() << rightAxisRect->axes();
   foreach (QCPAxis *axis, allAxes)
   {
     axis->setLayer("axes");

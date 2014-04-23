@@ -82,11 +82,11 @@
   Since a QCPLayout is a layout element itself, it may be placed inside other layouts. This way,
   complex hierarchies may be created, offering very flexible arrangements.
   
-  \image html LayoutsystemSketch.png 
-  
-  Above is a sketch of the default \ref QCPLayoutGrid accessible via \ref QCustomPlot::plotLayout.
+  Below is a sketch of the default \ref QCPLayoutGrid accessible via \ref QCustomPlot::plotLayout.
   It shows how two child layout elements are placed inside the grid layout next to each other in
   cells (0, 0) and (0, 1).
+  
+  \image html LayoutsystemSketch.png 
   
   \subsection layoutsystem-plotlayout The top level plot layout
   
@@ -113,8 +113,8 @@
   \code
   customPlot->plotLayout()->clear(); // let's start from scratch and remove the default axis rect
   // add the first axis rect in second row (row index 1):
-  QCPAxisRect *topAxisRect = new QCPAxisRect(customPlot);
-  customPlot->plotLayout()->addElement(1, 0, topAxisRect);
+  QCPAxisRect *bottomAxisRect = new QCPAxisRect(customPlot);
+  customPlot->plotLayout()->addElement(1, 0, bottomAxisRect);
   // create a sub layout that we'll place in first row:
   QCPLayoutGrid *subLayout = new QCPLayoutGrid;
   customPlot->plotLayout()->addElement(0, 0, subLayout);
@@ -129,7 +129,7 @@
   // according layers, if we don't want the grid to be drawn above the axes etc.
   // place the axis on "axes" layer and grids on the "grid" layer, which is below "axes":
   QList<QCPAxis*> allAxes;
-  allAxes << topAxisRect->axes() << leftAxisRect->axes() << rightAxisRect->axes();
+  allAxes << bottomAxisRect->axes() << leftAxisRect->axes() << rightAxisRect->axes();
   foreach (QCPAxis *axis, allAxes)
   {
     axis->setLayer("axes");
