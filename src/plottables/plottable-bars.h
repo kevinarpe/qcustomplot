@@ -42,7 +42,7 @@ public:
     Defines the ways the spacing between bars in the group can be specified. Thus it defines what
     the number passed to \ref setSpacing actually means.
     
-    \see setWidthType, setWidth
+    \see setSpacingType, setSpacing
   */
   enum SpacingType { stAbsolute       ///< Bar spacing is in absolute pixels
                      ,stAxisRectRatio ///< Bar spacing is given by a fraction of the axis rect size

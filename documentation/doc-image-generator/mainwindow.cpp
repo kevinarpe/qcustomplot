@@ -745,6 +745,47 @@ void MainWindow::genQCPColorGradient()
   collage.save(dir.filePath("QCPColorGradient.png"));
 }
 
+void MainWindow::genQCPBarsGroup()
+{
+  resetPlot(false);
+  
+  QVector<double> datax = QVector<double>() << 1 << 2 << 3 << 4;
+  QVector<double> datay1 = QVector<double>() << 0.6 << 0.5 << 0.3 << 0.15;
+  QVector<double> datay2 = QVector<double>() << 0.3 << 0.28 << 0.2 << 0.1;
+  QVector<double> datay3 = QVector<double>() << 0.33 << 0.31 << 0.27 << 0.13;
+  
+  QCPBarsGroup *group1 = new QCPBarsGroup(customPlot);
+  QCPBars *bars;
+  bars = new QCPBars(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  bars->setPen(QColor(0, 0, 255));
+  bars->setWidth(0.15);
+  bars->setBarsGroup(group1);
+  bars = new QCPBars(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2);
+  bars->setBrush(QColor(180, 00, 120, 50));
+  bars->setPen(QColor(180, 00, 120));
+  bars->setWidth(0.15);
+  bars->setBarsGroup(group1);
+  bars = new QCPBars(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3);
+  bars->setBrush(QColor(255, 154, 0, 50));
+  bars->setPen(QColor(255, 154, 0));
+  bars->setWidth(0.15);
+  bars->setBarsGroup(group1);
+
+  customPlot->xAxis->setRange(0.1, 4.9);
+  customPlot->yAxis->setRange(0, 0.7);
+  customPlot->xAxis->setAutoTickStep(false);
+  customPlot->xAxis->setTickStep(1);
+  
+  customPlot->savePng(dir.filePath("QCPBarsGroup.png"), 450, 200);
+}
+
 void MainWindow::genQCPColorMap_Interpolate()
 {
   resetPlot(false);
