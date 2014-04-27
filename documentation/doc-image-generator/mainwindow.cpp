@@ -535,6 +535,7 @@ void MainWindow::genQCPBars()
 {
   // generate main doc image of plottable:
   resetPlot(true);
+  
   customPlot->xAxis->setVisible(true);
   customPlot->yAxis->setVisible(true);
   customPlot->xAxis->setBasePen(Qt::NoPen);
@@ -564,6 +565,8 @@ void MainWindow::genQCPBars()
   bars2->setPen(QPen(QColor(200, 50, 50)));
   bars2->setBrush(QColor(255, 50, 50, 25));
   
+  customPlot->xAxis->setAutoTickStep(false);
+  customPlot->xAxis->setTickStep(1);
   customPlot->xAxis->setRange(-3, 3);
   customPlot->yAxis->setRange(-1, 2);
   
