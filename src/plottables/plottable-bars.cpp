@@ -422,12 +422,16 @@ QCPBarData::QCPBarData(double key, double value) :
   \section appearance Changing the appearance
   
   The appearance of the bars is determined by the pen and the brush (\ref setPen, \ref setBrush).
+  The width of the individual bars can be controlled with \ref setWidthType and \ref setWidth.
   
-  Bar charts are stackable. This means, Two QCPBars plottables can be placed on top of each other
-  (see \ref QCPBars::moveAbove). Then, when two bars are at the same key position, they will appear
+  Bar charts are stackable. This means, two QCPBars plottables can be placed on top of each other
+  (see \ref QCPBars::moveAbove). So when two bars are at the same key position, they will appear
   stacked.
   
-  The width of the individual bars can be controlled with \ref setWidthType and \ref setWidth.
+  If you would like to group multiple QCPBars plottables together so they appear side by side as
+  shown below, use QCPBarsGroup.
+  
+  \image html QCPBarsGroup.png
   
   \section usage Usage
   
