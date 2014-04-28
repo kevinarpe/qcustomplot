@@ -68,30 +68,44 @@ class QCP_LIB_DECL QCPFinancial : public QCPAbstractPlottable
   */
   /// \endcond
 public:
-  /*
-  enum ErrorType { etNone   ///< No error bars are shown
-                   ,etKey   ///< Error bars for the key dimension of the data point are shown
-                   ,etValue ///< Error bars for the value dimension of the data point are shown
-                   ,etBoth  ///< Error bars for both key and value dimensions of the data point are shown
-                 };
-  Q_ENUMS(ErrorType)
+  /*!
+    
   */
+  enum ChartStyle { csOhlc         ///< Open-High-Low-Close representation
+                   ,csCandlestick  ///< Candlestick representation
+                  };
+  Q_ENUMS(ChartStyle)
   
   explicit QCPFinancial(QCPAxis *keyAxis, QCPAxis *valueAxis);
   virtual ~QCPFinancial();
   
   // getters:
   QCPFinancialDataMap *data() const { return mData; }
+  ChartStyle chartStyle() const { return mChartStyle; }
+  double width() const { return mWidth; }
+  bool twoColored() const { return mTwoColored; }
+  QBrush brushPositive() const { return mBrushPositive; }
+  QBrush brushNegative() const { return mBrushNegative; }
+  QPen penPositive() const { return mPenPositive; }
+  QPen penNegative() const { return mPenNegative; }
+  
   
   // setters:
   void setData(QCPFinancialDataMap *data, bool copy=false);
-  void setData(const QVector<double> &key, const QVector<double> &value);
+  void setData(const QVector<double> &key, const QVector<double> &open, const QVector<double> &high, const QVector<double> &low, const QVector<double> &close);
+  void setChartStyle(ChartStyle style);
+  void setWidth(double width);
+  void setTwoColored(bool twoColored);
+  void setBrushPositive(const QBrush &brush);
+  void setBrushNegative(const QBrush &brush);
+  void setPenPositive(const QPen &pen);
+  void setPenNegative(const QPen &pen);
   
   // non-property methods:
   void addData(const QCPFinancialDataMap &dataMap);
   void addData(const QCPFinancialData &data);
-  void addData(double key, double value);
-  void addData(const QVector<double> &keys, const QVector<double> &values);
+  void addData(double key, double open, double high, double low, double close);
+  void addData(const QVector<double> &key, const QVector<double> &open, const QVector<double> &high, const QVector<double> &low, const QVector<double> &close);
   void removeDataBefore(double key);
   void removeDataAfter(double key);
   void removeData(double fromKey, double toKey);
@@ -104,6 +118,11 @@ public:
 protected:
   // property members:
   QCPFinancialDataMap *mData;
+  ChartStyle mChartStyle;
+  double mWidth;
+  bool mTwoColored;
+  QBrush mBrushPositive, mBrushNegative;
+  QPen mPenPositive, mPenNegative;
   
   // reimplemented virtual methods:
   virtual void draw(QCPPainter *painter);
@@ -114,14 +133,14 @@ protected:
   // introduced virtual methods:
   
   // non-virtual methods:
-  void getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *scatterData) const;
-  void getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMap::const_iterator &upper) const;
+  void drawOhlcPlot(QCPPainter *painter, const QCPFinancialDataMap::const_iterator &begin, const QCPFinancialDataMap::const_iterator &end);
+  void drawCandlestickPlot(QCPPainter *painter, const QCPFinancialDataMap::const_iterator &begin, const QCPFinancialDataMap::const_iterator &end);
+  void getVisibleDataBounds(QCPFinancialDataMap::const_iterator &lower, QCPFinancialDataMap::const_iterator &upper) const;
+  
+  /*
   int countDataInBounds(const QCPDataMap::const_iterator &lower, const QCPDataMap::const_iterator &upper, int maxCount) const;
-  int findIndexBelowX(const QVector<QPointF> *data, double x) const;
-  int findIndexAboveX(const QVector<QPointF> *data, double x) const;
-  int findIndexBelowY(const QVector<QPointF> *data, double y) const;
-  int findIndexAboveY(const QVector<QPointF> *data, double y) const;
   double pointDistance(const QPointF &pixelPoint) const;
+  */
   
   friend class QCustomPlot;
   friend class QCPLegend;
