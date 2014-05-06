@@ -627,8 +627,17 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
   <tr><td>QCPItemTracer</td><td>An item that can be attached to a QCPGraph and sticks to its data points, given a key coordinate.</td></tr>
   </table>
   
-  Items are by default clipped to the main axis rect. To make an item visible outside that axis
-  rect, disable clipping via \ref setClipToAxisRect.
+  \section items-clipping Clipping
+
+  Items are by default clipped to the main axis rect (they are only visible inside the axis rect).
+  To make an item visible outside that axis rect, disable clipping via \ref setClipToAxisRect
+  "setClipToAxisRect(false)".
+
+  On the other hand if you want the item to be clipped to a different axis rect, specify it via
+  \ref setClipAxisRect. This clipAxisRect property of an item is only used for clipping behaviour, and
+  in principle is independent of the coordinate axes the item might be tied to via its position
+  members (\ref QCPItemPosition::setAxes). However, it is common that the axis rect for clipping
+  also contains the axes used for the item positions.
   
   \section items-using Using items
   
@@ -653,6 +662,10 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
   \code
   line->start->setCoords(100, 200);
   line->end->setCoords(450, 320);
+  \endcode
+  and make the line visible on the entire QCustomPlot, by disabling clipping to the axis rect:
+  \code
+  line->setClipToAxisRect(false);
   \endcode
   
   \section items-subclassing Creating own items
