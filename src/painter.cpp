@@ -441,7 +441,7 @@ QCPScatterStyle::QCPScatterStyle(const QPainterPath &customPath, const QPen &pen
   mPen(pen),
   mBrush(brush),
   mCustomPath(customPath),
-  mPenDefined(false)
+  mPenDefined(pen.style() != Qt::NoPen)
 {
 }
 
