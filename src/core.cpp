@@ -1983,13 +1983,22 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   QPrinter printer(QPrinter::ScreenResolution);
   printer.setOutputFileName(fileName);
   printer.setOutputFormat(QPrinter::PdfFormat);
-  printer.setFullPage(true);
   printer.setColorMode(QPrinter::Color);
   printer.printEngine()->setProperty(QPrintEngine::PPK_Creator, pdfCreator);
   printer.printEngine()->setProperty(QPrintEngine::PPK_DocumentName, pdfTitle);
   QRect oldViewport = viewport();
   setViewport(QRect(0, 0, newWidth, newHeight));
+#if QT_VERSION < QT_VERSION_CHECK(5, 3, 0)
+  printer.setFullPage(true);
   printer.setPaperSize(viewport().size(), QPrinter::DevicePixel);
+#else
+  QPageLayout pageLayout;
+  pageLayout.setMode(QPageLayout::FullPageMode);
+  pageLayout.setOrientation(QPageLayout::Portrait);
+  pageLayout.setMargins(QMarginsF(0, 0, 0, 0));
+  pageLayout.setPageSize(QPageSize(viewport().size(), QPageSize::Point, QString(), QPageSize::ExactMatch));
+  printer.setPageLayout(pageLayout);
+#endif
   QCPPainter printpainter;
   if (printpainter.begin(&printer))
   {
