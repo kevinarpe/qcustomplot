@@ -382,7 +382,60 @@ void QCPFinancial::draw(QCPPainter *painter)
 
 void QCPFinancial::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
-  
+  painter->setAntialiasing(false); // legend icon especially of csCandlestick looks better without antialiasing
+  if (mChartStyle == csOhlc)
+  {
+    if (mTwoColored)
+    {
+      // draw upper left half icon with positive color:
+      painter->setBrush(mBrushPositive);
+      painter->setPen(mPenPositive);
+      painter->setClipRegion(QRegion(QPolygon() << rect.bottomLeft().toPoint() << rect.topRight().toPoint() << rect.topLeft().toPoint()));
+      painter->drawLine(QLineF(0, rect.height()*0.5, rect.width(), rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawLine(QLineF(rect.width()*0.2, rect.height()*0.3, rect.width()*0.2, rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawLine(QLineF(rect.width()*0.8, rect.height()*0.5, rect.width()*0.8, rect.height()*0.7).translated(rect.topLeft()));
+      // draw bottom right hald icon with negative color:
+      painter->setBrush(mBrushNegative);
+      painter->setPen(mPenNegative);
+      painter->setClipRegion(QRegion(QPolygon() << rect.bottomLeft().toPoint() << rect.topRight().toPoint() << rect.bottomRight().toPoint()));
+      painter->drawLine(QLineF(0, rect.height()*0.5, rect.width(), rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawLine(QLineF(rect.width()*0.2, rect.height()*0.3, rect.width()*0.2, rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawLine(QLineF(rect.width()*0.8, rect.height()*0.5, rect.width()*0.8, rect.height()*0.7).translated(rect.topLeft()));
+    } else
+    {
+      painter->setBrush(mBrush);
+      painter->setPen(mPen);
+      painter->drawLine(QLineF(0, rect.height()*0.5, rect.width(), rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawLine(QLineF(rect.width()*0.2, rect.height()*0.3, rect.width()*0.2, rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawLine(QLineF(rect.width()*0.8, rect.height()*0.5, rect.width()*0.8, rect.height()*0.7).translated(rect.topLeft()));
+    }
+  } else if (mChartStyle == csCandlestick)
+  {
+    if (mTwoColored)
+    {
+      // draw upper left half icon with positive color:
+      painter->setBrush(mBrushPositive);
+      painter->setPen(mPenPositive);
+      painter->setClipRegion(QRegion(QPolygon() << rect.bottomLeft().toPoint() << rect.topRight().toPoint() << rect.topLeft().toPoint()));
+      painter->drawLine(QLineF(0, rect.height()*0.5, rect.width()*0.25, rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawLine(QLineF(rect.width()*0.75, rect.height()*0.5, rect.width(), rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawRect(QRectF(rect.width()*0.25, rect.height()*0.25, rect.width()*0.5, rect.height()*0.5).translated(rect.topLeft()));
+      // draw bottom right hald icon with negative color:
+      painter->setBrush(mBrushNegative);
+      painter->setPen(mPenNegative);
+      painter->setClipRegion(QRegion(QPolygon() << rect.bottomLeft().toPoint() << rect.topRight().toPoint() << rect.bottomRight().toPoint()));
+      painter->drawLine(QLineF(0, rect.height()*0.5, rect.width()*0.25, rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawLine(QLineF(rect.width()*0.75, rect.height()*0.5, rect.width(), rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawRect(QRectF(rect.width()*0.25, rect.height()*0.25, rect.width()*0.5, rect.height()*0.5).translated(rect.topLeft()));
+    } else
+    {
+      painter->setBrush(mBrush);
+      painter->setPen(mPen);
+      painter->drawLine(QLineF(0, rect.height()*0.5, rect.width()*0.25, rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawLine(QLineF(rect.width()*0.75, rect.height()*0.5, rect.width(), rect.height()*0.5).translated(rect.topLeft()));
+      painter->drawRect(QRectF(rect.width()*0.25, rect.height()*0.25, rect.width()*0.5, rect.height()*0.5).translated(rect.topLeft()));
+    }
+  }
 }
 
 QCPRange QCPFinancial::getKeyRange(bool &foundRange, QCPAbstractPlottable::SignDomain inSignDomain) const
