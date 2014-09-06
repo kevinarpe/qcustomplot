@@ -387,12 +387,81 @@ void QCPFinancial::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 
 QCPRange QCPFinancial::getKeyRange(bool &foundRange, QCPAbstractPlottable::SignDomain inSignDomain) const
 {
+  QCPRange range;
+  bool haveLower = false;
+  bool haveUpper = false;
   
+  double current;
+  QCPFinancialDataMap::const_iterator it = mData->constBegin();
+  while (it != mData->constEnd())
+  {
+    current = it.value().key;
+    if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current < 0) || (inSignDomain == sdPositive && current > 0))
+    {
+      if (current < range.lower || !haveLower)
+      {
+        range.lower = current;
+        haveLower = true;
+      }
+      if (current > range.upper || !haveUpper)
+      {
+        range.upper = current;
+        haveUpper = true;
+      }
+    }
+    ++it;
+  }
+  // determine exact range by including width of bars/flags:
+  if (haveLower && mKeyAxis)
+    range.lower = range.lower-mWidth*0.5;
+  if (haveUpper && mKeyAxis)
+    range.upper = range.upper+mWidth*0.5;
+  foundRange = haveLower && haveUpper;
+  return range;
 }
 
 QCPRange QCPFinancial::getValueRange(bool &foundRange, QCPAbstractPlottable::SignDomain inSignDomain) const
 {
+  QCPRange range;
+  bool haveLower = false;
+  bool haveUpper = false;
   
+  QCPFinancialDataMap::const_iterator it = mData->constBegin();
+  while (it != mData->constEnd())
+  {
+    // high:
+    if (inSignDomain == sdBoth || (inSignDomain == sdNegative && it.value().high < 0) || (inSignDomain == sdPositive && it.value().high > 0))
+    {
+      if (it.value().high < range.lower || !haveLower)
+      {
+        range.lower = it.value().high;
+        haveLower = true;
+      }
+      if (it.value().high > range.upper || !haveUpper)
+      {
+        range.upper = it.value().high;
+        haveUpper = true;
+      }
+    }
+    // low:
+    if (inSignDomain == sdBoth || (inSignDomain == sdNegative && it.value().low < 0) || (inSignDomain == sdPositive && it.value().low > 0))
+    {
+      if (it.value().low < range.lower || !haveLower)
+      {
+        range.lower = it.value().low;
+        haveLower = true;
+      }
+      if (it.value().low > range.upper || !haveUpper)
+      {
+        range.upper = it.value().low;
+        haveUpper = true;
+      }
+    }
+    ++it;
+  }
+  
+  foundRange = haveLower && haveUpper;
+  return range;
 }
 
 void QCPFinancial::drawOhlcPlot(QCPPainter *painter, const QCPFinancialDataMap::const_iterator &begin, const QCPFinancialDataMap::const_iterator &end)
