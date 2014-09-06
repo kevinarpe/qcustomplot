@@ -122,6 +122,9 @@ QCPFinancial::QCPFinancial(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   mPenNegative(QPen(QColor(180, 40, 10)))
 {
   mData = new QCPFinancialDataMap;
+  
+  setSelectedPen(QPen(QColor(80, 80, 255), 2.5));
+  setSelectedBrush(QBrush(QColor(80, 80, 255)));
 }
 
 QCPFinancial::~QCPFinancial()
