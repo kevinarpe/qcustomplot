@@ -116,13 +116,12 @@ QCPFinancial::QCPFinancial(QCPAxis *keyAxis, QCPAxis *valueAxis) :
   mChartStyle(csOhlc),
   mWidth(0.5),
   mTwoColored(false),
-  mBrushPositive(QBrush(QColor(200, 200, 255))),
-  mBrushNegative(QBrush(QColor(255, 200, 200))),
-  mPenPositive(QPen(QColor(0, 150, 255))),
-  mPenNegative(QPen(QColor(255, 150, 0)))
+  mBrushPositive(QBrush(QColor(210, 210, 255))),
+  mBrushNegative(QBrush(QColor(255, 210, 210))),
+  mPenPositive(QPen(QColor(10, 40, 180))),
+  mPenNegative(QPen(QColor(180, 40, 10)))
 {
   mData = new QCPFinancialDataMap;
-  
 }
 
 QCPFinancial::~QCPFinancial()
