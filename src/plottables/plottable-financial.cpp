@@ -428,7 +428,88 @@ void QCPFinancial::drawOhlcPlot(QCPPainter *painter, const QCPFinancialDataMap::
 
 void QCPFinancial::drawCandlestickPlot(QCPPainter *painter, const QCPFinancialDataMap::const_iterator &begin, const QCPFinancialDataMap::const_iterator &end)
 {
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
   
+  QPen linePen;
+  QBrush boxBrush;
+  
+  if (keyAxis->orientation() == Qt::Horizontal)
+  {
+    for (QCPFinancialDataMap::const_iterator it = begin; it != end; ++it)
+    {
+      if (mSelected)
+      {
+        linePen = mSelectedPen;
+        boxBrush = mSelectedBrush;
+      } else if (mTwoColored)
+      {
+        if (it.value().close >= it.value().open)
+        {
+          linePen = mPenPositive;
+          boxBrush = mBrushPositive;
+        } else
+        {
+          linePen = mPenNegative;
+          boxBrush = mBrushNegative;
+        }
+      } else
+      {
+        linePen = mPen;
+        boxBrush = mBrush;
+      }
+      painter->setPen(linePen);
+      painter->setBrush(boxBrush);
+      double keyPixel = keyAxis->coordToPixel(it.value().key);
+      double openPixel = valueAxis->coordToPixel(it.value().open);
+      double closePixel = valueAxis->coordToPixel(it.value().close);
+      // draw high:
+      painter->drawLine(QPointF(keyPixel, valueAxis->coordToPixel(it.value().high)), QPointF(keyPixel, valueAxis->coordToPixel(qMax(it.value().open, it.value().close))));
+      // draw low:
+      painter->drawLine(QPointF(keyPixel, valueAxis->coordToPixel(it.value().low)), QPointF(keyPixel, valueAxis->coordToPixel(qMin(it.value().open, it.value().close))));
+      // draw open-close box:
+      double keyWidthPixels = keyPixel-keyAxis->coordToPixel(it.value().key-mWidth*0.5);
+      painter->drawRect(QRectF(QPointF(keyPixel-keyWidthPixels, closePixel), QPointF(keyPixel+keyWidthPixels, openPixel)));
+    }
+  } else // keyAxis->orientation() == Qt::Vertical
+  {
+    for (QCPFinancialDataMap::const_iterator it = begin; it != end; ++it)
+    {
+      if (mSelected)
+      {
+        linePen = mSelectedPen;
+        boxBrush = mSelectedBrush;
+      } else if (mTwoColored)
+      {
+        if (it.value().close >= it.value().open)
+        {
+          linePen = mPenPositive;
+          boxBrush = mBrushPositive;
+        } else
+        {
+          linePen = mPenNegative;
+          boxBrush = mBrushNegative;
+        }
+      } else
+      {
+        linePen = mPen;
+        boxBrush = mBrush;
+      }
+      painter->setPen(linePen);
+      painter->setBrush(boxBrush);
+      double keyPixel = keyAxis->coordToPixel(it.value().key);
+      double openPixel = valueAxis->coordToPixel(it.value().open);
+      double closePixel = valueAxis->coordToPixel(it.value().close);
+      // draw high:
+      painter->drawLine(QPointF(valueAxis->coordToPixel(it.value().high), keyPixel), QPointF(valueAxis->coordToPixel(qMax(it.value().open, it.value().close)), keyPixel));
+      // draw low:
+      painter->drawLine(QPointF(valueAxis->coordToPixel(it.value().low), keyPixel), QPointF(valueAxis->coordToPixel(qMin(it.value().open, it.value().close)), keyPixel));
+      // draw open-close box:
+      double keyWidthPixels = keyPixel-keyAxis->coordToPixel(it.value().key-mWidth*0.5);
+      painter->drawRect(QRectF(QPointF(closePixel, keyPixel-keyWidthPixels), QPointF(openPixel, keyPixel+keyWidthPixels)));
+    }
+  }
 }
 
 /*!  \internal
