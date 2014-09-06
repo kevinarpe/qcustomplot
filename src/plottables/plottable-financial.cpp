@@ -338,6 +338,27 @@ void QCPFinancial::clearData()
 /* inherits documentation from base class */
 double QCPFinancial::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
 {
+  Q_UNUSED(details)
+  if (onlySelectable && !mSelectable)
+    return -1;
+  if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
+  
+  if (mKeyAxis.data()->axisRect()->rect().contains(pos.toPoint()))
+  {
+    // get visible data range:
+    QCPFinancialDataMap::const_iterator lower, upper; // note that upper is the actual upper point, and not 1 step after the upper point
+    getVisibleDataBounds(lower, upper);
+    if (lower == mData->constEnd() || upper == mData->constEnd())
+      return -1;
+    // perform select test according to configured style:
+    switch (mChartStyle)
+    {
+      case QCPFinancial::csOhlc:
+        return ohlcSelectTest(pos, lower, upper+1); break;
+      case QCPFinancial::csCandlestick:
+        return candlestickSelectTest(pos, lower, upper+1); break;
+    }
+  }
   return -1;
 }
 
@@ -513,6 +534,98 @@ void QCPFinancial::drawCandlestickPlot(QCPPainter *painter, const QCPFinancialDa
       painter->drawRect(QRectF(QPointF(closePixel, keyPixel-keyWidthPixels), QPointF(openPixel, keyPixel+keyWidthPixels)));
     }
   }
+}
+
+double QCPFinancial::ohlcSelectTest(const QPointF &pos, const QCPFinancialDataMap::const_iterator &begin, const QCPFinancialDataMap::const_iterator &end) const
+{
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
+
+  double minDistSqr = std::numeric_limits<double>::max();
+  QCPFinancialDataMap::const_iterator it;
+  if (keyAxis->orientation() == Qt::Horizontal)
+  {
+    for (it = begin; it != end; ++it)
+    {
+      double keyPixel = keyAxis->coordToPixel(it.value().key);
+      // calculate distance to backbone:
+      double currentDistSqr = distSqrToLine(QPointF(keyPixel, valueAxis->coordToPixel(it.value().high)), QPointF(keyPixel, valueAxis->coordToPixel(it.value().low)), pos);
+      if (currentDistSqr < minDistSqr)
+        minDistSqr = currentDistSqr;
+    }
+  } else // keyAxis->orientation() == Qt::Vertical
+  {
+    for (it = begin; it != end; ++it)
+    {
+      double keyPixel = keyAxis->coordToPixel(it.value().key);
+      // calculate distance to backbone:
+      double currentDistSqr = distSqrToLine(QPointF(valueAxis->coordToPixel(it.value().high), keyPixel), QPointF(valueAxis->coordToPixel(it.value().low), keyPixel), pos);
+      if (currentDistSqr < minDistSqr)
+        minDistSqr = currentDistSqr;
+    }
+  }
+  return qSqrt(minDistSqr);
+}
+
+double QCPFinancial::candlestickSelectTest(const QPointF &pos, const QCPFinancialDataMap::const_iterator &begin, const QCPFinancialDataMap::const_iterator &end) const
+{
+  QCPAxis *keyAxis = mKeyAxis.data();
+  QCPAxis *valueAxis = mValueAxis.data();
+  if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return -1; }
+
+  double minDistSqr = std::numeric_limits<double>::max();
+  QCPFinancialDataMap::const_iterator it;
+  if (keyAxis->orientation() == Qt::Horizontal)
+  {
+    for (it = begin; it != end; ++it)
+    {
+      double currentDistSqr;
+      // determine whether pos is in open-close-box:
+      QCPRange boxKeyRange(it.value().key-mWidth*0.5, it.value().key+mWidth*0.5);
+      QCPRange boxValueRange(it.value().close, it.value().open);
+      double posKey, posValue;
+      pixelsToCoords(pos, posKey, posValue);
+      if (boxKeyRange.contains(posKey) && boxValueRange.contains(posValue)) // is in open-close-box
+      {
+        currentDistSqr = mParentPlot->selectionTolerance()*0.99 * mParentPlot->selectionTolerance()*0.99;
+      } else
+      {
+        // calculate distance to high/low lines:
+        double keyPixel = keyAxis->coordToPixel(it.value().key);
+        double highLineDistSqr = distSqrToLine(QPointF(keyPixel, valueAxis->coordToPixel(it.value().high)), QPointF(keyPixel, valueAxis->coordToPixel(qMax(it.value().open, it.value().close))), pos);
+        double lowLineDistSqr = distSqrToLine(QPointF(keyPixel, valueAxis->coordToPixel(it.value().low)), QPointF(keyPixel, valueAxis->coordToPixel(qMin(it.value().open, it.value().close))), pos);
+        currentDistSqr = qMin(highLineDistSqr, lowLineDistSqr);
+      }
+      if (currentDistSqr < minDistSqr)
+        minDistSqr = currentDistSqr;
+    }
+  } else // keyAxis->orientation() == Qt::Vertical
+  {
+    for (it = begin; it != end; ++it)
+    {
+      double currentDistSqr;
+      // determine whether pos is in open-close-box:
+      QCPRange boxKeyRange(it.value().key-mWidth*0.5, it.value().key+mWidth*0.5);
+      QCPRange boxValueRange(it.value().close, it.value().open);
+      double posKey, posValue;
+      pixelsToCoords(pos, posKey, posValue);
+      if (boxKeyRange.contains(posKey) && boxValueRange.contains(posValue)) // is in open-close-box
+      {
+        currentDistSqr = mParentPlot->selectionTolerance()*0.99 * mParentPlot->selectionTolerance()*0.99;
+      } else
+      {
+        // calculate distance to high/low lines:
+        double keyPixel = keyAxis->coordToPixel(it.value().key);
+        double highLineDistSqr = distSqrToLine(QPointF(valueAxis->coordToPixel(it.value().high), keyPixel), QPointF(valueAxis->coordToPixel(qMax(it.value().open, it.value().close)), keyPixel), pos);
+        double lowLineDistSqr = distSqrToLine(QPointF(valueAxis->coordToPixel(it.value().low), keyPixel), QPointF(valueAxis->coordToPixel(qMin(it.value().open, it.value().close)), keyPixel), pos);
+        currentDistSqr = qMin(highLineDistSqr, lowLineDistSqr);
+      }
+      if (currentDistSqr < minDistSqr)
+        minDistSqr = currentDistSqr;
+    }
+  }
+  return qSqrt(minDistSqr);
 }
 
 /*!  \internal
