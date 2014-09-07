@@ -115,6 +115,9 @@ public:
   virtual void clearData();
   virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
   
+  // static methods:
+  static QCPFinancialDataMap timeSeriesToOhlc(const QVector<double> &time, const QVector<double> &value, double timeBinSize, double timeBinOffset = 0);
+  
 protected:
   // property members:
   QCPFinancialDataMap *mData;
@@ -129,8 +132,6 @@ protected:
   virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
   virtual QCPRange getKeyRange(bool &foundRange, SignDomain inSignDomain=sdBoth) const;
   virtual QCPRange getValueRange(bool &foundRange, SignDomain inSignDomain=sdBoth) const;
-  
-  // introduced virtual methods:
   
   // non-virtual methods:
   void drawOhlcPlot(QCPPainter *painter, const QCPFinancialDataMap::const_iterator &begin, const QCPFinancialDataMap::const_iterator &end);

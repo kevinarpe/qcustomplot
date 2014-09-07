@@ -362,6 +362,45 @@ double QCPFinancial::selectTest(const QPointF &pos, bool onlySelectable, QVarian
   return -1;
 }
 
+QCPFinancialDataMap QCPFinancial::timeSeriesToOhlc(const QVector<double> &time, const QVector<double> &value, double timeBinSize, double timeBinOffset)
+{
+  QCPFinancialDataMap map;
+  int count = qMin(time.size(), value.size());
+  if (count == 0)
+    return QCPFinancialDataMap();
+  
+  QCPFinancialData currentBinData(0, value.first(), value.first(), value.first(), value.first());
+  int currentBinIndex = qFloor((time.first()-timeBinOffset)/timeBinSize);
+  for (int i=0; i<count; ++i)
+  {
+    int index = qFloor((time.at(i)-timeBinOffset)/timeBinSize);
+    if (currentBinIndex == index) // data point still in current bin, extend high/low:
+    {
+      if (value.at(i) < currentBinData.low) currentBinData.low = value.at(i);
+      if (value.at(i) > currentBinData.high) currentBinData.high = value.at(i);
+      if (i == count-1) // last data point is in current bin, finalize bin:
+      {
+        currentBinData.close = value.at(i);
+        currentBinData.key = timeBinOffset+(index+0.5)*timeBinSize;
+        map.insert(currentBinData.key, currentBinData);
+      }
+    } else // data point not anymore in current bin, set close of old and open of new bin, and add old to map:
+    {
+      // finalize current bin:
+      currentBinData.close = value.at(i-1);
+      currentBinData.key = timeBinOffset+(index-1+0.5)*timeBinSize;
+      map.insert(currentBinData.key, currentBinData);
+      // start next bin:
+      currentBinIndex = index;
+      currentBinData.open = value.at(i);
+      currentBinData.high = value.at(i);
+      currentBinData.low = value.at(i);
+    }
+  }
+  
+  return map;
+}
+
 void QCPFinancial::draw(QCPPainter *painter)
 {
   // get visible data range:
