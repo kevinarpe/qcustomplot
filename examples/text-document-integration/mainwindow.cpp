@@ -38,8 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
   setupPlot();
   
   // register the plot document object (only needed once, no matter how many plots will be in the QTextDocument):
-  QCPDocumentObject *interface = new QCPDocumentObject(this);
-  ui->textEdit->document()->documentLayout()->registerHandler(QCPDocumentObject::PlotTextFormat, interface);
+  QCPDocumentObject *plotObjectHandler = new QCPDocumentObject(this);
+  ui->textEdit->document()->documentLayout()->registerHandler(QCPDocumentObject::PlotTextFormat, plotObjectHandler);
 }
 
 MainWindow::~MainWindow()
