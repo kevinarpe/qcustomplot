@@ -2045,7 +2045,7 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
         minDistSqr = currentDistSqr;
     }
     delete scatterData;
-    return sqrt(minDistSqr);
+    return qSqrt(minDistSqr);
   } else
   {
     // line displayed calculate distance to line segments:
@@ -2072,7 +2072,7 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
       }
     }
     delete lineData;
-    return sqrt(minDistSqr);
+    return qSqrt(minDistSqr);
   }
 }
 

@@ -69,8 +69,8 @@ void MainWindow::setupPlot()
   for (int i=0; i<500; ++i)
   {
     x[i] = (i/499.0-0.5)*10;
-    y0[i] = exp(-x[i]*x[i]*0.25)*qSin(x[i]*5)*5;
-    y1[i] = exp(-x[i]*x[i]*0.25)*5;
+    y0[i] = qExp(-x[i]*x[i]*0.25)*qSin(x[i]*5)*5;
+    y1[i] = qExp(-x[i]*x[i]*0.25)*5;
   }
   ui->plot->graph(0)->setData(x, y0);
   ui->plot->graph(1)->setData(x, y1);

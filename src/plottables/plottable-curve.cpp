@@ -624,7 +624,7 @@ double QCPCurve::pointDistance(const QPointF &pixelPoint) const
       minDistSqr = currentDistSqr;
   }
   delete lineData;
-  return sqrt(minDistSqr);
+  return qSqrt(minDistSqr);
 }
 
 /*! \internal

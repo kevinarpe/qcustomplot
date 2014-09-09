@@ -147,8 +147,8 @@ void MainWindow::setupSimpleDemo(QCustomPlot *customPlot)
   for (int i=0; i<250; ++i)
   {
     x[i] = i;
-    y0[i] = exp(-i/150.0)*cos(i/10.0); // exponentially decaying cosine
-    y1[i] = exp(-i/150.0);             // exponential envelope
+    y0[i] = qExp(-i/150.0)*qCos(i/10.0); // exponentially decaying cosine
+    y1[i] = qExp(-i/150.0);              // exponential envelope
   }
   // configure right and top axis to show ticks but no labels:
   // (see QCPAxisRect::setupFullAxesBox for a quicker method to do this)
@@ -213,7 +213,7 @@ void MainWindow::setupSincScatterDemo(QCustomPlot *customPlot)
   for (int i=0; i<250; ++i)
   {
     x0[i] = (i/249.0-0.5)*30+0.01; // by adding a small offset we make sure not do divide by zero in next code line
-    y0[i] = sin(x0[i])/x0[i]; // sinc function
+    y0[i] = qSin(x0[i])/x0[i]; // sinc function
     yConfUpper[i] = y0[i]+0.15;
     yConfLower[i] = y0[i]-0.15;
     x0[i] *= 1000;
@@ -224,10 +224,10 @@ void MainWindow::setupSincScatterDemo(QCustomPlot *customPlot)
     // generate a gaussian distributed random number:
     double tmp1 = rand()/(double)RAND_MAX;
     double tmp2 = rand()/(double)RAND_MAX;
-    double r = sqrt(-2*log(tmp1))*cos(2*M_PI*tmp2); // box-muller transform for gaussian distribution
+    double r = qSqrt(-2*qLn(tmp1))*qCos(2*M_PI*tmp2); // box-muller transform for gaussian distribution
     // set y1 to value of y0 plus a random gaussian pertubation:
     x1[i] = (i/50.0-0.5)*30+0.25;
-    y1[i] = sin(x1[i])/x1[i]+r*0.15;
+    y1[i] = qSin(x1[i])/x1[i]+r*0.15;
     x1[i] *= 1000;
     y1err[i] = 0.15;
   }
@@ -276,13 +276,13 @@ void MainWindow::setupScatterStyleDemo(QCustomPlot *customPlot)
   for (int i=0; i<shapes.size(); ++i)
   {
     customPlot->addGraph();
-    pen.setColor(QColor(sin(i*0.3)*100+100, sin(i*0.6+0.7)*100+100, sin(i*0.4+0.6)*100+100));
+    pen.setColor(QColor(qSin(i*0.3)*100+100, qSin(i*0.6+0.7)*100+100, qSin(i*0.4+0.6)*100+100));
     // generate data:
     QVector<double> x(10), y(10);
     for (int k=0; k<10; ++k)
     {
       x[k] = k/10.0 * 4*3.14 + 0.01;
-      y[k] = 7*sin(x[k])/x[k] + (shapes.size()-i)*5;
+      y[k] = 7*qSin(x[k])/x[k] + (shapes.size()-i)*5;
     }
     customPlot->graph()->setData(x, y);
     customPlot->graph()->rescaleAxes(true);
@@ -325,7 +325,7 @@ void MainWindow::setupLineStyleDemo(QCustomPlot *customPlot)
   for (int i=QCPGraph::lsNone; i<=QCPGraph::lsImpulse; ++i)
   {
     customPlot->addGraph();
-    pen.setColor(QColor(sin(i*1+1.2)*80+80, sin(i*0.3+0)*80+80, sin(i*0.3+1.5)*80+80));
+    pen.setColor(QColor(qSin(i*1+1.2)*80+80, qSin(i*0.3+0)*80+80, qSin(i*0.3+1.5)*80+80));
     customPlot->graph()->setPen(pen);
     customPlot->graph()->setName(lineNames.at(i-QCPGraph::lsNone));
     customPlot->graph()->setLineStyle((QCPGraph::LineStyle)i);
@@ -335,7 +335,7 @@ void MainWindow::setupLineStyleDemo(QCustomPlot *customPlot)
     for (int j=0; j<15; ++j)
     {
       x[j] = j/15.0 * 5*3.14 + 0.01;
-      y[j] = 7*sin(x[j])/x[j] - (i-QCPGraph::lsNone)*5 + (QCPGraph::lsImpulse)*5 + 2;
+      y[j] = 7*qSin(x[j])/x[j] - (i-QCPGraph::lsNone)*5 + (QCPGraph::lsImpulse)*5 + 2;
     }
     customPlot->graph()->setData(x, y);
     customPlot->graph()->rescaleAxes(true);
@@ -424,7 +424,7 @@ void MainWindow::setupDateDemo(QCustomPlot *customPlot)
       if (i == 0)
         value[i] = (i/50.0+1)*(rand()/(double)RAND_MAX-0.5);
       else
-        value[i] = fabs(value[i-1])*(1+0.02/4.0*(4-gi)) + (i/50.0+1)*(rand()/(double)RAND_MAX-0.5);
+        value[i] = qFabs(value[i-1])*(1+0.02/4.0*(4-gi)) + (i/50.0+1)*(rand()/(double)RAND_MAX-0.5);
     }
     customPlot->graph()->setData(time, value);
   }
@@ -485,8 +485,8 @@ void MainWindow::setupTextureBrushDemo(QCustomPlot *customPlot)
   {
     // just playing with numbers, not much to learn here
     x[i] = 3*i/250.0;
-    y0[i] = 1+exp(-x[i]*x[i]*0.8)*(x[i]*x[i]+x[i]);
-    y1[i] = 1-exp(-x[i]*x[i]*0.4)*(x[i]*x[i])*0.1;
+    y0[i] = 1+qExp(-x[i]*x[i]*0.8)*(x[i]*x[i]+x[i]);
+    y1[i] = 1-qExp(-x[i]*x[i]*0.4)*(x[i]*x[i])*0.1;
   }
   
   // pass data points to graphs:
@@ -571,12 +571,12 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
   for (int i=0; i<25; ++i) // data for graph 0
   {
     x0[i] = 3*i/25.0;
-    y0[i] = exp(-x0[i]*x0[i]*0.8)*(x0[i]*x0[i]+x0[i]);
+    y0[i] = qExp(-x0[i]*x0[i]*0.8)*(x0[i]*x0[i]+x0[i]);
   }
   for (int i=0; i<15; ++i) // data for graph 1
   {
     x1[i] = 3*i/15.0;;
-    y1[i] = exp(-x1[i]*x1[i])*(x1[i]*x1[i])*2.6;
+    y1[i] = qExp(-x1[i]*x1[i])*(x1[i]*x1[i])*2.6;
     y1err[i] = y1[i]*0.25;
   }
   for (int i=0; i<250; ++i) // data for graphs 2, 3 and 4
@@ -584,8 +584,8 @@ void MainWindow::setupMultiAxisDemo(QCustomPlot *customPlot)
     x2[i] = i/250.0*3*M_PI;
     x3[i] = x2[i];
     x4[i] = i/250.0*100-50;
-    y2[i] = sin(x2[i]*12)*cos(x2[i])*10;
-    y3[i] = cos(x3[i])*10;
+    y2[i] = qSin(x2[i]*12)*qCos(x2[i])*10;
+    y3[i] = qCos(x3[i])*10;
     y4[i] = 0.01*x4[i]*x4[i] + 1.5*(rand()/(double)RAND_MAX-0.5) + 1.5*M_PI;
   }
   
@@ -669,9 +669,9 @@ void MainWindow::setupLogarithmicDemo(QCustomPlot *customPlot)
     x0[i] = i/10.0;
     y0[i] = x0[i];
     x1[i] = i/10.0;
-    y1[i] = -sin(x1[i])*exp(x1[i]);
+    y1[i] = -qSin(x1[i])*qExp(x1[i]);
     x2[i] = i/10.0;
-    y2[i] = sin(x2[i])*exp(x2[i]);
+    y2[i] = qSin(x2[i])*qExp(x2[i]);
   }
   for (int i=0; i<21; ++i)
   {
@@ -774,13 +774,13 @@ void MainWindow::setupParametricCurveDemo(QCustomPlot *customPlot)
   for (int i=0; i<pointCount; ++i)
   {
     double phi = (i/(double)(pointCount-1))*8*M_PI;
-    x1[i] = sqrt(phi)*cos(phi);
-    y1[i] = sqrt(phi)*sin(phi);
+    x1[i] = qSqrt(phi)*qCos(phi);
+    y1[i] = qSqrt(phi)*qSin(phi);
     x2[i] = -x1[i];
     y2[i] = -y1[i];
     double t = i/(double)(pointCount-1)*2*M_PI;
-    x3[i] = 2*cos(2*t)+cos(1*t)+2*sin(t);
-    y3[i] = 2*sin(2*t)-sin(1*t);
+    x3[i] = 2*qCos(2*t)+qCos(1*t)+2*qSin(t);
+    y3[i] = 2*qSin(2*t)-qSin(1*t);
   }
   // pass the data to the curves:
   fermatSpiral1->setData(x1, y1);
@@ -1362,8 +1362,8 @@ void MainWindow::realtimeDataSlot()
   static double lastPointKey = 0;
   if (key-lastPointKey > 0.01) // at most add point every 10 ms
   {
-    double value0 = qSin(key); //sin(key*1.6+cos(key*1.7)*2)*10 + sin(key*1.2+0.56)*20 + 26;
-    double value1 = qCos(key); //sin(key*1.3+cos(key*1.2)*1.2)*7 + sin(key*0.9+0.26)*24 + 26;
+    double value0 = qSin(key); //qSin(key*1.6+qCos(key*1.7)*2)*10 + qSin(key*1.2+0.56)*20 + 26;
+    double value1 = qCos(key); //qSin(key*1.3+qCos(key*1.2)*1.2)*7 + qSin(key*0.9+0.26)*24 + 26;
     // add data to lines:
     ui->customPlot->graph(0)->addData(key, value0);
     ui->customPlot->graph(1)->addData(key, value1);

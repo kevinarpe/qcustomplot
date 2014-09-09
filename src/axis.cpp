@@ -1537,8 +1537,8 @@ void QCPAxis::scaleRange(double factor, double center)
     if ((mRange.upper < 0 && center < 0) || (mRange.upper > 0 && center > 0)) // make sure center has same sign as range
     {
       QCPRange newRange;
-      newRange.lower = pow(mRange.lower/center, factor)*center;
-      newRange.upper = pow(mRange.upper/center, factor)*center;
+      newRange.lower = qPow(mRange.lower/center, factor)*center;
+      newRange.upper = qPow(mRange.upper/center, factor)*center;
       if (QCPRange::validRange(newRange))
         mRange = newRange.sanitizedForLogScale();
     } else
@@ -1648,9 +1648,9 @@ double QCPAxis::pixelToCoord(double value) const
     } else // mScaleType == stLogarithmic
     {
       if (!mRangeReversed)
-        return pow(mRange.upper/mRange.lower, (value-mAxisRect->left())/(double)mAxisRect->width())*mRange.lower;
+        return qPow(mRange.upper/mRange.lower, (value-mAxisRect->left())/(double)mAxisRect->width())*mRange.lower;
       else
-        return pow(mRange.upper/mRange.lower, (mAxisRect->left()-value)/(double)mAxisRect->width())*mRange.upper;
+        return qPow(mRange.upper/mRange.lower, (mAxisRect->left()-value)/(double)mAxisRect->width())*mRange.upper;
     }
   } else // orientation() == Qt::Vertical
   {
@@ -1663,9 +1663,9 @@ double QCPAxis::pixelToCoord(double value) const
     } else // mScaleType == stLogarithmic
     {
       if (!mRangeReversed)
-        return pow(mRange.upper/mRange.lower, (mAxisRect->bottom()-value)/(double)mAxisRect->height())*mRange.lower;
+        return qPow(mRange.upper/mRange.lower, (mAxisRect->bottom()-value)/(double)mAxisRect->height())*mRange.lower;
       else
-        return pow(mRange.upper/mRange.lower, (value-mAxisRect->bottom())/(double)mAxisRect->height())*mRange.upper;
+        return qPow(mRange.upper/mRange.lower, (value-mAxisRect->bottom())/(double)mAxisRect->height())*mRange.upper;
     }
   }
 }
@@ -1979,8 +1979,8 @@ void QCPAxis::generateAutoTicks()
     if (mAutoSubTicks)
       mSubTickCount = calculateAutoSubTickCount(mTickStep);
     // Generate tick positions according to mTickStep:
-    qint64 firstStep = floor(mRange.lower/mTickStep);
-    qint64 lastStep = ceil(mRange.upper/mTickStep);
+    qint64 firstStep = floor(mRange.lower/mTickStep); // do not use qFloor here, or we'll lose 64 bit precision
+    qint64 lastStep = ceil(mRange.upper/mTickStep); // do not use qCeil here, or we'll lose 64 bit precision
     int tickcount = lastStep-firstStep+1;
     if (tickcount < 0) tickcount = 0;
     mTickVector.resize(tickcount);
@@ -1991,7 +1991,7 @@ void QCPAxis::generateAutoTicks()
     // Generate tick positions according to logbase scaling:
     if (mRange.lower > 0 && mRange.upper > 0) // positive range
     {
-      double lowerMag = basePow((int)floor(baseLog(mRange.lower)));
+      double lowerMag = basePow(qFloor(baseLog(mRange.lower)));
       double currentMag = lowerMag;
       mTickVector.clear();
       mTickVector.append(currentMag);
@@ -2002,7 +2002,7 @@ void QCPAxis::generateAutoTicks()
       }
     } else if (mRange.lower < 0 && mRange.upper < 0) // negative range
     {
-      double lowerMag = -basePow((int)ceil(baseLog(-mRange.lower)));
+      double lowerMag = -basePow(qCeil(baseLog(-mRange.lower)));
       double currentMag = lowerMag;
       mTickVector.clear();
       mTickVector.append(currentMag);
