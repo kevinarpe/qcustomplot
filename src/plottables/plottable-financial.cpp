@@ -370,10 +370,10 @@ QCPFinancialDataMap QCPFinancial::timeSeriesToOhlc(const QVector<double> &time, 
     return QCPFinancialDataMap();
   
   QCPFinancialData currentBinData(0, value.first(), value.first(), value.first(), value.first());
-  int currentBinIndex = qFloor((time.first()-timeBinOffset)/timeBinSize);
+  int currentBinIndex = qFloor((time.first()-timeBinOffset)/timeBinSize+0.5);
   for (int i=0; i<count; ++i)
   {
-    int index = qFloor((time.at(i)-timeBinOffset)/timeBinSize);
+    int index = qFloor((time.at(i)-timeBinOffset)/timeBinSize+0.5);
     if (currentBinIndex == index) // data point still in current bin, extend high/low:
     {
       if (value.at(i) < currentBinData.low) currentBinData.low = value.at(i);
@@ -381,14 +381,14 @@ QCPFinancialDataMap QCPFinancial::timeSeriesToOhlc(const QVector<double> &time, 
       if (i == count-1) // last data point is in current bin, finalize bin:
       {
         currentBinData.close = value.at(i);
-        currentBinData.key = timeBinOffset+(index+0.5)*timeBinSize;
+        currentBinData.key = timeBinOffset+(index)*timeBinSize;
         map.insert(currentBinData.key, currentBinData);
       }
     } else // data point not anymore in current bin, set close of old and open of new bin, and add old to map:
     {
       // finalize current bin:
       currentBinData.close = value.at(i-1);
-      currentBinData.key = timeBinOffset+(index-1+0.5)*timeBinSize;
+      currentBinData.key = timeBinOffset+(index-1)*timeBinSize;
       map.insert(currentBinData.key, currentBinData);
       // start next bin:
       currentBinIndex = index;
