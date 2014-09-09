@@ -75,6 +75,7 @@ MainWindow::MainWindow(QWidget *parent) :
   // 16: setupStyledDemo(ui->customPlot);
   // 17: setupAdvancedAxesDemo(ui->customPlot);
   // 18: setupColorMapDemo(ui->customPlot);
+  // 19: setupFinancialDemo(ui->customPlot);
   
   // for making screenshots of the current demo or all demos (for website screenshots):
   //QTimer::singleShot(1500, this, SLOT(allScreenShots()));
@@ -104,6 +105,7 @@ void MainWindow::setupDemo(int demoIndex)
     case 16: setupStyledDemo(ui->customPlot); break;
     case 17: setupAdvancedAxesDemo(ui->customPlot); break;
     case 18: setupColorMapDemo(ui->customPlot); break;
+    case 19: setupFinancialDemo(ui->customPlot); break;
   }
   setWindowTitle("QCustomPlot: "+demoName);
   statusBar()->clearMessage();
@@ -1351,6 +1353,105 @@ void MainWindow::setupColorMapDemo(QCustomPlot *customPlot)
   customPlot->rescaleAxes();
 }
 
+void MainWindow::setupFinancialDemo(QCustomPlot *customPlot)
+{
+  demoName = "Financial Charts Demo";
+  customPlot->legend->setVisible(true);
+  
+  // generate two sets of random walk data (one for candlestick and one for ohlc chart):
+  int n = 500;
+  QVector<double> time(n), value1(n), value2(n);
+  QDateTime start = QDateTime(QDate(2014, 6, 11));
+  start.setTimeSpec(Qt::UTC);
+  double startTime = start.toTime_t();
+  double binSize = 3600*24; // bin data in 1 day intervals
+  time[0] = startTime;
+  value1[0] = 60;
+  value2[0] = 20;
+  qsrand(9);
+  for (int i=1; i<n; ++i)
+  {
+    time[i] = startTime + 3600*i;
+    value1[i] = value1[i-1] + (qrand()/(double)RAND_MAX-0.5)*10;
+    value2[i] = value2[i-1] + (qrand()/(double)RAND_MAX-0.5)*3;
+  }
+  
+  // create candlestick chart:
+  QCPFinancial *candlesticks = new QCPFinancial(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(candlesticks);
+  QCPFinancialDataMap data1 = QCPFinancial::timeSeriesToOhlc(time, value1, binSize, startTime);
+  candlesticks->setName("Candlestick");
+  candlesticks->setChartStyle(QCPFinancial::csCandlestick);
+  candlesticks->setData(&data1, true);
+  candlesticks->setWidth(binSize*0.9);
+  candlesticks->setTwoColored(true);
+  candlesticks->setBrushPositive(QColor(245, 245, 245));
+  candlesticks->setBrushNegative(QColor(0, 0, 0));
+  candlesticks->setPenPositive(QPen(QColor(0, 0, 0)));
+  candlesticks->setPenNegative(QPen(QColor(0, 0, 0)));
+  
+  // create ohlc chart:
+  QCPFinancial *ohlc = new QCPFinancial(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(ohlc);
+  QCPFinancialDataMap data2 = QCPFinancial::timeSeriesToOhlc(time, value2, binSize/3.0, startTime); // divide binSize by 3 just to make the ohlc bars a bit denser
+  ohlc->setName("OHLC");
+  ohlc->setChartStyle(QCPFinancial::csOhlc);
+  ohlc->setData(&data2, true);
+  ohlc->setWidth(binSize*0.2);
+  ohlc->setTwoColored(true);
+  
+  // create bottom axis rect for volume bar chart:
+  QCPAxisRect *volumeAxisRect = new QCPAxisRect(customPlot);
+  customPlot->plotLayout()->addElement(1, 0, volumeAxisRect);
+  volumeAxisRect->setMaximumSize(QSize(QWIDGETSIZE_MAX, 100));
+  // bring bottom and main axis rect closer together:
+  customPlot->plotLayout()->setRowSpacing(0);
+  volumeAxisRect->setAutoMargins(QCP::msLeft|QCP::msRight|QCP::msBottom);
+  volumeAxisRect->setMargins(QMargins(0, 0, 0, 0));
+  // create two bar plottables, for positive (green) and negative (red) volume bars:
+  QCPBars *volumePos = new QCPBars(volumeAxisRect->axis(QCPAxis::atBottom), volumeAxisRect->axis(QCPAxis::atLeft));
+  QCPBars *volumeNeg = new QCPBars(volumeAxisRect->axis(QCPAxis::atBottom), volumeAxisRect->axis(QCPAxis::atLeft));
+  for (int i=0; i<n/5; ++i)
+  {
+    int v = qrand()%20000+qrand()%20000+qrand()%20000-10000*3;
+    (v < 0 ? volumeNeg : volumePos)->addData(startTime+3600*5.0*i, qAbs(v)); // add data to either volumeNeg or volumePos, depending on sign of v
+  }
+  customPlot->setAutoAddPlottableToLegend(false);
+  customPlot->addPlottable(volumePos);
+  customPlot->addPlottable(volumeNeg);
+  volumePos->setWidth(3600*4);
+  volumePos->setPen(Qt::NoPen);
+  volumePos->setBrush(QColor(100, 180, 110));
+  volumeNeg->setWidth(3600*4);
+  volumeNeg->setPen(Qt::NoPen);
+  volumeNeg->setBrush(QColor(180, 90, 90));
+  
+  // interconnect x axis ranges of main and bottom axis rects:
+  connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), volumeAxisRect->axis(QCPAxis::atBottom), SLOT(setRange(QCPRange)));
+  connect(volumeAxisRect->axis(QCPAxis::atBottom), SIGNAL(rangeChanged(QCPRange)), customPlot->xAxis, SLOT(setRange(QCPRange)));
+  // configure axes of both main and bottom axis rect:
+  volumeAxisRect->axis(QCPAxis::atBottom)->setAutoTickStep(false);
+  volumeAxisRect->axis(QCPAxis::atBottom)->setTickStep(3600*24*4); // 4 day tickstep
+  volumeAxisRect->axis(QCPAxis::atBottom)->setTickLabelType(QCPAxis::ltDateTime);
+  volumeAxisRect->axis(QCPAxis::atBottom)->setDateTimeSpec(Qt::UTC);
+  volumeAxisRect->axis(QCPAxis::atBottom)->setDateTimeFormat("dd. MMM");
+  volumeAxisRect->axis(QCPAxis::atBottom)->setTickLabelRotation(15);
+  volumeAxisRect->axis(QCPAxis::atLeft)->setAutoTickCount(3);
+  customPlot->xAxis->setBasePen(Qt::NoPen);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->xAxis->setTicks(false); // only want vertical grid in main axis rect, so hide xAxis backbone, ticks, and labels
+  customPlot->xAxis->setAutoTickStep(false);
+  customPlot->xAxis->setTickStep(3600*24*4); // 4 day tickstep
+  customPlot->rescaleAxes();
+  customPlot->xAxis->scaleRange(1.025, customPlot->xAxis->range().center());
+  customPlot->yAxis->scaleRange(1.1, customPlot->yAxis->range().center());
+  
+  // make axis rects' left side line up:
+  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
+  customPlot->axisRect()->setMarginGroup(QCP::msLeft|QCP::msRight, group);
+  volumeAxisRect->setMarginGroup(QCP::msLeft|QCP::msRight, group);
+}
+
 void MainWindow::realtimeDataSlot()
 {
   // calculate two new data points:
@@ -1475,7 +1576,7 @@ void MainWindow::allScreenShots()
   fileName.replace(" ", "");
   pm.save("./screenshots/"+fileName);
   
-  if (currentDemoIndex < 18)
+  if (currentDemoIndex < 19)
   {
     if (dataTimer.isActive())
       dataTimer.stop();

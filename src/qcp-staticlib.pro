@@ -42,6 +42,7 @@ plottables/plottable-curve.h \
 plottables/plottable-bars.h \
 plottables/plottable-statisticalbox.h \
 plottables/plottable-colormap.h \
+plottables/plottable-financial.h \
 items/item-straightline.h \
 items/item-line.h \
 items/item-curve.h \
@@ -72,6 +73,7 @@ plottables/plottable-curve.cpp \
 plottables/plottable-bars.cpp \
 plottables/plottable-statisticalbox.cpp \
 plottables/plottable-colormap.cpp \
+plottables/plottable-financial.cpp \
 items/item-straightline.cpp \
 items/item-line.cpp \
 items/item-curve.cpp \
