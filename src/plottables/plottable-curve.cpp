@@ -409,11 +409,32 @@ void QCPCurve::draw(QCPPainter *painter)
         !painter->modes().testFlag(QCPPainter::pmVectorized) &&
         !painter->modes().testFlag(QCPPainter::pmNoCaching))
     {
-      for (int i=1; i<lineData->size(); ++i)
-        painter->drawLine(lineData->at(i-1), lineData->at(i));
+      int i = 1;
+      int lineDataSize = lineData->size();
+      while (i < lineDataSize)
+      {
+        if (!qIsNaN(lineData->at(i).y()) && !qIsNaN(lineData->at(i).x())) // NaNs create a gap in the line
+          painter->drawLine(lineData->at(i-1), lineData->at(i));
+        else
+          ++i;
+        ++i;
+      }
     } else
     {
-      painter->drawPolyline(QPolygonF(*lineData));
+      int segmentStart = 0;
+      int i = 0;
+      int lineDataSize = lineData->size();
+      while (i < lineDataSize)
+      {
+        if (qIsNaN(lineData->at(i).y()) || qIsNaN(lineData->at(i).x())) // NaNs create a gap in the line
+        {
+          painter->drawPolyline(lineData->constData()+segmentStart, i-segmentStart); // i, because we don't want to include the current NaN point
+          segmentStart = i+1;
+        }
+        ++i;
+      }
+      // draw last segment:
+      painter->drawPolyline(lineData->constData()+segmentStart, lineDataSize-segmentStart); // lineDataSize, because we do want to include the last point
     }
   }
   
@@ -471,7 +492,8 @@ void QCPCurve::drawScatterPlot(QCPPainter *painter, const QVector<QPointF> *poin
   applyScattersAntialiasingHint(painter);
   mScatterStyle.applyTo(painter, mPen);
   for (int i=0; i<pointData->size(); ++i)
-    mScatterStyle.drawShape(painter,  pointData->at(i));
+    if (!qIsNaN(pointData->at(i).x()) && !qIsNaN(pointData->at(i).y()))
+      mScatterStyle.drawShape(painter,  pointData->at(i));
 }
 
 /*! \internal
