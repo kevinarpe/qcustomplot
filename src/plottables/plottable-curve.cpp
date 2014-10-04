@@ -533,7 +533,6 @@ void QCPCurve::getCurveData(QVector<QPointF> *lineData) const
         } else // doesn't cross R, line is just moving around in outside regions, so only need to add optimized point(s) at the boundary corner(s)
         {
           *lineData << getOptimizedCornerPoints(prevRegion, currentRegion, prevIt.value().key, prevIt.value().value, it.value().key, it.value().value, rectLeft, rectTop, rectRight, rectBottom);
-          // TODO: Boundary cross id prevRegion*10+currentRegion. check that we didn't just cross in the other direction. If not, add to cross id stack
         }
       } else // segment does end in R, so we add previous point optimized and this point at original position
       {
@@ -1099,39 +1098,6 @@ double QCPCurve::pointDistance(const QPointF &pixelPoint) const
   }
   delete lineData;
   return qSqrt(minDistSqr);
-}
-
-/*! \internal
-  
-  This is a specialized \ref coordsToPixels function for points that are outside the visible
-  axisRect and just crossing a boundary (since \ref getCurveData reduces non-visible curve segments
-  to those line segments that cross region boundaries, see documentation there). It only uses the
-  coordinate parallel to the region boundary of the axisRect. The other coordinate is picked just
-  outside the axisRect (how far is determined by the scatter size and the line width). Together
-  with the optimization in \ref getCurveData this improves performance for large curves (or zoomed
-  in ones) significantly while keeping the illusion the whole curve and its filling is still being
-  drawn for the viewer.
-*/
-QPointF QCPCurve::outsideCoordsToPixels(double key, double value, int region, QRect axisRect) const
-{
-  int margin = qCeil(qMax(mScatterStyle.size(), (double)mPen.widthF())) + 2;
-  QPointF result = coordsToPixels(key, value);
-  switch (region)
-  {
-    case 2: result.setX(axisRect.left()-margin); break; // left
-    case 8: result.setX(axisRect.right()+margin); break; // right
-    case 4: result.setY(axisRect.top()-margin); break; // top
-    case 6: result.setY(axisRect.bottom()+margin); break; // bottom
-    case 1: result.setX(axisRect.left()-margin);
-            result.setY(axisRect.top()-margin); break; // top left
-    case 7: result.setX(axisRect.right()+margin);
-            result.setY(axisRect.top()-margin); break; // top right
-    case 9: result.setX(axisRect.right()+margin);
-            result.setY(axisRect.bottom()+margin); break; // bottom right
-    case 3: result.setX(axisRect.left()-margin);
-            result.setY(axisRect.bottom()+margin); break; // bottom left
-  }
-  return result;
 }
 
 /* inherits documentation from base class */

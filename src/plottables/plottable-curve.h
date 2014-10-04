@@ -126,7 +126,6 @@ protected:
   bool mayTraverse(int prevRegion, int currentRegion) const;
   int getRegion(double x, double y, double rectLeft, double rectTop, double rectRight, double rectBottom) const;
   double pointDistance(const QPointF &pixelPoint) const;
-  QPointF outsideCoordsToPixels(double key, double value, int region, QRect axisRect) const;
   
   friend class QCustomPlot;
   friend class QCPLegend;
