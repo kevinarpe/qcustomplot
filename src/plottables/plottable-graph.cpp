@@ -1189,11 +1189,13 @@ void QCPGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatterDat
   if (keyAxis->orientation() == Qt::Vertical)
   {
     for (int i=0; i<scatterData->size(); ++i)
-      mScatterStyle.drawShape(painter, valueAxis->coordToPixel(scatterData->at(i).value), keyAxis->coordToPixel(scatterData->at(i).key));
+      if (!qIsNaN(scatterData->at(i).value))
+        mScatterStyle.drawShape(painter, valueAxis->coordToPixel(scatterData->at(i).value), keyAxis->coordToPixel(scatterData->at(i).key));
   } else
   {
     for (int i=0; i<scatterData->size(); ++i)
-      mScatterStyle.drawShape(painter, keyAxis->coordToPixel(scatterData->at(i).key), valueAxis->coordToPixel(scatterData->at(i).value));
+      if (!qIsNaN(scatterData->at(i).value))
+        mScatterStyle.drawShape(painter, keyAxis->coordToPixel(scatterData->at(i).key), valueAxis->coordToPixel(scatterData->at(i).value));
   }
 }
 
@@ -1236,11 +1238,32 @@ void QCPGraph::drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) con
         !painter->modes().testFlag(QCPPainter::pmVectorized)&&
         !painter->modes().testFlag(QCPPainter::pmNoCaching))
     {
-      for (int i=1; i<lineData->size(); ++i)
-        painter->drawLine(lineData->at(i-1), lineData->at(i));
+      int i = 1;
+      int lineDataSize = lineData->size();
+      while (i < lineDataSize)
+      {
+        if (!qIsNaN(lineData->at(i).y()) && !qIsNaN(lineData->at(i).x())) // NaNs create a gap in the line
+          painter->drawLine(lineData->at(i-1), lineData->at(i));
+        else
+          ++i;
+        ++i;
+      }
     } else
     {
-      painter->drawPolyline(QPolygonF(*lineData));
+      int segmentStart = 0;
+      int i = 0;
+      int lineDataSize = lineData->size();
+      while (i < lineDataSize)
+      {
+        if (qIsNaN(lineData->at(i).y()) || qIsNaN(lineData->at(i).x())) // NaNs create a gap in the line
+        {
+          painter->drawPolyline(lineData->constData()+segmentStart, i-segmentStart); // i, because we don't want to include the current NaN point
+          segmentStart = i+1;
+        }
+        ++i;
+      }
+      // draw last segment:
+      painter->drawPolyline(lineData->constData()+segmentStart, lineDataSize-segmentStart); // lineDataSize, because we do want to include the last point
     }
   }
 }
@@ -1468,6 +1491,8 @@ void QCPGraph::getPreparedData(QVector<QCPData> *lineData, QVector<QCPData> *sca
 */
 void QCPGraph::drawError(QCPPainter *painter, double x, double y, const QCPData &data) const
 {
+  if (qIsNaN(data.value))
+    return;
   QCPAxis *keyAxis = mKeyAxis.data();
   QCPAxis *valueAxis = mValueAxis.data();
   if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
