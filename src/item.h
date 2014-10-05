@@ -54,14 +54,16 @@ protected:
   QCustomPlot *mParentPlot;
   QCPAbstractItem *mParentItem;
   int mAnchorId;
-  QSet<QCPItemPosition*> mChildren;
+  QSet<QCPItemPosition*> mChildrenX, mChildrenY;
   
   // introduced virtual methods:
   virtual QCPItemPosition *toQCPItemPosition() { return 0; }
   
   // non-virtual methods:
-  void addChild(QCPItemPosition* pos); // called from pos when this anchor is set as parent
-  void removeChild(QCPItemPosition *pos); // called from pos when its parent anchor is reset or pos deleted
+  void addChildX(QCPItemPosition* pos); // called from pos when this anchor is set as parent
+  void removeChildX(QCPItemPosition *pos); // called from pos when its parent anchor is reset or pos deleted
+  void addChildY(QCPItemPosition* pos); // called from pos when this anchor is set as parent
+  void removeChildY(QCPItemPosition *pos); // called from pos when its parent anchor is reset or pos deleted
   
 private:
   Q_DISABLE_COPY(QCPItemAnchor)
@@ -94,8 +96,12 @@ public:
   virtual ~QCPItemPosition();
   
   // getters:
-  PositionType type() const { return mPositionType; }
-  QCPItemAnchor *parentAnchor() const { return mParentAnchor; }
+  PositionType type() const { return typeX(); }
+  PositionType typeX() const { return mPositionTypeX; }
+  PositionType typeY() const { return mPositionTypeY; }
+  QCPItemAnchor *parentAnchor() const { return parentAnchorX(); }
+  QCPItemAnchor *parentAnchorX() const { return mParentAnchorX; }
+  QCPItemAnchor *parentAnchorY() const { return mParentAnchorY; }
   double key() const { return mKey; }
   double value() const { return mValue; }
   QPointF coords() const { return QPointF(mKey, mValue); }
@@ -106,7 +112,11 @@ public:
   
   // setters:
   void setType(PositionType type);
+  void setTypeX(PositionType type);
+  void setTypeY(PositionType type);
   bool setParentAnchor(QCPItemAnchor *parentAnchor, bool keepPixelPosition=false);
+  bool setParentAnchorX(QCPItemAnchor *parentAnchor, bool keepPixelPosition=false);
+  bool setParentAnchorY(QCPItemAnchor *parentAnchor, bool keepPixelPosition=false);
   void setCoords(double key, double value);
   void setCoords(const QPointF &coords);
   void setAxes(QCPAxis* keyAxis, QCPAxis* valueAxis);
@@ -115,11 +125,11 @@ public:
   
 protected:
   // property members:
-  PositionType mPositionType;
+  PositionType mPositionTypeX, mPositionTypeY;
   QPointer<QCPAxis> mKeyAxis, mValueAxis;
   QPointer<QCPAxisRect> mAxisRect;
   double mKey, mValue;
-  QCPItemAnchor *mParentAnchor;
+  QCPItemAnchor *mParentAnchorX, *mParentAnchorY;
   
   // reimplemented virtual methods:
   virtual QCPItemPosition *toQCPItemPosition() { return this; }

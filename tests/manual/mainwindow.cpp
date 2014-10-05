@@ -174,6 +174,15 @@ void MainWindow::setupItemTracerTest(QCustomPlot *customPlot)
   text->position->setType(QCPItemPosition::ptAxisRectRatio);
   text->position->setCoords(0.5, 0.05);
   text->setPen(QPen());
+  
+  QCPItemText *vtext = new QCPItemText(customPlot);
+  customPlot->addItem(vtext);
+  vtext->setText("Height");
+  vtext->setPositionAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  vtext->position->setParentAnchorY(graphTracer->position);
+  vtext->position->setTypeX(QCPItemPosition::ptAxisRectRatio);
+  vtext->position->setCoords(1, 0);
+  vtext->setPen(QPen());
 
   QCPItemCurve *curve = new QCPItemCurve(customPlot);
   customPlot->addItem(curve);
