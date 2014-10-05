@@ -403,7 +403,7 @@ QCPLegend::QCPLegend()
 QCPLegend::~QCPLegend()
 {
   clearItems();
-  if (mParentPlot)
+  if (qobject_cast<QCustomPlot*>(mParentPlot)) // make sure this isn't called from QObject dtor when QCustomPlot is already destructed (happens when the legend is not in any layout and thus QObject-child of QCustomPlot)
     mParentPlot->legendRemoved(this);
 }
 
