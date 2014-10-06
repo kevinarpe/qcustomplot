@@ -190,24 +190,57 @@ void QCPItemAnchor::removeChildY(QCPItemPosition *pos)
   item on the QCustomPlot surface. Some items have multiple positions, for example QCPItemRect has two:
   \a topLeft and \a bottomRight.
 
-  QCPItemPosition has a type (\ref PositionType) that can be set with \ref setType. This type defines
-  how coordinates passed to \ref setCoords are to be interpreted, e.g. as absolute pixel coordinates, as
-  plot coordinates of certain axes, etc.
+  QCPItemPosition has a type (\ref PositionType) that can be set with \ref setType. This type
+  defines how coordinates passed to \ref setCoords are to be interpreted, e.g. as absolute pixel
+  coordinates, as plot coordinates of certain axes, etc. For more advanced plots it is also
+  possible to assign different types per X/Y coordinate of the position (see \ref setTypeX, \ref
+  setTypeY). This way an item could be positioned at a fixed pixel distance from the top in the Y
+  direction, while following a plot coordinate in the X direction.
 
-  Further, QCPItemPosition may have a parent QCPItemAnchor, see \ref setParentAnchor. (Note that every
-  QCPItemPosition inherits from QCPItemAnchor and thus can itself be used as parent anchor for other
-  positions.) This way you can tie multiple items together. If the QCPItemPosition has a parent, the
-  coordinates set with \ref setCoords are considered to be absolute values in the reference frame of the
-  parent anchor, where (0, 0) means directly ontop of the parent anchor. For example, You could attach
-  the \a start position of a QCPItemLine to the \a bottom anchor of a QCPItemText to make the starting
-  point of the line always be centered under the text label, no matter where the text is moved to, or is
-  itself tied to.
+  A QCPItemPosition may have a parent QCPItemAnchor, see \ref setParentAnchor. This way you can tie
+  multiple items together. If the QCPItemPosition has a parent, its coordinates (\ref setCoords)
+  are considered to be absolute pixels in the reference frame of the parent anchor, where (0, 0)
+  means directly ontop of the parent anchor. For example, You could attach the \a start position of
+  a QCPItemLine to the \a bottom anchor of a QCPItemText to make the starting point of the line
+  always be centered under the text label, no matter where the text is moved to. For more advanced
+  plots, it is possible to assign different parent anchors per X/Y coordinate of the position, see
+  \ref setParentAnchorX, \ref setParentAnchorY. This way an item could follow another item in the X
+  direction but stay at a fixed position in the Y direction. Or even follow item A in X, and item B
+  in Y.
+
+  Note that every QCPItemPosition inherits from QCPItemAnchor and thus can itself be used as parent
+  anchor for other positions.
 
   To set the apparent pixel position on the QCustomPlot surface directly, use \ref setPixelPoint. This
   works no matter what type this QCPItemPosition is or what parent-child situation it is in, as \ref
   setPixelPoint transforms the coordinates appropriately, to make the position appear at the specified
   pixel values.
 */
+
+/* start documentation of inline functions */
+
+/*! \fn QCPItemPosition::PositionType *QCPItemPosition::type() const
+  
+  Returns the current position type.
+  
+  If different types were set for X and Y (\ref setTypeX, \ref setTypeY), this method returns the
+  type of the X coordinate. In that case rather use \a typeX() and \a typeY().
+  
+  \see setType
+*/
+
+/*! \fn QCPItemAnchor *QCPItemPosition::parentAnchor() const
+  
+  Returns the current parent anchor.
+  
+  If different parent anchors were set for X and Y (\ref setParentAnchorX, \ref setParentAnchorY),
+  this method returns the parent anchor of the Y coordinate. In that case rather use \a
+  parentAnchorX() and \a parentAnchorY().
+  
+  \see setParentAnchor
+*/
+
+/* end documentation of inline functions */
 
 /*!
   Creates a new QCPItemPosition. You shouldn't create QCPItemPosition instances directly, even if
@@ -274,6 +307,9 @@ QCPAxisRect *QCPItemPosition::axisRect() const
   
   If the type is changed, the apparent pixel position on the plot is preserved. This means
   the coordinates as retrieved with coords() and set with \ref setCoords may change in the process.
+  
+  This method sets the type for both X and Y directions. It is also possible to set different types
+  for X and Y, see \ref setTypeX, \ref setTypeY.
 */
 void QCPItemPosition::setType(QCPItemPosition::PositionType type)
 {
@@ -281,6 +317,13 @@ void QCPItemPosition::setType(QCPItemPosition::PositionType type)
   setTypeY(type);
 }
 
+/*!
+  This method sets the position type of the X coordinate to \a type.
+  
+  For a detailed description of what a position type is, see the documentation of \ref setType.
+  
+  \see setType, setTypeY
+*/
 void QCPItemPosition::setTypeX(QCPItemPosition::PositionType type)
 {
   if (mPositionTypeX != type)
@@ -304,6 +347,13 @@ void QCPItemPosition::setTypeX(QCPItemPosition::PositionType type)
   }
 }
 
+/*!
+  This method sets the position type of the Y coordinate to \a type.
+  
+  For a detailed description of what a position type is, see the documentation of \ref setType.
+  
+  \see setType, setTypeX
+*/
 void QCPItemPosition::setTypeY(QCPItemPosition::PositionType type)
 {
   if (mPositionTypeY != type)
@@ -330,8 +380,8 @@ void QCPItemPosition::setTypeY(QCPItemPosition::PositionType type)
 /*!
   Sets the parent of this QCPItemPosition to \a parentAnchor. This means the position will now
   follow any position changes of the anchor. The local coordinate system of positions with a parent
-  anchor always is absolute with (0, 0) being exactly on top of the parent anchor. (Hence the type
-  shouldn't be \ref ptPlotCoords for positions with parent anchors.)
+  anchor always is absolute pixels, with (0, 0) being exactly on top of the parent anchor. (Hence
+  the type shouldn't be set to \ref ptPlotCoords for positions with parent anchors.)
   
   if \a keepPixelPosition is true, the current pixel position of the QCPItemPosition is preserved
   during reparenting. If it's set to false, the coordinates are set to (0, 0), i.e. the position
@@ -341,6 +391,9 @@ void QCPItemPosition::setTypeY(QCPItemPosition::PositionType type)
   
   If the QCPItemPosition previously had no parent and the type is \ref ptPlotCoords, the type is
   set to \ref ptAbsolute, to keep the position in a valid state.
+  
+  This method sets the parent anchor for both X and Y directions. It is also possible to set
+  different parents for X and Y, see \ref setParentAnchorX, \ref setParentAnchorY.
 */
 bool QCPItemPosition::setParentAnchor(QCPItemAnchor *parentAnchor, bool keepPixelPosition)
 {
@@ -349,6 +402,13 @@ bool QCPItemPosition::setParentAnchor(QCPItemAnchor *parentAnchor, bool keepPixe
   return successX && successY;
 }
 
+/*!
+  This method sets the parent anchor of the X coordinate to \a parentAnchor.
+  
+  For a detailed description of what a parent anchor is, see the documentation of \ref setParentAnchor.
+  
+  \see setParentAnchor, setParentAnchorY
+*/
 bool QCPItemPosition::setParentAnchorX(QCPItemAnchor *parentAnchor, bool keepPixelPosition)
 {
   // make sure self is not assigned as parent:
@@ -407,6 +467,13 @@ bool QCPItemPosition::setParentAnchorX(QCPItemAnchor *parentAnchor, bool keepPix
   return true;
 }
 
+/*!
+  This method sets the parent anchor of the Y coordinate to \a parentAnchor.
+  
+  For a detailed description of what a parent anchor is, see the documentation of \ref setParentAnchor.
+  
+  \see setParentAnchor, setParentAnchorX
+*/
 bool QCPItemPosition::setParentAnchorY(QCPItemAnchor *parentAnchor, bool keepPixelPosition)
 {
   // make sure self is not assigned as parent:
@@ -467,7 +534,7 @@ bool QCPItemPosition::setParentAnchorY(QCPItemAnchor *parentAnchor, bool keepPix
 
 /*!
   Sets the coordinates of this QCPItemPosition. What the coordinates mean, is defined by the type
-  (\ref setType).
+  (\ref setType, \ref setTypeX, \ref setTypeY).
   
   For example, if the type is \ref ptAbsolute, \a key and \a value mean the x and y pixel position
   on the QCustomPlot surface. In that case the origin (0, 0) is in the top left corner of the
@@ -475,6 +542,10 @@ bool QCPItemPosition::setParentAnchorY(QCPItemAnchor *parentAnchor, bool keepPix
   plot coordinate system defined by the axes set by \ref setAxes. By default those are the
   QCustomPlot's xAxis and yAxis. See the documentation of \ref setType for other available
   coordinate types and their meaning.
+  
+  If different types were configured for X and Y (\ref setTypeX, \ref setTypeY), \a key and \a
+  value must also be provided in the different coordinate systems. Here, the X type refers to \a
+  key, and the Y type refers to \a value.
 
   \see setPixelPoint
 */
@@ -617,8 +688,8 @@ void QCPItemPosition::setAxisRect(QCPAxisRect *axisRect)
 }
 
 /*!
-  Sets the apparent pixel position. This works no matter what type (\ref setTypeX, \ref setTypeY)
-  this QCPItemPosition is or what parent-child situation it is in, as coordinates are transformed
+  Sets the apparent pixel position. This works no matter what type (\ref setType) this
+  QCPItemPosition is or what parent-child situation it is in, as coordinates are transformed
   appropriately, to make the position finally appear at the specified pixel values.
 
   Only if the type is \ref ptAbsolute and no parent anchor is set, this function's effect is
@@ -790,6 +861,10 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
   \code
   line->setClipToAxisRect(false);
   \endcode
+  
+  For more advanced plots, it is even possible to set different types and parent anchors per X/Y
+  coordinate of an item position, using for example \ref QCPItemPosition::setTypeX or \ref
+  QCPItemPosition::setParentAnchorX. For details, see the documentation of \ref QCPItemPosition.
   
   \section items-subclassing Creating own items
   
