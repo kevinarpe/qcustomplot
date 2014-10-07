@@ -59,13 +59,13 @@ class QCP_LIB_DECL QCPFinancial : public QCPAbstractPlottable
 {
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
-  /*
-  Q_PROPERTY(LineStyle lineStyle READ lineStyle WRITE setLineStyle)
-  Q_PROPERTY(QCPScatterStyle scatterStyle READ scatterStyle WRITE setScatterStyle)
-  Q_PROPERTY(ErrorType errorType READ errorType WRITE setErrorType)
-  Q_PROPERTY(QPen errorPen READ errorPen WRITE setErrorPen)
-  Q_PROPERTY(bool adaptiveSampling READ adaptiveSampling WRITE setAdaptiveSampling)
-  */
+  Q_PROPERTY(ChartStyle chartStyle READ chartStyle WRITE setChartStyle)
+  Q_PROPERTY(double width READ width WRITE setWidth)
+  Q_PROPERTY(bool twoColored READ twoColored WRITE setTwoColored)
+  Q_PROPERTY(QBrush brushPositive READ brushPositive WRITE setBrushPositive)
+  Q_PROPERTY(QBrush brushNegative READ brushNegative WRITE setBrushNegative)
+  Q_PROPERTY(QPen penPositive READ penPositive WRITE setPenPositive)
+  Q_PROPERTY(QPen penNegative READ penNegative WRITE setPenNegative)
   /// \endcond
 public:
   /*!

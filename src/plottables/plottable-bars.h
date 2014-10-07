@@ -37,6 +37,10 @@ class QCPBars;
 class QCP_LIB_DECL QCPBarsGroup : public QObject
 {
   Q_OBJECT
+  /// \cond INCLUDE_QPROPERTIES
+  Q_PROPERTY(SpacingType spacingType READ spacingType WRITE setSpacingType)
+  Q_PROPERTY(double spacing READ spacing WRITE setSpacing)
+  /// \endcond
 public:
   /*!
     Defines the ways the spacing between bars in the group can be specified. Thus it defines what
@@ -118,6 +122,9 @@ class QCP_LIB_DECL QCPBars : public QCPAbstractPlottable
   Q_OBJECT
   /// \cond INCLUDE_QPROPERTIES
   Q_PROPERTY(double width READ width WRITE setWidth)
+  Q_PROPERTY(WidthType widthType READ widthType WRITE setWidthType)
+  Q_PROPERTY(QCPBarsGroup* barsGroup READ barsGroup WRITE setBarsGroup)
+  Q_PROPERTY(double baseValue READ baseValue WRITE setBaseValue)
   Q_PROPERTY(QCPBars* barBelow READ barBelow)
   Q_PROPERTY(QCPBars* barAbove READ barAbove)
   /// \endcond
