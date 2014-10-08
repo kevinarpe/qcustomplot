@@ -43,8 +43,8 @@ public:
 };
 Q_DECLARE_TYPEINFO(QCPFinancialData, Q_MOVABLE_TYPE);
 
-/*! \typedef QCPFinancialData
-  Container for storing QCPFinancialData items in a sorted fashion. The key of the map
+/*! \typedef QCPFinancialDataMap
+  Container for storing \ref QCPFinancialData items in a sorted fashion. The key of the map
   is the key member of the QCPFinancialData instance.
   
   This is the container in which QCPFinancial holds its data.
@@ -69,9 +69,11 @@ class QCP_LIB_DECL QCPFinancial : public QCPAbstractPlottable
   /// \endcond
 public:
   /*!
+    Defines the possible representations of OHLC data in the plot.
     
+    \see setChartStyle
   */
-  enum ChartStyle { csOhlc         ///< Open-High-Low-Close representation
+  enum ChartStyle { csOhlc         ///< Open-High-Low-Close bar representation
                    ,csCandlestick  ///< Candlestick representation
                   };
   Q_ENUMS(ChartStyle)

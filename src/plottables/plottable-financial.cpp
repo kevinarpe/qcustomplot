@@ -62,7 +62,7 @@ QCPFinancialData::QCPFinancialData() :
 }
 
 /*!
-  Constructs a data point with the specified \a key and values.
+  Constructs a data point with the specified \a key and OHLC values.
 */
 QCPFinancialData::QCPFinancialData(double key, double open, double high, double low, double close) :
   key(key),
@@ -83,10 +83,30 @@ QCPFinancialData::QCPFinancialData(double key, double open, double high, double 
 
   \image html QCPFinancial.png
   
+  This plottable represents time series data binned to certain intervals, mainly used for stock
+  charts. The two common representations OHLC (Open-High-Low-Close) bars and Candlesticks can be
+  set via \ref setChartStyle.
   
+  The data is passed via \ref setData as a set of open/high/low/close values at certain keys
+  (typically times). This means the data must be already binned appropriately. If data is only
+  available as a series of values (e.g. \a price against \a time), you can use the static
+  convenience function \ref timeSeriesToOhlc to generate binned OHLC-data which can then be passed
+  to \ref setData.
+  
+  The width of the OHLC bars/candlesticks can be controlled with \ref setWidth and is given in plot
+  key coordinates. A typical choice is to set it to (or slightly less than) one bin interval width.
   
   \section appearance Changing the appearance
   
+  Charts can be either single- or two-colored (\ref setTwoColored). If set to be single-colored,
+  lines are drawn with the plottable's pen (\ref setPen) and fills with the brush (\ref setBrush).
+  
+  If set to two-colored, positive changes of the value during an interval (\a close >= \a open) are
+  represented with a different pen and brush than negative changes (\a close < \a open). These can
+  be configured with \ref setPenPositive, \ref setPenNegative, \ref setBrushPositive, and \ref
+  setBrushNegative. In two-colored mode, the normal plottable pen/brush is ignored. Upon selection
+  however, the normal selected pen/brush (\ref setSelectedPen, \ref setSelectedBrush) is used,
+  irrespective of whether the chart is single- or two-colored.
   
 */
 
@@ -141,6 +161,8 @@ QCPFinancial::~QCPFinancial()
   
   Alternatively, you can also access and modify the plottable's data via the \ref data method, which
   returns a pointer to the internal \ref QCPFinancialDataMap.
+  
+  \see timeSeriesToOhlc
 */
 void QCPFinancial::setData(QCPFinancialDataMap *data, bool copy)
 {
@@ -158,6 +180,8 @@ void QCPFinancial::setData(QCPFinancialDataMap *data, bool copy)
   
   Replaces the current data with the provided open/high/low/close data. The provided vectors should
   have equal length. Else, the number of added points will be the size of the smallest vector.
+  
+  \see timeSeriesToOhlc
 */
 void QCPFinancial::setData(const QVector<double> &key, const QVector<double> &open, const QVector<double> &high, const QVector<double> &low, const QVector<double> &close)
 {
@@ -173,36 +197,89 @@ void QCPFinancial::setData(const QVector<double> &key, const QVector<double> &op
   }
 }
 
+/*!
+  Sets which representation style shall be used to display the OHLC data.
+*/
 void QCPFinancial::setChartStyle(QCPFinancial::ChartStyle style)
 {
   mChartStyle = style;
 }
 
+/*!
+  Sets the width of the individual bars/candlesticks to \a width in plot key coordinates.
+  
+  A typical choice is to set it to (or slightly less than) one bin interval width.
+*/
 void QCPFinancial::setWidth(double width)
 {
   mWidth = width;
 }
 
+/*!
+  Sets whether this chart shall contrast positive from negative trends per data point by using two
+  separate colors to draw the respective bars/candlesticks.
+  
+  If \a twoColored is false, the normal plottable's pen and brush are used (\ref setPen, \ref
+  setBrush).
+  
+  \see setPenPositive, setPenNegative, setBrushPositive, setBrushNegative
+*/
 void QCPFinancial::setTwoColored(bool twoColored)
 {
   mTwoColored = twoColored;
 }
 
+/*!
+  If \ref setTwoColored is set to true, this function controls the brush that is used to draw fills
+  of data points with a positive trend (i.e. bars/candlesticks with close >= open).
+  
+  If \a twoColored is false, the normal plottable's pen and brush are used (\ref setPen, \ref
+  setBrush).
+  
+  \see setBrushNegative, setPenPositive, setPenNegative
+*/
 void QCPFinancial::setBrushPositive(const QBrush &brush)
 {
   mBrushPositive = brush;
 }
 
+/*!
+  If \ref setTwoColored is set to true, this function controls the brush that is used to draw fills
+  of data points with a negative trend (i.e. bars/candlesticks with close < open).
+  
+  If \a twoColored is false, the normal plottable's pen and brush are used (\ref setPen, \ref
+  setBrush).
+  
+  \see setBrushPositive, setPenNegative, setPenPositive
+*/
 void QCPFinancial::setBrushNegative(const QBrush &brush)
 {
   mBrushNegative = brush;
 }
 
+/*!
+  If \ref setTwoColored is set to true, this function controls the pen that is used to draw
+  outlines of data points with a positive trend (i.e. bars/candlesticks with close >= open).
+  
+  If \a twoColored is false, the normal plottable's pen and brush are used (\ref setPen, \ref
+  setBrush).
+  
+  \see setPenNegative, setBrushPositive, setBrushNegative
+*/
 void QCPFinancial::setPenPositive(const QPen &pen)
 {
   mPenPositive = pen;
 }
 
+/*!
+  If \ref setTwoColored is set to true, this function controls the pen that is used to draw
+  outlines of data points with a negative trend (i.e. bars/candlesticks with close < open).
+  
+  If \a twoColored is false, the normal plottable's pen and brush are used (\ref setPen, \ref
+  setBrush).
+  
+  \see setPenPositive, setBrushNegative, setBrushPositive
+*/
 void QCPFinancial::setPenNegative(const QPen &pen)
 {
   mPenNegative = pen;
@@ -237,7 +314,8 @@ void QCPFinancial::addData(const QCPFinancialData &data)
 
 /*! \overload
   
-  Adds the provided single data point given by \a key, \a open, \a high, \a low, and \a close to the current data.
+  Adds the provided single data point given by \a key, \a open, \a high, \a low, and \a close to
+  the current data.
   
   Alternatively, you can also access and modify the data via the \ref data method, which returns a
   pointer to the internal \ref QCPFinancialData.
@@ -362,6 +440,19 @@ double QCPFinancial::selectTest(const QPointF &pos, bool onlySelectable, QVarian
   return -1;
 }
 
+/*!
+  A convenience function that converts time series data (\a value against \a time) to OHLC binned
+  data points. The return value can then be passed on to \ref setData.
+  
+  The size of the bins can be controlled with \a timeBinSize in the same units as \a time is given.
+  For example, if the unit of \a time is seconds and single OHLC/Candlesticks should span an hour
+  each, set \a timeBinSize to 3600.
+  
+  \a timeBinOffset allows to control precisely at what \a time coordinate a bin should start. The
+  value passed as \a timeBinOffset doesn't need to be in the range encompassed by the \a time keys.
+  It merely defines the mathematical offset/phase of the bins that will be used to process the
+  data.
+*/
 QCPFinancialDataMap QCPFinancial::timeSeriesToOhlc(const QVector<double> &time, const QVector<double> &value, double timeBinSize, double timeBinOffset)
 {
   QCPFinancialDataMap map;
@@ -401,6 +492,7 @@ QCPFinancialDataMap QCPFinancial::timeSeriesToOhlc(const QVector<double> &time, 
   return map;
 }
 
+/* inherits documentation from base class */
 void QCPFinancial::draw(QCPPainter *painter)
 {
   // get visible data range:
@@ -419,6 +511,7 @@ void QCPFinancial::draw(QCPPainter *painter)
   }
 }
 
+/* inherits documentation from base class */
 void QCPFinancial::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
   painter->setAntialiasing(false); // legend icon especially of csCandlestick looks better without antialiasing
@@ -477,6 +570,7 @@ void QCPFinancial::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
   }
 }
 
+/* inherits documentation from base class */
 QCPRange QCPFinancial::getKeyRange(bool &foundRange, QCPAbstractPlottable::SignDomain inSignDomain) const
 {
   QCPRange range;
@@ -512,6 +606,7 @@ QCPRange QCPFinancial::getKeyRange(bool &foundRange, QCPAbstractPlottable::SignD
   return range;
 }
 
+/* inherits documentation from base class */
 QCPRange QCPFinancial::getValueRange(bool &foundRange, QCPAbstractPlottable::SignDomain inSignDomain) const
 {
   QCPRange range;
@@ -556,6 +651,12 @@ QCPRange QCPFinancial::getValueRange(bool &foundRange, QCPAbstractPlottable::Sig
   return range;
 }
 
+/*! \internal
+  
+  Draws the data from \a begin to \a end as OHLC bars with the provided \a painter.
+
+  This method is a helper function for \ref draw. It is used when the chart style is \ref csOhlc.
+*/
 void QCPFinancial::drawOhlcPlot(QCPPainter *painter, const QCPFinancialDataMap::const_iterator &begin, const QCPFinancialDataMap::const_iterator &end)
 {
   QCPAxis *keyAxis = mKeyAxis.data();
@@ -611,6 +712,12 @@ void QCPFinancial::drawOhlcPlot(QCPPainter *painter, const QCPFinancialDataMap::
   }
 }
 
+/*! \internal
+  
+  Draws the data from \a begin to \a end as Candlesticks with the provided \a painter.
+
+  This method is a helper function for \ref draw. It is used when the chart style is \ref csCandlestick.
+*/
 void QCPFinancial::drawCandlestickPlot(QCPPainter *painter, const QCPFinancialDataMap::const_iterator &begin, const QCPFinancialDataMap::const_iterator &end)
 {
   QCPAxis *keyAxis = mKeyAxis.data();
@@ -697,6 +804,11 @@ void QCPFinancial::drawCandlestickPlot(QCPPainter *painter, const QCPFinancialDa
   }
 }
 
+/*! \internal
+  
+  This method is a helper function for \ref selectTest. It is used to test for selection when the
+  chart style is \ref csOhlc. It only tests against the data points between \a begin and \a end.
+*/
 double QCPFinancial::ohlcSelectTest(const QPointF &pos, const QCPFinancialDataMap::const_iterator &begin, const QCPFinancialDataMap::const_iterator &end) const
 {
   QCPAxis *keyAxis = mKeyAxis.data();
@@ -729,6 +841,12 @@ double QCPFinancial::ohlcSelectTest(const QPointF &pos, const QCPFinancialDataMa
   return qSqrt(minDistSqr);
 }
 
+/*! \internal
+  
+  This method is a helper function for \ref selectTest. It is used to test for selection when the
+  chart style is \ref csCandlestick. It only tests against the data points between \a begin and \a
+  end.
+*/
 double QCPFinancial::candlestickSelectTest(const QPointF &pos, const QCPFinancialDataMap::const_iterator &begin, const QCPFinancialDataMap::const_iterator &end) const
 {
   QCPAxis *keyAxis = mKeyAxis.data();

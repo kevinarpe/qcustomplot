@@ -84,7 +84,7 @@
   
   All further interfacing with plottables (e.g how to set data) is specific to the plottable type.
   See the documentations of the subclasses: QCPGraph, QCPCurve, QCPBars, QCPStatisticalBox,
-  QCPColorMap.
+  QCPColorMap, QCPFinancial.
 
   \section mainpage-axes Controlling the Axes
   
