@@ -646,9 +646,74 @@ void MainWindow::genQCPColorMap()
   colorMap->rescaleDataRange(true);
   customPlot->rescaleAxes();
   customPlot->xAxis->scaleRange(1.25, customPlot->xAxis->range().center());
-  customPlot->yAxis->scaleRange(1.25, customPlot->xAxis->range().center());
+  customPlot->yAxis->scaleRange(1.25, customPlot->yAxis->range().center());
   
   customPlot->savePng(dir.filePath("QCPColorMap.png"), 450, 200);
+}
+
+void MainWindow::genQCPFinancial()
+{
+  // generate main doc image of plottable:
+  resetPlot(false);
+  customPlot->xAxis->setVisible(true);
+  customPlot->yAxis->setVisible(true);
+  customPlot->xAxis->setBasePen(Qt::NoPen);
+  customPlot->yAxis->setBasePen(Qt::NoPen);
+  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+  customPlot->xAxis->setTicks(false);
+  customPlot->yAxis->setTicks(false);
+  customPlot->xAxis->setTickLabels(false);
+  customPlot->yAxis->setTickLabels(false);
+  customPlot->xAxis->setAutoTickCount(6);
+  customPlot->yAxis->setAutoTickCount(6);
+
+  // generate two sets of random walk data (one for candlestick and one for ohlc chart):
+  int n = 500;
+  QVector<double> time(n), value1(n), value2(n);
+  QDateTime start = QDateTime(QDate(2014, 6, 11));
+  start.setTimeSpec(Qt::UTC);
+  double startTime = start.toTime_t();
+  double binSize = 3600*24;
+  time[0] = startTime;
+  value1[0] = 60;
+  value2[0] = 60-75;
+  qsrand(9);
+  for (int i=1; i<n; ++i)
+  {
+    time[i] = startTime + 3600*i;
+    value1[i] = value1[i-1] + (qrand()/(double)RAND_MAX-0.5)*10;
+    qrand();
+    value2[i] = value1[i]-75;
+  }
+  
+  // create candlestick chart:
+  QCPFinancial *candlesticks = new QCPFinancial(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(candlesticks);
+  QCPFinancialDataMap data1 = QCPFinancial::timeSeriesToOhlc(time, value1, binSize, startTime);
+  candlesticks->setChartStyle(QCPFinancial::csCandlestick);
+  candlesticks->setData(&data1, true);
+  candlesticks->setWidth(binSize*0.9);
+  candlesticks->setTwoColored(true);
+  candlesticks->setBrushPositive(QColor(245, 245, 245));
+  candlesticks->setBrushNegative(QColor(0, 0, 0));
+  candlesticks->setPenPositive(QPen(QColor(0, 0, 0)));
+  candlesticks->setPenNegative(QPen(QColor(0, 0, 0)));
+
+  // create ohlc chart:
+  QCPFinancial *ohlc = new QCPFinancial(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(ohlc);
+  QCPFinancialDataMap data2 = QCPFinancial::timeSeriesToOhlc(time, value2, binSize, startTime);
+  ohlc->setChartStyle(QCPFinancial::csOhlc);
+  ohlc->setData(&data2, true);
+  ohlc->setWidth(binSize*0.75);
+  ohlc->setTwoColored(true);
+
+  customPlot->rescaleAxes();
+  customPlot->xAxis->scaleRange(1.25, customPlot->xAxis->range().center());
+  customPlot->yAxis->scaleRange(1.1, customPlot->yAxis->range().center());
+  
+  customPlot->savePng(dir.filePath("QCPFinancial.png"), 450, 250);
 }
 
 void MainWindow::genQCPColorScale()
