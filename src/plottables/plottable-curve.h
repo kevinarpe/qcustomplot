@@ -44,7 +44,7 @@ public:
 Q_DECLARE_TYPEINFO(QCPCurveData, Q_MOVABLE_TYPE);
 
 /*! \typedef QCPCurveDataMap
-  Container for storing QCPCurveData items in a sorted fashion. The key of the map
+  Container for storing \ref QCPCurveData items in a sorted fashion. The key of the map
   is the t member of the QCPCurveData instance.
   
   This is the container in which QCPCurve holds its data.

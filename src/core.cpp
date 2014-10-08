@@ -252,8 +252,8 @@
   an area enclosed by four axes, where the graphs/plottables are drawn in. The viewport is larger
   and contains also the axes themselves, their tick numbers, their labels, the plot title etc.
   
-  Only when saving to a file (see \ref savePng, savePdf etc.) the viewport is temporarily modified
-  to allow saving plots with sizes independent of the current widget size.
+  Only when saving to a file (see \ref savePng, \ref savePdf etc.) the viewport is temporarily
+  modified to allow saving plots with sizes independent of the current widget size.
 */
 
 /*! \fn QCPLayoutGrid *QCustomPlot::plotLayout() const

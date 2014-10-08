@@ -43,11 +43,13 @@
   create new ways of displaying data (see "Creating own plottables" below).
   
   All further specifics are in the subclasses, for example:
-  \li A normal graph with possibly a line, scatter points and error bars is displayed by \ref QCPGraph
-  (typically created with \ref QCustomPlot::addGraph).
-  \li A parametric curve can be displayed with \ref QCPCurve.
-  \li A stackable bar chart can be achieved with \ref QCPBars.
-  \li A box of a statistical box plot is created with \ref QCPStatisticalBox.
+  \li A normal graph with possibly a line, scatter points and error bars: \ref QCPGraph
+  (typically created with \ref QCustomPlot::addGraph)
+  \li A parametric curve: \ref QCPCurve
+  \li A bar chart: \ref QCPBars
+  \li A statistical box plot: \ref QCPStatisticalBox
+  \li A color encoded two-dimensional map: \ref QCPColorMap
+  \li An OHLC/Candlestick chart: \ref QCPFinancial
   
   \section plottables-subclassing Creating own plottables
   

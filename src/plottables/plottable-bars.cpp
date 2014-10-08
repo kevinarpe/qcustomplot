@@ -42,8 +42,8 @@
   
   When showing multiple QCPBars in one plot which have bars at identical keys, it may be desirable
   to have them appearing next to each other at each key. This is what adding the respective QCPBars
-  plottables to a QCPBarsGroup achieves. (Note that you could alternatively also stack them on top
-  of each other, see \ref QCPBars::moveAbove.)
+  plottables to a QCPBarsGroup achieves. (An alternative approach is to stack them on top of each
+  other, see \ref QCPBars::moveAbove.)
   
   \section qcpbarsgroup-usage Usage
   
