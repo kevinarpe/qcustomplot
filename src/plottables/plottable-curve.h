@@ -119,12 +119,12 @@ protected:
   
   // non-virtual methods:
   void getCurveData(QVector<QPointF> *lineData) const;
+  int getRegion(double x, double y, double rectLeft, double rectTop, double rectRight, double rectBottom) const;
   QPointF getOptimizedPoint(int prevRegion, double prevKey, double prevValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom) const;
   QVector<QPointF> getOptimizedCornerPoints(int prevRegion, int currentRegion, double prevKey, double prevValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom) const;
-  void getTraverseCornerPoints(int prevRegion, int currentRegion, double rectLeft, double rectTop, double rectRight, double rectBottom, QVector<QPointF> &beforeTraverse, QVector<QPointF> &afterTraverse) const;
-  bool getTraverse(double prevKey, double prevValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom, QPointF &crossA, QPointF &crossB) const;
   bool mayTraverse(int prevRegion, int currentRegion) const;
-  int getRegion(double x, double y, double rectLeft, double rectTop, double rectRight, double rectBottom) const;
+  bool getTraverse(double prevKey, double prevValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom, QPointF &crossA, QPointF &crossB) const;
+  void getTraverseCornerPoints(int prevRegion, int currentRegion, double rectLeft, double rectTop, double rectRight, double rectBottom, QVector<QPointF> &beforeTraverse, QVector<QPointF> &afterTraverse) const;
   double pointDistance(const QPointF &pixelPoint) const;
   
   friend class QCustomPlot;

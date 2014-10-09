@@ -498,9 +498,16 @@ void QCPCurve::drawScatterPlot(QCPPainter *painter, const QVector<QPointF> *poin
 
 /*! \internal
   
-  called by QCPCurve::draw to generate a point vector (pixels) which represents the line of the
-  curve. Line segments that aren't visible in the current axis rect are handled in an optimized
-  way.
+  called by QCPCurve::draw to generate a point vector (in pixel coordinates) which represents the
+  line of the curve.
+
+  Line segments that aren't visible in the current axis rect are handled in an optimized way. They
+  are projected onto a rectangle slightly larger than the visible axis rect and simplified
+  regarding point count. The algorithm makes sure to preserve appearance of lines and fills inside
+  the visible axis rect by generating new temporary points on the outer rect if necessary.
+  
+  Methods that are also involved in the algorithm are: \ref getRegion, \ref getOptimizedPoint, \ref
+  getOptimizedCornerPoints \ref mayTraverse, \ref getTraverse, \ref getTraverseCornerPoints.
 */
 void QCPCurve::getCurveData(QVector<QPointF> *lineData) const
 {
@@ -581,91 +588,168 @@ void QCPCurve::getCurveData(QVector<QPointF> *lineData) const
   *lineData << trailingPoints;
 }
 
-void QCPCurve::getTraverseCornerPoints(int prevRegion, int currentRegion, double rectLeft, double rectTop, double rectRight, double rectBottom, QVector<QPointF> &beforeTraverse, QVector<QPointF> &afterTraverse) const
+/*! \internal
+  
+  This function is part of the curve optimization algorithm of \ref getCurveData.
+  
+  It returns the region of the given point (\a x, \a y) with respect to a rectangle defined by \a
+  rectLeft, \a rectTop, \a rectRight, and \a rectBottom.
+  
+  The regions are enumerated from top to bottom and left to right:
+  
+  <table style="width:10em; text-align:center">
+    <tr><td>1</td><td>4</td><td>7</td></tr>
+    <tr><td>2</td><td style="border:1px solid black">5</td><td>8</td></tr>
+    <tr><td>3</td><td>6</td><td>9</td></tr>
+  </table>
+  
+  With the rectangle being region 5, and the outer regions extending infinitely outwards. In the
+  curve optimization algorithm, region 5 is considered to be the visible portion of the plot.
+*/
+int QCPCurve::getRegion(double x, double y, double rectLeft, double rectTop, double rectRight, double rectBottom) const
 {
-  // This method assumes that upon going from prevRegion to currentRegion, R is crossed
-  switch (prevRegion)
+  if (x < rectLeft) // region 123
   {
-    case 1:
+    if (y > rectTop)
+      return 1;
+    else if (y < rectBottom)
+      return 3;
+    else
+      return 2;
+  } else if (x > rectRight) // region 789
+  {
+    if (y > rectTop)
+      return 7;
+    else if (y < rectBottom)
+      return 9;
+    else
+      return 8;
+  } else // region 456
+  {
+    if (y > rectTop)
+      return 4;
+    else if (y < rectBottom)
+      return 6;
+    else
+      return 5;
+  }
+}
+
+/*! \internal
+  
+  This function is part of the curve optimization algorithm of \ref getCurveData.
+  
+  This method is used in case the current segment passes from inside the visible rect (region 5,
+  see \ref getRegion) to any of the outer regions (\a otherRegion). The current segment is given by
+  the line connecting (\a key, \a value) with (\a otherKey, \a otherValue).
+  
+  It returns the intersection point of the segment with the border of region 5.
+  
+  For this function it doesn't matter whether (\a key, \a value) is the point inside region 5 or
+  whether it's (\a otherKey, \a otherValue), i.e. whether the segment is coming from region 5 or
+  leaving it. It is important though that \a otherRegion correctly identifies the other region not
+  equal to 5.
+*/
+QPointF QCPCurve::getOptimizedPoint(int otherRegion, double otherKey, double otherValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom) const
+{
+  double intersectKey = rectLeft; // initial value is just fail-safe
+  double intersectValue = rectTop; // initial value is just fail-safe
+  switch (otherRegion)
+  {
+    case 1: // top and left edge
     {
-      switch (currentRegion)
+      intersectValue = rectTop;
+      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
+      if (intersectKey < rectLeft || intersectKey > rectRight) // doesn't intersect, so must intersect other:
       {
-        case 6: { beforeTraverse << coordsToPixels(rectLeft, rectTop); break; }
-        case 9: { beforeTraverse << coordsToPixels(rectLeft, rectTop); afterTraverse << coordsToPixels(rectRight, rectBottom); break; }
-        case 8: { beforeTraverse << coordsToPixels(rectLeft, rectTop); break; }
+        intersectKey = rectLeft;
+        intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
       }
       break;
     }
-    case 2:
+    case 2: // left edge
     {
-      switch (currentRegion)
+      intersectKey = rectLeft;
+      intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
+      break;
+    }
+    case 3: // bottom and left edge
+    {
+      intersectValue = rectBottom;
+      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
+      if (intersectKey < rectLeft || intersectKey > rectRight) // doesn't intersect, so must intersect other:
       {
-        case 7: { afterTraverse << coordsToPixels(rectRight, rectTop); break; }
-        case 9: { afterTraverse << coordsToPixels(rectRight, rectBottom); break; }
+        intersectKey = rectLeft;
+        intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
       }
       break;
     }
-    case 3:
+    case 4: // top edge
     {
-      switch (currentRegion)
+      intersectValue = rectTop;
+      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
+      break;
+    }
+    case 5:
+    {
+      break; // case 5 shouldn't happen for this function but we add it anyway to prevent potential discontinuity in branch table
+    }
+    case 6: // bottom edge
+    {
+      intersectValue = rectBottom;
+      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
+      break;
+    }
+    case 7: // top and right edge
+    {
+      intersectValue = rectTop;
+      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
+      if (intersectKey < rectLeft || intersectKey > rectRight) // doesn't intersect, so must intersect other:
       {
-        case 4: { beforeTraverse << coordsToPixels(rectLeft, rectBottom); break; }
-        case 7: { beforeTraverse << coordsToPixels(rectLeft, rectBottom); afterTraverse << coordsToPixels(rectRight, rectTop); break; }
-        case 8: { beforeTraverse << coordsToPixels(rectLeft, rectBottom); break; }
+        intersectKey = rectRight;
+        intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
       }
       break;
     }
-    case 4:
+    case 8: // right edge
     {
-      switch (currentRegion)
-      {
-        case 3: { afterTraverse << coordsToPixels(rectLeft, rectBottom); break; }
-        case 9: { afterTraverse << coordsToPixels(rectRight, rectBottom); break; }
-      }
+      intersectKey = rectRight;
+      intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
       break;
     }
-    case 5: { break; } // shouldn't happen because this method only handles full traverses
-    case 6:
+    case 9: // bottom and right edge
     {
-      switch (currentRegion)
+      intersectValue = rectBottom;
+      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
+      if (intersectKey < rectLeft || intersectKey > rectRight) // doesn't intersect, so must intersect other:
       {
-        case 1: { afterTraverse << coordsToPixels(rectLeft, rectTop); break; }
-        case 7: { afterTraverse << coordsToPixels(rectRight, rectTop); break; }
-      }
-      break;
-    }
-    case 7:
-    {
-      switch (currentRegion)
-      {
-        case 2: { beforeTraverse << coordsToPixels(rectRight, rectTop); break; }
-        case 3: { beforeTraverse << coordsToPixels(rectRight, rectTop); afterTraverse << coordsToPixels(rectLeft, rectBottom); break; }
-        case 6: { beforeTraverse << coordsToPixels(rectRight, rectTop); break; }
-      }
-      break;
-    }
-    case 8:
-    {
-      switch (currentRegion)
-      {
-        case 1: { afterTraverse << coordsToPixels(rectLeft, rectTop); break; }
-        case 3: { afterTraverse << coordsToPixels(rectLeft, rectBottom); break; }
-      }
-      break;
-    }
-    case 9:
-    {
-      switch (currentRegion)
-      {
-        case 2: { beforeTraverse << coordsToPixels(rectRight, rectBottom); break; }
-        case 1: { beforeTraverse << coordsToPixels(rectRight, rectBottom); afterTraverse << coordsToPixels(rectLeft, rectTop); break; }
-        case 4: { beforeTraverse << coordsToPixels(rectRight, rectBottom); break; }
+        intersectKey = rectRight;
+        intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
       }
       break;
     }
   }
+  return coordsToPixels(intersectKey, intersectValue);
 }
 
+/*! \internal
+  
+  This function is part of the curve optimization algorithm of \ref getCurveData.
+  
+  In situations where a single segment skips over multiple regions it might become necessary to add
+  extra points at the corners of region 5 (see \ref getRegion) such that the optimized segment
+  doesn't unintentionally cut through the visible area of the axis rect and create plot artifacts.
+  This method provides these points that must be added, assuming the original segment doesn't
+  start, end, or traverse region 5. (Corner points where region 5 is traversed are calculated by
+  \ref getTraverseCornerPoints.)
+  
+  For example, consider a segment which directly goes from region 4 to 2 but originally is far out
+  to the top left such that it doesn't cross region 5. Naively optimizing these points by
+  projecting them on the top and left borders of region 5 will create a segment that surely crosses
+  5, creating a visual artifact in the plot. This method prevents this by providing extra points at
+  the top left corner, making the optimized curve correctly pass from region 4 to 1 to 2 without
+  traversing 5.
+*/
 QVector<QPointF> QCPCurve::getOptimizedCornerPoints(int prevRegion, int currentRegion, double prevKey, double prevValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom) const
 {
   QVector<QPointF> result;
@@ -818,76 +902,18 @@ QVector<QPointF> QCPCurve::getOptimizedCornerPoints(int prevRegion, int currentR
   return result;
 }
 
-bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom, QPointF &crossA, QPointF &crossB) const
-{
-  QList<QVector2D> intersections; // x of QVector2D corresponds to key and y to value
-  if (qFuzzyIsNull(key-prevKey)) // line is parallel to value axis
-  {
-    // due to region filter in mayTraverseR(), if line is parallel to value or key axis, R is traversed here
-    intersections.append(QVector2D(key, rectBottom)); // direction will be taken care of at end of method
-    intersections.append(QVector2D(key, rectTop));
-  } else if (qFuzzyIsNull(value-prevValue)) // line is parallel to key axis
-  {
-    // due to region filter in mayTraverseR(), if line is parallel to value or key axis, R is traversed here
-    intersections.append(QVector2D(rectLeft, value)); // direction will be taken care of at end of method
-    intersections.append(QVector2D(rectRight, value));
-  } else // line is skewed
-  {
-    double gamma;
-    double keyPerValue = (key-prevKey)/(value-prevValue);
-    // check top of rect:
-    gamma = prevKey + (rectTop-prevValue)*keyPerValue;
-    if (gamma >= rectLeft && gamma <= rectRight)
-      intersections.append(QVector2D(gamma, rectTop));
-    // check bottom of rect:
-    gamma = prevKey + (rectBottom-prevValue)*keyPerValue;
-    if (gamma >= rectLeft && gamma <= rectRight)
-      intersections.append(QVector2D(gamma, rectBottom));
-    double valuePerKey = 1.0/keyPerValue;
-    // check left of rect:
-    gamma = prevValue + (rectLeft-prevKey)*valuePerKey;
-    if (gamma >= rectBottom && gamma <= rectTop)
-      intersections.append(QVector2D(rectLeft, gamma));
-    // check right of rect:
-    gamma = prevValue + (rectRight-prevKey)*valuePerKey;
-    if (gamma >= rectBottom && gamma <= rectTop)
-      intersections.append(QVector2D(rectRight, gamma));
-  }
+/*! \internal
   
-  // handle cases where found points isn't exactly 2:
-  if (intersections.size() > 2)
-  {
-    // line probably goes through corner of rect, and we got duplicate points there. single out the point pair with greatest distance in between:
-    double distSqrMax = 0;
-    QVector2D pv1, pv2;
-    for (int i=0; i<intersections.size()-1; ++i)
-    {
-      for (int k=i+1; k<intersections.size(); ++k)
-      {
-        double distSqr = (intersections.at(i)-intersections.at(k)).lengthSquared();
-        if (distSqr > distSqrMax)
-        {
-          pv1 = intersections.at(i);
-          pv2 = intersections.at(k);
-          distSqrMax = distSqr;
-        }
-      }
-    }
-    intersections = QList<QVector2D>() << pv1 << pv2;
-  } else if (intersections.size() != 2)
-  {
-    // one or even zero points found (shouldn't happen unless line perfectly tangent to corner), no need to draw segment
-    return false;
-  }
+  This function is part of the curve optimization algorithm of \ref getCurveData.
   
-  // possibly re-sort points so optimized point segment has same direction as original segment:
-  if ((key-prevKey)*(intersections.at(1).x()-intersections.at(0).x()) + (value-prevValue)*(intersections.at(1).y()-intersections.at(0).y()) < 0) // scalar product of both segments < 0 -> opposite direction
-    intersections.swap(0, 1);
-  crossA = coordsToPixels(intersections.at(0).x(), intersections.at(0).y());
-  crossB = coordsToPixels(intersections.at(1).x(), intersections.at(1).y());
-  return true;
-}
-
+  This method returns whether a segment going from \a prevRegion to \a currentRegion (see \ref
+  getRegion) may traverse the visible region 5. This function assumes that neither \a prevRegion
+  nor \a currentRegion is 5 itself.
+  
+  If this method returns false, the segment for sure doesn't pass region 5. If it returns true, the
+  segment may or may not pass region 5 and a more fine-grained calculation must be used (\ref
+  getTraverse).
+*/
 bool QCPCurve::mayTraverse(int prevRegion, int currentRegion) const
 {
   switch (prevRegion)
@@ -977,115 +1003,196 @@ bool QCPCurve::mayTraverse(int prevRegion, int currentRegion) const
   }
 }
 
-QPointF QCPCurve::getOptimizedPoint(int otherRegion, double otherKey, double otherValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom) const
+
+/*! \internal
+  
+  This function is part of the curve optimization algorithm of \ref getCurveData.
+  
+  This method assumes that the \ref mayTraverse test has returned true, so there is a chance the
+  segment defined by (\a prevKey, \a prevValue) and (\a key, \a value) goes through the visible
+  region 5.
+  
+  The return value of this method indicates whether the segment actually traverses region 5 or not.
+  
+  If the segment traverses 5, the output parameters \a crossA and \a crossB indicate the entry and
+  exit points of region 5. They will become the optimized points for that segment.
+*/
+bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom, QPointF &crossA, QPointF &crossB) const
 {
-  // this method assumes segment goes from R to otherRegion or from otherRegion to R
-  double intersectKey = rectLeft; // initial value is just fail-safe
-  double intersectValue = rectTop; // initial value is just fail-safe
-  switch (otherRegion)
+  QList<QVector2D> intersections; // x of QVector2D corresponds to key and y to value
+  if (qFuzzyIsNull(key-prevKey)) // line is parallel to value axis
   {
-    case 1: // top and left edge
-    {
-      intersectValue = rectTop;
-      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
-      if (intersectKey < rectLeft || intersectKey > rectRight) // doesn't intersect, so must intersect other:
-      {
-        intersectKey = rectLeft;
-        intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
-      }
-      break;
-    }
-    case 2: // left edge
-    {
-      intersectKey = rectLeft;
-      intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
-      break;
-    }
-    case 3: // bottom and left edge
-    {
-      intersectValue = rectBottom;
-      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
-      if (intersectKey < rectLeft || intersectKey > rectRight) // doesn't intersect, so must intersect other:
-      {
-        intersectKey = rectLeft;
-        intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
-      }
-      break;
-    }
-    case 4: // top edge
-    {
-      intersectValue = rectTop;
-      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
-      break;
-    }
-    case 5:
-    {
-      break; // case 5 shouldn't happen for this function but we add it anyway to prevent potential discontinuity in branch table
-    }
-    case 6: // bottom edge
-    {
-      intersectValue = rectBottom;
-      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
-      break;
-    }
-    case 7: // top and right edge
-    {
-      intersectValue = rectTop;
-      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
-      if (intersectKey < rectLeft || intersectKey > rectRight) // doesn't intersect, so must intersect other:
-      {
-        intersectKey = rectRight;
-        intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
-      }
-      break;
-    }
-    case 8: // right edge
-    {
-      intersectKey = rectRight;
-      intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
-      break;
-    }
-    case 9: // bottom and right edge
-    {
-      intersectValue = rectBottom;
-      intersectKey = otherKey + (key-otherKey)/(value-otherValue)*(intersectValue-otherValue);
-      if (intersectKey < rectLeft || intersectKey > rectRight) // doesn't intersect, so must intersect other:
-      {
-        intersectKey = rectRight;
-        intersectValue = otherValue + (value-otherValue)/(key-otherKey)*(intersectKey-otherKey);
-      }
-      break;
-    }
+    // due to region filter in mayTraverseR(), if line is parallel to value or key axis, R is traversed here
+    intersections.append(QVector2D(key, rectBottom)); // direction will be taken care of at end of method
+    intersections.append(QVector2D(key, rectTop));
+  } else if (qFuzzyIsNull(value-prevValue)) // line is parallel to key axis
+  {
+    // due to region filter in mayTraverseR(), if line is parallel to value or key axis, R is traversed here
+    intersections.append(QVector2D(rectLeft, value)); // direction will be taken care of at end of method
+    intersections.append(QVector2D(rectRight, value));
+  } else // line is skewed
+  {
+    double gamma;
+    double keyPerValue = (key-prevKey)/(value-prevValue);
+    // check top of rect:
+    gamma = prevKey + (rectTop-prevValue)*keyPerValue;
+    if (gamma >= rectLeft && gamma <= rectRight)
+      intersections.append(QVector2D(gamma, rectTop));
+    // check bottom of rect:
+    gamma = prevKey + (rectBottom-prevValue)*keyPerValue;
+    if (gamma >= rectLeft && gamma <= rectRight)
+      intersections.append(QVector2D(gamma, rectBottom));
+    double valuePerKey = 1.0/keyPerValue;
+    // check left of rect:
+    gamma = prevValue + (rectLeft-prevKey)*valuePerKey;
+    if (gamma >= rectBottom && gamma <= rectTop)
+      intersections.append(QVector2D(rectLeft, gamma));
+    // check right of rect:
+    gamma = prevValue + (rectRight-prevKey)*valuePerKey;
+    if (gamma >= rectBottom && gamma <= rectTop)
+      intersections.append(QVector2D(rectRight, gamma));
   }
-  return coordsToPixels(intersectKey, intersectValue);
+  
+  // handle cases where found points isn't exactly 2:
+  if (intersections.size() > 2)
+  {
+    // line probably goes through corner of rect, and we got duplicate points there. single out the point pair with greatest distance in between:
+    double distSqrMax = 0;
+    QVector2D pv1, pv2;
+    for (int i=0; i<intersections.size()-1; ++i)
+    {
+      for (int k=i+1; k<intersections.size(); ++k)
+      {
+        double distSqr = (intersections.at(i)-intersections.at(k)).lengthSquared();
+        if (distSqr > distSqrMax)
+        {
+          pv1 = intersections.at(i);
+          pv2 = intersections.at(k);
+          distSqrMax = distSqr;
+        }
+      }
+    }
+    intersections = QList<QVector2D>() << pv1 << pv2;
+  } else if (intersections.size() != 2)
+  {
+    // one or even zero points found (shouldn't happen unless line perfectly tangent to corner), no need to draw segment
+    return false;
+  }
+  
+  // possibly re-sort points so optimized point segment has same direction as original segment:
+  if ((key-prevKey)*(intersections.at(1).x()-intersections.at(0).x()) + (value-prevValue)*(intersections.at(1).y()-intersections.at(0).y()) < 0) // scalar product of both segments < 0 -> opposite direction
+    intersections.swap(0, 1);
+  crossA = coordsToPixels(intersections.at(0).x(), intersections.at(0).y());
+  crossB = coordsToPixels(intersections.at(1).x(), intersections.at(1).y());
+  return true;
 }
 
-int QCPCurve::getRegion(double x, double y, double rectLeft, double rectTop, double rectRight, double rectBottom) const
+/*! \internal
+  
+  This function is part of the curve optimization algorithm of \ref getCurveData.
+  
+  This method assumes that the \ref getTraverse test has returned true, so the segment definitely
+  traverses the visible region 5 when going from \a prevRegion to \a currentRegion.
+  
+  In certain situations it is not sufficient to merely generate the entry and exit points of the
+  segment into/out of region 5, as \ref getTraverse provides. It may happen that a single segment, in
+  addition to traversing region 5, skips another region outside of region 5, which makes it
+  necessary to add an optimized corner point there (very similar to the job \ref
+  getOptimizedCornerPoints does for segments that are completely in outside regions and don't
+  traverse 5).
+  
+  As an example, consider a segment going from region 1 to region 6, traversing the lower left
+  corner of region 5. In this configuration, the segment additionally crosses the border between
+  region 1 and 2 before entering region 5. This makes it necessary to add an additional point in
+  the top left corner, before adding the optimized traverse points. So in this case, the output
+  parameter \a beforeTraverse will contain the top left corner point, and \a afterTraverse will be
+  empty.
+  
+  In some cases, such as when going from region 1 to 9, it may even be necessary to add additional
+  corner points before and after the traverse. Then both \a beforeTraverse and \a afterTraverse
+  return the respective corner points.
+*/
+void QCPCurve::getTraverseCornerPoints(int prevRegion, int currentRegion, double rectLeft, double rectTop, double rectRight, double rectBottom, QVector<QPointF> &beforeTraverse, QVector<QPointF> &afterTraverse) const
 {
-  if (x < rectLeft) // region 123
+  switch (prevRegion)
   {
-    if (y > rectTop)
-      return 1;
-    else if (y < rectBottom)
-      return 3;
-    else
-      return 2;
-  } else if (x > rectRight) // region 789
-  {
-    if (y > rectTop)
-      return 7;
-    else if (y < rectBottom)
-      return 9;
-    else
-      return 8;
-  } else // region 456
-  {
-    if (y > rectTop)
-      return 4;
-    else if (y < rectBottom)
-      return 6;
-    else
-      return 5;
+    case 1:
+    {
+      switch (currentRegion)
+      {
+        case 6: { beforeTraverse << coordsToPixels(rectLeft, rectTop); break; }
+        case 9: { beforeTraverse << coordsToPixels(rectLeft, rectTop); afterTraverse << coordsToPixels(rectRight, rectBottom); break; }
+        case 8: { beforeTraverse << coordsToPixels(rectLeft, rectTop); break; }
+      }
+      break;
+    }
+    case 2:
+    {
+      switch (currentRegion)
+      {
+        case 7: { afterTraverse << coordsToPixels(rectRight, rectTop); break; }
+        case 9: { afterTraverse << coordsToPixels(rectRight, rectBottom); break; }
+      }
+      break;
+    }
+    case 3:
+    {
+      switch (currentRegion)
+      {
+        case 4: { beforeTraverse << coordsToPixels(rectLeft, rectBottom); break; }
+        case 7: { beforeTraverse << coordsToPixels(rectLeft, rectBottom); afterTraverse << coordsToPixels(rectRight, rectTop); break; }
+        case 8: { beforeTraverse << coordsToPixels(rectLeft, rectBottom); break; }
+      }
+      break;
+    }
+    case 4:
+    {
+      switch (currentRegion)
+      {
+        case 3: { afterTraverse << coordsToPixels(rectLeft, rectBottom); break; }
+        case 9: { afterTraverse << coordsToPixels(rectRight, rectBottom); break; }
+      }
+      break;
+    }
+    case 5: { break; } // shouldn't happen because this method only handles full traverses
+    case 6:
+    {
+      switch (currentRegion)
+      {
+        case 1: { afterTraverse << coordsToPixels(rectLeft, rectTop); break; }
+        case 7: { afterTraverse << coordsToPixels(rectRight, rectTop); break; }
+      }
+      break;
+    }
+    case 7:
+    {
+      switch (currentRegion)
+      {
+        case 2: { beforeTraverse << coordsToPixels(rectRight, rectTop); break; }
+        case 3: { beforeTraverse << coordsToPixels(rectRight, rectTop); afterTraverse << coordsToPixels(rectLeft, rectBottom); break; }
+        case 6: { beforeTraverse << coordsToPixels(rectRight, rectTop); break; }
+      }
+      break;
+    }
+    case 8:
+    {
+      switch (currentRegion)
+      {
+        case 1: { afterTraverse << coordsToPixels(rectLeft, rectTop); break; }
+        case 3: { afterTraverse << coordsToPixels(rectLeft, rectBottom); break; }
+      }
+      break;
+    }
+    case 9:
+    {
+      switch (currentRegion)
+      {
+        case 2: { beforeTraverse << coordsToPixels(rectRight, rectBottom); break; }
+        case 1: { beforeTraverse << coordsToPixels(rectRight, rectBottom); afterTraverse << coordsToPixels(rectLeft, rectTop); break; }
+        case 4: { beforeTraverse << coordsToPixels(rectRight, rectBottom); break; }
+      }
+      break;
+    }
   }
 }
 
