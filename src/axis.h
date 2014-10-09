@@ -170,6 +170,15 @@ public:
                  };
   Q_ENUMS(LabelType)
   /*!
+    Defines on which side of the axis the tick labels (numbers) shall appear.
+    
+    \see setTickLabelSide
+  */
+  enum LabelSide { lsInside    ///< Tick labels will be displayed inside the axis rect and clipped to the inner axis rect
+                   ,lsOutside  ///< Tick labels will be displayed outside the axis rect
+                 };
+  Q_ENUMS(LabelSide)
+  /*!
     Defines the scale of an axis.
     \see setScaleType
   */
@@ -211,6 +220,7 @@ public:
   QFont tickLabelFont() const { return mTickLabelFont; }
   QColor tickLabelColor() const { return mTickLabelColor; }
   double tickLabelRotation() const;
+  LabelSide tickLabelSide() const;
   QString dateTimeFormat() const { return mDateTimeFormat; }
   Qt::TimeSpec dateTimeSpec() const { return mDateTimeSpec; }
   QString numberFormat() const;
@@ -266,6 +276,7 @@ public:
   void setTickLabelFont(const QFont &font);
   void setTickLabelColor(const QColor &color);
   void setTickLabelRotation(double degrees);
+  void setTickLabelSide(LabelSide side);
   void setDateTimeFormat(const QString &format);
   void setDateTimeSpec(const Qt::TimeSpec &timeSpec);
   void setNumberFormat(const QString &formatCode);
@@ -444,6 +455,7 @@ public:
   QString label;
   int tickLabelPadding; // directly accessed by QCPAxis setters/getters
   double tickLabelRotation; // directly accessed by QCPAxis setters/getters
+  QCPAxis::LabelSide tickLabelSide; // directly accessed by QCPAxis setters/getters
   bool substituteExponent;
   bool numberMultiplyCross; // directly accessed by QCPAxis setters/getters
   int tickLengthIn, tickLengthOut, subTickLengthIn, subTickLengthOut; // directly accessed by QCPAxis setters/getters

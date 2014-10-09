@@ -456,6 +456,12 @@ double QCPAxis::tickLabelRotation() const
 }
 
 /* No documentation as it is a property getter */
+LabelSide QCPAxis::tickLabelSide() const
+{
+  return mAxisPainter->tickLabelSide;
+}
+
+/* No documentation as it is a property getter */
 QString QCPAxis::numberFormat() const
 {
   QString result;
@@ -970,6 +976,12 @@ void QCPAxis::setTickLabelRotation(double degrees)
     mAxisPainter->tickLabelRotation = qBound(-90.0, degrees, 90.0);
     mCachedMarginValid = false;
   }
+}
+
+void QCPAxis::setTickLabelSide(LabelSide side)
+{
+  mAxisPainter->tickLabelSide = side;
+  mCachedMarginValid = false;
 }
 
 /*!
@@ -2419,6 +2431,7 @@ QCPAxisPainterPrivate::QCPAxisPainterPrivate(QCustomPlot *parentPlot) :
   labelPadding(0),
   tickLabelPadding(0),
   tickLabelRotation(0),
+  tickLabelSide(QCPAxis::lsOutside),
   substituteExponent(true),
   numberMultiplyCross(false),
   tickLengthIn(5),
