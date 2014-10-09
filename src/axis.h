@@ -462,7 +462,7 @@ public:
   QPen tickPen, subTickPen;
   QFont tickLabelFont;
   QColor tickLabelColor;
-  QRect alignmentRect, viewportRect;
+  QRect axisRect, viewportRect;
   double offset; // directly accessed by QCPAxis setters/getters
   bool abbreviateDecimalPowers;
   bool reversedEndings;
