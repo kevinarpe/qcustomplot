@@ -2553,7 +2553,7 @@ void QCPAxisPainterPrivate::draw(QCPPainter *painter)
   QRect oldClipRect;
   if (tickLabelSide == QCPAxis::lsInside) // if using inside labels, clip them to the axis rect
   {
-    oldClipRect = painter->clipBoundingRect().toRect();
+    oldClipRect = painter->clipRegion().boundingRect();
     painter->setClipRect(axisRect);
   }
   QSize tickLabelsSize(0, 0); // size of largest tick label, for offset calculation of axis label
