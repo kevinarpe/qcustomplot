@@ -36,8 +36,8 @@ public:
   QCPRange();
   QCPRange(double lower, double upper);
   
-  bool operator==(const QCPRange& other) { return lower == other.lower && upper == other.upper; }
-  bool operator!=(const QCPRange& other) { return !(*this == other); }
+  bool operator==(const QCPRange& other) const { return lower == other.lower && upper == other.upper; }
+  bool operator!=(const QCPRange& other) const { return !(*this == other); }
   
   QCPRange &operator+=(const double& value) { lower+=value; upper+=value; return *this; }
   QCPRange &operator-=(const double& value) { lower-=value; upper-=value; return *this; }
