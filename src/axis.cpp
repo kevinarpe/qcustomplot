@@ -978,6 +978,13 @@ void QCPAxis::setTickLabelRotation(double degrees)
   }
 }
 
+/*!
+  Sets whether the tick labels (numbers) shall appear inside or outside the axis rect.
+  
+  The usual and default setting is \ref lsOutside. Very compact plots sometimes require tick labels
+  to be inside the axis rect, to save space. If \a side is set to \ref lsInside, the tick labels
+  appear on the inside are additionally clipped to the axis rect.
+*/
 void QCPAxis::setTickLabelSide(LabelSide side)
 {
   mAxisPainter->tickLabelSide = side;
