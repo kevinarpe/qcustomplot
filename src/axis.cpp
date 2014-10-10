@@ -2613,13 +2613,19 @@ void QCPAxisPainterPrivate::draw(QCPPainter *painter)
     qDebug() << Q_FUNC_INFO << "mParentPlot is null";
   int selAxisOutSize = qMax(qMax(tickLengthOut, subTickLengthOut), selectionTolerance);
   int selAxisInSize = selectionTolerance;
-  int selTickLabelSize = (QCPAxis::orientation(type) == Qt::Horizontal ? tickLabelsSize.height() : tickLabelsSize.width());
-  // TODO: proper bounding box for lsInside case
-  int selTickLabelOffset = qMax(tickLengthOut, subTickLengthOut)+tickLabelPadding;
-  if (tickLabelSide == QCPAxis::lsInside)
-     selTickLabelOffset = (qMax(tickLengthIn, subTickLengthIn)+tickLabelPadding) * ((type == QCPAxis::atRight || type == QCPAxis::atBottom) ? -1 : 1);
+  int selTickLabelSize;
+  int selTickLabelOffset;
+  if (tickLabelSide == QCPAxis::lsOutside)
+  {
+    selTickLabelSize = (QCPAxis::orientation(type) == Qt::Horizontal ? tickLabelsSize.height() : tickLabelsSize.width());
+    selTickLabelOffset = qMax(tickLengthOut, subTickLengthOut)+tickLabelPadding;
+  } else
+  {
+    selTickLabelSize = -(QCPAxis::orientation(type) == Qt::Horizontal ? tickLabelsSize.height() : tickLabelsSize.width());
+    selTickLabelOffset = -(qMax(tickLengthIn, subTickLengthIn)+tickLabelPadding);
+  }
   int selLabelSize = labelBounds.height();
-  int selLabelOffset = selTickLabelOffset+selTickLabelSize+labelPadding;
+  int selLabelOffset = qMax(tickLengthOut, subTickLengthOut)+(!tickLabels.isEmpty() && tickLabelSide == QCPAxis::lsOutside ? tickLabelPadding+selTickLabelSize : 0)+labelPadding;
   if (type == QCPAxis::atLeft)
   {
     mAxisSelectionBox.setCoords(origin.x()-selAxisOutSize, axisRect.top(), origin.x()+selAxisInSize, axisRect.bottom());
@@ -2641,6 +2647,9 @@ void QCPAxisPainterPrivate::draw(QCPPainter *painter)
     mTickLabelsSelectionBox.setCoords(axisRect.left(), origin.y()+selTickLabelOffset+selTickLabelSize, axisRect.right(), origin.y()+selTickLabelOffset);
     mLabelSelectionBox.setCoords(axisRect.left(), origin.y()+selLabelOffset+selLabelSize, axisRect.right(), origin.y()+selLabelOffset);
   }
+  mAxisSelectionBox = mAxisSelectionBox.normalized();
+  mTickLabelsSelectionBox = mTickLabelsSelectionBox.normalized();
+  mLabelSelectionBox = mLabelSelectionBox.normalized();
   // draw hitboxes for debug purposes:
   //painter->setBrush(Qt::NoBrush);
   //painter->drawRects(QVector<QRect>() << mAxisSelectionBox << mTickLabelsSelectionBox << mLabelSelectionBox);
