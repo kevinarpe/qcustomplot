@@ -277,12 +277,12 @@ double QCPBarsGroup::keyPixelOffset(const QCPBars *bars, double keyCoord)
     thisBase = thisBase->barBelow();
   
   // determine key pixel offset of this base bars considering all other base bars in this barsgroup:
-  int index = baseBars.indexOf(thisBase);
-  int startIndex;
-  double lowerPixelWidth, upperPixelWidth;
   double result = 0;
+  int index = baseBars.indexOf(thisBase);
   if (index >= 0)
   {
+    int startIndex;
+    double lowerPixelWidth, upperPixelWidth;
     if (baseBars.size() % 2 == 1 && index == (baseBars.size()-1)/2) // is center bar (int division on purpose)
     {
       return result;
@@ -352,7 +352,6 @@ double QCPBarsGroup::getPixelSpacing(const QCPBars *bars, double keyCoord)
     case stAbsolute:
     {
       return mSpacing;
-      break;
     }
     case stAxisRectRatio:
     {
@@ -360,13 +359,11 @@ double QCPBarsGroup::getPixelSpacing(const QCPBars *bars, double keyCoord)
         return bars->keyAxis()->axisRect()->width()*mSpacing;
       else
         return bars->keyAxis()->axisRect()->height()*mSpacing;
-      break;
     }
     case stPlotCoords:
     {
       double keyPixel = bars->keyAxis()->coordToPixel(keyCoord);
       return bars->keyAxis()->coordToPixel(keyCoord+mSpacing)-keyPixel;
-      break;
     }
   }
   return 0;
