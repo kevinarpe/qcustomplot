@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 /*! \file */
 #ifndef QCP_PLOTTABLE_GRAPH_H
@@ -46,7 +46,7 @@ public:
 Q_DECLARE_TYPEINFO(QCPData, Q_MOVABLE_TYPE);
 
 /*! \typedef QCPDataMap
-  Container for storing QCPData items in a sorted fashion. The key of the map
+  Container for storing \ref QCPData items in a sorted fashion. The key of the map
   is the key member of the QCPData instance.
   
   This is the container in which QCPGraph holds its data.

@@ -32,8 +32,10 @@ MainWindow::MainWindow(QWidget *parent) :
   //setupLegendTest(mCustomPlot);
   //setupMultiAxisRectInteractions(mCustomPlot);
   //setupAdaptiveSamplingTest(mCustomPlot);
-  setupColorMapTest(mCustomPlot);
-  //setupTestbed(mCustomPlot);
+  //setupColorMapTest(mCustomPlot);
+  //setupBarsTest(mCustomPlot);
+  //setupBarsGroupTest(mCustomPlot);
+  setupTestbed(mCustomPlot);
 }
 
 MainWindow::~MainWindow()
@@ -172,6 +174,15 @@ void MainWindow::setupItemTracerTest(QCustomPlot *customPlot)
   text->position->setType(QCPItemPosition::ptAxisRectRatio);
   text->position->setCoords(0.5, 0.05);
   text->setPen(QPen());
+  
+  QCPItemText *vtext = new QCPItemText(customPlot);
+  customPlot->addItem(vtext);
+  vtext->setText("Height");
+  vtext->setPositionAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  vtext->position->setParentAnchorY(graphTracer->position);
+  vtext->position->setTypeX(QCPItemPosition::ptAxisRectRatio);
+  vtext->position->setCoords(1, 0);
+  vtext->setPen(QPen());
 
   QCPItemCurve *curve = new QCPItemCurve(customPlot);
   customPlot->addItem(curve);
@@ -356,7 +367,7 @@ void MainWindow::setupSelectTest(QCustomPlot *customPlot)
   customPlot->addItem(straightLine);
   straightLine->point1->setCoords(0, 0.4);
   straightLine->point2->setCoords(1, 0.6);
-  */
+
   // QCPItemCurve
   QCPItemCurve *curve = new QCPItemCurve(customPlot);
   customPlot->addItem(curve);
@@ -366,7 +377,7 @@ void MainWindow::setupSelectTest(QCustomPlot *customPlot)
   curve->end->setCoords(1, 0);
   curve->setHead(QCPLineEnding::esSpikeArrow);
   curve->setTail(QCPLineEnding::esLineArrow);
-  /*
+
   // QCPItemBracket
   QCPItemBracket *bracket = new QCPItemBracket(customPlot);
   customPlot->addItem(bracket);
@@ -374,6 +385,25 @@ void MainWindow::setupSelectTest(QCustomPlot *customPlot)
   bracket->right->setCoords(1.2, 0.65);
   bracket->setLength(22);
   */
+  
+  // QCPFinancial:
+  QCPFinancial *f = new QCPFinancial(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(f);
+  QVector<double> key, open, high, low, close;
+  open <<190.16<<184.67<<182.26<<178.59<<201.35<<207.28<<216.61<<210.91<<207.73<<207.89<<206.92<<198.51<<199.85<<207.86<<207.99<<218.64<<204.38<<198.12<<199.11<<193.91;
+  high <<191.34<<187.19<<183.4<<194.4<<210.2<<218.6596<<217.69<<211.36<<214.02<<208.16<<207.149<<203.7899<<206.7<<212.8<<216.74<<219.33<<206.2<<202.29<<199.99<<199.29;
+  low <<183<<179.88<<177.22<<178<<197.25<<206.85<<208.52<<206.52<<205.69<<201.28<<195.5301<<190.5<<197.65<<203.2<<207<<205.01<<194<<194.08<<190.82<<184.32;
+  close <<183.76<<183.87<<179.86<<182<<209.64<<216.6<<209.48<<208.6<<207.08<<203.6<<198.21<<200<<202<<210.81<<216.33<<206.36<<197.08<<199.61<<197<<199.09;
+  for (int i=0; i<open.size(); ++i)
+    key << i;
+  f->setData(key, open, high, low, close);
+  f->setChartStyle(QCPFinancial::csCandlestick);
+  //customPlot->yAxis->setRangeReversed(true);
+  //customPlot->xAxis->setRangeReversed(true);
+  customPlot->xAxis->setRange(-2, 22);
+  customPlot->yAxis->setRange(160, 220);
+  
+  
   connect(customPlot, SIGNAL(beforeReplot()), this, SLOT(selectTestColorMapRefresh()));
 }
 
@@ -685,6 +715,322 @@ void MainWindow::setupColorMapTest(QCustomPlot *customPlot)
   connect(customPlot, SIGNAL(beforeReplot()), colorMap, SLOT(updateLegendIcon()));
   customPlot->rescaleAxes();
   customPlot->replot();
+}
+
+void MainWindow::setupBarsTest(QCustomPlot *customPlot)
+{
+  QVector<double> datax = QVector<double>() << 2 << 3 << 4 << 5; 
+  QVector<double> datay1 = QVector<double>() << 0.2 << 0.3 << 0.4 << 0.5; 
+  QVector<double> datay2 = QVector<double>() << 0.5 << 0.4 << 0.3 << 0.2; 
+  QVector<double> datay3 = QVector<double>() << 0.1 << 0.2 << 0.1 << 0.2; 
+  QVector<double> datay1n = QVector<double>() << -0.2 << -0.3 << -0.4 << -0.5; 
+  QVector<double> datay2n = QVector<double>() << -0.5 << -0.4 << -0.3 << -0.2; 
+  QVector<double> datay3n = QVector<double>() << -0.1 << -0.2 << -0.1 << -0.2; 
+  
+  customPlot->yAxis->setRangeReversed(false);
+  QCPBars *bars;
+  QCPAxis *keyAxis, *valueAxis;
+  
+  // stacked bars:
+  keyAxis = customPlot->xAxis;
+  valueAxis = customPlot->yAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1);
+  bars->setWidthType(QCPBars::wtAbsolute);
+  bars->setWidth(50);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2);
+  bars->setWidthType(QCPBars::wtAxisRectRatio);
+  bars->setWidth(0.05);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3);
+  bars->setWidthType(QCPBars::wtPlotCoords);
+  bars->setWidth(0.25);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-3)));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  // stacked negative bars:
+  keyAxis = customPlot->xAxis;
+  valueAxis = customPlot->yAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1n);
+  bars->setWidthType(QCPBars::wtAbsolute);
+  bars->setWidth(50);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2n);
+  bars->setWidthType(QCPBars::wtAxisRectRatio);
+  bars->setWidth(0.05);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3n);
+  bars->setWidthType(QCPBars::wtPlotCoords);
+  bars->setWidth(0.25);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-3)));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  
+  // stacked bars with swapped x and y axis:
+  keyAxis = customPlot->yAxis;
+  valueAxis = customPlot->xAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1);
+  bars->setWidthType(QCPBars::wtAbsolute);
+  bars->setWidth(50);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2);
+  bars->setWidthType(QCPBars::wtAxisRectRatio);
+  bars->setWidth(0.05);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3);
+  bars->setWidthType(QCPBars::wtPlotCoords);
+  bars->setWidth(0.25);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-3)));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  // stacked negative bars with swapped x and y axis:
+  keyAxis = customPlot->yAxis;
+  valueAxis = customPlot->xAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1n);
+  bars->setWidthType(QCPBars::wtAbsolute);
+  bars->setWidth(50);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2n);
+  bars->setWidthType(QCPBars::wtAxisRectRatio);
+  bars->setWidth(0.05);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3n);
+  bars->setWidthType(QCPBars::wtPlotCoords);
+  bars->setWidth(0.25);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-3)));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  
+  // stacked bars with base value offset:
+  keyAxis = customPlot->xAxis;
+  valueAxis = customPlot->yAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1);
+  bars->setBaseValue(2);
+  bars->setWidthType(QCPBars::wtAbsolute);
+  bars->setWidth(50);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2);
+  bars->setWidthType(QCPBars::wtAxisRectRatio);
+  bars->setWidth(0.05);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3);
+  bars->setWidthType(QCPBars::wtPlotCoords);
+  bars->setWidth(0.25);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-3)));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  // stacked negative bars with base value offset:
+  keyAxis = customPlot->xAxis;
+  valueAxis = customPlot->yAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1n);
+  bars->setBaseValue(2);
+  bars->setWidthType(QCPBars::wtAbsolute);
+  bars->setWidth(50);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2n);
+  bars->setWidthType(QCPBars::wtAxisRectRatio);
+  bars->setWidth(0.05);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3n);
+  bars->setWidthType(QCPBars::wtPlotCoords);
+  bars->setWidth(0.25);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-3)));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  
+  // stacked bars with negative base value offset:
+  keyAxis = customPlot->xAxis;
+  valueAxis = customPlot->yAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1);
+  bars->setBaseValue(-2);
+  bars->setWidthType(QCPBars::wtAbsolute);
+  bars->setWidth(50);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2);
+  bars->setWidthType(QCPBars::wtAxisRectRatio);
+  bars->setWidth(0.05);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3);
+  bars->setWidthType(QCPBars::wtPlotCoords);
+  bars->setWidth(0.25);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-3)));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  // stacked negative bars with negative base value offset:
+  keyAxis = customPlot->xAxis;
+  valueAxis = customPlot->yAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1n);
+  bars->setBaseValue(-2);
+  bars->setWidthType(QCPBars::wtAbsolute);
+  bars->setWidth(50);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2n);
+  bars->setWidthType(QCPBars::wtAxisRectRatio);
+  bars->setWidth(0.05);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3n);
+  bars->setWidthType(QCPBars::wtPlotCoords);
+  bars->setWidth(0.25);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-3)));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+
+  customPlot->rescaleAxes();
+}
+
+void MainWindow::setupBarsGroupTest(QCustomPlot *customPlot)
+{
+  QVector<double> datax = QVector<double>() << 2 << 5 << 8 << 11; 
+  QVector<double> datay1 = QVector<double>() << 0.2 << 0.3 << 0.4 << 0.5; 
+  QVector<double> datay2 = QVector<double>() << 0.5 << 0.4 << 0.3 << 0.2; 
+  QVector<double> datay3 = QVector<double>() << 0.1 << 0.2 << 0.1 << 0.2; 
+  
+  QCPBarsGroup *group1 = new QCPBarsGroup(customPlot);
+  QCPBarsGroup *group2 = new QCPBarsGroup(customPlot);
+  QCPBars *bars;
+  QCPAxis *keyAxis, *valueAxis;
+  
+  // 3 stacked bars:
+  keyAxis = customPlot->xAxis;
+  valueAxis = customPlot->yAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars->setBarsGroup(group1);
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars->setBarsGroup(group1);
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  bars->setBarsGroup(group1);
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-3)));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  // 3 stacked bars:
+  keyAxis = customPlot->xAxis;
+  valueAxis = customPlot->yAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars->setBarsGroup(group1);
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars->setBarsGroup(group1);
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  bars->setBarsGroup(group1);
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-3)));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  // 3 stacked bars:
+  keyAxis = customPlot->xAxis;
+  valueAxis = customPlot->yAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars->setBarsGroup(group1);
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars->setBarsGroup(group1);
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3);
+  bars->setBrush(QColor(0, 0, 255, 50));
+  bars->setBarsGroup(group1);
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-3)));
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  
+  // 2 stacked bars:
+  keyAxis = customPlot->xAxis;
+  valueAxis = customPlot->yAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay1);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars->setBarsGroup(group2);
+  bars->setBaseValue(1);
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars->setBarsGroup(group2);
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  // 2 stacked bars:
+  keyAxis = customPlot->xAxis;
+  valueAxis = customPlot->yAxis;
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay3);
+  bars->setBrush(QColor(255, 0, 0, 50));
+  bars->setBarsGroup(group2);
+  bars->setBaseValue(1);
+  bars = new QCPBars(keyAxis, valueAxis);
+  customPlot->addPlottable(bars);
+  bars->setData(datax, datay2);
+  bars->setBrush(QColor(0, 255, 0, 50));
+  bars->setBarsGroup(group2);
+  qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-1))->moveAbove(qobject_cast<QCPBars*>(customPlot->plottable(customPlot->plottableCount()-2)));
+  
+  customPlot->rescaleAxes();
 }
 
 void MainWindow::setupAdaptiveSamplingTest(QCustomPlot *customPlot)

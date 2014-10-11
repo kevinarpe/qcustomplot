@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_RANGE_H
@@ -36,8 +36,8 @@ public:
   QCPRange();
   QCPRange(double lower, double upper);
   
-  bool operator==(const QCPRange& other) { return lower == other.lower && upper == other.upper; }
-  bool operator!=(const QCPRange& other) { return !(*this == other); }
+  bool operator==(const QCPRange& other) const { return lower == other.lower && upper == other.upper; }
+  bool operator!=(const QCPRange& other) const { return !(*this == other); }
   
   QCPRange &operator+=(const double& value) { lower+=value; upper+=value; return *this; }
   QCPRange &operator-=(const double& value) { lower-=value; upper-=value; return *this; }

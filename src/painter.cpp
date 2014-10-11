@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 
 #include "painter.h"
@@ -441,7 +441,7 @@ QCPScatterStyle::QCPScatterStyle(const QPainterPath &customPath, const QPen &pen
   mPen(pen),
   mBrush(brush),
   mCustomPath(customPath),
-  mPenDefined(false)
+  mPenDefined(pen.style() != Qt::NoPen)
 {
 }
 

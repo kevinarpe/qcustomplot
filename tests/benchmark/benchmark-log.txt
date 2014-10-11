@@ -178,3 +178,59 @@ QCPGraph_RemoveDataBetween   115.00 +/- 1.90 ms
 QCPGraph_Standard              2.37 +/- 0.61 ms
 
 
+*** Benchmark on 2014-06-23 00:39 ***
+Platform: Linux-3.5.0-51-generic-i686-athlon-with-LinuxMint-14-nadia, dermanu on manulinux
+Qt Version: 5.3.0
+Git Branch: dev-1.3.0
+Git Head: f7d630e Merge branch 'qt5.3-compatibility' into dev-1.3.0
+Rounds: 20
+QCPAxis_TickLabels             1.60 +/- 0.27 ms
+QCPAxis_TickLabelsCached       0.66 +/- 0.11 ms
+QCPGraph_AddData             167.90 +/- 13.64 ms
+QCPGraph_ManyLines             6.38 +/- 0.41 ms
+QCPGraph_ManyOffScreenLines    0.52 +/- 0.01 ms
+QCPGraph_ManyPoints           15.25 +/- 1.09 ms
+QCPGraph_RemoveDataAfter     118.50 +/- 0.97 ms
+QCPGraph_RemoveDataBefore     44.75 +/- 1.13 ms
+QCPGraph_RemoveDataBetween   114.60 +/- 2.27 ms
+QCPGraph_Standard              2.23 +/- 0.26 ms
+
+
+*** Benchmark on 2014-10-04 20:57 ***
+Platform: Linux-3.5.0-51-generic-i686-athlon-with-LinuxMint-14-nadia, dermanu on manulinux
+Qt Version: 5.2.0
+Git Branch: dev-1.3.0
+Git Head: 9687a45 Merge branch 'qcpcurve-optimization' into dev-1.3.0
+Rounds: 20
+Comment: Before QCPGraph NaN-Gaps
+QCPAxis_TickLabels             1.56 +/- 0.21 ms
+QCPAxis_TickLabelsCached       0.69 +/- 0.13 ms
+QCPGraph_AddData             183.40 +/- 6.86 ms
+QCPGraph_ManyLines             6.57 +/- 0.10 ms
+QCPGraph_ManyOffScreenLines    0.53 +/- 0.00 ms
+QCPGraph_ManyPoints           16.50 +/- 2.18 ms
+QCPGraph_RemoveDataAfter     127.25 +/- 1.87 ms
+QCPGraph_RemoveDataBefore     44.75 +/- 0.89 ms
+QCPGraph_RemoveDataBetween   124.50 +/- 1.96 ms
+QCPGraph_Standard              2.26 +/- 0.36 ms
+
+
+*** Benchmark on 2014-10-04 22:53 ***
+Platform: Linux-3.5.0-51-generic-i686-athlon-with-LinuxMint-14-nadia, dermanu on manulinux
+Qt Version: 5.2.0
+Git Branch: dev-1.3.0
+Git Head: 9687a45 Merge branch 'qcpcurve-optimization' into dev-1.3.0
+Rounds: 20
+Comment: After QCPGraph NaN-Gaps
+QCPAxis_TickLabels             1.63 +/- 0.27 ms
+QCPAxis_TickLabelsCached       0.65 +/- 0.10 ms
+QCPGraph_AddData             188.25 +/- 9.93 ms
+QCPGraph_ManyLines             6.66 +/- 0.16 ms
+QCPGraph_ManyOffScreenLines    0.53 +/- 0.01 ms
+QCPGraph_ManyPoints           16.51 +/- 2.01 ms
+QCPGraph_RemoveDataAfter     128.20 +/- 1.78 ms
+QCPGraph_RemoveDataBefore     45.20 +/- 0.68 ms
+QCPGraph_RemoveDataBetween   125.10 +/- 2.07 ms
+QCPGraph_Standard              2.22 +/- 0.45 ms
+
+

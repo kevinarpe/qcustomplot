@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 
 #include "colorgradient.h"
@@ -34,8 +34,8 @@
   \brief Defines a color gradient for use with e.g. \ref QCPColorMap
   
   This class describes a color gradient which can be used to encode data with color. For example,
-  QCPColorMap and QCPColorScale have a \ref QCPColorMap::setGradient "setGradient" method which
-  takes an instance of this class. Colors are set with \ref setColorStopAt(double position, const QColor &color)
+  QCPColorMap and QCPColorScale have \ref QCPColorMap::setGradient "setGradient" methods which
+  take an instance of this class. Colors are set with \ref setColorStopAt(double position, const QColor &color)
   with a \a position from 0 to 1. In between these defined color positions, the
   color will be interpolated linearly either in RGB or HSV space, see \ref setColorInterpolation.
 

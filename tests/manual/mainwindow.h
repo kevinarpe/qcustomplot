@@ -39,6 +39,8 @@ public:
   void setupMultiAxisRectInteractions(QCustomPlot *customPlot);
   void setupAdaptiveSamplingTest(QCustomPlot *customPlot);
   void setupColorMapTest(QCustomPlot *customPlot);
+  void setupBarsTest(QCustomPlot *customPlot);
+  void setupBarsGroupTest(QCustomPlot *customPlot);
   // testbed:
   void setupTestbed(QCustomPlot *customPlot);
   

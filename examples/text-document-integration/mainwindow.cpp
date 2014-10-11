@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 
 #include "mainwindow.h"
@@ -38,8 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
   setupPlot();
   
   // register the plot document object (only needed once, no matter how many plots will be in the QTextDocument):
-  QCPDocumentObject *interface = new QCPDocumentObject(this);
-  ui->textEdit->document()->documentLayout()->registerHandler(QCPDocumentObject::PlotTextFormat, interface);
+  QCPDocumentObject *plotObjectHandler = new QCPDocumentObject(this);
+  ui->textEdit->document()->documentLayout()->registerHandler(QCPDocumentObject::PlotTextFormat, plotObjectHandler);
 }
 
 MainWindow::~MainWindow()
@@ -61,8 +61,8 @@ void MainWindow::setupPlot()
   for (int i=0; i<250; ++i)
   {
     x[i] = i;
-    y0[i] = exp(-i/150.0)*cos(i/10.0); // exponentially decaying cosine
-    y1[i] = exp(-i/150.0); // exponential envelope
+    y0[i] = qExp(-i/150.0)*qCos(i/10.0); // exponentially decaying cosine
+    y1[i] = qExp(-i/150.0); // exponential envelope
   }
   // configure right and top axis to show ticks but no labels:
   // (see QCPAxisRect::setupFullAxesBox for a quicker method to do this)

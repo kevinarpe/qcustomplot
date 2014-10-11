@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCUSTOMPLOT_H
@@ -49,6 +49,7 @@
 //amalgamation: add plottables/plottable-bars.h
 //amalgamation: add plottables/plottable-statisticalbox.h
 //amalgamation: add plottables/plottable-colormap.h
+//amalgamation: add plottables/plottable-financial.h
 //amalgamation: add items/item-straightline.h
 //amalgamation: add items/item-line.h
 //amalgamation: add items/item-curve.h

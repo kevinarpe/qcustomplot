@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 
 /*! \file */
@@ -37,7 +37,7 @@
 #include "plottables/plottable-graph.h"
 #include "item.h"
 
-/*! \mainpage %QCustomPlot 1.2.1 Documentation
+/*! \mainpage %QCustomPlot 1.3.0-beta Documentation
 
   \image html qcp-doc-logo.png
   
@@ -84,7 +84,7 @@
   
   All further interfacing with plottables (e.g how to set data) is specific to the plottable type.
   See the documentations of the subclasses: QCPGraph, QCPCurve, QCPBars, QCPStatisticalBox,
-  QCPColorMap.
+  QCPColorMap, QCPFinancial.
 
   \section mainpage-axes Controlling the Axes
   
@@ -252,8 +252,8 @@
   an area enclosed by four axes, where the graphs/plottables are drawn in. The viewport is larger
   and contains also the axes themselves, their tick numbers, their labels, the plot title etc.
   
-  Only when saving to a file (see \ref savePng, savePdf etc.) the viewport is temporarily modified
-  to allow saving plots with sizes independent of the current widget size.
+  Only when saving to a file (see \ref savePng, \ref savePdf etc.) the viewport is temporarily
+  modified to allow saving plots with sizes independent of the current widget size.
 */
 
 /*! \fn QCPLayoutGrid *QCustomPlot::plotLayout() const
@@ -1898,7 +1898,7 @@ void QCustomPlot::replot(QCustomPlot::RefreshPriority refreshPriority)
     else
       update();
   } else // might happen if QCustomPlot has width or height zero
-    qDebug() << Q_FUNC_INFO << "Couldn't activate painter on buffer";
+    qDebug() << Q_FUNC_INFO << "Couldn't activate painter on buffer. This usually happens because QCustomPlot has width or height zero.";
   
   emit afterReplot();
   mReplotting = false;
@@ -1983,13 +1983,22 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   QPrinter printer(QPrinter::ScreenResolution);
   printer.setOutputFileName(fileName);
   printer.setOutputFormat(QPrinter::PdfFormat);
-  printer.setFullPage(true);
   printer.setColorMode(QPrinter::Color);
   printer.printEngine()->setProperty(QPrintEngine::PPK_Creator, pdfCreator);
   printer.printEngine()->setProperty(QPrintEngine::PPK_DocumentName, pdfTitle);
   QRect oldViewport = viewport();
   setViewport(QRect(0, 0, newWidth, newHeight));
+#if QT_VERSION < QT_VERSION_CHECK(5, 3, 0)
+  printer.setFullPage(true);
   printer.setPaperSize(viewport().size(), QPrinter::DevicePixel);
+#else
+  QPageLayout pageLayout;
+  pageLayout.setMode(QPageLayout::FullPageMode);
+  pageLayout.setOrientation(QPageLayout::Portrait);
+  pageLayout.setMargins(QMarginsF(0, 0, 0, 0));
+  pageLayout.setPageSize(QPageSize(viewport().size(), QPageSize::Point, QString(), QPageSize::ExactMatch));
+  printer.setPageLayout(pageLayout);
+#endif
   QCPPainter printpainter;
   if (printpainter.begin(&printer))
   {

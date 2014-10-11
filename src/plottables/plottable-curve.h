@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 /*! \file */
 #ifndef QCP_PLOTTABLE_CURVE_H
@@ -44,7 +44,7 @@ public:
 Q_DECLARE_TYPEINFO(QCPCurveData, Q_MOVABLE_TYPE);
 
 /*! \typedef QCPCurveDataMap
-  Container for storing QCPCurveData items in a sorted fashion. The key of the map
+  Container for storing \ref QCPCurveData items in a sorted fashion. The key of the map
   is the t member of the QCPCurveData instance.
   
   This is the container in which QCPCurve holds its data.
@@ -119,8 +119,13 @@ protected:
   
   // non-virtual methods:
   void getCurveData(QVector<QPointF> *lineData) const;
+  int getRegion(double x, double y, double rectLeft, double rectTop, double rectRight, double rectBottom) const;
+  QPointF getOptimizedPoint(int prevRegion, double prevKey, double prevValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom) const;
+  QVector<QPointF> getOptimizedCornerPoints(int prevRegion, int currentRegion, double prevKey, double prevValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom) const;
+  bool mayTraverse(int prevRegion, int currentRegion) const;
+  bool getTraverse(double prevKey, double prevValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom, QPointF &crossA, QPointF &crossB) const;
+  void getTraverseCornerPoints(int prevRegion, int currentRegion, double rectLeft, double rectTop, double rectRight, double rectBottom, QVector<QPointF> &beforeTraverse, QVector<QPointF> &afterTraverse) const;
   double pointDistance(const QPointF &pixelPoint) const;
-  QPointF outsideCoordsToPixels(double key, double value, int region, QRect axisRect) const;
   
   friend class QCustomPlot;
   friend class QCPLegend;

@@ -188,7 +188,7 @@ void MainWindow::addRandomGraph()
   for (int i=0; i<n; i++)
   {
     x[i] = (i/(double)n-0.5)*10.0*xScale + xOffset;
-    y[i] = (sin(x[i]*r1*5)*sin(cos(x[i]*r2)*r4*3)+r3*cos(sin(x[i])*r4*2))*yScale + yOffset;
+    y[i] = (qSin(x[i]*r1*5)*qSin(qCos(x[i]*r2)*r4*3)+r3*qCos(qSin(x[i])*r4*2))*yScale + yOffset;
   }
   
   ui->customPlot->addGraph();

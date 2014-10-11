@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_H
@@ -42,6 +42,7 @@
 #include "plottables/plottable-bars.h"
 #include "plottables/plottable-statisticalbox.h"
 #include "plottables/plottable-colormap.h"
+#include "plottables/plottable-financial.h"
 #include "items/item-straightline.h"
 #include "items/item-line.h"
 #include "items/item-curve.h"

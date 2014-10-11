@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 
 #include "layoutelement-legend.h"
@@ -403,7 +403,7 @@ QCPLegend::QCPLegend()
 QCPLegend::~QCPLegend()
 {
   clearItems();
-  if (mParentPlot)
+  if (qobject_cast<QCustomPlot*>(mParentPlot)) // make sure this isn't called from QObject dtor when QCustomPlot is already destructed (happens when the legend is not in any layout and thus QObject-child of QCustomPlot)
     mParentPlot->legendRemoved(this);
 }
 

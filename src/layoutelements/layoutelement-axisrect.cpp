@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 
 #include "layoutelement-axisrect.h"
@@ -994,13 +994,13 @@ void QCPAxisRect::wheelEvent(QWheelEvent *event)
       double wheelSteps = event->delta()/120.0; // a single step delta is +/-120 usually
       if (mRangeZoom.testFlag(Qt::Horizontal))
       {
-        factor = pow(mRangeZoomFactorHorz, wheelSteps);
+        factor = qPow(mRangeZoomFactorHorz, wheelSteps);
         if (mRangeZoomHorzAxis.data())
           mRangeZoomHorzAxis.data()->scaleRange(factor, mRangeZoomHorzAxis.data()->pixelToCoord(event->pos().x()));
       }
       if (mRangeZoom.testFlag(Qt::Vertical))
       {
-        factor = pow(mRangeZoomFactorVert, wheelSteps);
+        factor = qPow(mRangeZoomFactorVert, wheelSteps);
         if (mRangeZoomVertAxis.data())
           mRangeZoomVertAxis.data()->scaleRange(factor, mRangeZoomVertAxis.data()->pixelToCoord(event->pos().y()));
       }

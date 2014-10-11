@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 07.04.14                                             **
-**          Version: 1.2.1                                                **
+**             Date: 11.10.14                                             **
+**          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 
 #ifndef QCP_AXIS_H
@@ -113,6 +113,7 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(QFont tickLabelFont READ tickLabelFont WRITE setTickLabelFont)
   Q_PROPERTY(QColor tickLabelColor READ tickLabelColor WRITE setTickLabelColor)
   Q_PROPERTY(double tickLabelRotation READ tickLabelRotation WRITE setTickLabelRotation)
+  Q_PROPERTY(LabelSide tickLabelSide READ tickLabelSide WRITE setTickLabelSide)
   Q_PROPERTY(QString dateTimeFormat READ dateTimeFormat WRITE setDateTimeFormat)
   Q_PROPERTY(Qt::TimeSpec dateTimeSpec READ dateTimeSpec WRITE setDateTimeSpec)
   Q_PROPERTY(QString numberFormat READ numberFormat WRITE setNumberFormat)
@@ -170,6 +171,15 @@ public:
                  };
   Q_ENUMS(LabelType)
   /*!
+    Defines on which side of the axis the tick labels (numbers) shall appear.
+    
+    \see setTickLabelSide
+  */
+  enum LabelSide { lsInside    ///< Tick labels will be displayed inside the axis rect and clipped to the inner axis rect
+                   ,lsOutside  ///< Tick labels will be displayed outside the axis rect
+                 };
+  Q_ENUMS(LabelSide)
+  /*!
     Defines the scale of an axis.
     \see setScaleType
   */
@@ -211,6 +221,7 @@ public:
   QFont tickLabelFont() const { return mTickLabelFont; }
   QColor tickLabelColor() const { return mTickLabelColor; }
   double tickLabelRotation() const;
+  LabelSide tickLabelSide() const;
   QString dateTimeFormat() const { return mDateTimeFormat; }
   Qt::TimeSpec dateTimeSpec() const { return mDateTimeSpec; }
   QString numberFormat() const;
@@ -266,6 +277,7 @@ public:
   void setTickLabelFont(const QFont &font);
   void setTickLabelColor(const QColor &color);
   void setTickLabelRotation(double degrees);
+  void setTickLabelSide(LabelSide side);
   void setDateTimeFormat(const QString &format);
   void setDateTimeSpec(const Qt::TimeSpec &timeSpec);
   void setNumberFormat(const QString &formatCode);
@@ -444,13 +456,14 @@ public:
   QString label;
   int tickLabelPadding; // directly accessed by QCPAxis setters/getters
   double tickLabelRotation; // directly accessed by QCPAxis setters/getters
+  QCPAxis::LabelSide tickLabelSide; // directly accessed by QCPAxis setters/getters
   bool substituteExponent;
   bool numberMultiplyCross; // directly accessed by QCPAxis setters/getters
   int tickLengthIn, tickLengthOut, subTickLengthIn, subTickLengthOut; // directly accessed by QCPAxis setters/getters
   QPen tickPen, subTickPen;
   QFont tickLabelFont;
   QColor tickLabelColor;
-  QRect alignmentRect, viewportRect;
+  QRect axisRect, viewportRect;
   double offset; // directly accessed by QCPAxis setters/getters
   bool abbreviateDecimalPowers;
   bool reversedEndings;
