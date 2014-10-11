@@ -1404,6 +1404,8 @@ void MainWindow::setupFinancialDemo(QCustomPlot *customPlot)
   QCPAxisRect *volumeAxisRect = new QCPAxisRect(customPlot);
   customPlot->plotLayout()->addElement(1, 0, volumeAxisRect);
   volumeAxisRect->setMaximumSize(QSize(QWIDGETSIZE_MAX, 100));
+  volumeAxisRect->axis(QCPAxis::atBottom)->setLayer("axes");
+  volumeAxisRect->axis(QCPAxis::atBottom)->grid()->setLayer("grid");
   // bring bottom and main axis rect closer together:
   customPlot->plotLayout()->setRowSpacing(0);
   volumeAxisRect->setAutoMargins(QCP::msLeft|QCP::msRight|QCP::msBottom);
