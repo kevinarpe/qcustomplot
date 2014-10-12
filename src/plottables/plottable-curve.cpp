@@ -144,6 +144,11 @@ QCPCurve::~QCPCurve()
 */
 void QCPCurve::setData(QCPCurveDataMap *data, bool copy)
 {
+  if (mData == data)
+  {
+    qDebug() << Q_FUNC_INFO << "The data pointer is already in (and owned by) this plottable" << reinterpret_cast<quintptr>(data);
+    return;
+  }
   if (copy)
   {
     *mData = *data;

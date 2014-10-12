@@ -545,6 +545,11 @@ QCPColorMap::~QCPColorMap()
 */
 void QCPColorMap::setData(QCPColorMapData *data, bool copy)
 {
+  if (mMapData == data)
+  {
+    qDebug() << Q_FUNC_INFO << "The data pointer is already in (and owned by) this plottable" << reinterpret_cast<quintptr>(data);
+    return;
+  }
   if (copy)
   {
     *mMapData = *data;
