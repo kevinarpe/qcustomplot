@@ -367,7 +367,7 @@ protected:
   QString mDateTimeFormat;
   Qt::TimeSpec mDateTimeSpec;
   int mNumberPrecision;
-  char mNumberFormatChar;
+  QLatin1Char mNumberFormatChar;
   bool mNumberBeautifulPowers;
   //bool mNumberMultiplyCross; // QCPAxisPainter
   // ticks and subticks:

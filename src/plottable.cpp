@@ -180,8 +180,8 @@
   You probably want one of the subclasses like \ref QCPGraph or \ref QCPCurve instead.
 */
 QCPAbstractPlottable::QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis) :
-  QCPLayerable(keyAxis->parentPlot(), "", keyAxis->axisRect()),
-  mName(""),
+  QCPLayerable(keyAxis->parentPlot(), QString(), keyAxis->axisRect()),
+  mName(),
   mAntialiasedFill(true),
   mAntialiasedScatters(true),
   mAntialiasedErrorBars(false),

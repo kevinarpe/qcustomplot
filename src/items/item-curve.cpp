@@ -56,10 +56,10 @@
 */
 QCPItemCurve::QCPItemCurve(QCustomPlot *parentPlot) :
   QCPAbstractItem(parentPlot),
-  start(createPosition("start")),
-  startDir(createPosition("startDir")),
-  endDir(createPosition("endDir")),
-  end(createPosition("end"))
+  start(createPosition(QLatin1String("start"))),
+  startDir(createPosition(QLatin1String("startDir"))),
+  endDir(createPosition(QLatin1String("endDir"))),
+  end(createPosition(QLatin1String("end")))
 {
   start->setCoords(0, 0);
   startDir->setCoords(0.5, 0);

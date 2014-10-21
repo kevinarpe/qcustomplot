@@ -49,8 +49,8 @@
 */
 QCPItemLine::QCPItemLine(QCustomPlot *parentPlot) :
   QCPAbstractItem(parentPlot),
-  start(createPosition("start")),
-  end(createPosition("end"))
+  start(createPosition(QLatin1String("start"))),
+  end(createPosition(QLatin1String("end")))
 {
   start->setCoords(0, 0);
   end->setCoords(1, 1);

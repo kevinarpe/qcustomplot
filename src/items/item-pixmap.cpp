@@ -53,14 +53,14 @@
 */
 QCPItemPixmap::QCPItemPixmap(QCustomPlot *parentPlot) :
   QCPAbstractItem(parentPlot),
-  topLeft(createPosition("topLeft")),
-  bottomRight(createPosition("bottomRight")),
-  top(createAnchor("top", aiTop)),
-  topRight(createAnchor("topRight", aiTopRight)),
-  right(createAnchor("right", aiRight)),
-  bottom(createAnchor("bottom", aiBottom)),
-  bottomLeft(createAnchor("bottomLeft", aiBottomLeft)),
-  left(createAnchor("left", aiLeft))
+  topLeft(createPosition(QLatin1String("topLeft"))),
+  bottomRight(createPosition(QLatin1String("bottomRight"))),
+  top(createAnchor(QLatin1String("top"), aiTop)),
+  topRight(createAnchor(QLatin1String("topRight"), aiTopRight)),
+  right(createAnchor(QLatin1String("right"), aiRight)),
+  bottom(createAnchor(QLatin1String("bottom"), aiBottom)),
+  bottomLeft(createAnchor(QLatin1String("bottomLeft"), aiBottomLeft)),
+  left(createAnchor(QLatin1String("left"), aiLeft))
 {
   topLeft->setCoords(0, 1);
   bottomRight->setCoords(1, 0);

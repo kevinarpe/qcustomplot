@@ -212,7 +212,7 @@ void QCPColorScale::setType(QCPAxis::AxisType type)
       rangeTransfer = mColorAxis.data()->range();
       labelTransfer = mColorAxis.data()->label();
       logBaseTransfer = mColorAxis.data()->scaleLogBase();
-      mColorAxis.data()->setLabel("");
+      mColorAxis.data()->setLabel(QString());
       disconnect(mColorAxis.data(), SIGNAL(rangeChanged(QCPRange)), this, SLOT(setDataRange(QCPRange)));
       disconnect(mColorAxis.data(), SIGNAL(scaleTypeChanged(QCPAxis::ScaleType)), this, SLOT(setDataScaleType(QCPAxis::ScaleType)));
     }

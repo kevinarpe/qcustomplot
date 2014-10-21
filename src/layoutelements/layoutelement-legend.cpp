@@ -81,7 +81,7 @@ QCPAbstractLegendItem::QCPAbstractLegendItem(QCPLegend *parent) :
   mSelectable(true),
   mSelected(false)
 {
-  setLayer("legend");
+  setLayer(QLatin1String("legend"));
   setMargins(QMargins(8, 2, 8, 2));
 }
 

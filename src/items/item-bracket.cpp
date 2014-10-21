@@ -59,9 +59,9 @@
 */
 QCPItemBracket::QCPItemBracket(QCustomPlot *parentPlot) :
   QCPAbstractItem(parentPlot),
-  left(createPosition("left")),
-  right(createPosition("right")),
-  center(createAnchor("center", aiCenter))
+  left(createPosition(QLatin1String("left"))),
+  right(createPosition(QLatin1String("right"))),
+  center(createAnchor(QLatin1String("center"), aiCenter))
 {
   left->setCoords(0, 0);
   right->setCoords(1, 1);

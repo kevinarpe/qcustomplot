@@ -70,7 +70,7 @@
 */
 QCPItemTracer::QCPItemTracer(QCustomPlot *parentPlot) :
   QCPAbstractItem(parentPlot),
-  position(createPosition("position")),
+  position(createPosition(QLatin1String("position"))),
   mGraph(0)
 {
   position->setCoords(0, 0);

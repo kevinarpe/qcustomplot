@@ -563,19 +563,19 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   setLocale(currentLocale);
   
   // create initial layers:
-  mLayers.append(new QCPLayer(this, "background"));
-  mLayers.append(new QCPLayer(this, "grid"));
-  mLayers.append(new QCPLayer(this, "main"));
-  mLayers.append(new QCPLayer(this, "axes"));
-  mLayers.append(new QCPLayer(this, "legend"));
+  mLayers.append(new QCPLayer(this, QLatin1String("background")));
+  mLayers.append(new QCPLayer(this, QLatin1String("grid")));
+  mLayers.append(new QCPLayer(this, QLatin1String("main")));
+  mLayers.append(new QCPLayer(this, QLatin1String("axes")));
+  mLayers.append(new QCPLayer(this, QLatin1String("legend")));
   updateLayerIndices();
-  setCurrentLayer("main");
+  setCurrentLayer(QLatin1String("main"));
   
   // create initial layout, axis rect and legend:
   mPlotLayout = new QCPLayoutGrid;
   mPlotLayout->initializeParentPlot(this);
   mPlotLayout->setParent(this); // important because if parent is QWidget, QCPLayout::sizeConstraintsChanged will call QWidget::updateGeometry
-  mPlotLayout->setLayer("main");
+  mPlotLayout->setLayer(QLatin1String("main"));
   QCPAxisRect *defaultAxisRect = new QCPAxisRect(this, true);
   mPlotLayout->addElement(0, 0, defaultAxisRect);
   xAxis = defaultAxisRect->axis(QCPAxis::atBottom);
@@ -587,16 +587,16 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   defaultAxisRect->insetLayout()->addElement(legend, Qt::AlignRight|Qt::AlignTop);
   defaultAxisRect->insetLayout()->setMargins(QMargins(12, 12, 12, 12));
   
-  defaultAxisRect->setLayer("background");
-  xAxis->setLayer("axes");
-  yAxis->setLayer("axes");
-  xAxis2->setLayer("axes");
-  yAxis2->setLayer("axes");
-  xAxis->grid()->setLayer("grid");
-  yAxis->grid()->setLayer("grid");
-  xAxis2->grid()->setLayer("grid");
-  yAxis2->grid()->setLayer("grid");
-  legend->setLayer("legend");
+  defaultAxisRect->setLayer(QLatin1String("background"));
+  xAxis->setLayer(QLatin1String("axes"));
+  yAxis->setLayer(QLatin1String("axes"));
+  xAxis2->setLayer(QLatin1String("axes"));
+  yAxis2->setLayer(QLatin1String("axes"));
+  xAxis->grid()->setLayer(QLatin1String("grid"));
+  yAxis->grid()->setLayer(QLatin1String("grid"));
+  xAxis2->grid()->setLayer(QLatin1String("grid"));
+  yAxis2->grid()->setLayer(QLatin1String("grid"));
+  legend->setLayer(QLatin1String("legend"));
   
   setViewport(rect()); // needs to be called after mPlotLayout has been created
   
@@ -1229,7 +1229,7 @@ QCPGraph *QCustomPlot::addGraph(QCPAxis *keyAxis, QCPAxis *valueAxis)
   QCPGraph *newGraph = new QCPGraph(keyAxis, valueAxis);
   if (addPlottable(newGraph))
   {
-    newGraph->setName("Graph "+QString::number(mGraphs.size()));
+    newGraph->setName(QLatin1String("Graph ")+QString::number(mGraphs.size()));
     return newGraph;
   } else
   {

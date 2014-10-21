@@ -88,7 +88,7 @@ class QCP_LIB_DECL QCPLayerable : public QObject
   Q_PROPERTY(bool antialiased READ antialiased WRITE setAntialiased)
   /// \endcond
 public:
-  QCPLayerable(QCustomPlot *plot, QString targetLayer="", QCPLayerable *parentLayerable=0);
+  QCPLayerable(QCustomPlot *plot, QString targetLayer=QString(), QCPLayerable *parentLayerable=0);
   ~QCPLayerable();
   
   // getters:

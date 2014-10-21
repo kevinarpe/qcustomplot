@@ -47,8 +47,8 @@
 */
 QCPItemStraightLine::QCPItemStraightLine(QCustomPlot *parentPlot) :
   QCPAbstractItem(parentPlot),
-  point1(createPosition("point1")),
-  point2(createPosition("point2"))
+  point1(createPosition(QLatin1String("point1"))),
+  point2(createPosition(QLatin1String("point2")))
 {
   point1->setCoords(0, 0);
   point2->setCoords(1, 1);
