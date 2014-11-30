@@ -195,7 +195,7 @@ void QCPColorGradient::colorize(const double *data, const QCPRange &range, QRgb 
   
   if (!logarithmic)
   {
-    const double posToIndexFactor = mLevelCount/range.size();
+    const double posToIndexFactor = (mLevelCount-1)/range.size();
     if (mPeriodic)
     {
       for (int i=0; i<n; ++i)
@@ -223,7 +223,7 @@ void QCPColorGradient::colorize(const double *data, const QCPRange &range, QRgb 
     {
       for (int i=0; i<n; ++i)
       {
-        int index = (int)(qLn(data[dataIndexFactor*i]/range.lower)/qLn(range.upper/range.lower)*mLevelCount) % mLevelCount;
+        int index = (int)(qLn(data[dataIndexFactor*i]/range.lower)/qLn(range.upper/range.lower)*(mLevelCount-1)) % mLevelCount;
         if (index < 0)
           index += mLevelCount;
         scanLine[i] = mColorBuffer.at(index);
@@ -232,7 +232,7 @@ void QCPColorGradient::colorize(const double *data, const QCPRange &range, QRgb 
     {
       for (int i=0; i<n; ++i)
       {
-        int index = qLn(data[dataIndexFactor*i]/range.lower)/qLn(range.upper/range.lower)*mLevelCount;
+        int index = qLn(data[dataIndexFactor*i]/range.lower)/qLn(range.upper/range.lower)*(mLevelCount-1);
         if (index < 0)
           index = 0;
         else if (index >= mLevelCount)
@@ -259,9 +259,9 @@ QRgb QCPColorGradient::color(double position, const QCPRange &range, bool logari
     updateColorBuffer();
   int index = 0;
   if (!logarithmic)
-    index = (position-range.lower)*mLevelCount/range.size();
+    index = (position-range.lower)*(mLevelCount-1)/range.size();
   else
-    index = qLn(position/range.lower)/qLn(range.upper/range.lower)*mLevelCount;
+    index = qLn(position/range.lower)/qLn(range.upper/range.lower)*(mLevelCount-1);
   if (mPeriodic)
   {
     index = index % mLevelCount;
