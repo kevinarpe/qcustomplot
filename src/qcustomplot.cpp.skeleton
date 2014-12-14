@@ -23,8 +23,11 @@
 **          Version: 1.3.0-beta                                           **
 ****************************************************************************/
 
-#include "qcustomplot.h"
+//amalgamation: add doc-mainpage.dox
+//amalgamation: add doc-layoutsystem.dox
+//amalgamation: add doc-classoverview.dox
 
+#include "qcustomplot.h"
 //amalgamation: place implementation includes
 
 //amalgamation: add painter.cpp

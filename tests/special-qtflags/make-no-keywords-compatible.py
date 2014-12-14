@@ -3,7 +3,7 @@
 # This script is used to make the amalgamated sources qcustomplot.h/.cpp compatible
 # to compiles with flag QT_NO_KEYWORDS set. It applies the following regular expression replacements
 #
-#   (^|[^\a_])emit          ->  \1Q_EMIT
+#   (^|[^\a_])emit\s        ->  \1Q_EMIT
 #   ^( *)signals:           ->  \1Q_SIGNALS:
 #   ^|[^\a_])foreach( *)\(  ->  \1Q_FOREACH\2(
 #
@@ -21,7 +21,7 @@ os.chdir(baseDir) # change current working dir to script dir
 def performKeywordReplacement(filename):
   print "making '"+filename+"' no-keywords-compatible..."
   patterns = []
-  patterns.append((re.compile("(^|[^\\a_])emit "), "\\1Q_EMIT "))
+  patterns.append((re.compile("(^|[^\\a_])emit\\s"), "\\1Q_EMIT "))
   patterns.append((re.compile("^( *)signals:"), "\\1Q_SIGNALS:"))
   patterns.append((re.compile("(^|[^\\a_])foreach( *)\\("), "\\1Q_FOREACH\\2("))
   inFile = open(filename)
