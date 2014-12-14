@@ -81,8 +81,7 @@
   setMinimumMargins), because vertical color scales are most common and the minimum top/bottom
   margin makes sure it keeps some distance to the top/bottom widget border. So if you change to a
   horizontal color scale by setting \ref setType to \ref QCPAxis::atBottom or \ref QCPAxis::atTop, you
-  might want to also change the minimum margins accordingly, e.g. \ref
-  setMinimumMargins(QMargins(6, 0, 6, 0)).
+  might want to also change the minimum margins accordingly, e.g. <tt>setMinimumMargins(QMargins(6, 0, 6, 0))</tt>.
 */
 
 /* start documentation of inline functions */
