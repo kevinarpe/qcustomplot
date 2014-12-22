@@ -1024,17 +1024,17 @@ bool QCPCurve::mayTraverse(int prevRegion, int currentRegion) const
 */
 bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double value, double rectLeft, double rectTop, double rectRight, double rectBottom, QPointF &crossA, QPointF &crossB) const
 {
-  QList<QVector2D> intersections; // x of QVector2D corresponds to key and y to value
+  QList<QPointF> intersections; // x of QPointF corresponds to key and y to value
   if (qFuzzyIsNull(key-prevKey)) // line is parallel to value axis
   {
     // due to region filter in mayTraverseR(), if line is parallel to value or key axis, R is traversed here
-    intersections.append(QVector2D(key, rectBottom)); // direction will be taken care of at end of method
-    intersections.append(QVector2D(key, rectTop));
+    intersections.append(QPointF(key, rectBottom)); // direction will be taken care of at end of method
+    intersections.append(QPointF(key, rectTop));
   } else if (qFuzzyIsNull(value-prevValue)) // line is parallel to key axis
   {
     // due to region filter in mayTraverseR(), if line is parallel to value or key axis, R is traversed here
-    intersections.append(QVector2D(rectLeft, value)); // direction will be taken care of at end of method
-    intersections.append(QVector2D(rectRight, value));
+    intersections.append(QPointF(rectLeft, value)); // direction will be taken care of at end of method
+    intersections.append(QPointF(rectRight, value));
   } else // line is skewed
   {
     double gamma;
@@ -1042,20 +1042,20 @@ bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double 
     // check top of rect:
     gamma = prevKey + (rectTop-prevValue)*keyPerValue;
     if (gamma >= rectLeft && gamma <= rectRight)
-      intersections.append(QVector2D(gamma, rectTop));
+      intersections.append(QPointF(gamma, rectTop));
     // check bottom of rect:
     gamma = prevKey + (rectBottom-prevValue)*keyPerValue;
     if (gamma >= rectLeft && gamma <= rectRight)
-      intersections.append(QVector2D(gamma, rectBottom));
+      intersections.append(QPointF(gamma, rectBottom));
     double valuePerKey = 1.0/keyPerValue;
     // check left of rect:
     gamma = prevValue + (rectLeft-prevKey)*valuePerKey;
     if (gamma >= rectBottom && gamma <= rectTop)
-      intersections.append(QVector2D(rectLeft, gamma));
+      intersections.append(QPointF(rectLeft, gamma));
     // check right of rect:
     gamma = prevValue + (rectRight-prevKey)*valuePerKey;
     if (gamma >= rectBottom && gamma <= rectTop)
-      intersections.append(QVector2D(rectRight, gamma));
+      intersections.append(QPointF(rectRight, gamma));
   }
   
   // handle cases where found points isn't exactly 2:
@@ -1063,12 +1063,13 @@ bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double 
   {
     // line probably goes through corner of rect, and we got duplicate points there. single out the point pair with greatest distance in between:
     double distSqrMax = 0;
-    QVector2D pv1, pv2;
+    QPointF pv1, pv2;
     for (int i=0; i<intersections.size()-1; ++i)
     {
       for (int k=i+1; k<intersections.size(); ++k)
       {
-        double distSqr = (intersections.at(i)-intersections.at(k)).lengthSquared();
+        QPointF distPoint = intersections.at(i)-intersections.at(k);
+        double distSqr = distPoint.x()*distPoint.x()+distPoint.y()+distPoint.y();
         if (distSqr > distSqrMax)
         {
           pv1 = intersections.at(i);
@@ -1077,7 +1078,7 @@ bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double 
         }
       }
     }
-    intersections = QList<QVector2D>() << pv1 << pv2;
+    intersections = QList<QPointF>() << pv1 << pv2;
   } else if (intersections.size() != 2)
   {
     // one or even zero points found (shouldn't happen unless line perfectly tangent to corner), no need to draw segment
