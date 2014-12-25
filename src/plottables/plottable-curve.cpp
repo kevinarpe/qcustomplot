@@ -1087,7 +1087,7 @@ bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double 
   
   // possibly re-sort points so optimized point segment has same direction as original segment:
   if ((key-prevKey)*(intersections.at(1).x()-intersections.at(0).x()) + (value-prevValue)*(intersections.at(1).y()-intersections.at(0).y()) < 0) // scalar product of both segments < 0 -> opposite direction
-    intersections.swap(0, 1);
+    intersections.move(0, 1);
   crossA = coordsToPixels(intersections.at(0).x(), intersections.at(0).y());
   crossB = coordsToPixels(intersections.at(1).x(), intersections.at(1).y());
   return true;
