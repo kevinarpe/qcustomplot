@@ -39,6 +39,7 @@ class QCP_LIB_DECL QCPItemPixmap : public QCPAbstractItem
   Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap)
   Q_PROPERTY(bool scaled READ scaled WRITE setScaled)
   Q_PROPERTY(Qt::AspectRatioMode aspectRatioMode READ aspectRatioMode)
+  Q_PROPERTY(Qt::TransformationMode transformationMode READ transformationMode)
   Q_PROPERTY(QPen pen READ pen WRITE setPen)
   Q_PROPERTY(QPen selectedPen READ selectedPen WRITE setSelectedPen)
   /// \endcond
@@ -50,12 +51,13 @@ public:
   QPixmap pixmap() const { return mPixmap; }
   bool scaled() const { return mScaled; }
   Qt::AspectRatioMode aspectRatioMode() const { return mAspectRatioMode; }
+  Qt::TransformationMode transformationMode() const { return mTransformationMode; }
   QPen pen() const { return mPen; }
   QPen selectedPen() const { return mSelectedPen; }
   
   // setters;
   void setPixmap(const QPixmap &pixmap);
-  void setScaled(bool scaled, Qt::AspectRatioMode aspectRatioMode=Qt::KeepAspectRatio);
+  void setScaled(bool scaled, Qt::AspectRatioMode aspectRatioMode=Qt::KeepAspectRatio, Qt::TransformationMode transformationMode=Qt::SmoothTransformation);
   void setPen(const QPen &pen);
   void setSelectedPen(const QPen &pen);
   
@@ -79,6 +81,7 @@ protected:
   QPixmap mScaledPixmap;
   bool mScaled;
   Qt::AspectRatioMode mAspectRatioMode;
+  Qt::TransformationMode mTransformationMode;
   QPen mPen, mSelectedPen;
   
   // reimplemented virtual methods:

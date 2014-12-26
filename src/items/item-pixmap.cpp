@@ -67,7 +67,7 @@ QCPItemPixmap::QCPItemPixmap(QCustomPlot *parentPlot) :
   
   setPen(Qt::NoPen);
   setSelectedPen(QPen(Qt::blue));
-  setScaled(false, Qt::KeepAspectRatio);
+  setScaled(false, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 }
 
 QCPItemPixmap::~QCPItemPixmap()
@@ -88,10 +88,11 @@ void QCPItemPixmap::setPixmap(const QPixmap &pixmap)
   Sets whether the pixmap will be scaled to fit the rectangle defined by the \a topLeft and \a
   bottomRight positions.
 */
-void QCPItemPixmap::setScaled(bool scaled, Qt::AspectRatioMode aspectRatioMode)
+void QCPItemPixmap::setScaled(bool scaled, Qt::AspectRatioMode aspectRatioMode, Qt::TransformationMode transformationMode)
 {
   mScaled = scaled;
   mAspectRatioMode = aspectRatioMode;
+  mTransformationMode = transformationMode;
   updateScaledPixmap();
 }
 
@@ -198,7 +199,7 @@ void QCPItemPixmap::updateScaledPixmap(QRect finalRect, bool flipHorz, bool flip
       finalRect = getFinalRect(&flipHorz, &flipVert);
     if (finalRect.size() != mScaledPixmap.size())
     {
-      mScaledPixmap = mPixmap.scaled(finalRect.size(), mAspectRatioMode, Qt::SmoothTransformation);
+      mScaledPixmap = mPixmap.scaled(finalRect.size(), mAspectRatioMode, mTransformationMode);
       if (flipHorz || flipVert)
         mScaledPixmap = QPixmap::fromImage(mScaledPixmap.toImage().mirrored(flipHorz, flipVert));
     }
