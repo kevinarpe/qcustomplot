@@ -357,7 +357,10 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 
 /*!
   Constructs an Axis instance of Type \a type for the axis rect \a parent.
-  You shouldn't instantiate axes directly, rather use \ref QCPAxisRect::addAxis.
+  
+  Usually it isn't necessary to instantiate axes directly, because you can let QCustomPlot create
+  them for you with \ref QCPAxisRect::addAxis. If you want to use own QCPAxis-subclasses however,
+  create them manually and then inject them also via \ref QCPAxisRect::addAxis.
 */
 QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   QCPLayerable(parent->parentPlot(), QString(), parent),
