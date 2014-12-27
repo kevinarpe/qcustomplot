@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 11.10.14                                             **
-**          Version: 1.3.0-beta                                           **
+**             Date: 27.12.14                                             **
+**          Version: 1.3.0                                                **
 ****************************************************************************/
 
 #include "plottable.h"
@@ -180,8 +180,8 @@
   You probably want one of the subclasses like \ref QCPGraph or \ref QCPCurve instead.
 */
 QCPAbstractPlottable::QCPAbstractPlottable(QCPAxis *keyAxis, QCPAxis *valueAxis) :
-  QCPLayerable(keyAxis->parentPlot(), "", keyAxis->axisRect()),
-  mName(""),
+  QCPLayerable(keyAxis->parentPlot(), QString(), keyAxis->axisRect()),
+  mName(),
   mAntialiasedFill(true),
   mAntialiasedScatters(true),
   mAntialiasedErrorBars(false),

@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 11.10.14                                             **
-**          Version: 1.3.0-beta                                           **
+**             Date: 27.12.14                                             **
+**          Version: 1.3.0                                                **
 ****************************************************************************/
 
 #include "item-pixmap.h"
@@ -53,21 +53,21 @@
 */
 QCPItemPixmap::QCPItemPixmap(QCustomPlot *parentPlot) :
   QCPAbstractItem(parentPlot),
-  topLeft(createPosition("topLeft")),
-  bottomRight(createPosition("bottomRight")),
-  top(createAnchor("top", aiTop)),
-  topRight(createAnchor("topRight", aiTopRight)),
-  right(createAnchor("right", aiRight)),
-  bottom(createAnchor("bottom", aiBottom)),
-  bottomLeft(createAnchor("bottomLeft", aiBottomLeft)),
-  left(createAnchor("left", aiLeft))
+  topLeft(createPosition(QLatin1String("topLeft"))),
+  bottomRight(createPosition(QLatin1String("bottomRight"))),
+  top(createAnchor(QLatin1String("top"), aiTop)),
+  topRight(createAnchor(QLatin1String("topRight"), aiTopRight)),
+  right(createAnchor(QLatin1String("right"), aiRight)),
+  bottom(createAnchor(QLatin1String("bottom"), aiBottom)),
+  bottomLeft(createAnchor(QLatin1String("bottomLeft"), aiBottomLeft)),
+  left(createAnchor(QLatin1String("left"), aiLeft))
 {
   topLeft->setCoords(0, 1);
   bottomRight->setCoords(1, 0);
   
   setPen(Qt::NoPen);
   setSelectedPen(QPen(Qt::blue));
-  setScaled(false, Qt::KeepAspectRatio);
+  setScaled(false, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 }
 
 QCPItemPixmap::~QCPItemPixmap()
@@ -88,10 +88,11 @@ void QCPItemPixmap::setPixmap(const QPixmap &pixmap)
   Sets whether the pixmap will be scaled to fit the rectangle defined by the \a topLeft and \a
   bottomRight positions.
 */
-void QCPItemPixmap::setScaled(bool scaled, Qt::AspectRatioMode aspectRatioMode)
+void QCPItemPixmap::setScaled(bool scaled, Qt::AspectRatioMode aspectRatioMode, Qt::TransformationMode transformationMode)
 {
   mScaled = scaled;
   mAspectRatioMode = aspectRatioMode;
+  mTransformationMode = transformationMode;
   updateScaledPixmap();
 }
 
@@ -198,7 +199,7 @@ void QCPItemPixmap::updateScaledPixmap(QRect finalRect, bool flipHorz, bool flip
       finalRect = getFinalRect(&flipHorz, &flipVert);
     if (finalRect.size() != mScaledPixmap.size())
     {
-      mScaledPixmap = mPixmap.scaled(finalRect.size(), mAspectRatioMode, Qt::SmoothTransformation);
+      mScaledPixmap = mPixmap.scaled(finalRect.size(), mAspectRatioMode, mTransformationMode);
       if (flipHorz || flipVert)
         mScaledPixmap = QPixmap::fromImage(mScaledPixmap.toImage().mirrored(flipHorz, flipVert));
     }

@@ -30,7 +30,7 @@ def printerror(message):
 def runQmakeMake(qmakecommand):
   if subprocess.call(qmakecommand, shell=True) != 0:
     printerror("qmake failed"); sys.exit(1)
-  if subprocess.call("make -j4", shell=True) != 0:
+  if subprocess.call("make -j5", shell=True) != 0:
     printerror("make failed"); sys.exit(1)
 
 def runExample(examplePath, executableName):
@@ -50,7 +50,7 @@ def runExample(examplePath, executableName):
   os.chdir(workingDirectory)
 
 # main test loop:
-qmakeVersions = ["qmake464", "qmake474", "qmake480", "qmake481", "qmake483", "qmake501", "qmake502", "qmake511", "qmake520", "qmake530"]
+qmakeVersions = ["qmake464", "qmake474", "qmake486", "qmake501", "qmake511", "qmake520", "qmake532", "qmake540"]
 if (config.qt > 0):
   qmakeVersions = ["qmake"+str(config.qt)];
 for qmakecommand in qmakeVersions:

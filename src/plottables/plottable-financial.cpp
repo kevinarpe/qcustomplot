@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 11.10.14                                             **
-**          Version: 1.3.0-beta                                           **
+**             Date: 27.12.14                                             **
+**          Version: 1.3.0                                                **
 ****************************************************************************/
 
 #include "plottable-financial.h"
@@ -166,6 +166,11 @@ QCPFinancial::~QCPFinancial()
 */
 void QCPFinancial::setData(QCPFinancialDataMap *data, bool copy)
 {
+  if (mData == data)
+  {
+    qDebug() << Q_FUNC_INFO << "The data pointer is already in (and owned by) this plottable" << reinterpret_cast<quintptr>(data);
+    return;
+  }
   if (copy)
   {
     *mData = *data;

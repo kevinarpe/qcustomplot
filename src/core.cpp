@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 11.10.14                                             **
-**          Version: 1.3.0-beta                                           **
+**             Date: 27.12.14                                             **
+**          Version: 1.3.0                                                **
 ****************************************************************************/
 
 /*! \file */
@@ -36,195 +36,6 @@
 #include "plottable.h"
 #include "plottables/plottable-graph.h"
 #include "item.h"
-
-/*! \mainpage %QCustomPlot 1.3.0-beta Documentation
-
-  \image html qcp-doc-logo.png
-  
-  Below is a brief overview of and guide to the classes and their relations. If you are new to
-  QCustomPlot and just want to start using it, it's recommended to look at the tutorials and
-  examples at
- 
-  http://www.qcustomplot.com/
- 
-  This documentation is especially helpful as a reference, when you're familiar with the basic
-  concept of how to use %QCustomPlot and you wish to learn more about specific functionality.
-  See the \ref classoverview "class overview" for diagrams explaining the relationships between
-  the most important classes of the QCustomPlot library.
-  
-  The central widget which displays the plottables and axes on its surface is QCustomPlot. Every
-  QCustomPlot contains four axes by default. They can be accessed via the members \ref
-  QCustomPlot::xAxis "xAxis", \ref QCustomPlot::yAxis "yAxis", \ref QCustomPlot::xAxis2 "xAxis2"
-  and \ref QCustomPlot::yAxis2 "yAxis2", and are of type QCPAxis. QCustomPlot supports an arbitrary
-  number of axes and axis rects, see the documentation of QCPAxisRect for details.
-
-  \section mainpage-plottables Plottables
-  
-  \a Plottables are classes that display any kind of data inside the QCustomPlot. They all derive
-  from QCPAbstractPlottable. For example, the QCPGraph class is a plottable that displays a graph
-  inside the plot with different line styles, scatter styles, filling etc.
-  
-  Since plotting graphs is such a dominant use case, QCustomPlot has a special interface for working
-  with QCPGraph plottables, that makes it very easy to handle them:\n
-  You create a new graph with QCustomPlot::addGraph and access them with QCustomPlot::graph.
-  
-  For all other plottables, you need to use the normal plottable interface:\n
-  First, you create an instance of the plottable you want, e.g.
-  \code
-  QCPCurve *newCurve = new QCPCurve(customPlot->xAxis, customPlot->yAxis);\endcode
-  add it to the customPlot:
-  \code
-  customPlot->addPlottable(newCurve);\endcode
-  and then modify the properties of the newly created plottable via the <tt>newCurve</tt> pointer.
-  
-  Plottables (including graphs) can be retrieved via QCustomPlot::plottable. Since the return type
-  of that function is the abstract base class of all plottables, QCPAbstractPlottable, you will
-  probably want to qobject_cast the returned pointer to the respective plottable subclass. (As
-  usual, if the cast returns zero, the plottable wasn't of that specific subclass.)
-  
-  All further interfacing with plottables (e.g how to set data) is specific to the plottable type.
-  See the documentations of the subclasses: QCPGraph, QCPCurve, QCPBars, QCPStatisticalBox,
-  QCPColorMap, QCPFinancial.
-
-  \section mainpage-axes Controlling the Axes
-  
-  As mentioned, QCustomPlot has four axes by default: \a xAxis (bottom), \a yAxis (left), \a xAxis2
-  (top), \a yAxis2 (right).
-  
-  Their range is handled by the simple QCPRange class. You can set the range with the
-  QCPAxis::setRange function. By default, the axes represent a linear scale. To set a logarithmic
-  scale, set \ref QCPAxis::setScaleType to \ref QCPAxis::stLogarithmic. The logarithm base can be set freely
-  with \ref QCPAxis::setScaleLogBase.
-  
-  By default, an axis automatically creates and labels ticks in a sensible manner. See the
-  following functions for tick manipulation:\n QCPAxis::setTicks, QCPAxis::setAutoTicks,
-  QCPAxis::setAutoTickCount, QCPAxis::setAutoTickStep, QCPAxis::setTickLabels,
-  QCPAxis::setTickLabelType, QCPAxis::setTickLabelRotation, QCPAxis::setTickStep,
-  QCPAxis::setTickLength,...
-  
-  Each axis can be given an axis label (e.g. "Voltage (mV)") with QCPAxis::setLabel.
-  
-  The distance of an axis backbone to the respective viewport border is called its margin.
-  Normally, the margins are calculated automatically. To change this, set
-  \ref QCPAxisRect::setAutoMargins to exclude the respective margin sides, set the margins manually with
-  \ref QCPAxisRect::setMargins. The main axis rect can be reached with \ref QCustomPlot::axisRect().
-  
-  \section mainpage-legend Plot Legend
-  
-  Every QCustomPlot has one QCPLegend (as \ref QCustomPlot::legend) by default. A legend is a small
-  layout element inside the plot which lists the plottables with an icon of the plottable
-  line/symbol and a name (QCPAbstractPlottable::setName). Plottables can be added and removed from
-  the main legend via \ref QCPAbstractPlottable::addToLegend and \ref
-  QCPAbstractPlottable::removeFromLegend. By default, adding a plottable to QCustomPlot
-  automatically adds it to the legend, too. This behaviour can be modified with the
-  QCustomPlot::setAutoAddPlottableToLegend property.
-  
-  The QCPLegend provides an interface to access, add and remove legend items directly, too. See
-  QCPLegend::item, QCPLegend::itemWithPlottable, QCPLegend::addItem, QCPLegend::removeItem for
-  example.
-  
-  Multiple legends are supported via the \link thelayoutsystem layout system\endlink (as a
-  QCPLegend simply is a normal layout element).
-  
-  \section mainpage-userinteraction User Interactions
-  
-  QCustomPlot supports dragging axis ranges with the mouse (\ref
-  QCPAxisRect::setRangeDrag), zooming axis ranges with the mouse wheel (\ref
-  QCPAxisRect::setRangeZoom) and a complete selection mechanism.
-  
-  The availability of these interactions is controlled with \ref QCustomPlot::setInteractions. For
-  details about the interaction system, see the documentation there.
-  
-  Further, QCustomPlot always emits corresponding signals, when objects are clicked or
-  doubleClicked. See \ref QCustomPlot::plottableClick, \ref QCustomPlot::plottableDoubleClick
-  and \ref QCustomPlot::axisClick for example.
-  
-  \section mainpage-items Items
-  
-  Apart from plottables there is another category of plot objects that are important: Items. The
-  base class of all items is QCPAbstractItem. An item sets itself apart from plottables in that
-  it's not necessarily bound to any axes. This means it may also be positioned in absolute pixel
-  coordinates or placed at a relative position on an axis rect. Further, it usually doesn't
-  represent data directly, but acts as decoration, emphasis, description etc.
-  
-  Multiple items can be arranged in a parent-child-hierarchy allowing for dynamical behaviour. For
-  example, you could place the head of an arrow at a fixed plot coordinate, so it always points to
-  some important area in the plot. The tail of the arrow can be anchored to a text item which
-  always resides in the top center of the axis rect, independent of where the user drags the axis
-  ranges. This way the arrow stretches and turns so it always points from the label to the
-  specified plot coordinate, without any further code necessary.
-  
-  For a more detailed introduction, see the QCPAbstractItem documentation, and from there the
-  documentations of the individual built-in items, to find out how to use them.
-  
-  \section mainpage-layoutelements Layout elements and layouts
-  
-  QCustomPlot uses an internal layout system to provide dynamic sizing and positioning of objects like
-  the axis rect(s), legends and the plot title. They are all based on \ref QCPLayoutElement and are arranged by
-  placing them inside a \ref QCPLayout.
-  
-  Details on this topic are given on the dedicated page about \link thelayoutsystem the layout system\endlink.
-  
-  \section mainpage-performancetweaks Performance Tweaks
-  
-  Although QCustomPlot is quite fast, some features like translucent fills, antialiasing and thick
-  lines can cause a significant slow down. If you notice this in your application, here are some
-  thoughts on how to increase performance. By far the most time is spent in the drawing functions,
-  specifically the drawing of graphs. For maximum performance, consider the following (most
-  recommended/effective measures first):
-  
-  \li use Qt 4.8.0 and up. Performance has doubled or tripled with respect to Qt 4.7.4. However
-  QPainter was broken and drawing pixel precise things, e.g. scatters, isn't possible with Qt >=
-  4.8.0. So it's a performance vs. plot quality tradeoff when switching to Qt 4.8.
-  \li To increase responsiveness during dragging, consider setting \ref QCustomPlot::setNoAntialiasingOnDrag to true.
-  \li On X11 (GNU/Linux), avoid the slow native drawing system, use raster by supplying
-  "-graphicssystem raster" as command line argument or calling QApplication::setGraphicsSystem("raster")
-  before creating the QApplication object. (Only available for Qt versions before 5.0)
-  \li On all operating systems, use OpenGL hardware acceleration by supplying "-graphicssystem
-  opengl" as command line argument or calling QApplication::setGraphicsSystem("opengl") (Only
-  available for Qt versions before 5.0). If OpenGL is available, this will slightly decrease the
-  quality of antialiasing, but extremely increase performance especially with alpha
-  (semi-transparent) fills, much antialiasing and a large QCustomPlot drawing surface. Note
-  however, that the maximum frame rate might be constrained by the vertical sync frequency of your
-  monitor (VSync can be disabled in the graphics card driver configuration). So for simple plots
-  (where the potential framerate is far above 60 frames per second), OpenGL acceleration might
-  achieve numerically lower frame rates than the other graphics systems, because they are not
-  capped at the VSync frequency.
-  \li Avoid any kind of alpha (transparency), especially in fills
-  \li Avoid lines with a pen width greater than one
-  \li Avoid any kind of antialiasing, especially in graph lines (see \ref QCustomPlot::setNotAntialiasedElements)
-  \li Avoid repeatedly setting the complete data set with \ref QCPGraph::setData. Use \ref QCPGraph::addData instead, if most
-  data points stay unchanged, e.g. in a running measurement.
-  \li Set the \a copy parameter of the setData functions to false, so only pointers get
-  transferred. (Relevant only if preparing data maps with a large number of points, i.e. over 10000)
-  
-  \section mainpage-flags Preprocessor Define Flags
-  
-  QCustomPlot understands some preprocessor defines that are useful for debugging and compilation:
-  <dl>
-  <dt>\c QCUSTOMPLOT_COMPILE_LIBRARY
-  <dd>Define this flag when you compile QCustomPlot as a shared library (.so/.dll)
-  <dt>\c QCUSTOMPLOT_USE_LIBRARY
-  <dd>Define this flag before including the header, when using QCustomPlot as a shared library
-  <dt>\c QCUSTOMPLOT_CHECK_DATA
-  <dd>If this flag is defined, the QCustomPlot plottables will perform data validity checks on every redraw.
-      This means they will give qDebug output when you plot \e inf or \e nan values, they will not
-      fix your data.
-  </dl>
-
-*/
-
-/*! \page classoverview Class Overview
-  
-  The following diagrams may help to gain a deeper understanding of the relationships between classes that make up
-  the QCustomPlot library. The diagrams are not exhaustive, so only the classes deemed most relevant are shown.
-  
-  \section classoverview-relations Class Relationship Diagram
-  \image html RelationOverview.png "Overview of most important classes and their relations"
-  \section classoverview-inheritance Class Inheritance Tree
-  \image html InheritanceOverview.png "Inheritance tree of most important classes"
-  
-*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// QCustomPlot
@@ -563,19 +374,19 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   setLocale(currentLocale);
   
   // create initial layers:
-  mLayers.append(new QCPLayer(this, "background"));
-  mLayers.append(new QCPLayer(this, "grid"));
-  mLayers.append(new QCPLayer(this, "main"));
-  mLayers.append(new QCPLayer(this, "axes"));
-  mLayers.append(new QCPLayer(this, "legend"));
+  mLayers.append(new QCPLayer(this, QLatin1String("background")));
+  mLayers.append(new QCPLayer(this, QLatin1String("grid")));
+  mLayers.append(new QCPLayer(this, QLatin1String("main")));
+  mLayers.append(new QCPLayer(this, QLatin1String("axes")));
+  mLayers.append(new QCPLayer(this, QLatin1String("legend")));
   updateLayerIndices();
-  setCurrentLayer("main");
+  setCurrentLayer(QLatin1String("main"));
   
   // create initial layout, axis rect and legend:
   mPlotLayout = new QCPLayoutGrid;
   mPlotLayout->initializeParentPlot(this);
   mPlotLayout->setParent(this); // important because if parent is QWidget, QCPLayout::sizeConstraintsChanged will call QWidget::updateGeometry
-  mPlotLayout->setLayer("main");
+  mPlotLayout->setLayer(QLatin1String("main"));
   QCPAxisRect *defaultAxisRect = new QCPAxisRect(this, true);
   mPlotLayout->addElement(0, 0, defaultAxisRect);
   xAxis = defaultAxisRect->axis(QCPAxis::atBottom);
@@ -587,16 +398,16 @@ QCustomPlot::QCustomPlot(QWidget *parent) :
   defaultAxisRect->insetLayout()->addElement(legend, Qt::AlignRight|Qt::AlignTop);
   defaultAxisRect->insetLayout()->setMargins(QMargins(12, 12, 12, 12));
   
-  defaultAxisRect->setLayer("background");
-  xAxis->setLayer("axes");
-  yAxis->setLayer("axes");
-  xAxis2->setLayer("axes");
-  yAxis2->setLayer("axes");
-  xAxis->grid()->setLayer("grid");
-  yAxis->grid()->setLayer("grid");
-  xAxis2->grid()->setLayer("grid");
-  yAxis2->grid()->setLayer("grid");
-  legend->setLayer("legend");
+  defaultAxisRect->setLayer(QLatin1String("background"));
+  xAxis->setLayer(QLatin1String("axes"));
+  yAxis->setLayer(QLatin1String("axes"));
+  xAxis2->setLayer(QLatin1String("axes"));
+  yAxis2->setLayer(QLatin1String("axes"));
+  xAxis->grid()->setLayer(QLatin1String("grid"));
+  yAxis->grid()->setLayer(QLatin1String("grid"));
+  xAxis2->grid()->setLayer(QLatin1String("grid"));
+  yAxis2->grid()->setLayer(QLatin1String("grid"));
+  legend->setLayer(QLatin1String("legend"));
   
   setViewport(rect()); // needs to be called after mPlotLayout has been created
   
@@ -1229,7 +1040,7 @@ QCPGraph *QCustomPlot::addGraph(QCPAxis *keyAxis, QCPAxis *valueAxis)
   QCPGraph *newGraph = new QCPGraph(keyAxis, valueAxis);
   if (addPlottable(newGraph))
   {
-    newGraph->setName("Graph "+QString::number(mGraphs.size()));
+    newGraph->setName(QLatin1String("Graph ")+QString::number(mGraphs.size()));
     return newGraph;
   } else
   {

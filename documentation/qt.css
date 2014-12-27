@@ -185,6 +185,9 @@ div.memitem {
   margin: 0 0 2em;
   padding: 0;
 }
+td.memSeparator {
+  display: none;
+}
 div.memproto {
   background-color: #F6F6F6;
   border-color: #E6E6E6;

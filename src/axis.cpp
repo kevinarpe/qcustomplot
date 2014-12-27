@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 11.10.14                                             **
-**          Version: 1.3.0-beta                                           **
+**             Date: 27.12.14                                             **
+**          Version: 1.3.0                                                **
 ****************************************************************************/
 
 #include "axis.h"
@@ -56,7 +56,7 @@
   You shouldn't instantiate grids on their own, since every QCPAxis brings its own QCPGrid.
 */
 QCPGrid::QCPGrid(QCPAxis *parentAxis) :
-  QCPLayerable(parentAxis->parentPlot(), "", parentAxis),
+  QCPLayerable(parentAxis->parentPlot(), QString(), parentAxis),
   mParentAxis(parentAxis)
 {
   // warning: this is called in QCPAxis constructor, so parentAxis members should not be accessed/called
@@ -357,10 +357,13 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
 
 /*!
   Constructs an Axis instance of Type \a type for the axis rect \a parent.
-  You shouldn't instantiate axes directly, rather use \ref QCPAxisRect::addAxis.
+  
+  Usually it isn't necessary to instantiate axes directly, because you can let QCustomPlot create
+  them for you with \ref QCPAxisRect::addAxis. If you want to use own QCPAxis-subclasses however,
+  create them manually and then inject them also via \ref QCPAxisRect::addAxis.
 */
 QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
-  QCPLayerable(parent->parentPlot(), "", parent),
+  QCPLayerable(parent->parentPlot(), QString(), parent),
   // axis base:
   mAxisType(type),
   mAxisRect(parent),
@@ -371,7 +374,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mBasePen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
   mSelectedBasePen(QPen(Qt::blue, 2)),
   // axis label:
-  mLabel(""),
+  mLabel(),
   mLabelFont(mParentPlot->font()),
   mSelectedLabelFont(QFont(mLabelFont.family(), mLabelFont.pointSize(), QFont::Bold)),
   mLabelColor(Qt::black),
@@ -384,7 +387,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mSelectedTickLabelFont(QFont(mTickLabelFont.family(), mTickLabelFont.pointSize(), QFont::Bold)),
   mTickLabelColor(Qt::black),
   mSelectedTickLabelColor(Qt::blue),
-  mDateTimeFormat("hh:mm:ss\ndd.MM.yy"),
+  mDateTimeFormat(QLatin1String("hh:mm:ss\ndd.MM.yy")),
   mDateTimeSpec(Qt::LocalTime),
   mNumberPrecision(6),
   mNumberFormatChar('g'),
@@ -468,9 +471,9 @@ QString QCPAxis::numberFormat() const
   result.append(mNumberFormatChar);
   if (mNumberBeautifulPowers)
   {
-    result.append("b");
+    result.append(QLatin1Char('b'));
     if (mAxisPainter->numberMultiplyCross)
-      result.append("c");
+      result.append(QLatin1Char('c'));
   }
   return result;
 }
@@ -1069,10 +1072,10 @@ void QCPAxis::setNumberFormat(const QString &formatCode)
   mCachedMarginValid = false;
   
   // interpret first char as number format char:
-  QString allowedFormatChars = "eEfgG";
+  QString allowedFormatChars(QLatin1String("eEfgG"));
   if (allowedFormatChars.contains(formatCode.at(0)))
   {
-    mNumberFormatChar = formatCode.at(0).toLatin1();
+    mNumberFormatChar = QLatin1Char(formatCode.at(0).toLatin1());
   } else
   {
     qDebug() << Q_FUNC_INFO << "Invalid number format code (first char not in 'eEfgG'):" << formatCode;
@@ -1086,7 +1089,7 @@ void QCPAxis::setNumberFormat(const QString &formatCode)
   }
   
   // interpret second char as indicator for beautiful decimal powers:
-  if (formatCode.at(1) == 'b' && (mNumberFormatChar == 'e' || mNumberFormatChar == 'g'))
+  if (formatCode.at(1) == QLatin1Char('b') && (mNumberFormatChar == QLatin1Char('e') || mNumberFormatChar == QLatin1Char('g')))
   {
     mNumberBeautifulPowers = true;
   } else
@@ -1101,10 +1104,10 @@ void QCPAxis::setNumberFormat(const QString &formatCode)
   }
   
   // interpret third char as indicator for dot or cross multiplication symbol:
-  if (formatCode.at(2) == 'c')
+  if (formatCode.at(2) == QLatin1Char('c'))
   {
     mAxisPainter->numberMultiplyCross = true;
-  } else if (formatCode.at(2) == 'd')
+  } else if (formatCode.at(2) == QLatin1Char('d'))
   {
     mAxisPainter->numberMultiplyCross = false;
   } else
@@ -1942,7 +1945,7 @@ void QCPAxis::setupTickVectors()
     if (mTickLabelType == ltNumber)
     {
       for (int i=mLowestVisibleTick; i<=mHighestVisibleTick; ++i)
-        mTickVectorLabels[i] = mParentPlot->locale().toString(mTickVector.at(i), mNumberFormatChar, mNumberPrecision);
+        mTickVectorLabels[i] = mParentPlot->locale().toString(mTickVector.at(i), mNumberFormatChar.toLatin1(), mNumberPrecision);
     } else if (mTickLabelType == ltDateTime)
     {
       for (int i=mLowestVisibleTick; i<=mHighestVisibleTick; ++i)
@@ -2718,8 +2721,8 @@ QByteArray QCPAxisPainterPrivate::generateLabelParameterHash() const
   result.append(QByteArray::number((int)tickLabelSide));
   result.append(QByteArray::number((int)substituteExponent));
   result.append(QByteArray::number((int)numberMultiplyCross));
-  result.append(tickLabelColor.name()+QByteArray::number(tickLabelColor.alpha(), 16));
-  result.append(tickLabelFont.toString());
+  result.append(tickLabelColor.name().toLatin1()+QByteArray::number(tickLabelColor.alpha(), 16));
+  result.append(tickLabelFont.toString().toLatin1());
   return result;
 }
 
@@ -2873,7 +2876,7 @@ QCPAxisPainterPrivate::TickLabelData QCPAxisPainterPrivate::getTickLabelData(con
   int ePos = -1;
   if (substituteExponent)
   {
-    ePos = text.indexOf('e');
+    ePos = text.indexOf(QLatin1Char('e'));
     if (ePos > -1)
       useBeautifulPowers = true;
   }
@@ -2887,15 +2890,15 @@ QCPAxisPainterPrivate::TickLabelData QCPAxisPainterPrivate::getTickLabelData(con
     // split text into parts of number/symbol that will be drawn normally and part that will be drawn as exponent:
     result.basePart = text.left(ePos);
     // in log scaling, we want to turn "1*10^n" into "10^n", else add multiplication sign and decimal base:
-    if (abbreviateDecimalPowers && result.basePart == "1")
-      result.basePart = "10";
+    if (abbreviateDecimalPowers && result.basePart == QLatin1String("1"))
+      result.basePart = QLatin1String("10");
     else
-      result.basePart += (numberMultiplyCross ? QString(QChar(215)) : QString(QChar(183))) + "10";
+      result.basePart += (numberMultiplyCross ? QString(QChar(215)) : QString(QChar(183))) + QLatin1String("10");
     result.expPart = text.mid(ePos+1);
     // clip "+" and leading zeros off expPart:
-    while (result.expPart.length() > 2 && result.expPart.at(1) == '0') // length > 2 so we leave one zero when numberFormatChar is 'e'
+    while (result.expPart.length() > 2 && result.expPart.at(1) == QLatin1Char('0')) // length > 2 so we leave one zero when numberFormatChar is 'e'
       result.expPart.remove(1, 1);
-    if (!result.expPart.isEmpty() && result.expPart.at(0) == '+')
+    if (!result.expPart.isEmpty() && result.expPart.at(0) == QLatin1Char('+'))
       result.expPart.remove(0, 1);
     // prepare smaller font for exponent:
     result.expFont = font;

@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 11.10.14                                             **
-**          Version: 1.3.0-beta                                           **
+**             Date: 27.12.14                                             **
+**          Version: 1.3.0                                                **
 ****************************************************************************/
 
 #include "layoutelement-axisrect.h"
@@ -283,17 +283,48 @@ QList<QCPAxis*> QCPAxisRect::axes() const
 }
 
 /*!
-  Adds a new axis to the axis rect side specified with \a type, and returns it.
+  Adds a new axis to the axis rect side specified with \a type, and returns it. If \a axis is 0, a
+  new QCPAxis instance is created internally.
+
+  You may inject QCPAxis instances (or sublasses of QCPAxis) by setting \a axis to an axis that was
+  previously created outside QCustomPlot. It is important to note that QCustomPlot takes ownership
+  of the axis, so you may not delete it afterwards. Further, the \a axis must have been created
+  with this axis rect as parent and with the same axis type as specified in \a type. If this is not
+  the case, a debug output is generated, the axis is not added, and the method returns 0.
+  
+  This method can not be used to move \a axis between axis rects. The same \a axis instance must
+  not be added multiple times to the same or different axis rects.
   
   If an axis rect side already contains one or more axes, the lower and upper endings of the new
-  axis (\ref QCPAxis::setLowerEnding, \ref QCPAxis::setUpperEnding) are initialized to \ref
+  axis (\ref QCPAxis::setLowerEnding, \ref QCPAxis::setUpperEnding) are set to \ref
   QCPLineEnding::esHalfBar.
   
   \see addAxes, setupFullAxesBox
 */
-QCPAxis *QCPAxisRect::addAxis(QCPAxis::AxisType type)
+QCPAxis *QCPAxisRect::addAxis(QCPAxis::AxisType type, QCPAxis *axis)
 {
-  QCPAxis *newAxis = new QCPAxis(this, type);
+  QCPAxis *newAxis = axis;
+  if (!newAxis)
+  {
+    newAxis = new QCPAxis(this, type);
+  } else // user provided existing axis instance, do some sanity checks
+  {
+    if (newAxis->axisType() != type)
+    {
+      qDebug() << Q_FUNC_INFO << "passed axis has different axis type than specified in type parameter";
+      return 0;
+    }
+    if (newAxis->axisRect() != this)
+    {
+      qDebug() << Q_FUNC_INFO << "passed axis doesn't have this axis rect as parent axis rect";
+      return 0;
+    }
+    if (axes().contains(newAxis))
+    {
+      qDebug() << Q_FUNC_INFO << "passed axis is already owned by this axis rect";
+      return 0;
+    }
+  }
   if (mAxes[type].size() > 0) // multiple axes on one side, add half-bar axis ending to additional axes with offset
   {
     bool invert = (type == QCPAxis::atRight) || (type == QCPAxis::atBottom);

@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 11.10.14                                             **
-**          Version: 1.3.0-beta                                           **
+**             Date: 27.12.14                                             **
+**          Version: 1.3.0                                                **
 ****************************************************************************/
 
 #include "item-line.h"
@@ -49,8 +49,8 @@
 */
 QCPItemLine::QCPItemLine(QCustomPlot *parentPlot) :
   QCPAbstractItem(parentPlot),
-  start(createPosition("start")),
-  end(createPosition("end"))
+  start(createPosition(QLatin1String("start"))),
+  end(createPosition(QLatin1String("end")))
 {
   start->setCoords(0, 0);
   end->setCoords(1, 1);

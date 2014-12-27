@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 11.10.14                                             **
-**          Version: 1.3.0-beta                                           **
+**             Date: 27.12.14                                             **
+**          Version: 1.3.0                                                **
 ****************************************************************************/
 
 #include "item-bracket.h"
@@ -59,9 +59,9 @@
 */
 QCPItemBracket::QCPItemBracket(QCustomPlot *parentPlot) :
   QCPAbstractItem(parentPlot),
-  left(createPosition("left")),
-  right(createPosition("right")),
-  center(createAnchor("center", aiCenter))
+  left(createPosition(QLatin1String("left"))),
+  right(createPosition(QLatin1String("right"))),
+  center(createAnchor(QLatin1String("center"), aiCenter))
 {
   left->setCoords(0, 0);
   right->setCoords(1, 1);

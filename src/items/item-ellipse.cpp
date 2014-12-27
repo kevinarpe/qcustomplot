@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 11.10.14                                             **
-**          Version: 1.3.0-beta                                           **
+**             Date: 27.12.14                                             **
+**          Version: 1.3.0                                                **
 ****************************************************************************/
 
 #include "item-ellipse.h"
@@ -47,17 +47,17 @@
 */
 QCPItemEllipse::QCPItemEllipse(QCustomPlot *parentPlot) :
   QCPAbstractItem(parentPlot),
-  topLeft(createPosition("topLeft")),
-  bottomRight(createPosition("bottomRight")),
-  topLeftRim(createAnchor("topLeftRim", aiTopLeftRim)),
-  top(createAnchor("top", aiTop)),
-  topRightRim(createAnchor("topRightRim", aiTopRightRim)),
-  right(createAnchor("right", aiRight)),
-  bottomRightRim(createAnchor("bottomRightRim", aiBottomRightRim)),
-  bottom(createAnchor("bottom", aiBottom)),
-  bottomLeftRim(createAnchor("bottomLeftRim", aiBottomLeftRim)),
-  left(createAnchor("left", aiLeft)),
-  center(createAnchor("center", aiCenter))
+  topLeft(createPosition(QLatin1String("topLeft"))),
+  bottomRight(createPosition(QLatin1String("bottomRight"))),
+  topLeftRim(createAnchor(QLatin1String("topLeftRim"), aiTopLeftRim)),
+  top(createAnchor(QLatin1String("top"), aiTop)),
+  topRightRim(createAnchor(QLatin1String("topRightRim"), aiTopRightRim)),
+  right(createAnchor(QLatin1String("right"), aiRight)),
+  bottomRightRim(createAnchor(QLatin1String("bottomRightRim"), aiBottomRightRim)),
+  bottom(createAnchor(QLatin1String("bottom"), aiBottom)),
+  bottomLeftRim(createAnchor(QLatin1String("bottomLeftRim"), aiBottomLeftRim)),
+  left(createAnchor(QLatin1String("left"), aiLeft)),
+  center(createAnchor(QLatin1String("center"), aiCenter))
 {
   topLeft->setCoords(0, 1);
   bottomRight->setCoords(1, 0);

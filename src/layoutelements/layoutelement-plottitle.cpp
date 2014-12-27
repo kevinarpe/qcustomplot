@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 11.10.14                                             **
-**          Version: 1.3.0-beta                                           **
+**             Date: 27.12.14                                             **
+**          Version: 1.3.0                                                **
 ****************************************************************************/
 
 #include "layoutelement-plottitle.h"
@@ -69,9 +69,9 @@
 */
 QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot) :
   QCPLayoutElement(parentPlot),
-  mFont(QFont("sans serif", 13*1.5, QFont::Bold)),
+  mFont(QFont(QLatin1String("sans serif"), 13*1.5, QFont::Bold)),
   mTextColor(Qt::black),
-  mSelectedFont(QFont("sans serif", 13*1.6, QFont::Bold)),
+  mSelectedFont(QFont(QLatin1String("sans serif"), 13*1.6, QFont::Bold)),
   mSelectedTextColor(Qt::blue),
   mSelectable(false),
   mSelected(false)
@@ -99,7 +99,7 @@ QCPPlotTitle::QCPPlotTitle(QCustomPlot *parentPlot, const QString &text) :
   mSelectable(false),
   mSelected(false)
 {
-  setLayer("axes");
+  setLayer(QLatin1String("axes"));
   setMargins(QMargins(5, 5, 5, 0));
 }
 

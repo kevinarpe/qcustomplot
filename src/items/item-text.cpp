@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 11.10.14                                             **
-**          Version: 1.3.0-beta                                           **
+**             Date: 27.12.14                                             **
+**          Version: 1.3.0                                                **
 ****************************************************************************/
 
 #include "item-text.h"
@@ -53,22 +53,22 @@
 */
 QCPItemText::QCPItemText(QCustomPlot *parentPlot) :
   QCPAbstractItem(parentPlot),
-  position(createPosition("position")),
-  topLeft(createAnchor("topLeft", aiTopLeft)),
-  top(createAnchor("top", aiTop)),
-  topRight(createAnchor("topRight", aiTopRight)),
-  right(createAnchor("right", aiRight)),
-  bottomRight(createAnchor("bottomRight", aiBottomRight)),
-  bottom(createAnchor("bottom", aiBottom)),
-  bottomLeft(createAnchor("bottomLeft", aiBottomLeft)),
-  left(createAnchor("left", aiLeft))
+  position(createPosition(QLatin1String("position"))),
+  topLeft(createAnchor(QLatin1String("topLeft"), aiTopLeft)),
+  top(createAnchor(QLatin1String("top"), aiTop)),
+  topRight(createAnchor(QLatin1String("topRight"), aiTopRight)),
+  right(createAnchor(QLatin1String("right"), aiRight)),
+  bottomRight(createAnchor(QLatin1String("bottomRight"), aiBottomRight)),
+  bottom(createAnchor(QLatin1String("bottom"), aiBottom)),
+  bottomLeft(createAnchor(QLatin1String("bottomLeft"), aiBottomLeft)),
+  left(createAnchor(QLatin1String("left"), aiLeft))
 {
   position->setCoords(0, 0);
   
   setRotation(0);
   setTextAlignment(Qt::AlignTop|Qt::AlignHCenter);
   setPositionAlignment(Qt::AlignCenter);
-  setText("text");
+  setText(QLatin1String("text"));
   
   setPen(Qt::NoPen);
   setSelectedPen(Qt::NoPen);
