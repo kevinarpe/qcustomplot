@@ -84,6 +84,10 @@ QCPCurveData::QCPCurveData(double t, double key, double value) :
 
   To plot data, assign it with the \ref setData or \ref addData functions.
   
+  Gaps in the curve can be created by adding data points with NaN as key and value
+  (<tt>std::numeric_limits<double>::quiet_NaN()</tt>) in between the two data points that shall be
+  separated.
+  
   \section appearance Changing the appearance
   
   The appearance of the curve is determined by the pen and the brush (\ref setPen, \ref setBrush).
@@ -1248,17 +1252,20 @@ QCPRange QCPCurve::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
   while (it != mData->constEnd())
   {
     current = it.value().key;
-    if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current < 0) || (inSignDomain == sdPositive && current > 0))
+    if (!qIsNaN(current) && !qIsNaN(it.value().value))
     {
-      if (current < range.lower || !haveLower)
+      if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current < 0) || (inSignDomain == sdPositive && current > 0))
       {
-        range.lower = current;
-        haveLower = true;
-      }
-      if (current > range.upper || !haveUpper)
-      {
-        range.upper = current;
-        haveUpper = true;
+        if (current < range.lower || !haveLower)
+        {
+          range.lower = current;
+          haveLower = true;
+        }
+        if (current > range.upper || !haveUpper)
+        {
+          range.upper = current;
+          haveUpper = true;
+        }
       }
     }
     ++it;
@@ -1281,17 +1288,20 @@ QCPRange QCPCurve::getValueRange(bool &foundRange, SignDomain inSignDomain) cons
   while (it != mData->constEnd())
   {
     current = it.value().value;
-    if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current < 0) || (inSignDomain == sdPositive && current > 0))
+    if (!qIsNaN(current) && !qIsNaN(it.value().key))
     {
-      if (current < range.lower || !haveLower)
+      if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current < 0) || (inSignDomain == sdPositive && current > 0))
       {
-        range.lower = current;
-        haveLower = true;
-      }
-      if (current > range.upper || !haveUpper)
-      {
-        range.upper = current;
-        haveUpper = true;
+        if (current < range.lower || !haveLower)
+        {
+          range.lower = current;
+          haveLower = true;
+        }
+        if (current > range.upper || !haveUpper)
+        {
+          range.upper = current;
+          haveUpper = true;
+        }
       }
     }
     ++it;

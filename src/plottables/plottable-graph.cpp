@@ -97,6 +97,10 @@ QCPData::QCPData(double key, double value) :
   data point per unique key coordinate. In other words, the graph can't have \a loops. If you do
   want to plot non-single-valued curves, rather use the QCPCurve plottable.
   
+  Gaps in the graph line can be created by adding data points with NaN as value
+  (<tt>std::numeric_limits<double>::quiet_NaN()</tt>) in between the two data points that shall be
+  separated.
+  
   \section appearance Changing the appearance
   
   The appearance of the graph is mainly determined by the line style, scatter style, brush and pen
@@ -2164,18 +2168,21 @@ QCPRange QCPGraph::getKeyRange(bool &foundRange, SignDomain inSignDomain, bool i
     QCPDataMap::const_iterator it = mData->constBegin();
     while (it != mData->constEnd())
     {
-      current = it.value().key;
-      currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
-      if (current-currentErrorMinus < range.lower || !haveLower)
+      if (!qIsNaN(it.value().value))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if (current+currentErrorPlus > range.upper || !haveUpper)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
+        current = it.value().key;
+        currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
+        if (current-currentErrorMinus < range.lower || !haveLower)
+        {
+          range.lower = current-currentErrorMinus;
+          haveLower = true;
+        }
+        if (current+currentErrorPlus > range.upper || !haveUpper)
+        {
+          range.upper = current+currentErrorPlus;
+          haveUpper = true;
+        }
       }
       ++it;
     }
@@ -2184,30 +2191,33 @@ QCPRange QCPGraph::getKeyRange(bool &foundRange, SignDomain inSignDomain, bool i
     QCPDataMap::const_iterator it = mData->constBegin();
     while (it != mData->constEnd())
     {
-      current = it.value().key;
-      currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
-      if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus < 0)
+      if (!qIsNaN(it.value().value))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus < 0)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
-      }
-      if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to geht that point.
-      {
-        if ((current < range.lower || !haveLower) && current < 0)
+        current = it.value().key;
+        currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
+        if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus < 0)
         {
-          range.lower = current;
+          range.lower = current-currentErrorMinus;
           haveLower = true;
         }
-        if ((current > range.upper || !haveUpper) && current < 0)
+        if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus < 0)
         {
-          range.upper = current;
+          range.upper = current+currentErrorPlus;
           haveUpper = true;
+        }
+        if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to geht that point.
+        {
+          if ((current < range.lower || !haveLower) && current < 0)
+          {
+            range.lower = current;
+            haveLower = true;
+          }
+          if ((current > range.upper || !haveUpper) && current < 0)
+          {
+            range.upper = current;
+            haveUpper = true;
+          }
         }
       }
       ++it;
@@ -2217,30 +2227,33 @@ QCPRange QCPGraph::getKeyRange(bool &foundRange, SignDomain inSignDomain, bool i
     QCPDataMap::const_iterator it = mData->constBegin();
     while (it != mData->constEnd())
     {
-      current = it.value().key;
-      currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
-      if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus > 0)
+      if (!qIsNaN(it.value().value))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus > 0)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
-      }
-      if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to get that point.
-      {
-        if ((current < range.lower || !haveLower) && current > 0)
+        current = it.value().key;
+        currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
+        if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus > 0)
         {
-          range.lower = current;
+          range.lower = current-currentErrorMinus;
           haveLower = true;
         }
-        if ((current > range.upper || !haveUpper) && current > 0)
+        if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus > 0)
         {
-          range.upper = current;
+          range.upper = current+currentErrorPlus;
           haveUpper = true;
+        }
+        if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to get that point.
+        {
+          if ((current < range.lower || !haveLower) && current > 0)
+          {
+            range.lower = current;
+            haveLower = true;
+          }
+          if ((current > range.upper || !haveUpper) && current > 0)
+          {
+            range.upper = current;
+            haveUpper = true;
+          }
         }
       }
       ++it;
@@ -2271,17 +2284,20 @@ QCPRange QCPGraph::getValueRange(bool &foundRange, SignDomain inSignDomain, bool
     while (it != mData->constEnd())
     {
       current = it.value().value;
-      currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
-      if (current-currentErrorMinus < range.lower || !haveLower)
+      if (!qIsNaN(current))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if (current+currentErrorPlus > range.upper || !haveUpper)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
+        currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
+        if (current-currentErrorMinus < range.lower || !haveLower)
+        {
+          range.lower = current-currentErrorMinus;
+          haveLower = true;
+        }
+        if (current+currentErrorPlus > range.upper || !haveUpper)
+        {
+          range.upper = current+currentErrorPlus;
+          haveUpper = true;
+        }
       }
       ++it;
     }
@@ -2291,29 +2307,32 @@ QCPRange QCPGraph::getValueRange(bool &foundRange, SignDomain inSignDomain, bool
     while (it != mData->constEnd())
     {
       current = it.value().value;
-      currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
-      if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus < 0)
+      if (!qIsNaN(current))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus < 0)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
-      }
-      if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to get that point.
-      {
-        if ((current < range.lower || !haveLower) && current < 0)
+        currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
+        if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus < 0)
         {
-          range.lower = current;
+          range.lower = current-currentErrorMinus;
           haveLower = true;
         }
-        if ((current > range.upper || !haveUpper) && current < 0)
+        if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus < 0)
         {
-          range.upper = current;
+          range.upper = current+currentErrorPlus;
           haveUpper = true;
+        }
+        if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to get that point.
+        {
+          if ((current < range.lower || !haveLower) && current < 0)
+          {
+            range.lower = current;
+            haveLower = true;
+          }
+          if ((current > range.upper || !haveUpper) && current < 0)
+          {
+            range.upper = current;
+            haveUpper = true;
+          }
         }
       }
       ++it;
@@ -2324,29 +2343,32 @@ QCPRange QCPGraph::getValueRange(bool &foundRange, SignDomain inSignDomain, bool
     while (it != mData->constEnd())
     {
       current = it.value().value;
-      currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
-      if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus > 0)
+      if (!qIsNaN(current))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus > 0)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
-      }
-      if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to geht that point.
-      {
-        if ((current < range.lower || !haveLower) && current > 0)
+        currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
+        if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus > 0)
         {
-          range.lower = current;
+          range.lower = current-currentErrorMinus;
           haveLower = true;
         }
-        if ((current > range.upper || !haveUpper) && current > 0)
+        if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus > 0)
         {
-          range.upper = current;
+          range.upper = current+currentErrorPlus;
           haveUpper = true;
+        }
+        if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to geht that point.
+        {
+          if ((current < range.lower || !haveLower) && current > 0)
+          {
+            range.lower = current;
+            haveLower = true;
+          }
+          if ((current > range.upper || !haveUpper) && current > 0)
+          {
+            range.upper = current;
+            haveUpper = true;
+          }
         }
       }
       ++it;
