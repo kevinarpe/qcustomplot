@@ -22,7 +22,6 @@ HEADERS  += mainwindow.h \
 ../../src/*.h
 FORMS    += mainwindow.ui
 OTHER_FILES += \
-../../todo.txt \
 ../../changelog.txt
 
 LIBS += -L../../src

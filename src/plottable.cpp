@@ -210,7 +210,7 @@ void QCPAbstractPlottable::setName(const QString &name)
 }
 
 /*!
-  Sets whether fills of this plottable is drawn antialiased or not.
+  Sets whether fills of this plottable are drawn antialiased or not.
   
   Note that this setting may be overridden by \ref QCustomPlot::setAntialiasedElements and \ref
   QCustomPlot::setNotAntialiasedElements.
@@ -247,8 +247,7 @@ void QCPAbstractPlottable::setAntialiasedErrorBars(bool enabled)
   The pen is used to draw basic lines that make up the plottable representation in the
   plot.
   
-  For example, the \ref QCPGraph subclass draws its graph lines and scatter points
-  with this pen.
+  For example, the \ref QCPGraph subclass draws its graph lines with this pen.
 
   \see setBrush
 */

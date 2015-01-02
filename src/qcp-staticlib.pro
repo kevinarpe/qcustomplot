@@ -91,7 +91,6 @@ layoutelements/layoutelement-axisrect.cpp \
 
 OTHER_FILES += \
     ../changelog.txt \
-    ../todo.txt \
     doc-classoverview.dox \
     doc-layoutsystem.dox \
     doc-mainpage.dox \
