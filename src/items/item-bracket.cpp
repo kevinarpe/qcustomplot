@@ -140,7 +140,27 @@ double QCPItemBracket::selectTest(const QPointF &pos, bool onlySelectable, QVari
   lengthVec = lengthVec.normalized()*mLength;
   QVector2D centerVec = (rightVec+leftVec)*0.5f-lengthVec;
   
-  return qSqrt(distSqrToLine((centerVec-widthVec).toPointF(), (centerVec+widthVec).toPointF(), pos));
+  switch (mStyle)
+  {
+    case QCPItemBracket::bsSquare:
+    case QCPItemBracket::bsRound:
+    {
+      double a = distSqrToLine((centerVec-widthVec).toPointF(), (centerVec+widthVec).toPointF(), pos);
+      double b = distSqrToLine((centerVec-widthVec+lengthVec).toPointF(), (centerVec-widthVec).toPointF(), pos);
+      double c = distSqrToLine((centerVec+widthVec+lengthVec).toPointF(), (centerVec+widthVec).toPointF(), pos);
+      return qSqrt(qMin(qMin(a, b), c));
+    }
+    case QCPItemBracket::bsCurly:
+    case QCPItemBracket::bsCalligraphic:
+    {
+      double a = distSqrToLine((centerVec-widthVec*0.75f+lengthVec*0.15f).toPointF(), (centerVec+lengthVec*0.3f).toPointF(), pos);
+      double b = distSqrToLine((centerVec-widthVec+lengthVec*0.7f).toPointF(), (centerVec-widthVec*0.75f+lengthVec*0.15f).toPointF(), pos);
+      double c = distSqrToLine((centerVec+widthVec*0.75f+lengthVec*0.15f).toPointF(), (centerVec+lengthVec*0.3f).toPointF(), pos);
+      double d = distSqrToLine((centerVec+widthVec+lengthVec*0.7f).toPointF(), (centerVec+widthVec*0.75f+lengthVec*0.15f).toPointF(), pos);
+      return qSqrt(qMin(qMin(a, b), qMin(c, d)));
+    }
+  }
+  return -1;
 }
 
 /* inherits documentation from base class */
