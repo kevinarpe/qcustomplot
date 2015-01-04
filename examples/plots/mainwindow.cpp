@@ -321,8 +321,7 @@ void MainWindow::setupLineStyleDemo(QCustomPlot *customPlot)
   customPlot->legend->setFont(QFont("Helvetica", 9));
   QPen pen;
   QStringList lineNames;
-  lineNames << "lsNone" << "lsLine" << "lsStepLeft" << "lsStepRight"
-               << "lsStepCenter" << "lsImpulse";
+  lineNames << "lsNone" << "lsLine" << "lsStepLeft" << "lsStepRight" << "lsStepCenter" << "lsImpulse";
   // add graphs with different line styles:
   for (int i=QCPGraph::lsNone; i<=QCPGraph::lsImpulse; ++i)
   {
@@ -1090,7 +1089,7 @@ void MainWindow::setupItemDemo(QCustomPlot *customPlot)
   dispersionText->setText("Dispersion with\nvp < vg");
   dispersionText->setFont(QFont(font().family(), 10));
   
-  // setup a timer that repeatedly calls MainWindow::realtimeDataSlot:
+  // setup a timer that repeatedly calls MainWindow::bracketDataSlot:
   connect(&dataTimer, SIGNAL(timeout()), this, SLOT(bracketDataSlot()));
   dataTimer.start(0); // Interval 0 means to refresh as fast as possible
 }

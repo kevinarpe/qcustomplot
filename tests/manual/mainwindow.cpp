@@ -319,6 +319,8 @@ void MainWindow::setupLogErrorsTest(QCustomPlot *customPlot)
 
 void MainWindow::setupSelectTest(QCustomPlot *customPlot)
 {
+  customPlot->axisRect()->setAutoMargins(QCP::msNone);
+  customPlot->axisRect()->setMargins(QMargins(40, 10, 10, 20));
   customPlot->xAxis->setRange(-10, 10);
   customPlot->yAxis->setRange(-10, 10);
   
