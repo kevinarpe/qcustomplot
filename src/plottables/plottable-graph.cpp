@@ -1244,24 +1244,32 @@ void QCPGraph::drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) con
     // if drawing solid line and not in PDF, use much faster line drawing instead of polyline:
     if (mParentPlot->plottingHints().testFlag(QCP::phFastPolylines) &&
         painter->pen().style() == Qt::SolidLine &&
-        !painter->modes().testFlag(QCPPainter::pmVectorized)&&
+        !painter->modes().testFlag(QCPPainter::pmVectorized) &&
         !painter->modes().testFlag(QCPPainter::pmNoCaching))
     {
-      int i = 1;
-      int lineDataSize = lineData->size();
+      int i = 0;
+      bool lastIsNan = false;
+      const int lineDataSize = lineData->size();
+      while (i < lineDataSize && (qIsNaN(lineData->at(i).y()) || qIsNaN(lineData->at(i).x()))) // make sure first point is not NaN
+        ++i;
+      ++i; // because drawing works in 1 point retrospect
       while (i < lineDataSize)
       {
         if (!qIsNaN(lineData->at(i).y()) && !qIsNaN(lineData->at(i).x())) // NaNs create a gap in the line
-          painter->drawLine(lineData->at(i-1), lineData->at(i));
-        else
-          ++i;
+        {
+          if (!lastIsNan)
+            painter->drawLine(lineData->at(i-1), lineData->at(i));
+          else
+            lastIsNan = false;
+        } else
+          lastIsNan = true;
         ++i;
       }
     } else
     {
       int segmentStart = 0;
       int i = 0;
-      int lineDataSize = lineData->size();
+      const int lineDataSize = lineData->size();
       while (i < lineDataSize)
       {
         if (qIsNaN(lineData->at(i).y()) || qIsNaN(lineData->at(i).x())) // NaNs create a gap in the line
@@ -1272,7 +1280,7 @@ void QCPGraph::drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) con
         ++i;
       }
       // draw last segment:
-      painter->drawPolyline(lineData->constData()+segmentStart, lineDataSize-segmentStart); // lineDataSize, because we do want to include the last point
+      painter->drawPolyline(lineData->constData()+segmentStart, lineDataSize-segmentStart);
     }
   }
 }
