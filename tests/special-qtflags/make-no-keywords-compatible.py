@@ -3,7 +3,7 @@
 # This script is used to make the amalgamated sources qcustomplot.h/.cpp compatible
 # to compiles with flag QT_NO_KEYWORDS set. It applies the following regular expression replacements
 #
-#   (^|[^\a_])emit\s        ->  \1Q_EMIT
+#   (^|[^\a_])emit\s        ->  \1Q_EMIT 
 #   ^( *)signals:           ->  \1Q_SIGNALS:
 #   (^|[^\a_])foreach( *)\( ->  \1Q_FOREACH\2(
 #

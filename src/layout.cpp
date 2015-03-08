@@ -725,7 +725,9 @@ void QCPLayout::simplify()
   invalid or points to an empty cell, returns false.
   
   This function internally uses \ref takeAt to remove the element from the layout and then deletes
-  the returned element.
+  the returned element. Note that some layouts don't remove the respective cell right away but leave an
+  empty cell after successful removal of the layout element. To collapse empty cells, use \ref
+  simplify.
   
   \see remove, takeAt
 */
@@ -744,7 +746,9 @@ bool QCPLayout::removeAt(int index)
   layout, returns false.
   
   This function internally uses \ref takeAt to remove the element from the layout and then deletes
-  the element.
+  the element. Note that some layouts don't remove the respective cell right away but leave an
+  empty cell after successful removal of the layout element. To collapse empty cells, use \ref
+  simplify.
   
   \see removeAt, take
 */
@@ -759,7 +763,8 @@ bool QCPLayout::remove(QCPLayoutElement *element)
 }
 
 /*!
-  Removes and deletes all layout elements in this layout.
+  Removes and deletes all layout elements in this layout. Finally calls \ref simplify to make sure
+  all empty cells are collapsed.
   
   \see remove, removeAt
 */
