@@ -591,7 +591,7 @@ void QCPColorScaleAxisRectPrivate::draw(QCPPainter *painter)
     mirrorVert = mParentColorScale->mColorAxis.data()->rangeReversed() && (mParentColorScale->type() == QCPAxis::atLeft || mParentColorScale->type() == QCPAxis::atRight);
   }
   
-  painter->drawImage(rect(), mGradientImage.mirrored(mirrorHorz, mirrorVert));
+  painter->drawImage(rect().adjusted(0, -1, 0, -1), mGradientImage.mirrored(mirrorHorz, mirrorVert));
   QCPAxisRect::draw(painter);
 }
 

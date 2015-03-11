@@ -849,10 +849,10 @@ void QCPAxisRect::drawBackground(QCPPainter *painter)
       scaledSize.scale(mRect.size(), mBackgroundScaledMode);
       if (mScaledBackgroundPixmap.size() != scaledSize)
         mScaledBackgroundPixmap = mBackgroundPixmap.scaled(mRect.size(), mBackgroundScaledMode, Qt::SmoothTransformation);
-      painter->drawPixmap(mRect.topLeft(), mScaledBackgroundPixmap, QRect(0, 0, mRect.width(), mRect.height()) & mScaledBackgroundPixmap.rect());
+      painter->drawPixmap(mRect.topLeft()+QPoint(0, -1), mScaledBackgroundPixmap, QRect(0, 0, mRect.width(), mRect.height()) & mScaledBackgroundPixmap.rect());
     } else
     {
-      painter->drawPixmap(mRect.topLeft(), mBackgroundPixmap, QRect(0, 0, mRect.width(), mRect.height()));
+      painter->drawPixmap(mRect.topLeft()+QPoint(0, -1), mBackgroundPixmap, QRect(0, 0, mRect.width(), mRect.height()));
     }
   }
 }
