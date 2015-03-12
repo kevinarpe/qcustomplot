@@ -1208,9 +1208,7 @@ double QCPAbstractItem::distSqrToLine(const QPointF &start, const QPointF &end, 
   
   For example, if your item consists of four rects, call this function four times, once for each
   rect, in your \ref selectTest reimplementation. Finally, return the minimum of all four returned
-  values which were greater or equal to zero. (Because this function may return -1.0 when \a pos
-  doesn't hit \a rect at all). If all calls returned -1.0, return -1.0, too, because your item
-  wasn't hit.
+  values.
   
   \see distSqrToLine
 */
