@@ -2494,7 +2494,6 @@ void QCPAxisPainterPrivate::draw(QCPPainter *painter)
     case QCPAxis::atRight: xCor = 1; break;
     default: break;
   }
-
   int margin = 0;
   // draw baseline:
   QLineF baseLine;
@@ -2760,58 +2759,51 @@ void QCPAxisPainterPrivate::placeTickLabel(QCPPainter *painter, double position,
   }
   if (mParentPlot->plottingHints().testFlag(QCP::phCacheLabels) && !painter->modes().testFlag(QCPPainter::pmNoCaching)) // label caching enabled
   {
-    if (!mLabelCache.contains(text))  // no cached label exists, create it
+    CachedLabel *cachedLabel = mLabelCache.take(text); // attempt to get label from cache
+    if (!cachedLabel)  // no cached label existed, create it
     {
-      CachedLabel *newCachedLabel = new CachedLabel;
+      cachedLabel = new CachedLabel;
       TickLabelData labelData = getTickLabelData(painter->font(), text);
-      newCachedLabel->offset = getTickLabelDrawOffset(labelData)+labelData.rotatedTotalBounds.topLeft();
-      newCachedLabel->pixmap = QPixmap(labelData.rotatedTotalBounds.size());
-      newCachedLabel->pixmap.fill(Qt::transparent);
-      QCPPainter cachePainter(&newCachedLabel->pixmap);
+      cachedLabel->offset = getTickLabelDrawOffset(labelData)+labelData.rotatedTotalBounds.topLeft();
+      cachedLabel->pixmap = QPixmap(labelData.rotatedTotalBounds.size());
+      cachedLabel->pixmap.fill(Qt::transparent);
+      QCPPainter cachePainter(&cachedLabel->pixmap);
       cachePainter.setPen(painter->pen());
       drawTickLabel(&cachePainter, -labelData.rotatedTotalBounds.topLeft().x(), -labelData.rotatedTotalBounds.topLeft().y(), labelData);
-      mLabelCache.insert(text, newCachedLabel, 1);
     }
-    // draw cached label:
-    const CachedLabel *cachedLabel = mLabelCache.object(text);
     // if label would be partly clipped by widget border on sides, don't draw it (only for outside tick labels):
+    bool labelClippedByBorder = false;
     if (tickLabelSide == QCPAxis::lsOutside)
     {
       if (QCPAxis::orientation(type) == Qt::Horizontal)
-      {
-        if (labelAnchor.x()+cachedLabel->offset.x()+cachedLabel->pixmap.width() > viewportRect.right() ||
-            labelAnchor.x()+cachedLabel->offset.x() < viewportRect.left())
-          return;
-      } else
-      {
-        if (labelAnchor.y()+cachedLabel->offset.y()+cachedLabel->pixmap.height() >viewportRect.bottom() ||
-            labelAnchor.y()+cachedLabel->offset.y() < viewportRect.top())
-          return;
-      }
+        labelClippedByBorder = labelAnchor.x()+cachedLabel->offset.x()+cachedLabel->pixmap.width() > viewportRect.right() || labelAnchor.x()+cachedLabel->offset.x() < viewportRect.left();
+      else
+        labelClippedByBorder = labelAnchor.y()+cachedLabel->offset.y()+cachedLabel->pixmap.height() > viewportRect.bottom() || labelAnchor.y()+cachedLabel->offset.y() < viewportRect.top();
     }
-    painter->drawPixmap(labelAnchor+cachedLabel->offset, cachedLabel->pixmap);
-    finalSize = cachedLabel->pixmap.size();
+    if (!labelClippedByBorder)
+    {
+      painter->drawPixmap(labelAnchor+cachedLabel->offset, cachedLabel->pixmap);
+      finalSize = cachedLabel->pixmap.size();
+    }
+    mLabelCache.insert(text, cachedLabel); // return label to cache or insert for the first time if newly created
   } else // label caching disabled, draw text directly on surface:
   {
     TickLabelData labelData = getTickLabelData(painter->font(), text);
     QPointF finalPosition = labelAnchor + getTickLabelDrawOffset(labelData);
     // if label would be partly clipped by widget border on sides, don't draw it (only for outside tick labels):
+     bool labelClippedByBorder = false;
     if (tickLabelSide == QCPAxis::lsOutside)
     {
       if (QCPAxis::orientation(type) == Qt::Horizontal)
-      {
-        if (finalPosition.x()+(labelData.rotatedTotalBounds.width()+labelData.rotatedTotalBounds.left()) > viewportRect.right() ||
-            finalPosition.x()+labelData.rotatedTotalBounds.left() < viewportRect.left())
-          return;
-      } else
-      {
-        if (finalPosition.y()+(labelData.rotatedTotalBounds.height()+labelData.rotatedTotalBounds.top()) > viewportRect.bottom() ||
-            finalPosition.y()+labelData.rotatedTotalBounds.top() < viewportRect.top())
-          return;
-      }
+        labelClippedByBorder = finalPosition.x()+(labelData.rotatedTotalBounds.width()+labelData.rotatedTotalBounds.left()) > viewportRect.right() || finalPosition.x()+labelData.rotatedTotalBounds.left() < viewportRect.left();
+      else
+        labelClippedByBorder = finalPosition.y()+(labelData.rotatedTotalBounds.height()+labelData.rotatedTotalBounds.top()) > viewportRect.bottom() || finalPosition.y()+labelData.rotatedTotalBounds.top() < viewportRect.top();
     }
-    drawTickLabel(painter, finalPosition.x(), finalPosition.y(), labelData);
-    finalSize = labelData.rotatedTotalBounds.size();
+    if (!labelClippedByBorder)
+    {
+      drawTickLabel(painter, finalPosition.x(), finalPosition.y(), labelData);
+      finalSize = labelData.rotatedTotalBounds.size();
+    }
   }
   
   // expand passed tickLabelsSize if current tick label is larger:
