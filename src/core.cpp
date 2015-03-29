@@ -2132,9 +2132,11 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
         clickedLayerable->selectEvent(event, additive, details, &selChanged);
         selectionStateChanged |= selChanged;
       }
-      doReplot = true;
       if (selectionStateChanged)
+      {
+        doReplot = true;
         emit selectionChangedByUser();
+      }
     }
     
     // emit specialized object click signals:
