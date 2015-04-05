@@ -2069,47 +2069,41 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
   if (mLineStyle == lsNone)
   {
     // no line displayed, only calculate distance to scatter points:
-    QVector<QCPData> *scatterData = new QVector<QCPData>;
-    getScatterPlotData(scatterData);
+    QVector<QCPData> scatterData;
+    getScatterPlotData(&scatterData);
     double minDistSqr = std::numeric_limits<double>::max();
-    QPointF ptA;
-    QPointF ptB = coordsToPixels(scatterData->at(0).key, scatterData->at(0).value); // getScatterPlotData returns in plot coordinates, so transform to pixels
-    for (int i=1; i<scatterData->size(); ++i)
+    for (int i=0; i<scatterData.size(); ++i)
     {
-      ptA = ptB;
-      ptB = coordsToPixels(scatterData->at(i).key, scatterData->at(i).value);
-      double currentDistSqr = distSqrToLine(ptA, ptB, pixelPoint);
+      double currentDistSqr = QVector2D(coordsToPixels(scatterData.at(i).key, scatterData.at(i).value)-pixelPoint).lengthSquared();
       if (currentDistSqr < minDistSqr)
         minDistSqr = currentDistSqr;
     }
-    delete scatterData;
     return qSqrt(minDistSqr);
   } else
   {
-    // line displayed calculate distance to line segments:
-    QVector<QPointF> *lineData = new QVector<QPointF>;
-    getPlotData(lineData, 0); // unlike with getScatterPlotData we get pixel coordinates here
+    // line displayed, calculate distance to line segments:
+    QVector<QPointF> lineData;
+    getPlotData(&lineData, 0); // unlike with getScatterPlotData we get pixel coordinates here
     double minDistSqr = std::numeric_limits<double>::max();
     if (mLineStyle == lsImpulse)
     {
       // impulse plot differs from other line styles in that the lineData points are only pairwise connected:
-      for (int i=0; i<lineData->size()-1; i+=2) // iterate pairs
+      for (int i=0; i<lineData.size()-1; i+=2) // iterate pairs
       {
-        double currentDistSqr = distSqrToLine(lineData->at(i), lineData->at(i+1), pixelPoint);
+        double currentDistSqr = distSqrToLine(lineData.at(i), lineData.at(i+1), pixelPoint);
         if (currentDistSqr < minDistSqr)
           minDistSqr = currentDistSqr;
       }
     } else
     {
       // all other line plots (line and step) connect points directly:
-      for (int i=0; i<lineData->size()-1; ++i)
+      for (int i=0; i<lineData.size()-1; ++i)
       {
-        double currentDistSqr = distSqrToLine(lineData->at(i), lineData->at(i+1), pixelPoint);
+        double currentDistSqr = distSqrToLine(lineData.at(i), lineData.at(i+1), pixelPoint);
         if (currentDistSqr < minDistSqr)
           minDistSqr = currentDistSqr;
       }
     }
-    delete lineData;
     return qSqrt(minDistSqr);
   }
 }
