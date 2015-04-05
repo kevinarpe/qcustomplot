@@ -2056,12 +2056,6 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
 {
   if (mData->isEmpty())
     return -1.0;
-  if (mData->size() == 1)
-  {
-    QPointF dataPoint = coordsToPixels(mData->constBegin().key(), mData->constBegin().value().value);
-    return QVector2D(dataPoint-pixelPoint).length();
-  }
-  
   if (mLineStyle == lsNone && mScatterStyle.isNone())
     return -1.0;
   
@@ -2071,40 +2065,51 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
     // no line displayed, only calculate distance to scatter points:
     QVector<QCPData> scatterData;
     getScatterPlotData(&scatterData);
-    double minDistSqr = std::numeric_limits<double>::max();
-    for (int i=0; i<scatterData.size(); ++i)
+    if (scatterData.size() > 0)
     {
-      double currentDistSqr = QVector2D(coordsToPixels(scatterData.at(i).key, scatterData.at(i).value)-pixelPoint).lengthSquared();
-      if (currentDistSqr < minDistSqr)
-        minDistSqr = currentDistSqr;
-    }
-    return qSqrt(minDistSqr);
+      double minDistSqr = std::numeric_limits<double>::max();
+      for (int i=0; i<scatterData.size(); ++i)
+      {
+        double currentDistSqr = QVector2D(coordsToPixels(scatterData.at(i).key, scatterData.at(i).value)-pixelPoint).lengthSquared();
+        if (currentDistSqr < minDistSqr)
+          minDistSqr = currentDistSqr;
+      }
+      return qSqrt(minDistSqr);
+    } else // no data available in view to calculate distance to
+      return -1.0;
   } else
   {
     // line displayed, calculate distance to line segments:
     QVector<QPointF> lineData;
     getPlotData(&lineData, 0); // unlike with getScatterPlotData we get pixel coordinates here
-    double minDistSqr = std::numeric_limits<double>::max();
-    if (mLineStyle == lsImpulse)
+    if (lineData.size() > 1) // at least one line segment, compare distance to line segments
     {
-      // impulse plot differs from other line styles in that the lineData points are only pairwise connected:
-      for (int i=0; i<lineData.size()-1; i+=2) // iterate pairs
+      double minDistSqr = std::numeric_limits<double>::max();
+      if (mLineStyle == lsImpulse)
       {
-        double currentDistSqr = distSqrToLine(lineData.at(i), lineData.at(i+1), pixelPoint);
-        if (currentDistSqr < minDistSqr)
-          minDistSqr = currentDistSqr;
+        // impulse plot differs from other line styles in that the lineData points are only pairwise connected:
+        for (int i=0; i<lineData.size()-1; i+=2) // iterate pairs
+        {
+          double currentDistSqr = distSqrToLine(lineData.at(i), lineData.at(i+1), pixelPoint);
+          if (currentDistSqr < minDistSqr)
+            minDistSqr = currentDistSqr;
+        }
+      } else
+      {
+        // all other line plots (line and step) connect points directly:
+        for (int i=0; i<lineData.size()-1; ++i)
+        {
+          double currentDistSqr = distSqrToLine(lineData.at(i), lineData.at(i+1), pixelPoint);
+          if (currentDistSqr < minDistSqr)
+            minDistSqr = currentDistSqr;
+        }
       }
-    } else
+      return qSqrt(minDistSqr);
+    } else if (lineData.size() > 0) // only single data point, calculate distance to that point
     {
-      // all other line plots (line and step) connect points directly:
-      for (int i=0; i<lineData.size()-1; ++i)
-      {
-        double currentDistSqr = distSqrToLine(lineData.at(i), lineData.at(i+1), pixelPoint);
-        if (currentDistSqr < minDistSqr)
-          minDistSqr = currentDistSqr;
-      }
-    }
-    return qSqrt(minDistSqr);
+      return QVector2D(lineData.at(0)-pixelPoint).length();
+    } else // no data available in view to calculate distance to
+      return -1.0;
   }
 }
 
