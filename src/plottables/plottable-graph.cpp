@@ -2050,16 +2050,12 @@ int QCPGraph::findIndexAboveY(const QVector<QPointF> *data, double y) const
   \ref selectTest.
   
   If either the graph has no data or if the line style is \ref lsNone and the scatter style's shape
-  is \ref QCPScatterStyle::ssNone (i.e. there is no visual representation of the graph), returns
-  500.
+  is \ref QCPScatterStyle::ssNone (i.e. there is no visual representation of the graph), returns -1.0.
 */
 double QCPGraph::pointDistance(const QPointF &pixelPoint) const
 {
   if (mData->isEmpty())
-  {
-    qDebug() << Q_FUNC_INFO << "requested point distance on graph" << mName << "without data";
-    return 500;
-  }
+    return -1.0;
   if (mData->size() == 1)
   {
     QPointF dataPoint = coordsToPixels(mData->constBegin().key(), mData->constBegin().value().value);
@@ -2067,7 +2063,7 @@ double QCPGraph::pointDistance(const QPointF &pixelPoint) const
   }
   
   if (mLineStyle == lsNone && mScatterStyle.isNone())
-    return 500;
+    return -1.0;
   
   // calculate minimum distances to graph representation:
   if (mLineStyle == lsNone)
