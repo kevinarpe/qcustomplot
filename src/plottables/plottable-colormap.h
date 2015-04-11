@@ -141,7 +141,7 @@ protected:
   bool mTightBoundary;
   QPointer<QCPColorScale> mColorScale;
   // non-property members:
-  QImage mMapImage;
+  QImage mMapImage, mUndersampledMapImage;
   QPixmap mLegendIcon;
   bool mMapImageInvalidated;
   
