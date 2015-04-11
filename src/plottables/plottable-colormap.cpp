@@ -856,30 +856,53 @@ void QCPColorMap::draw(QCPPainter *painter)
   if (mMapData->mDataModified || mMapImageInvalidated)
     updateMapImage();
   
+  // use buffer if painting vectorized (PDF):
+  bool useBuffer = painter->modes().testFlag(QCPPainter::pmVectorized);
+  QCPPainter *localPainter = painter; // will be redirected to paint on mapBuffer if painting vectorized
+  QRectF mapBufferTarget; // the rect in absolute widget coordinates where the visible map portion/buffer will end up in
+  QPixmap mapBuffer;
+  double mapBufferPixelRatio = 3; // factor by which DPI is increased in embedded bitmaps
+  if (useBuffer)
+  {
+    mapBufferTarget = painter->clipRegion().boundingRect();
+    mapBuffer = QPixmap((mapBufferTarget.size()*mapBufferPixelRatio).toSize());
+    mapBuffer.fill(Qt::transparent);
+    localPainter = new QCPPainter(&mapBuffer);
+    localPainter->scale(mapBufferPixelRatio, mapBufferPixelRatio);
+    localPainter->translate(-mapBufferTarget.topLeft());
+  }
+  
   double halfSampleKey = 0;
   double halfSampleValue = 0;
   if (mMapData->keySize() > 1)
     halfSampleKey = 0.5*mMapData->keyRange().size()/(double)(mMapData->keySize()-1);
   if (mMapData->valueSize() > 1)
     halfSampleValue = 0.5*mMapData->valueRange().size()/(double)(mMapData->valueSize()-1);
-  QRectF imageRect(coordsToPixels(mMapData->keyRange().lower-halfSampleKey, mMapData->valueRange().lower-halfSampleValue),
-                   coordsToPixels(mMapData->keyRange().upper+halfSampleKey, mMapData->valueRange().upper+halfSampleValue));
-  imageRect = imageRect.normalized();
+  QRectF imageRect = QRectF(coordsToPixels(mMapData->keyRange().lower-halfSampleKey, mMapData->valueRange().lower-halfSampleValue),
+                            coordsToPixels(mMapData->keyRange().upper+halfSampleKey, mMapData->valueRange().upper+halfSampleValue)).normalized();
   bool mirrorX = (keyAxis()->orientation() == Qt::Horizontal ? keyAxis() : valueAxis())->rangeReversed();
   bool mirrorY = (valueAxis()->orientation() == Qt::Vertical ? valueAxis() : keyAxis())->rangeReversed();
-  bool smoothBackup = painter->renderHints().testFlag(QPainter::SmoothPixmapTransform);
-  painter->setRenderHint(QPainter::SmoothPixmapTransform, mInterpolate);
+  bool smoothBackup = localPainter->renderHints().testFlag(QPainter::SmoothPixmapTransform);
+  localPainter->setRenderHint(QPainter::SmoothPixmapTransform, mInterpolate);
   QRegion clipBackup;
   if (mTightBoundary)
   {
-    clipBackup = painter->clipRegion();
-    painter->setClipRect(QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().lower),
-                                coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().upper)).normalized(), Qt::IntersectClip);
+    clipBackup = localPainter->clipRegion();
+    QRectF tightClipRect = QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().lower),
+                                  coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().upper)).normalized();
+    localPainter->setClipRect(tightClipRect, Qt::IntersectClip);
   }
-  painter->drawImage(imageRect, mMapImage.mirrored(mirrorX, mirrorY));
+  localPainter->drawImage(imageRect, mMapImage.mirrored(mirrorX, mirrorY));
   if (mTightBoundary)
-    painter->setClipRegion(clipBackup);
-  painter->setRenderHint(QPainter::SmoothPixmapTransform, smoothBackup);
+    localPainter->setClipRegion(clipBackup);
+  localPainter->setRenderHint(QPainter::SmoothPixmapTransform, smoothBackup);
+  
+  // if localPainter painted to mapBuffer, so now paint that with original painter:
+  if (useBuffer) 
+  {
+    delete localPainter;
+    painter->drawPixmap(mapBufferTarget.toRect(), mapBuffer);
+  }
 }
 
 /* inherits documentation from base class */
