@@ -361,6 +361,7 @@ void QCPColorMapData::fill(double z)
   for (int i=0; i<dataCount; ++i)
     mData[i] = z;
   mDataBounds = QCPRange(z, z);
+  mDataModified = true;
 }
 
 /*!
