@@ -872,14 +872,25 @@ void QCPColorMap::draw(QCPPainter *painter)
     localPainter->translate(-mapBufferTarget.topLeft());
   }
   
-  double halfSampleKey = 0;
-  double halfSampleValue = 0;
-  if (mMapData->keySize() > 1)
-    halfSampleKey = 0.5*mMapData->keyRange().size()/(double)(mMapData->keySize()-1);
-  if (mMapData->valueSize() > 1)
-    halfSampleValue = 0.5*mMapData->valueRange().size()/(double)(mMapData->valueSize()-1);
-  QRectF imageRect = QRectF(coordsToPixels(mMapData->keyRange().lower-halfSampleKey, mMapData->valueRange().lower-halfSampleValue),
-                            coordsToPixels(mMapData->keyRange().upper+halfSampleKey, mMapData->valueRange().upper+halfSampleValue)).normalized();
+  QRectF imageRect = QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().lower),
+                            coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().upper)).normalized();
+  // extend imageRect to contain outer halves/quarters of bordering/cornering pixels (cells are centered on map range boundary):
+  double halfCellWidth = 0; // in pixels
+  double halfCellHeight = 0; // in pixels
+  if (keyAxis()->orientation() == Qt::Horizontal)
+  {
+    if (mMapData->keySize() > 1)
+      halfCellWidth = 0.5*imageRect.width()/(double)(mMapData->keySize()-1);
+    if (mMapData->valueSize() > 1)
+      halfCellHeight = 0.5*imageRect.height()/(double)(mMapData->valueSize()-1);
+  } else // keyAxis orientation is Qt::Vertical
+  {
+    if (mMapData->keySize() > 1)
+      halfCellHeight = 0.5*imageRect.height()/(double)(mMapData->keySize()-1);
+    if (mMapData->valueSize() > 1)
+      halfCellWidth = 0.5*imageRect.width()/(double)(mMapData->valueSize()-1);
+  }
+  imageRect.adjust(-halfCellWidth, -halfCellHeight, halfCellWidth, halfCellHeight);
   bool mirrorX = (keyAxis()->orientation() == Qt::Horizontal ? keyAxis() : valueAxis())->rangeReversed();
   bool mirrorY = (valueAxis()->orientation() == Qt::Vertical ? valueAxis() : keyAxis())->rangeReversed();
   bool smoothBackup = localPainter->renderHints().testFlag(QPainter::SmoothPixmapTransform);
@@ -897,8 +908,7 @@ void QCPColorMap::draw(QCPPainter *painter)
     localPainter->setClipRegion(clipBackup);
   localPainter->setRenderHint(QPainter::SmoothPixmapTransform, smoothBackup);
   
-  // if localPainter painted to mapBuffer, so now paint that with original painter:
-  if (useBuffer) 
+  if (useBuffer) // localPainter painted to mapBuffer, so now draw buffer with original painter
   {
     delete localPainter;
     painter->drawPixmap(mapBufferTarget.toRect(), mapBuffer);
