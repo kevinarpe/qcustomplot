@@ -114,6 +114,9 @@
   
   called by QCPLegend::draw (via QCPPlottableLegendItem::draw) to create a graphical representation
   of this plottable inside \a rect, next to the plottable name.
+  
+  The passed \a painter has its cliprect set to \a rect, so painting outside of \a rect won't
+  appear outside the legend icon border.
 */
 
 /*! \fn QCPRange QCPAbstractPlottable::getKeyRange(bool &foundRange, SignDomain inSignDomain) const = 0

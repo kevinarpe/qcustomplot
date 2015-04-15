@@ -98,7 +98,7 @@ QCPData::QCPData(double key, double value) :
   want to plot non-single-valued curves, rather use the QCPCurve plottable.
   
   Gaps in the graph line can be created by adding data points with NaN as value
-  (<tt>std::numeric_limits<double>::quiet_NaN()</tt>) in between the two data points that shall be
+  (<tt>qQNaN()</tt> or <tt>std::numeric_limits<double>::quiet_NaN()</tt>) in between the two data points that shall be
   separated.
   
   \section appearance Changing the appearance
@@ -116,7 +116,7 @@ QCPData::QCPData(double key, double value) :
   between this graph and another one, call \ref setChannelFillGraph with the other graph as
   parameter.
 
-  \see QCustomPlot::addGraph, QCustomPlot::graph, QCPLegend::addGraph
+  \see QCustomPlot::addGraph, QCustomPlot::graph
 */
 
 /* start of documentation of inline functions */

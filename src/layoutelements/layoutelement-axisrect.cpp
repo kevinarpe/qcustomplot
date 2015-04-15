@@ -737,7 +737,7 @@ double QCPAxisRect::rangeZoomFactor(Qt::Orientation orientation)
   In addition to setting \a orientations to a non-zero value, make sure \ref QCustomPlot::setInteractions
   contains \ref QCP::iRangeDrag to enable the range dragging interaction.
   
-  \see setRangeZoom, setRangeDragAxes, setNoAntialiasingOnDrag
+  \see setRangeZoom, setRangeDragAxes, QCustomPlot::setNoAntialiasingOnDrag
 */
 void QCPAxisRect::setRangeDrag(Qt::Orientations orientations)
 {

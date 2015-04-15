@@ -85,7 +85,7 @@ QCPCurveData::QCPCurveData(double t, double key, double value) :
   To plot data, assign it with the \ref setData or \ref addData functions.
   
   Gaps in the curve can be created by adding data points with NaN as key and value
-  (<tt>std::numeric_limits<double>::quiet_NaN()</tt>) in between the two data points that shall be
+  (<tt>qQNaN()</tt> or <tt>std::numeric_limits<double>::quiet_NaN()</tt>) in between the two data points that shall be
   separated.
   
   \section appearance Changing the appearance
