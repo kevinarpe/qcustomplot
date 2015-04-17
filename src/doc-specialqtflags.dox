@@ -12,7 +12,7 @@
   %QCustomPlot is a library based on and <i>written in</i> Qt. This means it uses Qt keywords such
   as <tt>foreach</tt>, <tt>signal</tt>, <tt>slot</tt> and <tt>emit</tt> for improved legibility.
   
-  However, many projects wish to disable these Qt specific language extensions by using the define
+  However, some projects wish to disable these Qt specific language extensions by using the define
   flag <tt>QT_NO_KEYWORDS</tt>. To compile %QCustomPlot with that flag set, it is necessary to
   replace all occurances of Qt keywords. This is easily done with %QCustomPlot code, by using the
   following regular expression replacements:

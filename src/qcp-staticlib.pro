@@ -94,4 +94,5 @@ OTHER_FILES += \
     doc-classoverview.dox \
     doc-layoutsystem.dox \
     doc-mainpage.dox \
-    doc-specialqtflags.dox
+    doc-specialqtflags.dox \
+    doc-performance.dox

@@ -328,6 +328,15 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   This signal is emitted when the range of this axis has changed. You can connect it to the \ref
   setRange slot of another axis to communicate the new range to the other axis, in order for it to
   be synchronized.
+  
+  You may also manipulate/correct the range with \ref setRange in a slot connected to this signal.
+  This is useful if for example a maximum range span shall not be exceeded, or if the lower/upper
+  range shouldn't go beyond certain values. For example, the following slot would limit the x axis
+  to only positive ranges:
+  \code
+  if (newRange.lower < 0)
+    plot->xAxis->setRange(0, newRange.size());
+  \endcode
 */
 
 /*! \fn void QCPAxis::rangeChanged(const QCPRange &newRange, const QCPRange &oldRange)
