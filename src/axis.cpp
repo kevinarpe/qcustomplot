@@ -453,6 +453,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
 QCPAxis::~QCPAxis()
 {
   delete mAxisPainter;
+  delete mGrid; // delete grid here instead of via parent ~QObject for better defined deletion order
 }
 
 /* No documentation as it is a property getter */
