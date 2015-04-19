@@ -6,11 +6,13 @@ mkdir documentation/html
 # let doxygen generate qhp index and html hierarchy from source files:
 doxygen
 
-# do post-processing on documentation images in html hierarchy:
+# do post-processing on documentation images and html hierarchy:
 echo Post-processing documentation images...
-sh documentation/postprocess-doc-images.sh
+./documentation/postprocess-doc-images.py
+echo Post-processing documentation html...
+./documentation/postprocess-doc-html.py
 
-# generate qhc file from qhp index for QtAssistant integration:
+# generate qhc file from qhp index and html for QtAssistant integration:
 echo Building qhc...
 qhelpgenerator documentation/html/index.qhp -o documentation/qthelp/qcustomplot.qch
 
