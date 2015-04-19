@@ -101,9 +101,17 @@ h3.version {
   font-size: 90%;
   text-align: center;
 }
+a.headerLink:hover {
+  background-color: #e7e7e7;
+  text-decoration: none;
+}
 a.headerLink {
   font-size: 14px;
   font-weight: bold;
+  padding: 0.3em 0.5em;
+  background: none repeat scroll 0 0 #f6f6f6;
+  border: 1px solid #e7e7e7;
+  border-radius: 6px;
 }
 div.header {
   margin: 1em 0;
@@ -196,6 +204,43 @@ div.memproto {
   border-width: 1px;
   font: bold 14px/1.2 Arial,FreeSans,sans-serif;
   padding: 3px 5px;
+}
+td.fieldname {
+  padding-right: 2em;
+  width: 1%;
+  white-space: nowrap;
+}
+td.fielddoc > p {
+  margin: 0.2em;
+}
+td.fielddoc img {
+  float: left;
+  margin-right: 1em;
+}
+td.fielddoc > p > code
+{
+  display: block;
+  float: left;
+  margin-right: 1em;
+}
+table.fieldtable {
+  background-color: #f6f6f6;
+  border-color: #e6e6e6;
+  border-radius: 7px;
+  border-style: solid;
+  border-width: 1px;
+  padding: 3px 5px;
+  margin-left: 3em;
+  width: 60%;
+  min-width: 600px;
+  max-width: 80%;
+  padding: 0.5em;
+  border-collapse: unset;
+}
+table.fieldtable th {
+    background: none repeat scroll 0 0 #e5e5e5;
+    border-radius: 4px;
+    padding: 0.3em 0;
 }
 div.memdoc {
 }
