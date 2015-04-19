@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # This script is used to make the amalgamated sources qcustomplot.h/.cpp compatible
 # to compiles with flag QT_NO_KEYWORDS set. It applies the following regular expression replacements
