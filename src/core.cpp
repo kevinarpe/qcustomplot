@@ -1778,6 +1778,8 @@ bool QCustomPlot::savePdf(const QString &fileName, bool noCosmeticPen, int width
   Q_UNUSED(noCosmeticPen)
   Q_UNUSED(width)
   Q_UNUSED(height)
+  Q_UNUSED(pdfCreator)
+  Q_UNUSED(pdfTitle)
   qDebug() << Q_FUNC_INFO << "Qt was built without printer support (QT_NO_PRINTER). PDF not created.";
 #else
   int newWidth, newHeight;
@@ -2410,7 +2412,7 @@ QPixmap QCustomPlot::toPixmap(int width, int height, double scale)
         painter.setMode(QCPPainter::pmNonCosmetic);
       painter.scale(scale, scale);
     }
-    if (mBackgroundBrush.style() != Qt::SolidPattern && mBackgroundBrush.style() != Qt::NoBrush)
+    if (mBackgroundBrush.style() != Qt::SolidPattern && mBackgroundBrush.style() != Qt::NoBrush) // solid fills were done a few lines above with QPixmap::fill
       painter.fillRect(mViewport, mBackgroundBrush);
     draw(&painter);
     setViewport(oldViewport);
@@ -2454,9 +2456,7 @@ void QCustomPlot::toPainter(QCPPainter *painter, int width, int height)
     QRect oldViewport = viewport();
     setViewport(QRect(0, 0, newWidth, newHeight));
     painter->setMode(QCPPainter::pmNoCaching);
-    // warning: the following is different in toPixmap, because a solid background color is applied there via QPixmap::fill
-    // here, we need to do this via QPainter::fillRect.
-    if (mBackgroundBrush.style() != Qt::NoBrush)
+    if (mBackgroundBrush.style() != Qt::NoBrush) // unlike in toPixmap, we can't do QPixmap::fill for Qt::SolidPattern brush style, so we also draw solid fills with fillRect here
       painter->fillRect(mViewport, mBackgroundBrush);
     draw(painter);
     setViewport(oldViewport);
