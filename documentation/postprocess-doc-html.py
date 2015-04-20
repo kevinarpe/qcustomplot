@@ -20,6 +20,9 @@ def performReplacement(filename):
   patterns.append((re.compile("<div class=\"levels\">\\[detail level (<span onclick=\"javascript:toggleLevel\\(\d\\);\">\d</span>)+\\]</div>"), ""))
   patterns.append((re.compile("Go to the graphical class hierarchy"), "Switch to graphical view"))
   patterns.append((re.compile("Go to the textual class hierarchy"), "Switch to list view"))
+  # link images with inline image maps for class overview page:
+  patterns.append((re.compile("<img src=\"RelationOverview.png\" alt=\"RelationOverview.png\"/>"), "<img src=\"RelationOverview.png\" alt=\"RelationOverview.png\" usemap=\"#relationoverviewmap\"/>"))
+  patterns.append((re.compile("<img src=\"InheritanceOverview.png\" alt=\"InheritanceOverview.png\"/>"), "<img src=\"InheritanceOverview.png\" alt=\"InheritanceOverview.png\" usemap=\"#inheritanceoverviewmap\"/>"))
   inFile = open(filename)
   outFilename = filename + ".tmp"
   outFile = open(outFilename, "w")
@@ -34,7 +37,7 @@ def performReplacement(filename):
 
 
 # main:
-replacementFiles = ('html/pages.html', 'html/annotated.html', 'html/hierarchy.html', 'html/inherits.html');
+replacementFiles = ('html/pages.html', 'html/annotated.html', 'html/hierarchy.html', 'html/inherits.html', 'html/classoverview.html');
 for filename in replacementFiles:
   if not os.path.isfile(filename):
     print "file '"+filename+"' not found"
