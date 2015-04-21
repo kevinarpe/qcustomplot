@@ -107,7 +107,7 @@ for (colors, fileName) in fileList:
   allPngFiles.remove(fileName)
   if colors > 0:
     print "compressing colors of '"+fileName+"'"
-    if subprocess.call("mogrify -define png:color-type=3 -depth 8 -colors "+str(colors)+" +dither "+fileName, shell=True) != 0:
+    if subprocess.call("mogrify -colorspace RGB -colors "+str(colors)+" +dither "+fileName, shell=True) != 0:
       print "ERROR: color compression failed for '"+fileName+"'"
 
 
