@@ -66,6 +66,11 @@
   QCPBars::setBarsGroup "QCPBars::setBarsGroup(0)" on the respective bars plottable.
   
   To clear the entire group, call \ref clear, or simply delete the group.
+  
+  \section qcpbarsgroup-example Example
+  
+  The image above is generated with the following code:
+  \snippet documentation/doc-image-generator/mainwindow.cpp qcpbarsgroup-example-snippet
 */
 
 /* start of documentation of inline functions */
