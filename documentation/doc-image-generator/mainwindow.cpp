@@ -412,7 +412,7 @@ void MainWindow::genLayoutsystem_AddingPlotTitle()
 {
   resetPlot(false);
   
-  //! [plottitle-example-snippet]
+  //! [plottitle-example]
   // first we create and prepare a plot title layout element:
   QCPPlotTitle *title = new QCPPlotTitle(customPlot);
   title->setText("Plot Title Example");
@@ -420,7 +420,7 @@ void MainWindow::genLayoutsystem_AddingPlotTitle()
   // then we add it to the main plot layout:
   customPlot->plotLayout()->insertRow(0); // insert an empty row above the axis rect
   customPlot->plotLayout()->addElement(0, 0, title); // place the title in the empty cell we've just created
-  //! [plottitle-example-snippet]
+  //! [plottitle-example]
   
   customPlot->savePng(dir.filePath("layoutsystem-addingplottitle.png"), 300, 200);
 }
@@ -429,7 +429,7 @@ void MainWindow::genLayoutsystem_MultipleAxisRects()
 {
   resetPlot(false);
   
-  //! [layoutsystem-example-snippet]
+  //! [layoutsystem-example]
   customPlot->plotLayout()->clear(); // let's start from scratch and remove the default axis rect
   // add the first axis rect in second row (row index 1):
   QCPAxisRect *bottomAxisRect = new QCPAxisRect(customPlot);
@@ -454,7 +454,7 @@ void MainWindow::genLayoutsystem_MultipleAxisRects()
     axis->setLayer("axes");
     axis->grid()->setLayer("grid");
   }
-  //! [layoutsystem-example-snippet]
+  //! [layoutsystem-example]
   
   customPlot->savePng(dir.filePath("layoutsystem-multipleaxisrects.png"), 400, 300);
 }
@@ -817,7 +817,7 @@ void MainWindow::genQCPColorGradient()
 void MainWindow::genQCPBarsGroup()
 {
   resetPlot(false);
-  //! [qcpbarsgroup-example-snippet]
+  //! [qcpbarsgroup-example]
   QVector<double> datax = QVector<double>() << 1 << 2 << 3 << 4;
   QVector<double> datay1 = QVector<double>() << 0.6 << 0.5 << 0.3 << 0.15;
   QVector<double> datay2 = QVector<double>() << 0.3 << 0.28 << 0.2 << 0.1;
@@ -850,7 +850,7 @@ void MainWindow::genQCPBarsGroup()
   customPlot->yAxis->setRange(0, 0.7);
   customPlot->xAxis->setAutoTickStep(false);
   customPlot->xAxis->setTickStep(1);
-  //! [qcpbarsgroup-example-snippet]
+  //! [qcpbarsgroup-example]
   customPlot->savePng(dir.filePath("QCPBarsGroup.png"), 450, 200);
 }
 

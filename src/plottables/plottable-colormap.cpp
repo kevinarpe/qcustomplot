@@ -268,6 +268,12 @@ void QCPColorMapData::setValueRange(const QCPRange &valueRange)
 /*!
   Sets the data of the cell, which lies at the plot coordinates given by \a key and \a value, to \a
   z.
+  
+  \note The QCPColorMap always displays the data at equal key/value intervals, even if the key or
+  value axis is set to a logarithmic scaling. If you want to use QCPColorMap with logarithmic axes,
+  you shouldn't use the \ref QCPColorMapData::setData method as it uses a linear transformation to
+  determine the cell index. Rather directly access the cell index with \ref
+  QCPColorMapData::setCell.
  
   \see setCell, setRange
 */
@@ -374,6 +380,11 @@ void QCPColorMapData::fill(double z)
   If you are only interested in a key or value index, you may pass 0 as \a valueIndex or \a
   keyIndex.
   
+  \note The QCPColorMap always displays the data at equal key/value intervals, even if the key or
+  value axis is set to a logarithmic scaling. If you want to use QCPColorMap with logarithmic axes,
+  you shouldn't use the \ref QCPColorMapData::coordToCell method as it uses a linear transformation to
+  determine the cell index.
+  
   \see cellToCoord, QCPAxis::coordToPixel
 */
 void QCPColorMapData::coordToCell(double key, double value, int *keyIndex, int *valueIndex) const
@@ -391,6 +402,11 @@ void QCPColorMapData::coordToCell(double key, double value, int *keyIndex, int *
   
   If you are only interested in a key or value coordinate, you may pass 0 as \a key or \a
   value.
+  
+  \note The QCPColorMap always displays the data at equal key/value intervals, even if the key or
+  value axis is set to a logarithmic scaling. If you want to use QCPColorMap with logarithmic axes,
+  you shouldn't use the \ref QCPColorMapData::cellToCoord method as it uses a linear transformation to
+  determine the cell index.
   
   \see coordToCell, QCPAxis::pixelToCoord
 */
@@ -453,24 +469,10 @@ void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, dou
   (QCPAbstractPlottable). So the plottable-interface of QCustomPlot applies
   (QCustomPlot::plottable, QCustomPlot::addPlottable, QCustomPlot::removePlottable, etc.)
   
-  Usually, you first create an instance:
-  \code
-  QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);\endcode
-  add it to the customPlot with QCustomPlot::addPlottable:
-  \code
-  customPlot->addPlottable(colorMap);\endcode
+  Usually, you first create an instance and add it to the customPlot:
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcolormap-creation-1
   and then modify the properties of the newly created color map, e.g.:
-  \code
-  colorMap->data()->setSize(50, 50);
-  colorMap->data()->setRange(QCPRange(0, 2), QCPRange(0, 2));
-  for (int x=0; x<50; ++x)
-    for (int y=0; y<50; ++y)
-      colorMap->data()->setCell(x, y, qCos(x/10.0)+qSin(y/10.0));
-  colorMap->setGradient(QCPColorGradient::gpPolar);
-  colorMap->rescaleDataRange(true);
-  customPlot->rescaleAxes();
-  customPlot->replot();
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcolormap-creation-2
   
   \note The QCPColorMap always displays the data at equal key/value intervals, even if the key or
   value axis is set to a logarithmic scaling. If you want to use QCPColorMap with logarithmic axes,

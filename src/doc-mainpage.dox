@@ -25,9 +25,7 @@
   
   For all other plottables, the normal plottable interface is used: First, an instance of the
   respective plottable is created and added to the QCustomPlot, e.g.  
-  \code
-  QCPCurve *newCurve = new QCPCurve(customPlot->xAxis, customPlot->yAxis);
-  customPlot->addPlottable(newCurve);\endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcurve-creation-1
   The properties of the newly created plottable can then be accessed via the <tt>newCurve</tt>
   pointer.
   

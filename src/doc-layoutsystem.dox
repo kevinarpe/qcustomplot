@@ -70,11 +70,11 @@
   \subsection layoutsystem-examples Examples
   
   <b>Adding a plot title</b> is a typical and simple case to demonstrate basic workings of the layout system.
-  \snippet documentation/doc-image-generator/mainwindow.cpp plottitle-example-snippet
+  \snippet documentation/doc-image-generator/mainwindow.cpp plottitle-example
   \image html layoutsystem-addingplottitle.png
 
   <b>Arranging multiple axis rects</b> actually is the central purpose of the layout system.
-  \snippet documentation/doc-image-generator/mainwindow.cpp layoutsystem-example-snippet
+  \snippet documentation/doc-image-generator/mainwindow.cpp layoutsystem-example
   \image html layoutsystem-multipleaxisrects.png
   
 */
