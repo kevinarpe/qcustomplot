@@ -836,31 +836,17 @@ void QCPItemPosition::setPixelPoint(const QPointF &pixelPoint)
   \section items-using Using items
   
   First you instantiate the item you want to use and add it to the plot:
-  \code
-  QCPItemLine *line = new QCPItemLine(customPlot);
-  customPlot->addItem(line);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpitemline-creation-1
   by default, the positions of the item are bound to the x- and y-Axis of the plot. So we can just
   set the plot coordinates where the line should start/end:
-  \code
-  line->start->setCoords(-0.1, 0.8);
-  line->end->setCoords(1.1, 0.2);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpitemline-creation-2
   If we don't want the line to be positioned in plot coordinates but a different coordinate system,
   e.g. absolute pixel positions on the QCustomPlot surface, we need to change the position type like this:
-  \code
-  line->start->setType(QCPItemPosition::ptAbsolute);
-  line->end->setType(QCPItemPosition::ptAbsolute);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpitemline-creation-3
   Then we can set the coordinates, this time in pixels:
-  \code
-  line->start->setCoords(100, 200);
-  line->end->setCoords(450, 320);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpitemline-creation-4
   and make the line visible on the entire QCustomPlot, by disabling clipping to the axis rect:
-  \code
-  line->setClipToAxisRect(false);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpitemline-creation-5
   
   For more advanced plots, it is even possible to set different types and parent anchors per X/Y
   coordinate of an item position, using for example \ref QCPItemPosition::setTypeX or \ref

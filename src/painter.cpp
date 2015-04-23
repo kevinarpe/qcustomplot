@@ -261,20 +261,11 @@ void QCPPainter::makeNonCosmetic()
   \section QCPScatterStyle-defining Specifying a scatter style
   
   You can set all these configurations either by calling the respective functions on an instance:
-  \code
-  QCPScatterStyle myScatter;
-  myScatter.setShape(QCPScatterStyle::ssCircle);
-  myScatter.setPen(Qt::blue);
-  myScatter.setBrush(Qt::white);
-  myScatter.setSize(5);
-  customPlot->graph(0)->setScatterStyle(myScatter);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpscatterstyle-creation-1
   
   Or you can use one of the various constructors that take different parameter combinations, making
   it easy to specify a scatter style in a single call, like so:
-  \code
-  customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::white, 5));
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpscatterstyle-creation-2
   
   \section QCPScatterStyle-undefinedpen Leaving the color/pen up to the plottable
   
@@ -285,9 +276,7 @@ void QCPPainter::makeNonCosmetic()
   color of the graph (\ref QCPGraph::setPen) will be used by the scatter points. This makes
   it very convenient to set up typical scatter settings:
   
-  \code
-  customPlot->graph(0)->setScatterStyle(QCPScatterStyle::ssPlus);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpscatterstyle-shortcreation
 
   Notice that it wasn't even necessary to explicitly call a QCPScatterStyle constructor. This works
   because QCPScatterStyle provides a constructor that can transform a \ref ScatterShape directly

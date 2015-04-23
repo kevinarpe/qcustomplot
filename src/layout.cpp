@@ -54,14 +54,9 @@
   \section QCPMarginGroup-example Example
   
   First create a margin group:
-  \code
-  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpmargingroup-creation-1
   Then set this group on the layout element sides:
-  \code
-  customPlot->axisRect(0)->setMarginGroup(QCP::msLeft|QCP::msRight, group);
-  customPlot->axisRect(1)->setMarginGroup(QCP::msLeft|QCP::msRight, group);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpmargingroup-creation-2
   Here, we've used the first two axis rects of the plot and synchronized their left margins with
   each other and their right margins with each other.
 */

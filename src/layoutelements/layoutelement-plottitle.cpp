@@ -39,10 +39,7 @@
   and \ref setTextColor.
   
   A plot title can be added as follows:
-  \code
-  customPlot->plotLayout()->insertRow(0); // inserts an empty row above the default axis rect
-  customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(customPlot, "Your Plot Title"));
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpplottitle-creation
   
   Since a plot title is a common requirement, QCustomPlot offers specialized selection signals for
   easy interaction with QCPPlotTitle. If a layout element of type QCPPlotTitle is clicked, the

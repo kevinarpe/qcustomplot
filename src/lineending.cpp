@@ -47,8 +47,8 @@
   respective arrow point inward.
   
   Note that due to the overloaded QCPLineEnding constructor, you may directly specify a
-  QCPLineEnding::EndingStyle where actually a QCPLineEnding is expected, e.g. \code
-  myItemLine->setHead(QCPLineEnding::esSpikeArrow) \endcode
+  QCPLineEnding::EndingStyle where actually a QCPLineEnding is expected, e.g.
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcplineending-sethead
 */
 
 /*!

@@ -96,16 +96,10 @@ QCPCurveData::QCPCurveData(double t, double key, double value) :
   Like all data representing objects in QCustomPlot, the QCPCurve is a plottable (QCPAbstractPlottable). So
   the plottable-interface of QCustomPlot applies (QCustomPlot::plottable, QCustomPlot::addPlottable, QCustomPlot::removePlottable, etc.)
   
-  Usually, you first create an instance:
-  \code
-  QCPCurve *newCurve = new QCPCurve(customPlot->xAxis, customPlot->yAxis);\endcode
-  add it to the customPlot with QCustomPlot::addPlottable:
-  \code
-  customPlot->addPlottable(newCurve);\endcode
+  Usually, you first create an instance and add it to the customPlot:
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcurve-creation-1
   and then modify the properties of the newly created plottable, e.g.:
-  \code
-  newCurve->setName("Fermat's Spiral");
-  newCurve->setData(tData, xData, yData);\endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcurve-creation-2
 */
 
 /*!

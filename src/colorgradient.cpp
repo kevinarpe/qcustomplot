@@ -47,9 +47,7 @@
   The fact that the \ref QCPColorGradient(GradientPreset preset) constructor allows directly
   converting a \ref GradientPreset to a QCPColorGradient, you can also directly pass \ref
   GradientPreset to all the \a setGradient methods, e.g.:
-  \code
-  colorMap->setGradient(QCPColorGradient::gpHot);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcolorgradient-setgradient
   
   The total number of levels used in the gradient can be set with \ref setLevelCount. Whether the
   color gradient shall be applied periodically (wrapping around) to data values that lie outside

@@ -55,27 +55,17 @@
   To have finer control over the number display and axis behaviour, you can directly access the
   \ref axis. See the documentation of QCPAxis for details about configuring axes. For example, if
   you want to change the number of automatically generated ticks, call
-  \code
-  colorScale->axis()->setAutoTickCount(3);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcolorscale-autotickcount
   
   Placing a color scale next to the main axis rect works like with any other layout element:
-  \code
-  QCPColorScale *colorScale = new QCPColorScale(customPlot);
-  customPlot->plotLayout()->addElement(0, 1, colorScale);
-  colorScale->setLabel("Some Label Text");
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcolorscale-creation
   In this case we have placed it to the right of the default axis rect, so it wasn't necessary to
   call \ref setType, since \ref QCPAxis::atRight is already the default. The text next to the color
   scale can be set with \ref setLabel.
   
   For optimum appearance (like in the image above), it may be desirable to line up the axis rect and
   the borders of the color scale. Use a \ref QCPMarginGroup to achieve this:
-  \code
-  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
-  colorScale->setMarginGroup(QCP::msTop|QCP::msBottom, group);
-  customPlot->axisRect()->setMarginGroup(QCP::msTop|QCP::msBottom, group);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcolorscale-margingroup
   
   Color scales are initialized with a non-zero minimum top and bottom margin (\ref
   setMinimumMargins), because vertical color scales are most common and the minimum top/bottom

@@ -655,6 +655,7 @@ EXCLUDE_SYMBOLS        = QCP*Private
 
 EXAMPLE_PATH           += tests/special-qtflags
 EXAMPLE_PATH           += documentation/doc-image-generator
+EXAMPLE_PATH           += documentation/doc-code-snippets
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp

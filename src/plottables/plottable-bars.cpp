@@ -49,11 +49,7 @@
   
   To add a QCPBars plottable to the group, create a new group and then add the respective bars
   intances:
-  \code
-    QCPBarsGroup *group = new QCPBarsGroup(customPlot);
-    group->append(bars1);
-    group->append(bars2);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpbarsgroup-creation
   Alternatively to appending to the group like shown above, you can also set the group on the
   QCPBars plottable via \ref QCPBars::setBarsGroup.
   
@@ -70,7 +66,7 @@
   \section qcpbarsgroup-example Example
   
   The image above is generated with the following code:
-  \snippet documentation/doc-image-generator/mainwindow.cpp qcpbarsgroup-example-snippet
+  \snippet documentation/doc-image-generator/mainwindow.cpp qcpbarsgroup-example
 */
 
 /* start of documentation of inline functions */
@@ -442,15 +438,11 @@ QCPBarData::QCPBarData(double key, double value) :
   (QCustomPlot::plottable, QCustomPlot::addPlottable, QCustomPlot::removePlottable, etc.)
   
   Usually, you first create an instance:
-  \code
-  QCPBars *newBars = new QCPBars(customPlot->xAxis, customPlot->yAxis);\endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpbars-creation-1
   add it to the customPlot with QCustomPlot::addPlottable:
-  \code
-  customPlot->addPlottable(newBars);\endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpbars-creation-2
   and then modify the properties of the newly created plottable, e.g.:
-  \code
-  newBars->setName("Country population");
-  newBars->setData(xData, yData);\endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpbars-creation-3
 */
 
 /* start of documentation of inline functions */
