@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
+**  Copyright (C) 2011-2015 Emanuel Eichhammer                            **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 27.12.14                                             **
-**          Version: 1.3.0                                                **
+**             Date: 25.04.15                                             **
+**          Version: 1.3.1                                                **
 ****************************************************************************/
 
 #include "layer.h"
@@ -387,10 +387,10 @@ bool QCPLayerable::realVisibility() const
   distance couldn't be determined, -1.0 is returned. Further, if \a onlySelectable is true and the
   object is not selectable, -1.0 is returned, too.
 
-  If the item is represented not by single lines but by an area like QCPItemRect or QCPItemText, a
-  click inside the area returns a constant value greater zero (typically the selectionTolerance of
-  the parent QCustomPlot multiplied by 0.99). If the click lies outside the area, this function
-  returns -1.0.
+  If the object is represented not by single lines but by an area like a \ref QCPItemText or the
+  bars of a \ref QCPBars plottable, a click inside the area should also be considered a hit. In
+  these cases this function thus returns a constant value greater zero but still below the parent
+  plot's selection tolerance. (typically the selectionTolerance multiplied by 0.99).
   
   Providing a constant value for area objects allows selecting line objects even when they are
   obscured by such area objects, by clicking close to the lines (i.e. closer than

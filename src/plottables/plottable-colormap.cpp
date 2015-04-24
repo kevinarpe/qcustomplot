@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
+**  Copyright (C) 2011-2015 Emanuel Eichhammer                            **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 27.12.14                                             **
-**          Version: 1.3.0                                                **
+**             Date: 25.04.15                                             **
+**          Version: 1.3.1                                                **
 ****************************************************************************/
 
 #include "plottable-colormap.h"
@@ -268,6 +268,12 @@ void QCPColorMapData::setValueRange(const QCPRange &valueRange)
 /*!
   Sets the data of the cell, which lies at the plot coordinates given by \a key and \a value, to \a
   z.
+  
+  \note The QCPColorMap always displays the data at equal key/value intervals, even if the key or
+  value axis is set to a logarithmic scaling. If you want to use QCPColorMap with logarithmic axes,
+  you shouldn't use the \ref QCPColorMapData::setData method as it uses a linear transformation to
+  determine the cell index. Rather directly access the cell index with \ref
+  QCPColorMapData::setCell.
  
   \see setCell, setRange
 */
@@ -361,6 +367,7 @@ void QCPColorMapData::fill(double z)
   for (int i=0; i<dataCount; ++i)
     mData[i] = z;
   mDataBounds = QCPRange(z, z);
+  mDataModified = true;
 }
 
 /*!
@@ -372,6 +379,11 @@ void QCPColorMapData::fill(double z)
   
   If you are only interested in a key or value index, you may pass 0 as \a valueIndex or \a
   keyIndex.
+  
+  \note The QCPColorMap always displays the data at equal key/value intervals, even if the key or
+  value axis is set to a logarithmic scaling. If you want to use QCPColorMap with logarithmic axes,
+  you shouldn't use the \ref QCPColorMapData::coordToCell method as it uses a linear transformation to
+  determine the cell index.
   
   \see cellToCoord, QCPAxis::coordToPixel
 */
@@ -390,6 +402,11 @@ void QCPColorMapData::coordToCell(double key, double value, int *keyIndex, int *
   
   If you are only interested in a key or value coordinate, you may pass 0 as \a key or \a
   value.
+  
+  \note The QCPColorMap always displays the data at equal key/value intervals, even if the key or
+  value axis is set to a logarithmic scaling. If you want to use QCPColorMap with logarithmic axes,
+  you shouldn't use the \ref QCPColorMapData::cellToCoord method as it uses a linear transformation to
+  determine the cell index.
   
   \see coordToCell, QCPAxis::pixelToCoord
 */
@@ -452,24 +469,10 @@ void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, dou
   (QCPAbstractPlottable). So the plottable-interface of QCustomPlot applies
   (QCustomPlot::plottable, QCustomPlot::addPlottable, QCustomPlot::removePlottable, etc.)
   
-  Usually, you first create an instance:
-  \code
-  QCPColorMap *colorMap = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);\endcode
-  add it to the customPlot with QCustomPlot::addPlottable:
-  \code
-  customPlot->addPlottable(colorMap);\endcode
+  Usually, you first create an instance and add it to the customPlot:
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcolormap-creation-1
   and then modify the properties of the newly created color map, e.g.:
-  \code
-  colorMap->data()->setSize(50, 50);
-  colorMap->data()->setRange(QCPRange(0, 2), QCPRange(0, 2));
-  for (int x=0; x<50; ++x)
-    for (int y=0; y<50; ++y)
-      colorMap->data()->setCell(x, y, qCos(x/10.0)+qSin(y/10.0));
-  colorMap->setGradient(QCPColorGradient::gpPolar);
-  colorMap->rescaleDataRange(true);
-  customPlot->rescaleAxes();
-  customPlot->replot();
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcolormap-creation-2
   
   \note The QCPColorMap always displays the data at equal key/value intervals, even if the key or
   value axis is set to a logarithmic scaling. If you want to use QCPColorMap with logarithmic axes,
@@ -630,6 +633,7 @@ void QCPColorMap::setGradient(const QCPColorGradient &gradient)
 void QCPColorMap::setInterpolate(bool enabled)
 {
   mInterpolate = enabled;
+  mMapImageInvalidated = true; // because oversampling factors might need to change
 }
 
 /*!
@@ -777,29 +781,49 @@ double QCPColorMap::selectTest(const QPointF &pos, bool onlySelectable, QVariant
   This method is called by \ref QCPColorMap::draw if either the data has been modified or the map image
   has been invalidated for a different reason (e.g. a change of the data range with \ref
   setDataRange).
+  
+  If the map cell count is low, the image created will be oversampled in order to avoid a
+  QPainter::drawImage bug which makes inner pixel boundaries jitter when stretch-drawing images
+  without smooth transform enabled. Accordingly, oversampling isn't performed if \ref
+  setInterpolate is true.
 */
 void QCPColorMap::updateMapImage()
 {
   QCPAxis *keyAxis = mKeyAxis.data();
   if (!keyAxis) return;
-  
-  // resize mMapImage to correct dimensions, according to key/value axes orientation:
-  if (keyAxis->orientation() == Qt::Horizontal && (mMapImage.size().width() != mMapData->keySize() || mMapImage.size().height() != mMapData->valueSize()))
-    mMapImage = QImage(QSize(mMapData->keySize(), mMapData->valueSize()), QImage::Format_RGB32);
-  else if (keyAxis->orientation() == Qt::Vertical && (mMapImage.size().width() != mMapData->valueSize() || mMapImage.size().height() != mMapData->keySize()))
-    mMapImage = QImage(QSize(mMapData->valueSize(), mMapData->keySize()), QImage::Format_RGB32);
+  if (mMapData->isEmpty()) return;
   
   const int keySize = mMapData->keySize();
   const int valueSize = mMapData->valueSize();
-  const double *rawData = mMapData->mData;
+  int keyOversamplingFactor = mInterpolate ? 1 : (int)(1.0+100.0/(double)keySize); // make mMapImage have at least size 100, factor becomes 1 if size > 200 or interpolation is on
+  int valueOversamplingFactor = mInterpolate ? 1 : (int)(1.0+100.0/(double)valueSize); // make mMapImage have at least size 100, factor becomes 1 if size > 200 or interpolation is on
   
+  // resize mMapImage to correct dimensions including possible oversampling factors, according to key/value axes orientation:
+  if (keyAxis->orientation() == Qt::Horizontal && (mMapImage.width() != keySize*keyOversamplingFactor || mMapImage.height() != valueSize*valueOversamplingFactor))
+    mMapImage = QImage(QSize(keySize*keyOversamplingFactor, valueSize*valueOversamplingFactor), QImage::Format_RGB32);
+  else if (keyAxis->orientation() == Qt::Vertical && (mMapImage.width() != valueSize*valueOversamplingFactor || mMapImage.height() != keySize*keyOversamplingFactor))
+    mMapImage = QImage(QSize(valueSize*valueOversamplingFactor, keySize*keyOversamplingFactor), QImage::Format_RGB32);
+  
+  QImage *localMapImage = &mMapImage; // this is the image on which the colorization operates. Either the final mMapImage, or if we need oversampling, mUndersampledMapImage
+  if (keyOversamplingFactor > 1 || valueOversamplingFactor > 1)
+  {
+    // resize undersampled map image to actual key/value cell sizes:
+    if (keyAxis->orientation() == Qt::Horizontal && (mUndersampledMapImage.width() != keySize || mUndersampledMapImage.height() != valueSize))
+      mUndersampledMapImage = QImage(QSize(keySize, valueSize), QImage::Format_RGB32);
+    else if (keyAxis->orientation() == Qt::Vertical && (mUndersampledMapImage.width() != valueSize || mUndersampledMapImage.height() != keySize))
+      mUndersampledMapImage = QImage(QSize(valueSize, keySize), QImage::Format_RGB32);
+    localMapImage = &mUndersampledMapImage; // make the colorization run on the undersampled image
+  } else if (!mUndersampledMapImage.isNull())
+    mUndersampledMapImage = QImage(); // don't need oversampling mechanism anymore (map size has changed) but mUndersampledMapImage still has nonzero size, free it
+  
+  const double *rawData = mMapData->mData;
   if (keyAxis->orientation() == Qt::Horizontal)
   {
     const int lineCount = valueSize;
     const int rowCount = keySize;
     for (int line=0; line<lineCount; ++line)
     {
-      QRgb* pixels = reinterpret_cast<QRgb*>(mMapImage.scanLine(lineCount-1-line)); // invert scanline index because QImage counts scanlines from top, but our vertical index counts from bottom (mathematical coordinate system)
+      QRgb* pixels = reinterpret_cast<QRgb*>(localMapImage->scanLine(lineCount-1-line)); // invert scanline index because QImage counts scanlines from top, but our vertical index counts from bottom (mathematical coordinate system)
       mGradient.colorize(rawData+line*rowCount, mDataRange, pixels, rowCount, 1, mDataScaleType==QCPAxis::stLogarithmic);
     }
   } else // keyAxis->orientation() == Qt::Vertical
@@ -808,11 +832,18 @@ void QCPColorMap::updateMapImage()
     const int rowCount = valueSize;
     for (int line=0; line<lineCount; ++line)
     {
-      QRgb* pixels = reinterpret_cast<QRgb*>(mMapImage.scanLine(lineCount-1-line)); // invert scanline index because QImage counts scanlines from top, but our vertical index counts from bottom (mathematical coordinate system)
+      QRgb* pixels = reinterpret_cast<QRgb*>(localMapImage->scanLine(lineCount-1-line)); // invert scanline index because QImage counts scanlines from top, but our vertical index counts from bottom (mathematical coordinate system)
       mGradient.colorize(rawData+line, mDataRange, pixels, rowCount, lineCount, mDataScaleType==QCPAxis::stLogarithmic);
     }
   }
   
+  if (keyOversamplingFactor > 1 || valueOversamplingFactor > 1)
+  {
+    if (keyAxis->orientation() == Qt::Horizontal)
+      mMapImage = mUndersampledMapImage.scaled(keySize*keyOversamplingFactor, valueSize*valueOversamplingFactor, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+    else
+      mMapImage = mUndersampledMapImage.scaled(valueSize*valueOversamplingFactor, keySize*keyOversamplingFactor, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+  }
   mMapData->mDataModified = false;
   mMapImageInvalidated = false;
 }
@@ -827,30 +858,63 @@ void QCPColorMap::draw(QCPPainter *painter)
   if (mMapData->mDataModified || mMapImageInvalidated)
     updateMapImage();
   
-  double halfSampleKey = 0;
-  double halfSampleValue = 0;
-  if (mMapData->keySize() > 1)
-    halfSampleKey = 0.5*mMapData->keyRange().size()/(double)(mMapData->keySize()-1);
-  if (mMapData->valueSize() > 1)
-    halfSampleValue = 0.5*mMapData->valueRange().size()/(double)(mMapData->valueSize()-1);
-  QRectF imageRect(coordsToPixels(mMapData->keyRange().lower-halfSampleKey, mMapData->valueRange().lower-halfSampleValue),
-                   coordsToPixels(mMapData->keyRange().upper+halfSampleKey, mMapData->valueRange().upper+halfSampleValue));
-  imageRect = imageRect.normalized();
+  // use buffer if painting vectorized (PDF):
+  bool useBuffer = painter->modes().testFlag(QCPPainter::pmVectorized);
+  QCPPainter *localPainter = painter; // will be redirected to paint on mapBuffer if painting vectorized
+  QRectF mapBufferTarget; // the rect in absolute widget coordinates where the visible map portion/buffer will end up in
+  QPixmap mapBuffer;
+  double mapBufferPixelRatio = 3; // factor by which DPI is increased in embedded bitmaps
+  if (useBuffer)
+  {
+    mapBufferTarget = painter->clipRegion().boundingRect();
+    mapBuffer = QPixmap((mapBufferTarget.size()*mapBufferPixelRatio).toSize());
+    mapBuffer.fill(Qt::transparent);
+    localPainter = new QCPPainter(&mapBuffer);
+    localPainter->scale(mapBufferPixelRatio, mapBufferPixelRatio);
+    localPainter->translate(-mapBufferTarget.topLeft());
+  }
+  
+  QRectF imageRect = QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().lower),
+                            coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().upper)).normalized();
+  // extend imageRect to contain outer halves/quarters of bordering/cornering pixels (cells are centered on map range boundary):
+  double halfCellWidth = 0; // in pixels
+  double halfCellHeight = 0; // in pixels
+  if (keyAxis()->orientation() == Qt::Horizontal)
+  {
+    if (mMapData->keySize() > 1)
+      halfCellWidth = 0.5*imageRect.width()/(double)(mMapData->keySize()-1);
+    if (mMapData->valueSize() > 1)
+      halfCellHeight = 0.5*imageRect.height()/(double)(mMapData->valueSize()-1);
+  } else // keyAxis orientation is Qt::Vertical
+  {
+    if (mMapData->keySize() > 1)
+      halfCellHeight = 0.5*imageRect.height()/(double)(mMapData->keySize()-1);
+    if (mMapData->valueSize() > 1)
+      halfCellWidth = 0.5*imageRect.width()/(double)(mMapData->valueSize()-1);
+  }
+  imageRect.adjust(-halfCellWidth, -halfCellHeight, halfCellWidth, halfCellHeight);
   bool mirrorX = (keyAxis()->orientation() == Qt::Horizontal ? keyAxis() : valueAxis())->rangeReversed();
   bool mirrorY = (valueAxis()->orientation() == Qt::Vertical ? valueAxis() : keyAxis())->rangeReversed();
-  bool smoothBackup = painter->renderHints().testFlag(QPainter::SmoothPixmapTransform);
-  painter->setRenderHint(QPainter::SmoothPixmapTransform, mInterpolate);
+  bool smoothBackup = localPainter->renderHints().testFlag(QPainter::SmoothPixmapTransform);
+  localPainter->setRenderHint(QPainter::SmoothPixmapTransform, mInterpolate);
   QRegion clipBackup;
   if (mTightBoundary)
   {
-    clipBackup = painter->clipRegion();
-    painter->setClipRect(QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().lower),
-                                coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().upper)).normalized(), Qt::IntersectClip);
+    clipBackup = localPainter->clipRegion();
+    QRectF tightClipRect = QRectF(coordsToPixels(mMapData->keyRange().lower, mMapData->valueRange().lower),
+                                  coordsToPixels(mMapData->keyRange().upper, mMapData->valueRange().upper)).normalized();
+    localPainter->setClipRect(tightClipRect, Qt::IntersectClip);
   }
-  painter->drawImage(imageRect, mMapImage.mirrored(mirrorX, mirrorY));
+  localPainter->drawImage(imageRect, mMapImage.mirrored(mirrorX, mirrorY));
   if (mTightBoundary)
-    painter->setClipRegion(clipBackup);
-  painter->setRenderHint(QPainter::SmoothPixmapTransform, smoothBackup);
+    localPainter->setClipRegion(clipBackup);
+  localPainter->setRenderHint(QPainter::SmoothPixmapTransform, smoothBackup);
+  
+  if (useBuffer) // localPainter painted to mapBuffer, so now draw buffer with original painter
+  {
+    delete localPainter;
+    painter->drawPixmap(mapBufferTarget.toRect(), mapBuffer);
+  }
 }
 
 /* inherits documentation from base class */

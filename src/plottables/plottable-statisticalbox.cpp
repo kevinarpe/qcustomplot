@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
+**  Copyright (C) 2011-2015 Emanuel Eichhammer                            **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 27.12.14                                             **
-**          Version: 1.3.0                                                **
+**             Date: 25.04.15                                             **
+**          Version: 1.3.1                                                **
 ****************************************************************************/
 
 #include "plottable-statisticalbox.h"
@@ -69,21 +69,11 @@
   
   \section usage Usage
   
-  Like all data representing objects in QCustomPlot, the QCPStatisticalBox is a plottable
-  (QCPAbstractPlottable). So the plottable-interface of QCustomPlot applies
-  (QCustomPlot::plottable, QCustomPlot::addPlottable, QCustomPlot::removePlottable, etc.)
-  
-  Usually, you first create an instance:
-  \code
-  QCPStatisticalBox *newBox = new QCPStatisticalBox(customPlot->xAxis, customPlot->yAxis);\endcode
-  add it to the customPlot with QCustomPlot::addPlottable:
-  \code
-  customPlot->addPlottable(newBox);\endcode
+  Like all data representing objects in QCustomPlot, the QCPStatisticalBox is a plottable.
+  Usually, you first create an instance and add it to the customPlot:
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpstatisticalbox-creation-1
   and then modify the properties of the newly created plottable, e.g.:
-  \code
-  newBox->setName("Measurement Series 1");
-  newBox->setData(1, 3, 4, 5, 7);
-  newBox->setOutliers(QVector<double>() << 0.5 << 0.64 << 7.2 << 7.42);\endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpstatisticalbox-creation-2
 */
 
 /*!

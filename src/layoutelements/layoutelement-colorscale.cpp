@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
+**  Copyright (C) 2011-2015 Emanuel Eichhammer                            **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 27.12.14                                             **
-**          Version: 1.3.0                                                **
+**             Date: 25.04.15                                             **
+**          Version: 1.3.1                                                **
 ****************************************************************************/
 
 #include "layoutelement-colorscale.h"
@@ -55,27 +55,17 @@
   To have finer control over the number display and axis behaviour, you can directly access the
   \ref axis. See the documentation of QCPAxis for details about configuring axes. For example, if
   you want to change the number of automatically generated ticks, call
-  \code
-  colorScale->axis()->setAutoTickCount(3);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcolorscale-autotickcount
   
   Placing a color scale next to the main axis rect works like with any other layout element:
-  \code
-  QCPColorScale *colorScale = new QCPColorScale(customPlot);
-  customPlot->plotLayout()->addElement(0, 1, colorScale);
-  colorScale->setLabel("Some Label Text");
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcolorscale-creation
   In this case we have placed it to the right of the default axis rect, so it wasn't necessary to
   call \ref setType, since \ref QCPAxis::atRight is already the default. The text next to the color
   scale can be set with \ref setLabel.
   
   For optimum appearance (like in the image above), it may be desirable to line up the axis rect and
   the borders of the color scale. Use a \ref QCPMarginGroup to achieve this:
-  \code
-  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
-  colorScale->setMarginGroup(QCP::msTop|QCP::msBottom, group);
-  customPlot->axisRect()->setMarginGroup(QCP::msTop|QCP::msBottom, group);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcolorscale-margingroup
   
   Color scales are initialized with a non-zero minimum top and bottom margin (\ref
   setMinimumMargins), because vertical color scales are most common and the minimum top/bottom
@@ -215,7 +205,8 @@ void QCPColorScale::setType(QCPAxis::AxisType type)
       disconnect(mColorAxis.data(), SIGNAL(rangeChanged(QCPRange)), this, SLOT(setDataRange(QCPRange)));
       disconnect(mColorAxis.data(), SIGNAL(scaleTypeChanged(QCPAxis::ScaleType)), this, SLOT(setDataScaleType(QCPAxis::ScaleType)));
     }
-    foreach (QCPAxis::AxisType atype, QList<QCPAxis::AxisType>() << QCPAxis::atLeft << QCPAxis::atRight << QCPAxis::atBottom << QCPAxis::atTop)
+    QList<QCPAxis::AxisType> allAxisTypes = QList<QCPAxis::AxisType>() << QCPAxis::atLeft << QCPAxis::atRight << QCPAxis::atBottom << QCPAxis::atTop;
+    foreach (QCPAxis::AxisType atype, allAxisTypes)
     {
       mAxisRect.data()->axis(atype)->setTicks(atype == mType);
       mAxisRect.data()->axis(atype)->setTickLabels(atype== mType);
@@ -549,7 +540,8 @@ QCPColorScaleAxisRectPrivate::QCPColorScaleAxisRectPrivate(QCPColorScale *parent
 {
   setParentLayerable(parentColorScale);
   setMinimumMargins(QMargins(0, 0, 0, 0));
-  foreach (QCPAxis::AxisType type, QList<QCPAxis::AxisType>() << QCPAxis::atBottom << QCPAxis::atTop << QCPAxis::atLeft << QCPAxis::atRight)
+  QList<QCPAxis::AxisType> allAxisTypes = QList<QCPAxis::AxisType>() << QCPAxis::atBottom << QCPAxis::atTop << QCPAxis::atLeft << QCPAxis::atRight;
+  foreach (QCPAxis::AxisType type, allAxisTypes)
   {
     axis(type)->setVisible(true);
     axis(type)->grid()->setVisible(false);
@@ -570,7 +562,7 @@ QCPColorScaleAxisRectPrivate::QCPColorScaleAxisRectPrivate(QCPColorScale *parent
   // make layer transfers of color scale transfer to axis rect and axes
   // the axes must be set after axis rect, such that they appear above color gradient drawn by axis rect:
   connect(parentColorScale, SIGNAL(layerChanged(QCPLayer*)), this, SLOT(setLayer(QCPLayer*)));
-  foreach (QCPAxis::AxisType type, QList<QCPAxis::AxisType>() << QCPAxis::atBottom << QCPAxis::atTop << QCPAxis::atLeft << QCPAxis::atRight)
+  foreach (QCPAxis::AxisType type, allAxisTypes)
     connect(parentColorScale, SIGNAL(layerChanged(QCPLayer*)), axis(type), SLOT(setLayer(QCPLayer*)));
 }
 
@@ -591,7 +583,7 @@ void QCPColorScaleAxisRectPrivate::draw(QCPPainter *painter)
     mirrorVert = mParentColorScale->mColorAxis.data()->rangeReversed() && (mParentColorScale->type() == QCPAxis::atLeft || mParentColorScale->type() == QCPAxis::atRight);
   }
   
-  painter->drawImage(rect(), mGradientImage.mirrored(mirrorHorz, mirrorVert));
+  painter->drawImage(rect().adjusted(0, -1, 0, -1), mGradientImage.mirrored(mirrorHorz, mirrorVert));
   QCPAxisRect::draw(painter);
 }
 
@@ -645,7 +637,8 @@ void QCPColorScaleAxisRectPrivate::updateGradientImage()
 void QCPColorScaleAxisRectPrivate::axisSelectionChanged(QCPAxis::SelectableParts selectedParts)
 {
   // axis bases of four axes shall always (de-)selected synchronously:
-  foreach (QCPAxis::AxisType type, QList<QCPAxis::AxisType>() << QCPAxis::atBottom << QCPAxis::atTop << QCPAxis::atLeft << QCPAxis::atRight)
+  QList<QCPAxis::AxisType> allAxisTypes = QList<QCPAxis::AxisType>() << QCPAxis::atBottom << QCPAxis::atTop << QCPAxis::atLeft << QCPAxis::atRight;
+  foreach (QCPAxis::AxisType type, allAxisTypes)
   {
     if (QCPAxis *senderAxis = qobject_cast<QCPAxis*>(sender()))
       if (senderAxis->axisType() == type)
@@ -669,7 +662,8 @@ void QCPColorScaleAxisRectPrivate::axisSelectionChanged(QCPAxis::SelectableParts
 void QCPColorScaleAxisRectPrivate::axisSelectableChanged(QCPAxis::SelectableParts selectableParts)
 {
   // synchronize axis base selectability:
-  foreach (QCPAxis::AxisType type, QList<QCPAxis::AxisType>() << QCPAxis::atBottom << QCPAxis::atTop << QCPAxis::atLeft << QCPAxis::atRight)
+  QList<QCPAxis::AxisType> allAxisTypes = QList<QCPAxis::AxisType>() << QCPAxis::atBottom << QCPAxis::atTop << QCPAxis::atLeft << QCPAxis::atRight;
+  foreach (QCPAxis::AxisType type, allAxisTypes)
   {
     if (QCPAxis *senderAxis = qobject_cast<QCPAxis*>(sender()))
       if (senderAxis->axisType() == type)

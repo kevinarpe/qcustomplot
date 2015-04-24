@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
+**  Copyright (C) 2011-2015 Emanuel Eichhammer                            **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 27.12.14                                             **
-**          Version: 1.3.0                                                **
+**             Date: 25.04.15                                             **
+**          Version: 1.3.1                                                **
 ****************************************************************************/
 
 #include "plottable-curve.h"
@@ -84,6 +84,10 @@ QCPCurveData::QCPCurveData(double t, double key, double value) :
 
   To plot data, assign it with the \ref setData or \ref addData functions.
   
+  Gaps in the curve can be created by adding data points with NaN as key and value
+  (<tt>qQNaN()</tt> or <tt>std::numeric_limits<double>::quiet_NaN()</tt>) in between the two data points that shall be
+  separated.
+  
   \section appearance Changing the appearance
   
   The appearance of the curve is determined by the pen and the brush (\ref setPen, \ref setBrush).
@@ -92,16 +96,10 @@ QCPCurveData::QCPCurveData(double t, double key, double value) :
   Like all data representing objects in QCustomPlot, the QCPCurve is a plottable (QCPAbstractPlottable). So
   the plottable-interface of QCustomPlot applies (QCustomPlot::plottable, QCustomPlot::addPlottable, QCustomPlot::removePlottable, etc.)
   
-  Usually, you first create an instance:
-  \code
-  QCPCurve *newCurve = new QCPCurve(customPlot->xAxis, customPlot->yAxis);\endcode
-  add it to the customPlot with QCustomPlot::addPlottable:
-  \code
-  customPlot->addPlottable(newCurve);\endcode
+  Usually, you first create an instance and add it to the customPlot:
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcurve-creation-1
   and then modify the properties of the newly created plottable, e.g.:
-  \code
-  newCurve->setName("Fermat's Spiral");
-  newCurve->setData(tData, xData, yData);\endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpcurve-creation-2
 */
 
 /*!
@@ -414,21 +412,29 @@ void QCPCurve::draw(QCPPainter *painter)
         !painter->modes().testFlag(QCPPainter::pmVectorized) &&
         !painter->modes().testFlag(QCPPainter::pmNoCaching))
     {
-      int i = 1;
-      int lineDataSize = lineData->size();
+      int i = 0;
+      bool lastIsNan = false;
+      const int lineDataSize = lineData->size();
+      while (i < lineDataSize && (qIsNaN(lineData->at(i).y()) || qIsNaN(lineData->at(i).x()))) // make sure first point is not NaN
+        ++i;
+      ++i; // because drawing works in 1 point retrospect
       while (i < lineDataSize)
       {
         if (!qIsNaN(lineData->at(i).y()) && !qIsNaN(lineData->at(i).x())) // NaNs create a gap in the line
-          painter->drawLine(lineData->at(i-1), lineData->at(i));
-        else
-          ++i;
+        {
+          if (!lastIsNan)
+            painter->drawLine(lineData->at(i-1), lineData->at(i));
+          else
+            lastIsNan = false;
+        } else
+          lastIsNan = true;
         ++i;
       }
     } else
     {
       int segmentStart = 0;
       int i = 0;
-      int lineDataSize = lineData->size();
+      const int lineDataSize = lineData->size();
       while (i < lineDataSize)
       {
         if (qIsNaN(lineData->at(i).y()) || qIsNaN(lineData->at(i).x())) // NaNs create a gap in the line
@@ -439,7 +445,7 @@ void QCPCurve::draw(QCPPainter *painter)
         ++i;
       }
       // draw last segment:
-      painter->drawPolyline(lineData->constData()+segmentStart, lineDataSize-segmentStart); // lineDataSize, because we do want to include the last point
+      painter->drawPolyline(lineData->constData()+segmentStart, lineDataSize-segmentStart);
     }
   }
   
@@ -1248,17 +1254,20 @@ QCPRange QCPCurve::getKeyRange(bool &foundRange, SignDomain inSignDomain) const
   while (it != mData->constEnd())
   {
     current = it.value().key;
-    if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current < 0) || (inSignDomain == sdPositive && current > 0))
+    if (!qIsNaN(current) && !qIsNaN(it.value().value))
     {
-      if (current < range.lower || !haveLower)
+      if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current < 0) || (inSignDomain == sdPositive && current > 0))
       {
-        range.lower = current;
-        haveLower = true;
-      }
-      if (current > range.upper || !haveUpper)
-      {
-        range.upper = current;
-        haveUpper = true;
+        if (current < range.lower || !haveLower)
+        {
+          range.lower = current;
+          haveLower = true;
+        }
+        if (current > range.upper || !haveUpper)
+        {
+          range.upper = current;
+          haveUpper = true;
+        }
       }
     }
     ++it;
@@ -1281,17 +1290,20 @@ QCPRange QCPCurve::getValueRange(bool &foundRange, SignDomain inSignDomain) cons
   while (it != mData->constEnd())
   {
     current = it.value().value;
-    if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current < 0) || (inSignDomain == sdPositive && current > 0))
+    if (!qIsNaN(current) && !qIsNaN(it.value().key))
     {
-      if (current < range.lower || !haveLower)
+      if (inSignDomain == sdBoth || (inSignDomain == sdNegative && current < 0) || (inSignDomain == sdPositive && current > 0))
       {
-        range.lower = current;
-        haveLower = true;
-      }
-      if (current > range.upper || !haveUpper)
-      {
-        range.upper = current;
-        haveUpper = true;
+        if (current < range.lower || !haveLower)
+        {
+          range.lower = current;
+          haveLower = true;
+        }
+        if (current > range.upper || !haveUpper)
+        {
+          range.upper = current;
+          haveUpper = true;
+        }
       }
     }
     ++it;

@@ -12,16 +12,16 @@
   %QCustomPlot is a library based on and <i>written in</i> Qt. This means it uses Qt keywords such
   as <tt>foreach</tt>, <tt>signal</tt>, <tt>slot</tt> and <tt>emit</tt> for improved legibility.
   
-  However, many projects wish to disable these Qt specific language extensions by using the define
+  However, some projects wish to disable these Qt specific language extensions by using the define
   flag <tt>QT_NO_KEYWORDS</tt>. To compile %QCustomPlot with that flag set, it is necessary to
   replace all occurances of Qt keywords. This is easily done with %QCustomPlot code, by using the
   following regular expression replacements:
   
   <table>
     <tr><td style="text-align:center;font-weight:bold">Search pattern</td><td style="text-align:center;font-weight:bold">Replace with</td></tr>
-    <tr><td><tt>(^|[^\\a_])emit\\s</tt></td><td><tt>\1Q_EMIT</tt></td></tr>
+    <tr><td><tt>(^|[^\\a_])emit\\s</tt></td><td><tt>\1Q_EMIT&nbsp;</tt>&mdash;<span style="font-size:0.9em">note the trailing space</span></td></tr>
     <tr><td><tt>^( *)signals:</tt></td><td><tt>\\1Q_SIGNALS:</tt></td></tr>
-    <tr><td><tt>(^|[^\\a_])foreach( *)\(</tt></td><td><tt>\1Q_FOREACH\2(</tt></td></tr>
+    <tr><td><tt>(^|[^\\a_])foreach( *)\\(</tt></td><td><tt>\1Q_FOREACH\2(</tt></td></tr>
   </table>
   
   %QCustomPlot code is written with these replacements in mind. They always work and catch all

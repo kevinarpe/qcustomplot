@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
+**  Copyright (C) 2011-2015 Emanuel Eichhammer                            **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 27.12.14                                             **
-**          Version: 1.3.0                                                **
+**             Date: 25.04.15                                             **
+**          Version: 1.3.1                                                **
 ****************************************************************************/
 
 #include "plottable-graph.h"
@@ -97,6 +97,10 @@ QCPData::QCPData(double key, double value) :
   data point per unique key coordinate. In other words, the graph can't have \a loops. If you do
   want to plot non-single-valued curves, rather use the QCPCurve plottable.
   
+  Gaps in the graph line can be created by adding data points with NaN as value
+  (<tt>qQNaN()</tt> or <tt>std::numeric_limits<double>::quiet_NaN()</tt>) in between the two data points that shall be
+  separated.
+  
   \section appearance Changing the appearance
   
   The appearance of the graph is mainly determined by the line style, scatter style, brush and pen
@@ -112,7 +116,7 @@ QCPData::QCPData(double key, double value) :
   between this graph and another one, call \ref setChannelFillGraph with the other graph as
   parameter.
 
-  \see QCustomPlot::addGraph, QCustomPlot::graph, QCPLegend::addGraph
+  \see QCustomPlot::addGraph, QCustomPlot::graph
 */
 
 /* start of documentation of inline functions */
@@ -1240,24 +1244,32 @@ void QCPGraph::drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) con
     // if drawing solid line and not in PDF, use much faster line drawing instead of polyline:
     if (mParentPlot->plottingHints().testFlag(QCP::phFastPolylines) &&
         painter->pen().style() == Qt::SolidLine &&
-        !painter->modes().testFlag(QCPPainter::pmVectorized)&&
+        !painter->modes().testFlag(QCPPainter::pmVectorized) &&
         !painter->modes().testFlag(QCPPainter::pmNoCaching))
     {
-      int i = 1;
-      int lineDataSize = lineData->size();
+      int i = 0;
+      bool lastIsNan = false;
+      const int lineDataSize = lineData->size();
+      while (i < lineDataSize && (qIsNaN(lineData->at(i).y()) || qIsNaN(lineData->at(i).x()))) // make sure first point is not NaN
+        ++i;
+      ++i; // because drawing works in 1 point retrospect
       while (i < lineDataSize)
       {
         if (!qIsNaN(lineData->at(i).y()) && !qIsNaN(lineData->at(i).x())) // NaNs create a gap in the line
-          painter->drawLine(lineData->at(i-1), lineData->at(i));
-        else
-          ++i;
+        {
+          if (!lastIsNan)
+            painter->drawLine(lineData->at(i-1), lineData->at(i));
+          else
+            lastIsNan = false;
+        } else
+          lastIsNan = true;
         ++i;
       }
     } else
     {
       int segmentStart = 0;
       int i = 0;
-      int lineDataSize = lineData->size();
+      const int lineDataSize = lineData->size();
       while (i < lineDataSize)
       {
         if (qIsNaN(lineData->at(i).y()) || qIsNaN(lineData->at(i).x())) // NaNs create a gap in the line
@@ -1268,7 +1280,7 @@ void QCPGraph::drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) con
         ++i;
       }
       // draw last segment:
-      painter->drawPolyline(lineData->constData()+segmentStart, lineDataSize-segmentStart); // lineDataSize, because we do want to include the last point
+      painter->drawPolyline(lineData->constData()+segmentStart, lineDataSize-segmentStart);
     }
   }
 }
@@ -2038,71 +2050,66 @@ int QCPGraph::findIndexAboveY(const QVector<QPointF> *data, double y) const
   \ref selectTest.
   
   If either the graph has no data or if the line style is \ref lsNone and the scatter style's shape
-  is \ref QCPScatterStyle::ssNone (i.e. there is no visual representation of the graph), returns
-  500.
+  is \ref QCPScatterStyle::ssNone (i.e. there is no visual representation of the graph), returns -1.0.
 */
 double QCPGraph::pointDistance(const QPointF &pixelPoint) const
 {
   if (mData->isEmpty())
-  {
-    qDebug() << Q_FUNC_INFO << "requested point distance on graph" << mName << "without data";
-    return 500;
-  }
-  if (mData->size() == 1)
-  {
-    QPointF dataPoint = coordsToPixels(mData->constBegin().key(), mData->constBegin().value().value);
-    return QVector2D(dataPoint-pixelPoint).length();
-  }
-  
+    return -1.0;
   if (mLineStyle == lsNone && mScatterStyle.isNone())
-    return 500;
+    return -1.0;
   
   // calculate minimum distances to graph representation:
   if (mLineStyle == lsNone)
   {
     // no line displayed, only calculate distance to scatter points:
-    QVector<QCPData> *scatterData = new QVector<QCPData>;
-    getScatterPlotData(scatterData);
-    double minDistSqr = std::numeric_limits<double>::max();
-    QPointF ptA;
-    QPointF ptB = coordsToPixels(scatterData->at(0).key, scatterData->at(0).value); // getScatterPlotData returns in plot coordinates, so transform to pixels
-    for (int i=1; i<scatterData->size(); ++i)
+    QVector<QCPData> scatterData;
+    getScatterPlotData(&scatterData);
+    if (scatterData.size() > 0)
     {
-      ptA = ptB;
-      ptB = coordsToPixels(scatterData->at(i).key, scatterData->at(i).value);
-      double currentDistSqr = distSqrToLine(ptA, ptB, pixelPoint);
-      if (currentDistSqr < minDistSqr)
-        minDistSqr = currentDistSqr;
-    }
-    delete scatterData;
-    return qSqrt(minDistSqr);
+      double minDistSqr = std::numeric_limits<double>::max();
+      for (int i=0; i<scatterData.size(); ++i)
+      {
+        double currentDistSqr = QVector2D(coordsToPixels(scatterData.at(i).key, scatterData.at(i).value)-pixelPoint).lengthSquared();
+        if (currentDistSqr < minDistSqr)
+          minDistSqr = currentDistSqr;
+      }
+      return qSqrt(minDistSqr);
+    } else // no data available in view to calculate distance to
+      return -1.0;
   } else
   {
-    // line displayed calculate distance to line segments:
-    QVector<QPointF> *lineData = new QVector<QPointF>;
-    getPlotData(lineData, 0); // unlike with getScatterPlotData we get pixel coordinates here
-    double minDistSqr = std::numeric_limits<double>::max();
-    if (mLineStyle == lsImpulse)
+    // line displayed, calculate distance to line segments:
+    QVector<QPointF> lineData;
+    getPlotData(&lineData, 0); // unlike with getScatterPlotData we get pixel coordinates here
+    if (lineData.size() > 1) // at least one line segment, compare distance to line segments
     {
-      // impulse plot differs from other line styles in that the lineData points are only pairwise connected:
-      for (int i=0; i<lineData->size()-1; i+=2) // iterate pairs
+      double minDistSqr = std::numeric_limits<double>::max();
+      if (mLineStyle == lsImpulse)
       {
-        double currentDistSqr = distSqrToLine(lineData->at(i), lineData->at(i+1), pixelPoint);
-        if (currentDistSqr < minDistSqr)
-          minDistSqr = currentDistSqr;
+        // impulse plot differs from other line styles in that the lineData points are only pairwise connected:
+        for (int i=0; i<lineData.size()-1; i+=2) // iterate pairs
+        {
+          double currentDistSqr = distSqrToLine(lineData.at(i), lineData.at(i+1), pixelPoint);
+          if (currentDistSqr < minDistSqr)
+            minDistSqr = currentDistSqr;
+        }
+      } else
+      {
+        // all other line plots (line and step) connect points directly:
+        for (int i=0; i<lineData.size()-1; ++i)
+        {
+          double currentDistSqr = distSqrToLine(lineData.at(i), lineData.at(i+1), pixelPoint);
+          if (currentDistSqr < minDistSqr)
+            minDistSqr = currentDistSqr;
+        }
       }
-    } else
+      return qSqrt(minDistSqr);
+    } else if (lineData.size() > 0) // only single data point, calculate distance to that point
     {
-      // all other line plots (line and step) connect points directly:
-      for (int i=0; i<lineData->size()-1; ++i)
-      {
-        double currentDistSqr = distSqrToLine(lineData->at(i), lineData->at(i+1), pixelPoint);
-        if (currentDistSqr < minDistSqr)
-          minDistSqr = currentDistSqr;
-      }
-    }
-    delete lineData;
-    return qSqrt(minDistSqr);
+      return QVector2D(lineData.at(0)-pixelPoint).length();
+    } else // no data available in view to calculate distance to
+      return -1.0;
   }
 }
 
@@ -2164,18 +2171,21 @@ QCPRange QCPGraph::getKeyRange(bool &foundRange, SignDomain inSignDomain, bool i
     QCPDataMap::const_iterator it = mData->constBegin();
     while (it != mData->constEnd())
     {
-      current = it.value().key;
-      currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
-      if (current-currentErrorMinus < range.lower || !haveLower)
+      if (!qIsNaN(it.value().value))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if (current+currentErrorPlus > range.upper || !haveUpper)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
+        current = it.value().key;
+        currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
+        if (current-currentErrorMinus < range.lower || !haveLower)
+        {
+          range.lower = current-currentErrorMinus;
+          haveLower = true;
+        }
+        if (current+currentErrorPlus > range.upper || !haveUpper)
+        {
+          range.upper = current+currentErrorPlus;
+          haveUpper = true;
+        }
       }
       ++it;
     }
@@ -2184,30 +2194,33 @@ QCPRange QCPGraph::getKeyRange(bool &foundRange, SignDomain inSignDomain, bool i
     QCPDataMap::const_iterator it = mData->constBegin();
     while (it != mData->constEnd())
     {
-      current = it.value().key;
-      currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
-      if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus < 0)
+      if (!qIsNaN(it.value().value))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus < 0)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
-      }
-      if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to geht that point.
-      {
-        if ((current < range.lower || !haveLower) && current < 0)
+        current = it.value().key;
+        currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
+        if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus < 0)
         {
-          range.lower = current;
+          range.lower = current-currentErrorMinus;
           haveLower = true;
         }
-        if ((current > range.upper || !haveUpper) && current < 0)
+        if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus < 0)
         {
-          range.upper = current;
+          range.upper = current+currentErrorPlus;
           haveUpper = true;
+        }
+        if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to geht that point.
+        {
+          if ((current < range.lower || !haveLower) && current < 0)
+          {
+            range.lower = current;
+            haveLower = true;
+          }
+          if ((current > range.upper || !haveUpper) && current < 0)
+          {
+            range.upper = current;
+            haveUpper = true;
+          }
         }
       }
       ++it;
@@ -2217,30 +2230,33 @@ QCPRange QCPGraph::getKeyRange(bool &foundRange, SignDomain inSignDomain, bool i
     QCPDataMap::const_iterator it = mData->constBegin();
     while (it != mData->constEnd())
     {
-      current = it.value().key;
-      currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
-      if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus > 0)
+      if (!qIsNaN(it.value().value))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus > 0)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
-      }
-      if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to get that point.
-      {
-        if ((current < range.lower || !haveLower) && current > 0)
+        current = it.value().key;
+        currentErrorMinus = (includeErrors ? it.value().keyErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().keyErrorPlus : 0);
+        if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus > 0)
         {
-          range.lower = current;
+          range.lower = current-currentErrorMinus;
           haveLower = true;
         }
-        if ((current > range.upper || !haveUpper) && current > 0)
+        if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus > 0)
         {
-          range.upper = current;
+          range.upper = current+currentErrorPlus;
           haveUpper = true;
+        }
+        if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to get that point.
+        {
+          if ((current < range.lower || !haveLower) && current > 0)
+          {
+            range.lower = current;
+            haveLower = true;
+          }
+          if ((current > range.upper || !haveUpper) && current > 0)
+          {
+            range.upper = current;
+            haveUpper = true;
+          }
         }
       }
       ++it;
@@ -2271,17 +2287,20 @@ QCPRange QCPGraph::getValueRange(bool &foundRange, SignDomain inSignDomain, bool
     while (it != mData->constEnd())
     {
       current = it.value().value;
-      currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
-      if (current-currentErrorMinus < range.lower || !haveLower)
+      if (!qIsNaN(current))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if (current+currentErrorPlus > range.upper || !haveUpper)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
+        currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
+        if (current-currentErrorMinus < range.lower || !haveLower)
+        {
+          range.lower = current-currentErrorMinus;
+          haveLower = true;
+        }
+        if (current+currentErrorPlus > range.upper || !haveUpper)
+        {
+          range.upper = current+currentErrorPlus;
+          haveUpper = true;
+        }
       }
       ++it;
     }
@@ -2291,29 +2310,32 @@ QCPRange QCPGraph::getValueRange(bool &foundRange, SignDomain inSignDomain, bool
     while (it != mData->constEnd())
     {
       current = it.value().value;
-      currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
-      if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus < 0)
+      if (!qIsNaN(current))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus < 0)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
-      }
-      if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to get that point.
-      {
-        if ((current < range.lower || !haveLower) && current < 0)
+        currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
+        if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus < 0)
         {
-          range.lower = current;
+          range.lower = current-currentErrorMinus;
           haveLower = true;
         }
-        if ((current > range.upper || !haveUpper) && current < 0)
+        if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus < 0)
         {
-          range.upper = current;
+          range.upper = current+currentErrorPlus;
           haveUpper = true;
+        }
+        if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to get that point.
+        {
+          if ((current < range.lower || !haveLower) && current < 0)
+          {
+            range.lower = current;
+            haveLower = true;
+          }
+          if ((current > range.upper || !haveUpper) && current < 0)
+          {
+            range.upper = current;
+            haveUpper = true;
+          }
         }
       }
       ++it;
@@ -2324,29 +2346,32 @@ QCPRange QCPGraph::getValueRange(bool &foundRange, SignDomain inSignDomain, bool
     while (it != mData->constEnd())
     {
       current = it.value().value;
-      currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
-      currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
-      if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus > 0)
+      if (!qIsNaN(current))
       {
-        range.lower = current-currentErrorMinus;
-        haveLower = true;
-      }
-      if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus > 0)
-      {
-        range.upper = current+currentErrorPlus;
-        haveUpper = true;
-      }
-      if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to geht that point.
-      {
-        if ((current < range.lower || !haveLower) && current > 0)
+        currentErrorMinus = (includeErrors ? it.value().valueErrorMinus : 0);
+        currentErrorPlus = (includeErrors ? it.value().valueErrorPlus : 0);
+        if ((current-currentErrorMinus < range.lower || !haveLower) && current-currentErrorMinus > 0)
         {
-          range.lower = current;
+          range.lower = current-currentErrorMinus;
           haveLower = true;
         }
-        if ((current > range.upper || !haveUpper) && current > 0)
+        if ((current+currentErrorPlus > range.upper || !haveUpper) && current+currentErrorPlus > 0)
         {
-          range.upper = current;
+          range.upper = current+currentErrorPlus;
           haveUpper = true;
+        }
+        if (includeErrors) // in case point is in valid sign domain but errobars stretch beyond it, we still want to geht that point.
+        {
+          if ((current < range.lower || !haveLower) && current > 0)
+          {
+            range.lower = current;
+            haveLower = true;
+          }
+          if ((current > range.upper || !haveUpper) && current > 0)
+          {
+            range.upper = current;
+            haveUpper = true;
+          }
         }
       }
       ++it;

@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
+**  Copyright (C) 2011-2015 Emanuel Eichhammer                            **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 27.12.14                                             **
-**          Version: 1.3.0                                                **
+**             Date: 25.04.15                                             **
+**          Version: 1.3.1                                                **
 ****************************************************************************/
 
 /************************************************************************************************************
@@ -321,8 +321,7 @@ void MainWindow::setupLineStyleDemo(QCustomPlot *customPlot)
   customPlot->legend->setFont(QFont("Helvetica", 9));
   QPen pen;
   QStringList lineNames;
-  lineNames << "lsNone" << "lsLine" << "lsStepLeft" << "lsStepRight"
-               << "lsStepCenter" << "lsImpulse";
+  lineNames << "lsNone" << "lsLine" << "lsStepLeft" << "lsStepRight" << "lsStepCenter" << "lsImpulse";
   // add graphs with different line styles:
   for (int i=QCPGraph::lsNone; i<=QCPGraph::lsImpulse; ++i)
   {
@@ -1090,7 +1089,7 @@ void MainWindow::setupItemDemo(QCustomPlot *customPlot)
   dispersionText->setText("Dispersion with\nvp < vg");
   dispersionText->setFont(QFont(font().family(), 10));
   
-  // setup a timer that repeatedly calls MainWindow::realtimeDataSlot:
+  // setup a timer that repeatedly calls MainWindow::bracketDataSlot:
   connect(&dataTimer, SIGNAL(timeout()), this, SLOT(bracketDataSlot()));
   dataTimer.start(0); // Interval 0 means to refresh as fast as possible
 }

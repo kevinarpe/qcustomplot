@@ -25,6 +25,7 @@ public:
   void setupItemTracerTest(QCustomPlot *customPlot);
   void setupGraphTest(QCustomPlot *customPlot);
   void setupExportTest(QCustomPlot *customPlot);
+  void setupExportMapTest(QCustomPlot *customPlot);
   void setupLogErrorsTest(QCustomPlot *customPlot);
   void setupSelectTest(QCustomPlot *customPlot);
   void setupDateTest(QCustomPlot *customPlot);
@@ -66,8 +67,7 @@ public slots:
   
   void integerTickStepCase_xRangeChanged(QCPRange newRange);
   void integerTickStepCase_yRangeChanged(QCPRange newRange);
-  
-  
+  void testbedMouseClick(QMouseEvent *event);
   void mouseWheel(QWheelEvent *event);
   
 private:

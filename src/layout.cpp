@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
+**  Copyright (C) 2011-2015 Emanuel Eichhammer                            **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 27.12.14                                             **
-**          Version: 1.3.0                                                **
+**             Date: 25.04.15                                             **
+**          Version: 1.3.1                                                **
 ****************************************************************************/
 
 #include "layout.h"
@@ -54,14 +54,9 @@
   \section QCPMarginGroup-example Example
   
   First create a margin group:
-  \code
-  QCPMarginGroup *group = new QCPMarginGroup(customPlot);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpmargingroup-creation-1
   Then set this group on the layout element sides:
-  \code
-  customPlot->axisRect(0)->setMarginGroup(QCP::msLeft|QCP::msRight, group);
-  customPlot->axisRect(1)->setMarginGroup(QCP::msLeft|QCP::msRight, group);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpmargingroup-creation-2
   Here, we've used the first two axis rects of the plot and synchronized their left margins with
   each other and their right margins with each other.
 */
@@ -468,7 +463,8 @@ void QCPLayoutElement::update(UpdatePhase phase)
     {
       // set the margins of this layout element according to automatic margin calculation, either directly or via a margin group:
       QMargins newMargins = mMargins;
-      foreach (QCP::MarginSide side, QList<QCP::MarginSide>() << QCP::msLeft << QCP::msRight << QCP::msTop << QCP::msBottom)
+      QList<QCP::MarginSide> allMarginSides = QList<QCP::MarginSide>() << QCP::msLeft << QCP::msRight << QCP::msTop << QCP::msBottom;
+      foreach (QCP::MarginSide side, allMarginSides)
       {
         if (mAutoMargins.testFlag(side)) // this side's margin shall be calculated automatically
         {
@@ -725,7 +721,9 @@ void QCPLayout::simplify()
   invalid or points to an empty cell, returns false.
   
   This function internally uses \ref takeAt to remove the element from the layout and then deletes
-  the returned element.
+  the returned element. Note that some layouts don't remove the respective cell right away but leave an
+  empty cell after successful removal of the layout element. To collapse empty cells, use \ref
+  simplify.
   
   \see remove, takeAt
 */
@@ -744,7 +742,9 @@ bool QCPLayout::removeAt(int index)
   layout, returns false.
   
   This function internally uses \ref takeAt to remove the element from the layout and then deletes
-  the element.
+  the element. Note that some layouts don't remove the respective cell right away but leave an
+  empty cell after successful removal of the layout element. To collapse empty cells, use \ref
+  simplify.
   
   \see removeAt, take
 */
@@ -759,7 +759,8 @@ bool QCPLayout::remove(QCPLayoutElement *element)
 }
 
 /*!
-  Removes and deletes all layout elements in this layout.
+  Removes and deletes all layout elements in this layout. Finally calls \ref simplify to make sure
+  all empty cells are collapsed.
   
   \see remove, removeAt
 */

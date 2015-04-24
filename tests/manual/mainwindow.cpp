@@ -12,12 +12,14 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->centralWidget->setLayout(layout);
   layout->insertWidget(0, mCustomPlot);
   mCustomPlot->axisRect()->setupFullAxesBox(true);
-  
+  connect(mCustomPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(testbedMouseClick(QMouseEvent*)));
+
   presetInteractive(mCustomPlot);
   //setupItemAnchorTest(mCustomPlot);
   //setupItemTracerTest(mCustomPlot);
   //setupGraphTest(mCustomPlot);
   //setupExportTest(mCustomPlot);
+  //setupExportMapTest(mCustomPlot);
   //setupLogErrorsTest(mCustomPlot);
   //setupSelectTest(mCustomPlot);
   //setupDateTest(mCustomPlot);
@@ -292,6 +294,43 @@ void MainWindow::setupExportTest(QCustomPlot *customPlot)
   QTimer::singleShot(100, qApp, SLOT(quit()));
 }
 
+void MainWindow::setupExportMapTest(QCustomPlot *customPlot)
+{
+  QCPColorScale *s = new QCPColorScale(customPlot);
+  customPlot->plotLayout()->addElement(0, 1, s);
+  s->setDataRange(QCPRange(0, 10));
+  s->setGradient(QCPColorGradient::gpPolar);
+  QCPMarginGroup *group = new QCPMarginGroup(mCustomPlot);
+  s->setMarginGroup(QCP::msBottom|QCP::msTop, group);
+  mCustomPlot->axisRect()->setMarginGroup(QCP::msBottom|QCP::msTop, group);
+  
+  QCPColorMap *m = new QCPColorMap(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(m);
+  m->data()->setSize(3, 3);
+  m->data()->setRange(QCPRange(10, 100), QCPRange(10, 1000));
+  m->data()->setCell(0, 0, 1);
+  m->data()->setCell(0, 1, 2);
+  m->data()->setCell(0, 2, 3);
+  m->data()->setCell(1, 0, 6);
+  m->data()->setCell(1, 1, 1);
+  m->data()->setCell(1, 2, 2);
+  m->data()->setCell(2, 0, 0);
+  m->data()->setCell(2, 1, 5);
+  m->data()->setCell(2, 2, 2);
+  m->setColorScale(s);
+  m->rescaleDataRange(true);
+  m->setInterpolate(false);
+  m->setTightBoundary(false);
+  customPlot->xAxis->setScaleType(QCPAxis::stLogarithmic);
+  customPlot->yAxis->setScaleType(QCPAxis::stLogarithmic);
+  customPlot->xAxis->setRange(1, 1000);
+  customPlot->yAxis->setRange(1, 10000);
+  customPlot->setAntialiasedElement(QCP::aeAxes, true);
+  customPlot->setAntialiasedElement(QCP::aeGrid, true);
+  customPlot->savePdf("./out.pdf", false, 400, 300);
+  customPlot->savePng("./out.png", 400, 300, 3.0);
+}
+
 void MainWindow::setupLogErrorsTest(QCustomPlot *customPlot)
 {
   customPlot->yAxis->setScaleType(QCPAxis::stLogarithmic);
@@ -319,6 +358,8 @@ void MainWindow::setupLogErrorsTest(QCustomPlot *customPlot)
 
 void MainWindow::setupSelectTest(QCustomPlot *customPlot)
 {
+  customPlot->axisRect()->setAutoMargins(QCP::msNone);
+  customPlot->axisRect()->setMargins(QMargins(40, 10, 10, 20));
   customPlot->xAxis->setRange(-10, 10);
   customPlot->yAxis->setRange(-10, 10);
   
@@ -1357,6 +1398,11 @@ void MainWindow::integerTickStepCase_yRangeChanged(QCPRange newRange)
     mTickStep = (int)((tickStepMantissa/10.0)*5)/5.0*10*magnitudeFactor;
   }
   mCustomPlot->yAxis->setTickStep(qCeil(mTickStep));
+}
+
+void MainWindow::testbedMouseClick(QMouseEvent *event)
+{
+  Q_UNUSED(event)
 }
 
 void MainWindow::mouseWheel(QWheelEvent *event)

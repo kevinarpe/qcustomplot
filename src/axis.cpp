@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
+**  Copyright (C) 2011-2015 Emanuel Eichhammer                            **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 27.12.14                                             **
-**          Version: 1.3.0                                                **
+**             Date: 25.04.15                                             **
+**          Version: 1.3.1                                                **
 ****************************************************************************/
 
 #include "axis.h"
@@ -328,6 +328,15 @@ void QCPGrid::drawSubGridLines(QCPPainter *painter) const
   This signal is emitted when the range of this axis has changed. You can connect it to the \ref
   setRange slot of another axis to communicate the new range to the other axis, in order for it to
   be synchronized.
+  
+  You may also manipulate/correct the range with \ref setRange in a slot connected to this signal.
+  This is useful if for example a maximum range span shall not be exceeded, or if the lower/upper
+  range shouldn't go beyond certain values. For example, the following slot would limit the x axis
+  to only positive ranges:
+  \code
+  if (newRange.lower < 0)
+    plot->xAxis->setRange(0, newRange.size());
+  \endcode
 */
 
 /*! \fn void QCPAxis::rangeChanged(const QCPRange &newRange, const QCPRange &oldRange)
@@ -444,6 +453,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
 QCPAxis::~QCPAxis()
 {
   delete mAxisPainter;
+  delete mGrid; // delete grid here instead of via parent ~QObject for better defined deletion order
 }
 
 /* No documentation as it is a property getter */
@@ -2494,7 +2504,6 @@ void QCPAxisPainterPrivate::draw(QCPPainter *painter)
     case QCPAxis::atRight: xCor = 1; break;
     default: break;
   }
-
   int margin = 0;
   // draw baseline:
   QLineF baseLine;
@@ -2760,58 +2769,51 @@ void QCPAxisPainterPrivate::placeTickLabel(QCPPainter *painter, double position,
   }
   if (mParentPlot->plottingHints().testFlag(QCP::phCacheLabels) && !painter->modes().testFlag(QCPPainter::pmNoCaching)) // label caching enabled
   {
-    if (!mLabelCache.contains(text))  // no cached label exists, create it
+    CachedLabel *cachedLabel = mLabelCache.take(text); // attempt to get label from cache
+    if (!cachedLabel)  // no cached label existed, create it
     {
-      CachedLabel *newCachedLabel = new CachedLabel;
+      cachedLabel = new CachedLabel;
       TickLabelData labelData = getTickLabelData(painter->font(), text);
-      newCachedLabel->offset = getTickLabelDrawOffset(labelData)+labelData.rotatedTotalBounds.topLeft();
-      newCachedLabel->pixmap = QPixmap(labelData.rotatedTotalBounds.size());
-      newCachedLabel->pixmap.fill(Qt::transparent);
-      QCPPainter cachePainter(&newCachedLabel->pixmap);
+      cachedLabel->offset = getTickLabelDrawOffset(labelData)+labelData.rotatedTotalBounds.topLeft();
+      cachedLabel->pixmap = QPixmap(labelData.rotatedTotalBounds.size());
+      cachedLabel->pixmap.fill(Qt::transparent);
+      QCPPainter cachePainter(&cachedLabel->pixmap);
       cachePainter.setPen(painter->pen());
       drawTickLabel(&cachePainter, -labelData.rotatedTotalBounds.topLeft().x(), -labelData.rotatedTotalBounds.topLeft().y(), labelData);
-      mLabelCache.insert(text, newCachedLabel, 1);
     }
-    // draw cached label:
-    const CachedLabel *cachedLabel = mLabelCache.object(text);
     // if label would be partly clipped by widget border on sides, don't draw it (only for outside tick labels):
+    bool labelClippedByBorder = false;
     if (tickLabelSide == QCPAxis::lsOutside)
     {
       if (QCPAxis::orientation(type) == Qt::Horizontal)
-      {
-        if (labelAnchor.x()+cachedLabel->offset.x()+cachedLabel->pixmap.width() > viewportRect.right() ||
-            labelAnchor.x()+cachedLabel->offset.x() < viewportRect.left())
-          return;
-      } else
-      {
-        if (labelAnchor.y()+cachedLabel->offset.y()+cachedLabel->pixmap.height() >viewportRect.bottom() ||
-            labelAnchor.y()+cachedLabel->offset.y() < viewportRect.top())
-          return;
-      }
+        labelClippedByBorder = labelAnchor.x()+cachedLabel->offset.x()+cachedLabel->pixmap.width() > viewportRect.right() || labelAnchor.x()+cachedLabel->offset.x() < viewportRect.left();
+      else
+        labelClippedByBorder = labelAnchor.y()+cachedLabel->offset.y()+cachedLabel->pixmap.height() > viewportRect.bottom() || labelAnchor.y()+cachedLabel->offset.y() < viewportRect.top();
     }
-    painter->drawPixmap(labelAnchor+cachedLabel->offset, cachedLabel->pixmap);
-    finalSize = cachedLabel->pixmap.size();
+    if (!labelClippedByBorder)
+    {
+      painter->drawPixmap(labelAnchor+cachedLabel->offset, cachedLabel->pixmap);
+      finalSize = cachedLabel->pixmap.size();
+    }
+    mLabelCache.insert(text, cachedLabel); // return label to cache or insert for the first time if newly created
   } else // label caching disabled, draw text directly on surface:
   {
     TickLabelData labelData = getTickLabelData(painter->font(), text);
     QPointF finalPosition = labelAnchor + getTickLabelDrawOffset(labelData);
     // if label would be partly clipped by widget border on sides, don't draw it (only for outside tick labels):
+     bool labelClippedByBorder = false;
     if (tickLabelSide == QCPAxis::lsOutside)
     {
       if (QCPAxis::orientation(type) == Qt::Horizontal)
-      {
-        if (finalPosition.x()+(labelData.rotatedTotalBounds.width()+labelData.rotatedTotalBounds.left()) > viewportRect.right() ||
-            finalPosition.x()+labelData.rotatedTotalBounds.left() < viewportRect.left())
-          return;
-      } else
-      {
-        if (finalPosition.y()+(labelData.rotatedTotalBounds.height()+labelData.rotatedTotalBounds.top()) > viewportRect.bottom() ||
-            finalPosition.y()+labelData.rotatedTotalBounds.top() < viewportRect.top())
-          return;
-      }
+        labelClippedByBorder = finalPosition.x()+(labelData.rotatedTotalBounds.width()+labelData.rotatedTotalBounds.left()) > viewportRect.right() || finalPosition.x()+labelData.rotatedTotalBounds.left() < viewportRect.left();
+      else
+        labelClippedByBorder = finalPosition.y()+(labelData.rotatedTotalBounds.height()+labelData.rotatedTotalBounds.top()) > viewportRect.bottom() || finalPosition.y()+labelData.rotatedTotalBounds.top() < viewportRect.top();
     }
-    drawTickLabel(painter, finalPosition.x(), finalPosition.y(), labelData);
-    finalSize = labelData.rotatedTotalBounds.size();
+    if (!labelClippedByBorder)
+    {
+      drawTickLabel(painter, finalPosition.x(), finalPosition.y(), labelData);
+      finalSize = labelData.rotatedTotalBounds.size();
+    }
   }
   
   // expand passed tickLabelsSize if current tick label is larger:
@@ -2883,7 +2885,7 @@ QCPAxisPainterPrivate::TickLabelData QCPAxisPainterPrivate::getTickLabelData(con
   
   // calculate text bounding rects and do string preparation for beautiful decimal powers:
   result.baseFont = font;
-  if (result.baseFont.pointSizeF() > 0) // On some rare systems, this sometimes is initialized with -1 (Qt bug?), so we check here before possibly setting a negative value in the next line
+  if (result.baseFont.pointSizeF() > 0) // might return -1 if specified with setPixelSize, in that case we can't do correction in next line
     result.baseFont.setPointSizeF(result.baseFont.pointSizeF()+0.05); // QFontMetrics.boundingRect has a bug for exact point sizes that make the results oscillate due to internal rounding
   if (useBeautifulPowers)
   {
@@ -2902,7 +2904,10 @@ QCPAxisPainterPrivate::TickLabelData QCPAxisPainterPrivate::getTickLabelData(con
       result.expPart.remove(0, 1);
     // prepare smaller font for exponent:
     result.expFont = font;
-    result.expFont.setPointSize(result.expFont.pointSize()*0.75);
+    if (result.expFont.pointSize() > 0)
+      result.expFont.setPointSize(result.expFont.pointSize()*0.75);
+    else
+      result.expFont.setPixelSize(result.expFont.pixelSize()*0.75);
     // calculate bounding rects of base part, exponent part and total one:
     result.baseBounds = QFontMetrics(result.baseFont).boundingRect(0, 0, 0, 0, Qt::TextDontClip, result.basePart);
     result.expBounds = QFontMetrics(result.expFont).boundingRect(0, 0, 0, 0, Qt::TextDontClip, result.expPart);

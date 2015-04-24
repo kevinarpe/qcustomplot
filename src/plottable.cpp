@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
+**  Copyright (C) 2011-2015 Emanuel Eichhammer                            **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 27.12.14                                             **
-**          Version: 1.3.0                                                **
+**             Date: 25.04.15                                             **
+**          Version: 1.3.1                                                **
 ****************************************************************************/
 
 #include "plottable.h"
@@ -114,6 +114,9 @@
   
   called by QCPLegend::draw (via QCPPlottableLegendItem::draw) to create a graphical representation
   of this plottable inside \a rect, next to the plottable name.
+  
+  The passed \a painter has its cliprect set to \a rect, so painting outside of \a rect won't
+  appear outside the legend icon border.
 */
 
 /*! \fn QCPRange QCPAbstractPlottable::getKeyRange(bool &foundRange, SignDomain inSignDomain) const = 0
@@ -210,7 +213,7 @@ void QCPAbstractPlottable::setName(const QString &name)
 }
 
 /*!
-  Sets whether fills of this plottable is drawn antialiased or not.
+  Sets whether fills of this plottable are drawn antialiased or not.
   
   Note that this setting may be overridden by \ref QCustomPlot::setAntialiasedElements and \ref
   QCustomPlot::setNotAntialiasedElements.
@@ -247,8 +250,7 @@ void QCPAbstractPlottable::setAntialiasedErrorBars(bool enabled)
   The pen is used to draw basic lines that make up the plottable representation in the
   plot.
   
-  For example, the \ref QCPGraph subclass draws its graph lines and scatter points
-  with this pen.
+  For example, the \ref QCPGraph subclass draws its graph lines with this pen.
 
   \see setBrush
 */

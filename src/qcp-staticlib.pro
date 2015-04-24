@@ -15,7 +15,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 TEMPLATE = lib
 CONFIG += qt staticlib debug_and_release build_all
 
-VERSION = 1.3.0
+VERSION = 1.3.1
 TARGET = qcustomplot
 CONFIG(debug, debug|release) {
   TARGET = $$join(TARGET,,,d) # if compiling in debug mode, append a "d" to the library name
@@ -91,8 +91,8 @@ layoutelements/layoutelement-axisrect.cpp \
 
 OTHER_FILES += \
     ../changelog.txt \
-    ../todo.txt \
     doc-classoverview.dox \
     doc-layoutsystem.dox \
     doc-mainpage.dox \
-    doc-specialqtflags.dox
+    doc-specialqtflags.dox \
+    doc-performance.dox

@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  QCustomPlot, an easy to use, modern plotting widget for Qt            **
-**  Copyright (C) 2011, 2012, 2013, 2014 Emanuel Eichhammer               **
+**  Copyright (C) 2011-2015 Emanuel Eichhammer                            **
 **                                                                        **
 **  This program is free software: you can redistribute it and/or modify  **
 **  it under the terms of the GNU General Public License as published by  **
@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 27.12.14                                             **
-**          Version: 1.3.0                                                **
+**             Date: 25.04.15                                             **
+**          Version: 1.3.1                                                **
 ****************************************************************************/
 
 #include "plottable-bars.h"
@@ -49,11 +49,7 @@
   
   To add a QCPBars plottable to the group, create a new group and then add the respective bars
   intances:
-  \code
-    QCPBarsGroup *group = new QCPBarsGroup(customPlot);
-    group->append(bars1);
-    group->append(bars2);
-  \endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpbarsgroup-creation
   Alternatively to appending to the group like shown above, you can also set the group on the
   QCPBars plottable via \ref QCPBars::setBarsGroup.
   
@@ -66,6 +62,11 @@
   QCPBars::setBarsGroup "QCPBars::setBarsGroup(0)" on the respective bars plottable.
   
   To clear the entire group, call \ref clear, or simply delete the group.
+  
+  \section qcpbarsgroup-example Example
+  
+  The image above is generated with the following code:
+  \snippet documentation/doc-image-generator/mainwindow.cpp qcpbarsgroup-example
 */
 
 /* start of documentation of inline functions */
@@ -437,15 +438,11 @@ QCPBarData::QCPBarData(double key, double value) :
   (QCustomPlot::plottable, QCustomPlot::addPlottable, QCustomPlot::removePlottable, etc.)
   
   Usually, you first create an instance:
-  \code
-  QCPBars *newBars = new QCPBars(customPlot->xAxis, customPlot->yAxis);\endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpbars-creation-1
   add it to the customPlot with QCustomPlot::addPlottable:
-  \code
-  customPlot->addPlottable(newBars);\endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpbars-creation-2
   and then modify the properties of the newly created plottable, e.g.:
-  \code
-  newBars->setName("Country population");
-  newBars->setData(xData, yData);\endcode
+  \snippet documentation/doc-code-snippets/mainwindow.cpp qcpbars-creation-3
 */
 
 /* start of documentation of inline functions */
