@@ -8,7 +8,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 DEFINES += QCUSTOMPLOT_COMPILE_LIBRARY
 TEMPLATE = lib
 CONFIG += shared debug_and_release build_all
-VERSION = 1.3.0
+VERSION = 1.3.1
 
 TARGET = qcustomplot
 CONFIG(debug, debug|release) {
