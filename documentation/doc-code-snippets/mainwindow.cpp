@@ -8,13 +8,15 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(300, 300, 500, 500);
   
-  // invoke all methods of MainWindow that start with "snippet":
+  // invoke all methods of MainWindow that start with "snippet" or "website":
   for (int i=this->metaObject()->methodOffset(); i<this->metaObject()->methodCount(); ++i)
   {
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    if (QString::fromLatin1(this->metaObject()->method(i).signature()).startsWith("snippet"))
+    if (QString::fromLatin1(this->metaObject()->method(i).signature()).startsWith("snippet") ||
+        QString::fromLatin1(this->metaObject()->method(i).signature()).startsWith("website"))
 #else
-    if (this->metaObject()->method(i).methodSignature().startsWith("snippet"))
+    if (this->metaObject()->method(i).methodSignature().startsWith("snippet") ||
+        this->metaObject()->method(i).methodSignature().startsWith("website"))
 #endif
     {
       qDebug() << "executing" << this->metaObject()->method(i).name() << "...";
@@ -219,6 +221,21 @@ void MainWindow::snippetQCPStatisticalBox()
   newBox->setData(1000, 1, 3, 4, 5, 7);
   newBox->setOutliers(QVector<double>() << 0.5 << 0.64 << 7.2 << 7.42);
   //! [qcpstatisticalbox-creation-2]
+}
+
+void MainWindow::websiteBasicPlottingBars()
+{
+  QCPBars *myBars = new QCPBars(customPlot->xAxis, customPlot->yAxis);
+  customPlot->addPlottable(myBars);
+  // now we can modify properties of myBars:
+  myBars->setName("Bars Series 1");
+  QVector<double> keyData;
+  QVector<double> valueData;
+  keyData << 1 << 2 << 3;
+  valueData << 2 << 4 << 8;
+  myBars->setData(keyData, valueData);
+  customPlot->rescaleAxes();
+  customPlot->replot();
 }
 
 

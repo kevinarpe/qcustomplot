@@ -32,6 +32,9 @@ public slots:
   void snippetQCPBars();
   void snippetQCPStatisticalBox();
   
+  // website code methods:
+  void websiteBasicPlottingBars();
+  
 private:
   void resetPlot();
   

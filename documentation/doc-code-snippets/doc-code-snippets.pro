@@ -1,5 +1,5 @@
 #
-# Project to generate various images for the QCustomPlot documentation
+# Project to contain and test various code example snippets for the QCustomPlot documentation
 #
 
 QT       += core gui
