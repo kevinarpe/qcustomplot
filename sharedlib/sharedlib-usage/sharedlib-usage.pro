@@ -26,6 +26,6 @@ CONFIG(debug, release|debug) {
   win32:QCPLIB = qcustomplot1
   else: QCPLIB = qcustomplot
 }
-LIBS += -L./ -l$$QCPLIB
+LIBS += -L../sharedlib-compilation -l$$QCPLIB
 
 SOURCES += main.cpp

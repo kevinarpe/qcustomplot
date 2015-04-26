@@ -47,3 +47,18 @@ cachegrind.out.*
 /qcustomplot.h
 /qcustomplot.cpp
 
+# Vim
+*.sw*
+
+# Built libs
+*.so*
+
+# Python compiled cache
+__pycache__
+
+# Built test C++ program
+sharedlib/sharedlib-usage/sharedlib-usage
+
+# Build area for Python bindings
+sharedlib/sharedlib-Py3Qt5/build/
+
