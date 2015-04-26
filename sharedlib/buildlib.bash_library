@@ -1,0 +1,92 @@
+
+# Exit immediately if a command exits with a non-zero status.
+set -e
+# Treat unset variables as an error when substituting.
+set -u
+# the return value of a pipeline is the status of
+# the last command to exit with a non-zero status,
+# or zero if no command exited with a non-zero status
+set -o pipefail
+# Print commands and their arguments as they are executed.
+# set -x
+
+__BUILDLIB_QTCHOOSER='qtchooser'
+
+buildlib_sleep_kill_wait()
+{
+    local child_pid="$1" ; shift
+    # Example: 'C++' or 'Python'
+    local description="$1" ; shift
+
+    printf -- 'Checking the sample %s program can run correctly...\n' "$description"
+    buildlib_echo_and_run_cmd sleep 3
+    buildlib_echo_and_run_cmd kill -TERM "$child_pid"
+    buildlib_echo_and_run_cmd wait
+}
+
+buildlib_echo_and_run_cmd()
+{
+    buildlib_echo_cmd "$@"
+    "$@"
+}
+
+buildlib_echo_cmd()
+{
+    printf -- '\n$'
+    local arg=''
+    for arg in "$@"
+    do
+        printf -- ' %q' "$arg"
+    done
+    printf -- '\n\n'
+}
+
+__buildlib_echo_usage_and_exit_on_error()
+{
+    local error_msg="$1" ; shift
+
+    printf -- 'ERROR: %s\n' "$error_msg"
+    printf -- '\n'
+    printf -- 'Usage  : "%s" QT_FLAG [MAKE_FLAG...]\n' "$0"
+    printf -- 'Example: "%s" -qt=5 [MAKE_FLAG...]\n' "$0"
+    printf -- '\n'
+    printf -- 'REQUIRED ARGUMENTS\n'
+    printf -- '    QT_FLAG: Used by qmake to set Qt version (4 or 5)\n'
+
+    if which "$__BUILDLIB_QTCHOOSER" 1>/dev/null 2>&1
+    then
+        printf -- '    Valid values: %s\n' \
+               "$("$__BUILDLIB_QTCHOOSER" -list-versions \
+                   | perl -p -e 's/\n/, /g' | perl -p -e 's/, $//')"
+    else
+        true
+    fi
+
+    printf -- '    Example: -qt=4\n'
+    printf -- '    Example: -qt=5\n'
+    printf -- '\n'
+    printf -- 'OPTIONAL ARGUMENTS\n'
+    printf -- '    MAKE_FLAG...: Passed directly to make\n'
+    printf -- '    Example: -j 8\n'
+    printf -- '\n'
+    exit 1
+}
+
+__buildlib_main()
+{
+    if which "$__BUILDLIB_QTCHOOSER" 1>/dev/null 2>&1
+    then
+        true
+    else
+        __buildlib_echo_usage_and_exit_on_error \
+            "$(printf -- "Missing command line tool '%s'" "$__BUILDLIB_QTCHOOSER")"
+    fi
+
+    if [ $# = 0 ]
+    then
+        __buildlib_echo_usage_and_exit_on_error 'Missing QT_FLAG'
+    fi
+}
+
+__buildlib_main "$@"
+
